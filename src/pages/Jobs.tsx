@@ -48,15 +48,22 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
       message: '',
     }
   );
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const submitMutation = useMutation({
     mutationFn: async (data: ApplicationFormData) => {
-      const validation = validateWithSchema(jobApplicationSchema, data);
-      if (isValidationError(validation)) {
-        throw new Error(validation.error);
+      const result = jobApplicationSchema.safeParse(data);
+      if (!result.success) {
+        const errors: Record<string, string> = {};
+        result.error.errors.forEach((err) => {
+          const key = err.path[0] as string;
+          if (!errors[key]) errors[key] = err.message;
+        });
+        setFieldErrors(errors);
+        throw new Error(Object.values(errors)[0]);
       }
-
-      const validatedData = validation.data;
+      setFieldErrors({});
+      const validatedData = result.data;
 
       const { error } = await supabase
         .from('job_applications')
@@ -101,7 +108,7 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
         showErrorNotification('Already Applied', 'Only one application per person is allowed');
       } else if (error.message === 'RATE_LIMITED') {
         showErrorNotification('Too Many Applications', 'You can only submit 3 applications per day. Please try again tomorrow.');
-      } else {
+      } else if (!Object.keys(fieldErrors).length) {
         showErrorNotification('Submission Failed', error.message || 'Please try again');
       }
     },
@@ -112,77 +119,94 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
     submitMutation.mutate(formData);
   };
 
+  const errorClass = (field: string) =>
+    fieldErrors[field] ? 'border-destructive focus-visible:ring-destructive' : '';
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Full Name *</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="name">Full Name <span className="text-destructive">*</span></Label>
           <Input
             id="name"
             value={formData.applicant_name}
-            onChange={(e) => setFormData({ ...formData, applicant_name: e.target.value })}
+            onChange={(e) => { setFormData({ ...formData, applicant_name: e.target.value }); setFieldErrors(prev => { const { applicant_name, ...rest } = prev; return rest; }); }}
             placeholder="John Smith"
+            className={errorClass('applicant_name')}
             required
           />
+          {fieldErrors.applicant_name && <p className="text-xs text-destructive">{fieldErrors.applicant_name}</p>}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address *</Label>
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email Address <span className="text-destructive">*</span></Label>
           <Input
             id="email"
             type="email"
             value={formData.applicant_email}
-            onChange={(e) => setFormData({ ...formData, applicant_email: e.target.value })}
+            onChange={(e) => { setFormData({ ...formData, applicant_email: e.target.value }); setFieldErrors(prev => { const { applicant_email, ...rest } = prev; return rest; }); }}
             placeholder="john@example.com"
+            className={errorClass('applicant_email')}
             required
           />
+          {fieldErrors.applicant_email && <p className="text-xs text-destructive">{fieldErrors.applicant_email}</p>}
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="discord">Discord Username</Label>
           <Input
             id="discord"
             value={formData.discord_username}
-            onChange={(e) => setFormData({ ...formData, discord_username: e.target.value })}
+            onChange={(e) => { setFormData({ ...formData, discord_username: e.target.value }); setFieldErrors(prev => { const { discord_username, ...rest } = prev; return rest; }); }}
             placeholder="username"
+            className={errorClass('discord_username')}
           />
+          {fieldErrors.discord_username && <p className="text-xs text-destructive">{fieldErrors.discord_username}</p>}
         </div>
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <Label htmlFor="portfolio">Portfolio URL</Label>
           <Input
             id="portfolio"
             type="url"
             value={formData.portfolio_url}
-            onChange={(e) => setFormData({ ...formData, portfolio_url: e.target.value })}
+            onChange={(e) => { setFormData({ ...formData, portfolio_url: e.target.value }); setFieldErrors(prev => { const { portfolio_url, ...rest } = prev; return rest; }); }}
             placeholder="https://portfolio.com"
+            className={errorClass('portfolio_url')}
           />
+          {fieldErrors.portfolio_url && <p className="text-xs text-destructive">{fieldErrors.portfolio_url}</p>}
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="experience">Relevant Experience</Label>
         <Textarea
           id="experience"
           value={formData.experience}
-          onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
+          onChange={(e) => { setFormData({ ...formData, experience: e.target.value }); setFieldErrors(prev => { const { experience, ...rest } = prev; return rest; }); }}
           placeholder="Describe your relevant experience..."
           rows={3}
+          className={errorClass('experience')}
         />
+        {fieldErrors.experience && <p className="text-xs text-destructive">{fieldErrors.experience}</p>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="message">Why do you want to join us? *</Label>
+      <div className="space-y-1.5">
+        <Label htmlFor="message">Why do you want to join us? <span className="text-destructive">*</span></Label>
         <Textarea
           id="message"
           value={formData.message}
-          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+          onChange={(e) => { setFormData({ ...formData, message: e.target.value }); setFieldErrors(prev => { const { message, ...rest } = prev; return rest; }); }}
           placeholder="Tell us why you'd be a great fit..."
           rows={4}
           maxLength={5000}
+          className={errorClass('message')}
           required
         />
-        <p className="text-xs text-muted-foreground text-right">{formData.message.length}/5,000</p>
+        <div className="flex justify-between">
+          {fieldErrors.message ? <p className="text-xs text-destructive">{fieldErrors.message}</p> : <span />}
+          <p className="text-xs text-muted-foreground">{formData.message.length}/5,000</p>
+        </div>
       </div>
 
       <p className="text-xs text-muted-foreground">
@@ -196,10 +220,7 @@ function ApplicationForm({ position, onSuccess }: { position: string; onSuccess:
             Submitting...
           </>
         ) : (
-          <>
-            <Send className="mr-2 h-4 w-4" />
-            Submit Application
-          </>
+          'Submit Application'
         )}
       </Button>
     </form>
