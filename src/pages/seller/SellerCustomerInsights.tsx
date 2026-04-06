@@ -200,7 +200,7 @@ export default function SellerCustomerInsights() {
                   {data?.countries?.length ? (
                     <div className="space-y-2">
                       {data.countries.map((country) => {
-                        const total = data.countries.reduce((s: number, c: any) => s + c.count, 0);
+                        const total = data.countries.reduce((s: number, c: { count: number }) => s + c.count, 0);
                         const pct = total > 0 ? (country.count / total) * 100 : 0;
                         return (
                           <div key={country.name} className="space-y-1">
