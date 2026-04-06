@@ -303,7 +303,7 @@ export default function AdminLiveChat() {
         setCustomerTyping(isTyping);
       })
       .subscribe((status) => {
-        console.log('AdminLiveChat typingChannel status:', status);
+        // typing channel subscribed
       });
 
     // Reuse this single presence channel for outgoing typing events

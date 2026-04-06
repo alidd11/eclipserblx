@@ -159,7 +159,7 @@ export function ImportProgressStep({
             
             // Network-level errors are retryable — auto-retry once
             if (!cancelledRef.current) {
-              console.log(`Auto-retrying ${url} after catch error`);
+              // Auto-retrying after catch error
               setStatuses(prev =>
                 prev.map((s, idx) => (idx === i ? { ...s, status: 'importing' as const } : s))
               );

@@ -45,7 +45,7 @@ export class RouteErrorBoundary extends Component<Props, State> {
       // For chunk errors, auto-reset the boundary once to let lazyWithRetry handle it
       // If we've already retried, escalate to auto-recovery (hard reload)
       if (this.state.retryCount === 0) {
-        console.log('[RouteErrorBoundary] Chunk error detected, auto-resetting boundary');
+        // Chunk error detected — auto-resetting boundary
         this.setState({ hasError: false, error: null, retryCount: 1 });
         return;
       }

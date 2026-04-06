@@ -109,7 +109,7 @@ export default function AdminCustomDomains() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-custom-domains'] });
-      console.log('Fix hostname result:', data);
+      // Fix hostname completed
       const fixes = data.fixes?.length ?? 0;
       const errs = data.errors?.length ?? 0;
       const fixList = (data.fixes ?? []).join('; ');
