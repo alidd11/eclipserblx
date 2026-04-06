@@ -310,7 +310,7 @@ export function useAnalyticsData(range: '7d' | '14d' | '30d') {
   const { data: recentReferrals } = useQuery({
     queryKey: ['admin-recent-referrals'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('referral_clicks').select('id, referrer_id, referred_id, created_at').order('created_at', { ascending: false }).limit(50);
+      const { data, error } = await supabase.from('referral_clicks').select('id, referrer_id, referral_code, user_agent, created_at').order('created_at', { ascending: false }).limit(50);
       if (error) throw error;
       return data;
     },
