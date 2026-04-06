@@ -15,7 +15,7 @@ export const AuthLayout = forwardRef<HTMLDivElement, AuthLayoutProps>(function A
   const { t } = useTranslation();
 
   return (
-    <div ref={ref} className="min-h-screen bg-background overflow-y-auto relative">
+    <div ref={ref} className="min-h-screen bg-background overflow-y-auto relative safe-area-page">
       {/* Subtle background depth */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsl(var(--primary)/0.04)_0%,transparent_60%)]" />
 
@@ -30,7 +30,7 @@ export const AuthLayout = forwardRef<HTMLDivElement, AuthLayoutProps>(function A
         </Link>
       </div>
 
-      <div className="relative z-10 min-h-[calc(100vh-2.5rem)] flex items-center justify-center px-4 py-8">
+      <div className="relative z-10 min-h-[calc(100dvh-2.5rem)] flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-[440px] space-y-6">
           {/* Brand lockup */}
           <div className="text-center space-y-3">

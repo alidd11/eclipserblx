@@ -15,7 +15,7 @@ const StoreAbout = lazy(() => import('@/pages/StoreAbout'));
 
 function PageLoader() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
       <div className="space-y-4 w-full max-w-md px-4">
         <Skeleton className="h-8 w-3/4 mx-auto" />
         <Skeleton className="h-4 w-1/2 mx-auto" />
@@ -31,7 +31,7 @@ export default function StoreStandalonePage() {
   if (loading) return <PageLoader />;
   if (!storeDomainData) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-foreground">
+      <div className="min-h-screen bg-background flex items-center justify-center text-foreground safe-area-page">
         <div className="text-center space-y-4">
           <h1 className="text-2xl font-bold">Store Not Found</h1>
           <p className="text-muted-foreground">This domain is not connected to any store.</p>
@@ -79,7 +79,7 @@ function StoreStandaloneContent({
   }, [faviconUrl]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background safe-area-page">
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Navigate to={`/store/${storeSlug}`} replace />} />
