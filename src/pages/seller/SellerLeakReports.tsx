@@ -394,14 +394,35 @@ export default function SellerLeakReports() {
                         </a>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-8 w-8"
-                      onClick={() => dismissResult.mutate(result.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {result.status !== 'active' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'active' })}>
+                            <CheckCircle2 className="h-4 w-4 mr-2" /> Restore to Active
+                          </DropdownMenuItem>
+                        )}
+                        {result.status !== 'ignored' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'ignored' })}>
+                            <EyeOff className="h-4 w-4 mr-2" /> Ignore
+                          </DropdownMenuItem>
+                        )}
+                        {result.status !== 'resolved' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'resolved' })}>
+                            <CheckCircle className="h-4 w-4 mr-2" /> Mark Resolved
+                          </DropdownMenuItem>
+                        )}
+                        {result.status !== 'false_positive' && (
+                          <DropdownMenuItem onClick={() => updateResultStatus.mutate({ id: result.id, status: 'false_positive' })}>
+                            <Ban className="h-4 w-4 mr-2" /> False Positive
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 );
               })}
