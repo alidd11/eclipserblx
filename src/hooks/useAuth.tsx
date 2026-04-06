@@ -248,7 +248,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data: promoResult } = await supabase.functions.invoke('claim-signup-promotion');
       if (promoResult?.claimed) {
-        console.log(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} days Eclipse+)`);
+        console.log(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} bonus days)`);
       }
     } catch (e) {
       // Silent fail

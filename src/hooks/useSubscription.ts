@@ -1,5 +1,4 @@
-// Eclipse+ has been fully removed.
-// This stub exists only to prevent import errors from any remaining references.
+// Legacy subscription stub — kept to prevent import errors from remaining references.
 // All values indicate "not subscribed / no discount".
 
 export const BOT_CATEGORY_ID = "";

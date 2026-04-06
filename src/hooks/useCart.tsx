@@ -11,12 +11,12 @@ export interface CartItem {
   image?: string;
   slug: string;
   category_slug?: string;
-  category_id?: string; // Added for Eclipse+ discount eligibility
+  category_id?: string; // Used for discount eligibility
   is_resellable?: boolean;
   quantity?: number; // For bundle purchases (e.g., 3-pack of bot licenses)
   bundle_id?: string; // Reference to the bundle if applicable
   bundle_label?: string; // Human-readable bundle name (e.g., "3-Pack")
-  store_eclipse_enabled?: boolean; // Whether store has Eclipse+ discounts enabled
+  store_eclipse_enabled?: boolean; // Whether store has member discounts enabled
   store_name?: string; // Store name for transparency in cart/checkout
   is_pwyw?: boolean; // Pay What You Want product
   custom_price?: number; // Buyer-chosen price for PWYW products
@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   // One-time hydration for older carts that predate `is_resellable` / `category_id`.
-  // Ensures Eclipse+ eligibility is computed correctly even for already-saved carts.
+  // Ensures discount eligibility is computed correctly even for already-saved carts.
   const hasHydratedRef = useRef(false);
   useEffect(() => {
     if (hasHydratedRef.current) return;

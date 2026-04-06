@@ -99,7 +99,7 @@ export const DiscordLinkCard = ({
 
           toast.success("Discord Linked!", { description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}` });
 
-          // If user has Eclipse+, trigger webhook to assign role
+          // If user has a membership, trigger webhook to assign role
           if (hasEclipsePlus) {
             try {
               await supabase.functions.invoke("send-discord-webhook", {
@@ -158,7 +158,7 @@ export const DiscordLinkCard = ({
   const handleUnlink = async () => {
     setIsUnlinking(true);
     try {
-      // If user has Eclipse+, send deactivation webhook before unlinking
+      // If user has a membership, send deactivation webhook before unlinking
       if (hasEclipsePlus && currentDiscordId) {
         try {
           await supabase.functions.invoke("send-discord-webhook", {

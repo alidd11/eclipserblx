@@ -21,7 +21,7 @@ export default function Cart() {
   const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
   const { formatPrice } = useCurrency();
 
-  // Calculate Eclipse+ discount (only for eligible items)
+  // Calculate member discount (only for eligible items)
   const calculateMemberTotal = () => {
     if (!isSubscribed) return total;
     return items.reduce((sum, item) => {

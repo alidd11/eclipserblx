@@ -240,7 +240,7 @@ export function CreditsAnalyticsTab() {
               </p>
             )}
             <p className="text-xs text-muted-foreground mt-1">
-              Inc. {balancesSummary?.eclipseBonusesClaimed ?? 0} Eclipse+ bonuses
+              Inc. {balancesSummary?.eclipseBonusesClaimed ?? 0} signup bonuses
             </p>
           </CardContent>
         </Card>

@@ -811,7 +811,7 @@ export default function SellerProductEditor() {
             </div>
           </div>
 
-          {/* Early Access for Eclipse+ */}
+          {/* Early Access */}
           <EarlyAccessCard
             enabled={formData.early_access_enabled}
             onEnabledChange={(enabled) => setFormData({ 
