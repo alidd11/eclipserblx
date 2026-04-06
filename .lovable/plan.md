@@ -1,65 +1,71 @@
 
 
-## AI-Powered Content Verification for Leak Detection
+## Multi-Factor Confidence Scoring for Leak Detection
 
 ### Problem
 
-The current auto-detect-leaks system flags results based purely on product name appearing in a search result snippet. This creates false positives when:
-- A forum post merely *discusses* a product without sharing it
-- A review or tutorial references the product name
-- The search result is a legitimate listing on another platform
+Current confidence assignment is binary — `medium` for all name-matched leaks, `low` for AI-suspicious. No consideration of whether the product name is generic (e.g. "Car" vs "XR-7 Hyperion Cruiser"), how relevant the snippet actually is, or whether the site is a known piracy hub vs a general paste site.
 
 ### Solution
 
-Add a Gemini AI verification step between Firecrawl search results and notification. For each candidate result, send the snippet + page context to Gemini and ask it to classify whether the content represents an actual leak (shared/redistributed asset) vs. legitimate mention.
+Add a `calculateConfidenceScore()` function that computes a 0–100 numeric score from three weighted signals, then maps that score to low/medium/high before fingerprint verification can upgrade it further.
 
 ```text
-Current flow:
-  Firecrawl search → name match → notify seller
+Score = (nameUniqueness × 0.35) + (snippetRelevance × 0.35) + (siteReputation × 0.30)
 
-New flow:
-  Firecrawl search → name match →
-    AI verification (Gemini) →
-      ├─ "leak" → proceed with fingerprint check + notify
-      ├─ "suspicious" → lower confidence, still record
-      └─ "legitimate" → skip entirely, don't notify
+  0–39  → "low"
+  40–69 → "medium"
+  70–100 → "high"
+
+Fingerprint match still overrides to "high" or "confirmed" as before.
 ```
+
+### Three Scoring Factors
+
+**1. Product Name Uniqueness (35%)**
+- Single common word ("Car", "Map", "Script") → 15/100
+- Two words, still generic ("Cool Car") → 35/100
+- 3+ words or contains unique identifiers ("XR-7 Hyperion Cruiser") → 75/100
+- Contains version numbers, brand prefixes, special chars → 90/100
+- Measured purely by string analysis — no API call needed
+
+**2. Snippet Relevance (35%)**
+- Exact product name appears in snippet → +40
+- Download/leak keywords present ("free download", "leaked", "cracked", "get it here", "paste", "script hub") → +30
+- Snippet length > 50 chars with product context → +15
+- Product name only in title, not snippet → +15
+- No meaningful match beyond search engine coincidence → +5
+
+**3. Site Reputation (30%)**
+- Tier 1 — dedicated piracy sites (`v3rmillion.net`, `robloxscripts.com`, `rscripts.net`, `scriptblox.com`) → 90/100
+- Tier 2 — general paste/code sites (`pastebin.com`, `github.com`) → 55/100
+- Tier 3 — unknown/other domains → 25/100
 
 ### Database Changes
 
 Add one column to `leak_scan_results`:
-- `ai_verdict TEXT` — stores the AI classification ("leak", "suspicious", "legitimate")
+- `confidence_score INTEGER` — stores the raw 0–100 numeric score
 
-### Edge Function Changes (`auto-detect-leaks/index.ts`)
+### Edge Function Changes
 
-1. Add `verifyWithAI()` function that calls the Lovable AI gateway (`https://ai.gateway.lovable.dev/v1/chat/completions`) using `LOVABLE_API_KEY` with `google/gemini-2.5-flash` (fast + cheap, sufficient for classification)
+1. Add `calculateConfidenceScore(productName, snippet, title, domain)` — pure function, no API call
+2. Call it for every result that passes AI verification (leak or suspicious)
+3. Use the mapped confidence level as the base, then fingerprint can still upgrade to high/confirmed
+4. Store `confidence_score` alongside existing `confidence` string
+5. For suspicious AI verdicts: cap score at 39 max (always stays "low")
 
-2. The prompt sends: product name, source domain, page title, snippet — asks Gemini to classify as `leak`, `suspicious`, or `legitimate` with a one-sentence reason
+### UI Changes
 
-3. Uses tool-calling (structured output) to ensure clean JSON response: `{ verdict: "leak"|"suspicious"|"legitimate", reason: "..." }`
-
-4. Integration into the scan loop:
-   - After getting each search result, call `verifyWithAI()` before fingerprint scraping
-   - If verdict is `"legitimate"` → skip entirely (no insert, no notification)
-   - If verdict is `"suspicious"` → insert with confidence `"low"`, no notification
-   - If verdict is `"leak"` → proceed with existing fingerprint check flow
-   - Store `ai_verdict` in the database row
-
-5. Add 1-second delay between AI calls to respect rate limits
-
-### UI Changes (`SellerLeakReports.tsx`)
-
-- Add a `"Low"` confidence badge (grey) for AI-flagged suspicious results
-- Show the AI reason text as a tooltip or subtitle on each result
-- Only results classified as actual leaks trigger seller notifications
+- Show the numeric score (e.g. "Score: 72/100") as a subtitle under the confidence badge
+- Add a tooltip on the confidence badge explaining which factors contributed
 
 ### Files Changed
 
-- **Migration**: Add `ai_verdict` column to `leak_scan_results`
-- **Edit**: `supabase/functions/auto-detect-leaks/index.ts` — add AI verification step
-- **Edit**: `src/pages/seller/SellerLeakReports.tsx` — add low-confidence badge + AI reason display
+- **Migration**: Add `confidence_score` column to `leak_scan_results`
+- **Edit**: `supabase/functions/auto-detect-leaks/index.ts` — add scoring function + integrate
+- **Edit**: `src/pages/seller/SellerLeakReports.tsx` — show numeric score
 
 ### Risk
 
-Low — additive only. If the AI gateway is unavailable or rate-limited, the function falls back to the existing behavior (treats result as a leak). No existing notifications are suppressed retroactively.
+None — purely additive scoring layer. Existing fingerprint overrides still take priority. No notifications suppressed that weren't already.
 
