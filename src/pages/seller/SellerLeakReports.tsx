@@ -87,16 +87,23 @@ export default function SellerLeakReports() {
     enabled: !!store?.id,
   });
 
+  const [statusFilter, setStatusFilter] = useState<string>('active');
+
   const { data: scanResults } = useQuery({
-    queryKey: ['leak-scan-results', store?.id],
+    queryKey: ['leak-scan-results', store?.id, statusFilter],
     queryFn: async () => {
       if (!store?.id) return [];
-      const { data } = await (supabase as any)
+      let query = (supabase as any)
         .from('leak_scan_results')
         .select('*, products(name)')
         .eq('store_id', store.id)
-        .eq('dismissed', false)
         .order('created_at', { ascending: false });
+
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data } = await query;
       return (data || []) as any[];
     },
     enabled: !!store?.id && isPro,
