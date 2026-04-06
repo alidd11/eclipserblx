@@ -435,7 +435,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 p-1.5 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
+      <nav className="flex-1 p-1.5 pb-[env(safe-area-inset-bottom)] overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0">
         {/* Top-level links */}
         <div className="space-y-px mb-1">
           {topLevelItems.map(item => renderNavLink(item, item.href === '/seller'))}
