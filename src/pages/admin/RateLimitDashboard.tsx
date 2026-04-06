@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Shield } from 'lucide-react';
-import { format, subHours, subDays } from 'date-fns';
+import { format, subHours, subDays } from '@/lib/dateUtils';
 
 export default function RateLimitDashboard() {
   const [timeRange, setTimeRange] = useState<'24h' | '7d'>('24h');

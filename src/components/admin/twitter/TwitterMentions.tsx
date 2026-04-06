@@ -1,5 +1,5 @@
 import { useTwitterMentions, useTwitterAction } from '@/hooks/useTwitterActions';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 import { Heart, Repeat2, MessageCircle, BarChart2, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';

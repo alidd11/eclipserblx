@@ -12,7 +12,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useSellerSubscription, SellerBillingPeriod } from '@/hooks/useSellerSubscription';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 const highlights = [
   { icon: Percent, title: 'Lower Commission', description: 'Keep 90% of every sale — down from 85% on Free.' },

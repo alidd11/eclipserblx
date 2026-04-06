@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import { StaffDocuments } from '@/components/admin/StaffDocuments';
 import { EffectivePermissions } from '@/components/admin/EffectivePermissions';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';

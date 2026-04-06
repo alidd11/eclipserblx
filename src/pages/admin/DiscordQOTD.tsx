@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { MessageCircleQuestion, Send, Sparkles, Clock, CheckCircle2, Loader2, RefreshCw, History, Undo2, Eye, AlertTriangle, Link } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 

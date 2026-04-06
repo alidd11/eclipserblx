@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { Mail, Trash2, Eye, MessageSquare, Search, Filter, CheckCircle, Clock, AlertCircle, Send, Loader2, FileText, User, Reply } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 // Card imports removed — using enterprise flat sections

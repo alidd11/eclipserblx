@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 // Unified bot installation type
 interface BotInstallation {

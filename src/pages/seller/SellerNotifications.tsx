@@ -12,7 +12,7 @@ import {
   ShoppingCart, RotateCcw, Heart, Package, Zap, Megaphone, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 const NOTIFICATION_ICONS: Record<string, any> = {

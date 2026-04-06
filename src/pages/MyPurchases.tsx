@@ -45,7 +45,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import { toast } from 'sonner';
 import { AddToServerButton } from '@/components/bots/AddToServerButton';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { DisputeDialog } from '@/components/purchases/DisputeDialog';

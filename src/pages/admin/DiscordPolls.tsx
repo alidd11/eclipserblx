@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 const DURATION_OPTIONS = [
   { value: '1', label: '1 hour' },

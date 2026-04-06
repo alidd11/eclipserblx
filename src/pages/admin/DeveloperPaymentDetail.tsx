@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, User, Calendar, CreditCard, FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';

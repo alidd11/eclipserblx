@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft, Send, Paperclip, Loader2, ShieldCheck, Shield, Bot, User, CheckCircle, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { SecureCodeInput } from '@/components/chat/SecureCodeInput';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';

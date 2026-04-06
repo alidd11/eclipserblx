@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Eye, EyeOff, Copy, Clock } from 'lucide-react';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from '@/lib/dateUtils';
 
 const AVAILABLE_EVENTS = [
   { value: 'order.created', label: 'New Order' },

@@ -21,7 +21,7 @@
    Search, Ticket, MessageSquare, Clock, User, ChevronRight,
    AlertCircle, CheckCircle, Filter
  } from 'lucide-react';
- import { formatDistanceToNow } from 'date-fns';
+ import { formatDistanceToNow } from '@/lib/dateUtils';
  import { toast } from 'sonner';
  import { cn } from '@/lib/utils';
  

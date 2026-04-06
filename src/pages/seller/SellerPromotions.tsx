@@ -12,7 +12,7 @@ import { CreateCampaignWizard } from '@/components/seller/CreateCampaignWizard';
 import { Megaphone, Plus, Coins, Eye, MousePointerClick, TrendingUp, ArrowLeft, Receipt } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { format, subDays } from 'date-fns';
+import { format, subDays } from '@/lib/dateUtils';
 
 type DateRange = '7d' | '30d' | 'all';
 

@@ -27,7 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 export function AffiliateCard() {
   const { user } = useAuth();

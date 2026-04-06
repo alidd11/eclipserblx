@@ -13,7 +13,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Search, Download, Calendar, ChevronLeft, ChevronRight, BookOpen, TrendingUp, Percent, Store } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 const PER_PAGE = 25;

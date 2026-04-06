@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { DomainHealthDisplay } from '@/components/domains/DomainHealthDisplay';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 function StatusBadge({ status }: { status: string }) {
   const variants: Record<string, { className: string; label: string }> = {

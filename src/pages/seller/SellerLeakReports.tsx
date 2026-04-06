@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Shield, Upload, AlertTriangle, CheckCircle2, Clock, XCircle, FileSearch } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 export default function SellerLeakReports() {
   const { store } = useSellerStatus();

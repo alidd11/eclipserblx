@@ -39,7 +39,7 @@ import {
   Calendar, Banknote, MessageSquare, ExternalLink, Timer, AlertCircle,
   ArrowUpRight, ChevronLeft, ChevronRight, FileImage
 } from 'lucide-react';
-import { format, formatDistanceToNow, differenceInHours, addHours } from 'date-fns';
+import { format, formatDistanceToNow, differenceInHours, addHours } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';

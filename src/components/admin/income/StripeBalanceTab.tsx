@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 
 interface StripeBalanceData {

@@ -13,7 +13,7 @@
  import { toast } from 'sonner';
  import { useAdminAuth } from '@/hooks/useAdminAuth';
  import { useAuth } from '@/hooks/useAuth';
- import { format } from 'date-fns';
+ import { format } from '@/lib/dateUtils';
  import { Package, Clock, CheckCircle, XCircle, AlertCircle, Plus, Eye } from 'lucide-react';
  import { Skeleton } from '@/components/ui/skeleton';
  

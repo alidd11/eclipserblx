@@ -38,7 +38,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 type TeamRole = 'manager' | 'editor' | 'viewer';

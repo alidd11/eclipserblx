@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/table';
 import { Receipt, Download, Printer, Calendar, PoundSterling, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { SITE_NAME } from '@/lib/constants';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 

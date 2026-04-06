@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 import { GlobalGuardLayout, GlobalGuardHeader } from '@/components/global-guard/GlobalGuardLayout';
 import { useGlobalGuardData } from '@/hooks/useGlobalGuardData';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

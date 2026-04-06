@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfMonth, subMonths, subDays, format, isAfter, startOfDay } from 'date-fns';
+import { startOfMonth, subMonths, subDays, format, isAfter, startOfDay } from '@/lib/dateUtils';
 import { RevolutAreaChart, RevolutLineChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { IncomeErrorState } from './IncomeErrorState';

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Gavel, Ban, Clock, UserX, Search, ShieldAlert } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 const ACTION_ICONS: Record<string, typeof Ban> = {
   ban: Ban,

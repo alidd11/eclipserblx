@@ -16,7 +16,7 @@ import {
   Star, MessageSquare, ThumbsUp, Filter, ArrowUpDown,
   MessageCircle, Send, Loader2, X
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
 const REVIEWS_PER_PAGE = 15;

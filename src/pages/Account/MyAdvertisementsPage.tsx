@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AccountPageLayout } from '@/components/account/AccountPageLayout';
 import { Megaphone, Plus, ExternalLink, Clock, CheckCircle, XCircle, AlertCircle, BarChart3 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { Link, Navigate } from 'react-router-dom';
 
 const formatCurrency = (amount: number) =>

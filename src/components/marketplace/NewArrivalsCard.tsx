@@ -4,7 +4,7 @@ import { Sparkles, ChevronRight, Clock, BadgeCheck, Shield } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { getFirstImageUrl } from '@/lib/mediaUtils';

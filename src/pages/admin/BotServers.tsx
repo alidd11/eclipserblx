@@ -12,7 +12,7 @@ import {
   Bot, Calendar, User, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow } from '@/lib/dateUtils';
 
 interface BotInstallation {
   id: string;

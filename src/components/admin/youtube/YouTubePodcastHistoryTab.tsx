@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, Youtube, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from '@/lib/dateUtils';
 
 export function YouTubePodcastHistoryTab() {
   const { data: podcasts, isLoading, refetch } = useQuery({

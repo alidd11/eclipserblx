@@ -4,7 +4,7 @@ import { TrendingUp, Wallet, ArrowUpRight, ArrowDownRight, PiggyBank, Users, Bar
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { startOfMonth, subMonths, startOfDay, subDays, format, isAfter } from 'date-fns';
+import { startOfMonth, subMonths, startOfDay, subDays, format, isAfter } from '@/lib/dateUtils';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { cn } from '@/lib/utils';

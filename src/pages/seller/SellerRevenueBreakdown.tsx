@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
-import { format, subDays } from 'date-fns';
+import { format, subDays } from '@/lib/dateUtils';
 
 export default function SellerRevenueBreakdown() {
   const isInsideHub = useIsInsideHub();

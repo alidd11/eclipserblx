@@ -21,7 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { usePageMeta } from '@/hooks/usePageMeta';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 import { Link, useSearchParams } from 'react-router-dom';
 
 export default function Affiliate() {

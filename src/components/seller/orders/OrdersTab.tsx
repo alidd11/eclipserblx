@@ -28,7 +28,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Search, ChevronLeft, ChevronRight, ShoppingCart, Download, Eye, Calendar } from 'lucide-react';
-import { format } from 'date-fns';
+import { format } from '@/lib/dateUtils';
 
 const ORDERS_PER_PAGE = 20;
 
