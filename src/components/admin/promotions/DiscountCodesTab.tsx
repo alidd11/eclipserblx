@@ -83,7 +83,7 @@ export function DiscountCodesTab() {
       }
     },
     onSuccess: () => { toast.success('Discount saved'); queryClient.invalidateQueries({ queryKey: ['admin-discounts'] }); setDialogOpen(false); },
-    onError: (e: any) => toast.error('Failed: ' + e.message),
+    onError: (e: Error) => toast.error('Failed: ' + e.message),
   });
 
   const deleteMutation = useMutation({
