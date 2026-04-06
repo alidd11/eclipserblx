@@ -177,7 +177,7 @@ export function useAnalyticsData(range: '7d' | '14d' | '30d') {
   const { data: recentVisits } = useQuery({
     queryKey: ['admin-recent-visits'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('page_visits').select('*').order('created_at', { ascending: false }).limit(100);
+      const { data, error } = await supabase.from('page_visits').select('id, page_path, referrer, country, created_at, visitor_id, is_new_visitor, device_type, browser').order('created_at', { ascending: false }).limit(100);
       if (error) throw error;
       return data;
     },
@@ -310,7 +310,7 @@ export function useAnalyticsData(range: '7d' | '14d' | '30d') {
   const { data: recentReferrals } = useQuery({
     queryKey: ['admin-recent-referrals'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('referral_clicks').select('*').order('created_at', { ascending: false }).limit(50);
+      const { data, error } = await supabase.from('referral_clicks').select('id, referrer_id, referral_code, user_agent, created_at').order('created_at', { ascending: false }).limit(50);
       if (error) throw error;
       return data;
     },
@@ -349,7 +349,7 @@ export function useAnalyticsData(range: '7d' | '14d' | '30d') {
   const { data: countryStats } = useQuery({
     queryKey: ['admin-country-stats'],
     queryFn: async () => {
-      const { data } = await supabase.from('page_visits').select('*').limit(1000);
+      const { data } = await supabase.from('page_visits').select('country').limit(1000);
       const countryCount: Record<string, number> = {};
       (data as any[])?.forEach(v => { const country = v.country || 'Unknown'; countryCount[country] = (countryCount[country] || 0) + 1; });
       return Object.entries(countryCount).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);

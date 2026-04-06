@@ -20,12 +20,12 @@ export function useReadReceipts(channel: string, latestMessageId: string | null)
     queryFn: async () => {
       const { data, error } = await supabase
         .from('chat_read_receipts')
-        .select('*')
+        .select('user_id, channel, last_read_message_id, last_read_at')
         .eq('channel', channel);
       if (error) throw error;
       return (data || []) as ReadReceipt[];
     },
-    refetchInterval: 10000,
+    refetchInterval: 30000, // Relaxed from 10s → 30s (realtime covers live updates)
   });
 
   const markAsRead = useCallback(async () => {

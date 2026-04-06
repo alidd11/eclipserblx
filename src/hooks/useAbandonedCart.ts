@@ -61,7 +61,7 @@ export function useAbandonedCart() {
     (async () => {
       const { data } = await supabase
         .from('abandoned_carts')
-        .select('*')
+        .select('id, items, total, updated_at')
         .eq('user_id', user.id)
         .eq('recovered', false)
         .order('updated_at', { ascending: false })
