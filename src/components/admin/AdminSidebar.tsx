@@ -316,7 +316,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         <div className="relative shrink-0">
           <item.icon className={cn(
             "h-4 w-4 transition-colors",
-            isActive ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+            isActive ? "stroke-[2.25] text-primary" : "stroke-[1.75] text-muted-foreground group-hover:text-foreground"
           )} />
           <NotificationDot />
         </div>
