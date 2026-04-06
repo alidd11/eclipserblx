@@ -122,7 +122,7 @@ export function ImportProgressStep({
                 : false;
 
               if (isRetryable && !cancelledRef.current) {
-                console.log(`Auto-retrying ${url} after transient error: ${result.error}`);
+                // Auto-retrying after transient error
                 setStatuses(prev =>
                   prev.map((s, idx) => (idx === i ? { ...s, status: 'importing' as const } : s))
                 );
