@@ -33,7 +33,7 @@ export function AdminInstallPrompt() {
       if (daysSinceDismissed < 3) return;
     }
 
-    if (isIOS()) {
+    if (isIOSDevice()) {
       setTimeout(() => setShowPrompt(true), 1500);
       return;
     }
