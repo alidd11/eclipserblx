@@ -9,10 +9,11 @@ export function HeroBanner() {
         <img
           src={heroBgMobile}
           alt=""
-          width={375}
-          height={420}
+          width={750}
+          height={460}
           fetchPriority="high"
           loading="eager"
+          decoding="sync"
           className="absolute inset-0 w-full h-full object-cover"
         />
       </picture>
