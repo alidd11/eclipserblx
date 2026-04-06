@@ -25,7 +25,7 @@ interface DisputeStatusDialogProps {
   disputeId: string;
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
+const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
   pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20', icon: Clock },
   denied: { label: 'Denied by Seller', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: X },
   approved: { label: 'Approved', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', icon: Check },
@@ -100,7 +100,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
   });
 
   // Build timeline
-  const timeline: { label: string; time: string; icon: React.ElementType; color: string }[] = [];
+  const timeline: { label: string; time: string; icon: any; color: string }[] = [];
   if (dispute) {
     timeline.push({ label: 'Dispute filed', time: dispute.created_at, icon: AlertTriangle, color: 'text-destructive' });
     if (dispute.seller_responded_at) {

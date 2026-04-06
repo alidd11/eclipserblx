@@ -5,8 +5,8 @@ import { User, MessageCircle, Gamepad2, Lock, Unlock, Link2, ExternalLink } from
 import { format, parseISO } from '@/lib/dateUtils';
 
 interface StoreOwnerCardProps {
-  store: { created_at: string; discord_invite?: string; [key: string]: unknown };
-  ownerProfile: { avatar_url?: string; display_name?: string; username?: string; email?: string; customer_id?: string; discord_username?: string; discord_id?: string; roblox_username?: string; roblox_user_id?: string; accounts_locked?: boolean } | null;
+  store: any;
+  ownerProfile: any;
   onUnlockAccounts: () => void;
   onLockAccounts: () => void;
   isUnlocking: boolean;

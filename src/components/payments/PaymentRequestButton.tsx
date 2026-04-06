@@ -113,7 +113,7 @@ export function PaymentRequestButton({
   useEffect(() => {
     if (!paymentRequest) return;
 
-    const handlePaymentMethod = async (event: { complete: (status: string) => void; paymentMethod: { id: string } }) => {
+    const handlePaymentMethod = async (event: any) => {
       onProcessing(true);
 
       try {

@@ -39,7 +39,7 @@ export default function GlobalGuardServers() {
     toast.info('Server removal coming soon');
   };
 
-  const handleSettingsChange = async (guildId: string, settings: Record<string, unknown>) => {
+  const handleSettingsChange = async (guildId: string, settings: any) => {
     toast.success('Settings saved');
   };
 

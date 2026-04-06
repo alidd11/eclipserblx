@@ -24,7 +24,7 @@ export function useDebounce<T>(value: T, delay: number = 300): T {
  * Hook that returns a debounced callback function.
  * Useful when you need to debounce a function call directly.
  */
-export function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
+export function useDebouncedCallback<T extends (...args: any[]) => any>(
   callback: T,
   delay: number = 300
 ): T {

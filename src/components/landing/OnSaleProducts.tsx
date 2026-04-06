@@ -16,7 +16,7 @@ interface FlashSaleProduct {
   slug: string;
   product_number: number | null;
   price: number;
-  images: unknown;
+  images: any;
   created_at: string;
   category_id: string | null;
   categories: { name: string; slug: string } | null;
