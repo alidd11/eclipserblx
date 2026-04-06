@@ -2,7 +2,7 @@ import { memo, useState, forwardRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { ShoppingCart, User, Menu, X, Circle, Package, Grid3X3, MessageSquare, Briefcase, FileText, Shield, RotateCcw, HelpCircle, Activity, LogOut, Sparkles, ChevronDown, LayoutGrid } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
-import { BackButton } from '@/components/ui/BackButton';
+
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
