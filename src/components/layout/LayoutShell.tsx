@@ -97,8 +97,8 @@ function LayoutShellInner({
       </a>
 
       <div
-        className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-hidden relative max-w-full min-w-0"}
-        style={wrapperStyle}
+        className={wrapperClassName ?? "flex w-full overflow-x-hidden relative max-w-full min-w-0"}
+        style={wrapperStyle ? { minHeight: 'var(--app-vh, 100dvh)', ...wrapperStyle } : { minHeight: 'var(--app-vh, 100dvh)' }}
       >
         {/* Desktop sidebar removed — drawer-only pattern */}
 
@@ -107,7 +107,7 @@ function LayoutShellInner({
           <SheetContent
             side="left"
             className="p-0 sm:max-w-[320px] border-r-0 bg-sidebar overflow-hidden pt-[env(safe-area-inset-top)]"
-            style={{ height: '100dvh', maxHeight: '100dvh' }}
+            style={{ height: 'var(--app-vh, 100dvh)', maxHeight: 'var(--app-vh, 100dvh)' }}
             data-gesture-exempt="true"
             hideCloseButton
           >
