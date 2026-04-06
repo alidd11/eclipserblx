@@ -129,7 +129,7 @@ export async function handleGetRole(interaction, serverContext) {
     const count = ordersRes.count || 0;
     if (count === 0) eligibility.push('• Make a purchase → **Customer**');
     if (count > 0 && count < 5) eligibility.push(`• ${5 - count} more purchases → **Loyal Customer**`);
-    if (!subRes.data) eligibility.push('• Subscribe to Eclipse+ → **Eclipse+**');
+    if (!subRes.data) eligibility.push('• Subscribe to Pro → **Pro**');
     if (!storeRes.data) eligibility.push('• Create a store → **Store Creator**');
     if (eligibility.length > 0) fields.push({ name: '📋 How to Earn Roles', value: eligibility.join('\n') });
   }

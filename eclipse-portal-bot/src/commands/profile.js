@@ -72,7 +72,7 @@ export async function handleProfile(interaction, serverContext) {
     { name: '🆔 Customer ID', value: profile.customer_id || 'N/A', inline: true },
   ];
   if (!serverContext.store) {
-    fields.push({ name: '⭐ Membership', value: subscription ? 'Eclipse+ (Active)' : 'Free', inline: true });
+    fields.push({ name: '⭐ Membership', value: subscription ? 'Pro (Active)' : 'Free', inline: true });
     fields.push({ name: '💷 Total Spent', value: `£${totalSpent.toFixed(2)}`, inline: true });
   }
   fields.push({
