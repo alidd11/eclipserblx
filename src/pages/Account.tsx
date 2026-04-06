@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useMemo, useState } from 'react';
+import React, { forwardRef, useEffect, useMemo, useState, useContext, createContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -81,6 +81,21 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+/* ─────────── Accordion Group Context ─────────── */
+const AccordionGroupContext = createContext<{
+  openId: string | null;
+  setOpenId: (id: string | null) => void;
+} | null>(null);
+
+function AccordionGroup({ children }: { children: React.ReactNode }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  return (
+    <AccordionGroupContext.Provider value={{ openId, setOpenId }}>
+      {children}
+    </AccordionGroupContext.Provider>
+  );
+}
+
 /* ─────────── Expandable Section ─────────── */
 function ExpandableSection({ icon: Icon, label, children, defaultOpen }: {
   icon: React.ElementType;
@@ -88,7 +103,19 @@ function ExpandableSection({ icon: Icon, label, children, defaultOpen }: {
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen ?? false);
+  const group = useContext(AccordionGroupContext);
+  const id = label; // Use label as unique ID within group
+  const isControlled = !!group;
+  const [localOpen, setLocalOpen] = useState(defaultOpen ?? false);
+
+  const open = isControlled ? group.openId === id : localOpen;
+  const setOpen = (val: boolean) => {
+    if (isControlled) {
+      group.setOpenId(val ? id : null);
+    } else {
+      setLocalOpen(val);
+    }
+  };
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -613,6 +640,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
 
         {/* ═══ Account ═══ */}
         <div className="border border-border rounded-xl overflow-hidden">
+          <AccordionGroup>
           <div className="p-1">
             <SectionHeader title="Account" />
             <ExpandableSection icon={Link2} label="Linked Accounts">
@@ -636,10 +664,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </ExpandableSection>
             <DataExportButton />
           </div>
+          </AccordionGroup>
         </div>
 
         {/* ═══ Preferences ═══ */}
         <div className="border border-border rounded-xl overflow-hidden">
+          <AccordionGroup>
           <div className="p-1">
             <SectionHeader title="Preferences" />
             <ExpandableSection icon={Bell} label="Notifications">
@@ -652,10 +682,12 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
               <SoundCustomizationCard />
             </ExpandableSection>
           </div>
+          </AccordionGroup>
         </div>
 
         {/* ═══ More ═══ */}
         <div className="border border-border rounded-xl overflow-hidden">
+          <AccordionGroup>
           <div className="p-1">
             <SectionHeader title="More" />
             {hasMarketplaceAccess && (
@@ -674,6 +706,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             </ExpandableSection>
             <UserIdsCollapsible userId={user.id} customerId={profile?.customer_id || null} />
           </div>
+          </AccordionGroup>
         </div>
 
         {/* ═══ Danger Zone ═══ */}
