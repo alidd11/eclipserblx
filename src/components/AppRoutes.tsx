@@ -88,6 +88,7 @@ const AdminApplications = lazyWithRetry(() => import("@/pages/admin/Applications
 const AdminReviews = lazyWithRetry(() => import("@/pages/admin/Reviews"));
 const AdminAuditLogs = lazyWithRetry(() => import("@/pages/admin/AuditLogs"));
 const AdminIncidents = lazyWithRetry(() => import("@/pages/admin/Incidents"));
+const AdminChangelogManager = lazyWithRetry(() => import("@/pages/admin/ChangelogManager"));
 const AdminHelp = lazyWithRetry(() => import("@/pages/admin/Help"));
 const AdminSubscribers = lazyWithRetry(() => import("@/pages/admin/Subscribers"));
 const AdminIpBans = lazyWithRetry(() => import("@/pages/admin/IpBans"));
