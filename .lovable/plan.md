@@ -1,62 +1,48 @@
 
+## Enterprise SEO Hardening for Roblox Marketplace
 
-## Seller Pro Billing Grace Period
+### What You Already Have (Strong)
+✅ Dynamic sitemap with products/stores/categories
+✅ IndexNow (Bing/Yandex instant indexing)
+✅ JSON-LD structured data (Product, Organization, Store, FAQ, Breadcrumbs)
+✅ OG proxy for social crawlers
+✅ Static HTML shell for bot rendering
+✅ Per-page `usePageMeta` with canonical tags
+✅ noindex on non-production domains
 
-### Problem
+---
 
-Current code in `useSellerSubscription.ts` only grants Pro when `status === 'active'`. The moment Stripe marks a subscription `past_due` (first failed retry), the seller loses all Pro features — themes, analytics, unlimited listings. This is hostile UX and not how enterprise platforms operate.
+### What's Missing (7 Changes)
 
-### Solution
+**1. Stale Static Sitemap — Remove It**
+`public/sitemap.xml` has hardcoded dates from March 2026 and conflicts with the dynamic sitemap. Google may crawl the static one instead. Remove it — `robots.txt` already points to the dynamic one.
 
-Implement a 7-day grace period where sellers keep Pro features during `past_due` status, with escalating warnings.
+**2. Google Ping is Deprecated**
+`submit-indexnow` pings `google.com/ping?sitemap=...` — Google deprecated this in 2023. Replace with Google Search Console API ping or just remove the dead call.
 
-### How It Works
+**3. Missing IndexNow Key File**
+IndexNow requires a verification key file at `https://eclipserblx.com/{key}.txt`. The key is `eclipse-indexnow-key-2026` but there's no matching file in `public/`. Without it, Bing/Yandex silently reject all submissions.
 
-```text
-Payment fails → Stripe retries (3x over ~7 days)
-                 ↓
-           status = "past_due"
-                 ↓
-     Grace period starts (7 days)
-     Seller keeps Pro + sees warning banner
-                 ↓
-     Day 7: features downgraded to Free
-     Subscription canceled via Stripe API
-```
+**4. Category Pages Need Unique SEO Titles**
+Currently `/products?category=police-vehicles` has a generic title. Each category filter should generate a keyword-rich title like "Buy Roblox Police Vehicles | Eclipse Marketplace" and a targeted meta description. This is the highest-impact change — these are the pages Google will rank for long-tail queries.
 
-### Changes
+**5. Sitemap: Add `<lastmod>` to Static Pages**
+The dynamic sitemap has no `<lastmod>` on static pages (home, categories, etc.). Google uses this to prioritise crawl frequency. Add auto-generated dates.
 
-**1. Frontend — `useSellerSubscription.ts`**
-- Treat `past_due` as Pro-with-warning (not immediate downgrade)
-- Add `isGracePeriod` boolean and `gracePeriodEndsAt` date to returned state
-- Calculate grace end = subscription's `current_period_end` + 7 days
-- `isPro` stays `true` during grace; `isGracePeriod` signals the UI to show warnings
+**6. SEO Landing Page Content for `/sell`**
+The "Start Selling" page should have crawlable keyword-rich content targeting "sell roblox assets", "roblox asset marketplace for sellers", etc. Currently it's likely just a form/wizard with minimal text.
 
-**2. Database — `seller_subscriptions` table**
-- Add `grace_period_end` (TIMESTAMPTZ, nullable) column — set when status transitions to `past_due`
-
-**3. Webhook handling — `stripe-subscription-webhook`**
-- On `invoice.payment_failed`: set `grace_period_end` = now + 7 days, status = `past_due`
-- On `invoice.paid` (successful retry): clear `grace_period_end`, status = `active`
-- On `customer.subscription.deleted`: status = `canceled`
-
-**4. Grace period enforcement — `expire-subscriptions` edge function**
-- Add a check: any `seller_subscriptions` with `status = 'past_due'` AND `grace_period_end < now()` → update to `canceled`
-
-**5. UI warning banner — Seller dashboard layout**
-- When `isGracePeriod === true`, show a persistent amber banner: "Your payment failed. Update your payment method within X days to keep Pro features."
-- Link to `openPortal()` for payment update
-- Show countdown of remaining grace days
+**7. Internal Linking: Add Footer SEO Links**
+Enterprise marketplaces (Amazon, Etsy, Shopify) include a rich footer with links to top categories, popular stores, and help pages. This distributes PageRank and helps Google discover deep pages.
 
 ### Files Changed
 
-- **Migration**: Add `grace_period_end` to `seller_subscriptions`
-- **Edit**: `src/hooks/useSellerSubscription.ts` — grace period logic
-- **Edit**: `supabase/functions/stripe-subscription-webhook/index.ts` — handle `past_due` transitions
-- **Edit**: `supabase/functions/expire-subscriptions/index.ts` — enforce grace expiry
-- **New**: Grace period warning banner component in seller layout
+- **Delete**: `public/sitemap.xml` (stale duplicate)
+- **Create**: `public/eclipse-indexnow-key-2026.txt` (verification file)
+- **Edit**: `supabase/functions/submit-indexnow/index.ts` — remove deprecated Google ping
+- **Edit**: `supabase/functions/dynamic-sitemap/index.ts` — add lastmod to static pages
+- **Edit**: `src/pages/Products.tsx` — category-aware SEO titles via `usePageMeta`
+- **Edit**: `src/components/layout/Footer.tsx` — add SEO category/store links section
 
 ### Risk
-
-Low — additive. Current `active` check still works; we're extending it to also accept `past_due` within the grace window. Stripe's own retry schedule aligns with the 7-day window.
-
+None — all changes are additive SEO improvements. No user-facing functionality changes.
