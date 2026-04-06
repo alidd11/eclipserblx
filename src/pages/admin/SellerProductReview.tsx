@@ -232,7 +232,7 @@ export default function SellerProducts() {
     setDeleteStep(1);
   };
 
-  const getStatusBadge = (status: string, product?: any) => {
+  const getStatusBadge = (status: string, product?: Record<string, unknown>) => {
     // Show consent status for flagged products
     if (status === 'pending' && product?.moderation_flags && product?.file_review_requested_at) {
       if (!product?.file_review_consented_at) {
