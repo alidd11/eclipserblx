@@ -62,11 +62,11 @@ export default function Affiliate() {
         </motion.div>
        ))}
       </div>
-      <div className="border border-border rounded-xl overflow-hidden bg-muted/30 border-border">
-       <div className="p-4 py-8 text-center space-y-4">
-        <Gift className="h-12 w-12 text-primary mx-auto" /><h2 className="text-2xl font-bold">Ready to Start Earning?</h2>
-        <p className="text-muted-foreground">Sign up or log in to access your affiliate dashboard and referral link.</p>
-        <Button asChild size="lg" className="gradient-button"><Link to="/auth">Get Started<ArrowUpRight className="h-4 w-4 ml-2" /></Link></Button>
+       <div className="border border-border rounded-xl overflow-hidden bg-muted/30">
+        <div className="p-4 py-8 text-center space-y-4">
+         <h2 className="text-2xl font-bold">Ready to Start Earning?</h2>
+         <p className="text-muted-foreground">Sign up or log in to access your affiliate dashboard and referral link.</p>
+         <Button asChild size="lg" className="gradient-button"><Link to="/auth">Get Started<ArrowUpRight className="h-4 w-4 ml-2" /></Link></Button>
        </div>
       </div>
      </motion.div>
