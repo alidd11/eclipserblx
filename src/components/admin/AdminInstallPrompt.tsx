@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Download, Smartphone, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useDevice } from '@/hooks/useDevice';
 import { safeStorage } from '@/lib/safeStorage';
 
 interface BeforeInstallPromptEvent extends Event {
