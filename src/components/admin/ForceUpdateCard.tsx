@@ -47,17 +47,16 @@ export function ForceUpdateCard() {
  },
  });
 
- const { data: subscriberCount } = useQuery({
- queryKey: ['push-subscriber-count'],
- queryFn: async () => {
- const { count, error } = await supabase
- .from('push_subscriptions')
- .select('*', { count: 'exact', head: true });
+  const { data: subscriberCount } = useQuery({
+    queryKey: ['push-subscriber-count'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .rpc('get_push_subscription_total');
 
- if (error) throw error;
- return count || 0;
- },
- });
+      if (error) throw error;
+      return data || 0;
+    },
+  });
 
  const triggerUpdateMutation = useMutation({
  mutationFn: async (version: string) => {
