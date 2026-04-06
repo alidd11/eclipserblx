@@ -59,10 +59,7 @@ export default function DMCA() {
  {/* What We Consider Violations */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2">
- <AlertTriangle className="h-5 w-5 text-destructive" />
- Types of Violations
- </h3>
+ <h3 className="font-semibold text-sm">Types of Violations</h3>
  <p className="text-sm text-muted-foreground">
  The following are considered intellectual property violations on our platform
  </p>
