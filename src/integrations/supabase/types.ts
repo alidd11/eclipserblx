@@ -11133,6 +11133,7 @@ export type Database = {
           custom_css: string | null
           description: string | null
           discord_url: string | null
+          favicon_url: string | null
           featured_product_ids: string[] | null
           follower_count: number | null
           font_body: string | null
@@ -11141,9 +11142,9 @@ export type Database = {
           hero_cta_text: string | null
           hero_subtitle: string | null
           hero_title: string | null
+          hide_branding: boolean | null
           id: string | null
           is_active: boolean | null
-          is_testing: boolean | null
           is_trusted: boolean | null
           is_verified: boolean | null
           layout_style: string | null
@@ -11151,6 +11152,7 @@ export type Database = {
           name: string | null
           owner_id: string | null
           product_count: number | null
+          pwyw_enabled: boolean | null
           roblox_gamepass_discount_enabled: boolean | null
           roblox_gamepass_discount_percent: number | null
           roblox_gamepass_id: string | null
@@ -11165,10 +11167,9 @@ export type Database = {
           show_social_proof: boolean | null
           slug: string | null
           status: string | null
-          store_id: string | null
+          store_layout: Json | null
           theme: string | null
           tiktok_url: string | null
-          total_sales: number | null
           twitter_url: string | null
           updated_at: string | null
           website_url: string | null
@@ -11186,6 +11187,7 @@ export type Database = {
           custom_css?: string | null
           description?: string | null
           discord_url?: string | null
+          favicon_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -11194,9 +11196,9 @@ export type Database = {
           hero_cta_text?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
+          hide_branding?: boolean | null
           id?: string | null
           is_active?: boolean | null
-          is_testing?: boolean | null
           is_trusted?: boolean | null
           is_verified?: boolean | null
           layout_style?: string | null
@@ -11204,6 +11206,7 @@ export type Database = {
           name?: string | null
           owner_id?: string | null
           product_count?: number | null
+          pwyw_enabled?: boolean | null
           roblox_gamepass_discount_enabled?: boolean | null
           roblox_gamepass_discount_percent?: number | null
           roblox_gamepass_id?: string | null
@@ -11218,10 +11221,9 @@ export type Database = {
           show_social_proof?: boolean | null
           slug?: string | null
           status?: string | null
-          store_id?: string | null
+          store_layout?: Json | null
           theme?: string | null
           tiktok_url?: string | null
-          total_sales?: number | null
           twitter_url?: string | null
           updated_at?: string | null
           website_url?: string | null
@@ -11239,6 +11241,7 @@ export type Database = {
           custom_css?: string | null
           description?: string | null
           discord_url?: string | null
+          favicon_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
           font_body?: string | null
@@ -11247,9 +11250,9 @@ export type Database = {
           hero_cta_text?: string | null
           hero_subtitle?: string | null
           hero_title?: string | null
+          hide_branding?: boolean | null
           id?: string | null
           is_active?: boolean | null
-          is_testing?: boolean | null
           is_trusted?: boolean | null
           is_verified?: boolean | null
           layout_style?: string | null
@@ -11257,6 +11260,7 @@ export type Database = {
           name?: string | null
           owner_id?: string | null
           product_count?: number | null
+          pwyw_enabled?: boolean | null
           roblox_gamepass_discount_enabled?: boolean | null
           roblox_gamepass_discount_percent?: number | null
           roblox_gamepass_id?: string | null
@@ -11271,10 +11275,9 @@ export type Database = {
           show_social_proof?: boolean | null
           slug?: string | null
           status?: string | null
-          store_id?: string | null
+          store_layout?: Json | null
           theme?: string | null
           tiktok_url?: string | null
-          total_sales?: number | null
           twitter_url?: string | null
           updated_at?: string | null
           website_url?: string | null
