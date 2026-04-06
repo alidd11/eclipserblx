@@ -36,11 +36,8 @@ export function GlobalGuardLayout({ children }: GlobalGuardLayoutProps) {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-      {/* Desktop Sidebar */}
-      <GlobalGuardSidebar className="hidden md:flex" />
-      
-      {/* Mobile Sidebar Drawer */}
+    <div className="min-h-[100dvh] bg-background flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+      {/* Sidebar Drawer (all devices) */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent 
           side="left" 
@@ -54,88 +51,58 @@ export function GlobalGuardLayout({ children }: GlobalGuardLayoutProps) {
         </SheetContent>
       </Sheet>
       
-      {/* Main Content */}
-      <main className="flex-1 md:ml-64 min-h-[100dvh]">
-        {/* Mobile Header */}
-        <div className="md:hidden sticky top-0 z-30 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setMobileOpen(true)}
-              className="shrink-0"
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                <Shield className="w-4 h-4 text-foreground" />
-              </div>
-              <span className="font-semibold text-foreground">Global Guard</span>
+      {/* Header (all devices) */}
+      <div className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-4 md:px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setMobileOpen(true)}
+            className="shrink-0"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+              <Shield className="w-4 h-4 text-foreground" />
             </div>
+            <span className="font-semibold text-foreground">Global Guard</span>
           </div>
-          
-          {/* User Menu (Mobile) */}
-          {discordUser && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={getAvatarUrl() || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {discordUser.username?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{discordUser.global_name || discordUser.username}</p>
-                  <p className="text-xs text-muted-foreground">@{discordUser.username}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
         </div>
         
-        {/* Desktop Header with User */}
-        <div className="hidden md:flex sticky top-0 z-30 bg-background/95 backdrop-blur border-b border-border px-6 py-3 justify-end">
-          {discordUser && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2 pl-2 pr-3">
-                  <Avatar className="w-7 h-7">
-                    <AvatarImage src={getAvatarUrl() || undefined} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                      {discordUser.username?.[0]?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm font-medium">
-                    {discordUser.global_name || discordUser.username}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{discordUser.global_name || discordUser.username}</p>
-                  <p className="text-xs text-muted-foreground">@{discordUser.username}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-        
+        {discordUser && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="gap-2 pl-2 pr-3">
+                <Avatar className="w-7 h-7">
+                  <AvatarImage src={getAvatarUrl() || undefined} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    {discordUser.username?.[0]?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium hidden sm:inline">
+                  {discordUser.global_name || discordUser.username}
+                </span>
+                <ChevronDown className="w-4 h-4 text-muted-foreground hidden sm:block" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <div className="px-2 py-1.5">
+                <p className="text-sm font-medium">{discordUser.global_name || discordUser.username}</p>
+                <p className="text-xs text-muted-foreground">@{discordUser.username}</p>
+              </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                <LogOut className="w-4 h-4 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+      </div>
+      
+      {/* Main Content */}
+      <main className="flex-1">
         <div className="p-4 md:p-6">
           {children}
         </div>
