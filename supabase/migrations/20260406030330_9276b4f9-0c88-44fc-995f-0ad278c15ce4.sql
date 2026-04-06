@@ -1,0 +1,1 @@
+ALTER TABLE public.leak_scan_results ADD COLUMN IF NOT EXISTS ai_verdict TEXT;
