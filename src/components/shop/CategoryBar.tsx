@@ -44,11 +44,11 @@ export function CategoryBar() {
   return (
     <div className="sticky top-[56px] z-30 bg-background/95 backdrop-blur-sm border-b border-border">
       <div className="container">
-        <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-2 -mx-1 px-1">
+         <nav className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide py-2.5 -mx-1 px-1">
           <Link
             to="/products"
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0",
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0 min-h-[36px]",
               !activeCategory
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
