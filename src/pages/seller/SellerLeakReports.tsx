@@ -120,14 +120,14 @@ export default function SellerLeakReports() {
         </div>
 
         {/* Submit Report */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
+        <div className="rounded-xl border border-border/50 bg-card">
+          <div className="p-4 pb-2">
+            <h3 className="text-base font-medium flex items-center gap-2">
               <FileSearch className="h-4 w-4" />
               Report a Leaked File
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            </h3>
+          </div>
+          <div className="p-4 pt-2 space-y-4">
             <div>
               <label className="text-sm font-medium mb-1.5 block">Product</label>
               <Select value={productId} onValueChange={setProductId}>
@@ -170,8 +170,8 @@ export default function SellerLeakReports() {
             <Button onClick={handleSubmit} disabled={isSubmitting || !file || !productId}>
               {isSubmitting ? 'Analyzing...' : 'Submit Report'}
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Reports List */}
         <Card>
