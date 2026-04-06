@@ -56,9 +56,7 @@ function TokenLogin({ onLogin }: { onLogin: (token: string) => void }) {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('job_applications')
-        .select('id')
-        .eq('access_token', trimmed)
+        .rpc('validate_applicant_token', { p_token: trimmed })
         .maybeSingle();
 
       if (error) throw error;
