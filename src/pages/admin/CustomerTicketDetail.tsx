@@ -194,7 +194,34 @@ export default function CustomerTicketDetail() {
     enabled: !!ticket?.assigned_to,
   });
 
-  // ── Realtime ──────────────────────────────────────────────────────────────
+  // ── Agent collision detection ─────────────────────────────────────────────
+  const myProfile = useQuery({
+    queryKey: ['my-profile-name', user?.id],
+    queryFn: async () => {
+      const { data } = await supabase.from('profiles').select('display_name').eq('user_id', user!.id).single();
+      return data?.display_name || 'Staff';
+    },
+    enabled: !!user?.id,
+  });
+  const viewingAgents = useAgentCollision(ticketId, myProfile.data || undefined);
+
+  // ── Snooze ticket ─────────────────────────────────────────────────────────
+  const snoozeTicket = useMutation({
+    mutationFn: async (hours: number) => {
+      const snoozedUntil = new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
+      const { error } = await supabase
+        .from('support_tickets')
+        .update({ snoozed_until: snoozedUntil, updated_at: new Date().toISOString() } as Record<string, unknown>)
+        .eq('id', ticketId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Ticket snoozed');
+      queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
+    },
+    onError: () => toast.error('Failed to snooze ticket'),
+  });
+
   useEffect(() => {
     if (!ticketId) return;
     const channel = supabase
