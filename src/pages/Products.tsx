@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Package, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
