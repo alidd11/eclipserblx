@@ -28,6 +28,7 @@ import { GlobalBackground } from "@/components/layout/GlobalBackground";
 import { SafeLazyWidget } from "@/components/SafeLazyWidget";
 const AppRoutes = lazy(() => import("@/components/AppRoutes").then(m => ({ default: m.AppRoutes })));
 import { EmailGuard } from "@/components/auth/EmailGuard";
+import { usePredictivePreload } from "@/hooks/usePredictivePreload";
 
 // Lazy-load heavy components that aren't needed on initial render
 const ChatWidget = lazy(() => import("@/components/chat/ChatWidget").then(m => ({ default: m.ChatWidget })));
