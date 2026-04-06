@@ -73,7 +73,7 @@ export default function AdminBotCodes() {
  .order('created_at', { ascending: false });
 
  if (debouncedSearch.trim()) {
- query = query.or(`installation_code.ilike.%${debouncedSearch}%,product_name.ilike.%${debouncedSearch}%,used_by.ilike.%${debouncedSearch}%`);
+ query = query.or(`installation_code.ilike.%${sanitizeSearch(debouncedSearch)}%,product_name.ilike.%${sanitizeSearch(debouncedSearch)}%,used_by.ilike.%${sanitizeSearch(debouncedSearch)}%`);
  }
 
  const { data, error } = await query.limit(100);

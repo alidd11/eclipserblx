@@ -108,7 +108,7 @@ export default function SellerProducts() {
       const from = (currentPage - 1) * PRODUCTS_PER_PAGE;
       const to = from + PRODUCTS_PER_PAGE - 1;
       let query = supabase.from('products').select('*, categories(name)', { count: 'exact' }).eq('store_id', store.id).order('created_at', { ascending: false });
-      if (debouncedSearch) query = query.ilike('name', `%${debouncedSearch}%`);
+      if (debouncedSearch) query = query.ilike('name', `%${sanitizeSearch(debouncedSearch)}%`);
       const { data, error, count } = await query.range(from, to);
       if (error) throw error;
       return { products: data || [], totalCount: count || 0 };

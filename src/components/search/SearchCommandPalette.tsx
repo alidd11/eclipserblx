@@ -120,7 +120,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
             .select('id, name, slug, logo_url, is_verified')
             .eq('status', 'approved')
             .eq('is_active', true)
-            .ilike('name', `%${searchQuery}%`)
+            .ilike('name', `%${sanitizeSearch(searchQuery)}%`)
             .limit(4),
         ]);
 

@@ -126,7 +126,7 @@ export default function Products() {
  }
 
  if (debouncedSearch) {
- query = query.or(`name.ilike.%${debouncedSearch}%,description.ilike.%${debouncedSearch}%`);
+ query = query.or(`name.ilike.%${sanitizeSearch(debouncedSearch)}%,description.ilike.%${sanitizeSearch(debouncedSearch)}%`);
  }
 
  // Server-side sorting

@@ -611,7 +611,7 @@ function ConsentRecordsTab({ search, onSearchChange }: { search: string; onSearc
  .limit(200);
 
  if (search) {
- query = query.or(`visitor_id.ilike.%${search}%,action.ilike.%${search}%`);
+ query = query.or(`visitor_id.ilike.%${sanitizeSearch(search)}%,action.ilike.%${sanitizeSearch(search)}%`);
  }
 
  const { data, error } = await query;

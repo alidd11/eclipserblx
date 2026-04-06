@@ -56,7 +56,7 @@ export function DiscountCodesTab() {
     queryKey: ['admin-discounts', search],
     queryFn: async () => {
       let query = supabase.from('discount_codes').select('*').order('created_at', { ascending: false });
-      if (search) query = query.ilike('code', `%${search}%`);
+      if (search) query = query.ilike('code', `%${sanitizeSearch(search)}%`);
       const { data, error } = await query;
       if (error) throw error;
       return data;
