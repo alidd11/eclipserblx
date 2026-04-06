@@ -82,7 +82,7 @@ export function Footer() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-6">
           {columns.map((col) => (
             <div key={col.heading} className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/40 mb-0.5" id={`footer-${col.heading.toLowerCase()}`}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-foreground/50 mb-1" id={`footer-${col.heading.toLowerCase()}`}>
                 {col.heading}
               </p>
               <nav className="flex flex-col gap-1" aria-labelledby={`footer-${col.heading.toLowerCase()}`}>
