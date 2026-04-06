@@ -3142,7 +3142,7 @@ async function handleUpdateRoleCommand(
         if (loyalCustomerRoleId) rolesToRemove.push({ id: loyalCustomerRoleId, name: "Loyal Customer" });
       }
 
-      // Eclipse+
+      // Subscription role
       if (hasSubscription && eclipsePlusRoleId) {
         rolesToAssign.push({ id: eclipsePlusRoleId, name: "Pro" });
       } else if (eclipsePlusRoleId) {
