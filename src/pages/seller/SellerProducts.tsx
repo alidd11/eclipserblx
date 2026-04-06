@@ -56,7 +56,7 @@ const INITIAL_FORM: ProductForm = {
 
 const PRODUCTS_PER_PAGE = 20;
 
-const isAdminManagedProduct = (product: any) =>
+const isAdminManagedProduct = (product: { store_id: string; is_seller_product: boolean }) =>
   (ADMIN_MANAGED_STORES as readonly string[]).includes(product.store_id) && product.is_seller_product === false;
 
 export default function SellerProducts() {
