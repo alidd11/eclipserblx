@@ -208,7 +208,7 @@ export function CategoriesGrid() {
                     blur={false}
                   />
                 ) : (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/40">Coming Soon</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Coming Soon</span>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent opacity-70 group-hover:opacity-60 transition-opacity" />
                 {!isEmpty && (

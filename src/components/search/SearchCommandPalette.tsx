@@ -308,7 +308,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                     >
                       <TrendingUp className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       <ProductRow product={product} formatPrice={formatPrice} />
-                      <ChevronRight className="h-4 w-4 text-muted-foreground/20 shrink-0" />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                     </button>
                   ))}
                 </section>
