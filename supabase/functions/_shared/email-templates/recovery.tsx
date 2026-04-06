@@ -72,3 +72,4 @@ const button = {
   textDecoration: 'none',
 }
 const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const disclaimer = { fontSize: '10px', color: '#b0b0b0', lineHeight: '1.4', margin: '20px 0 0', borderTop: '1px solid #e5e5e5', paddingTop: '12px' }
