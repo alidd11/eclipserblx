@@ -35,8 +35,30 @@ Deno.serve(async (req) => {
     const adminCount = adminExpired?.length ?? 0;
     console.log(`[expire-subscriptions] Expired ${adminCount} admin-granted subscriptions`);
 
+    // Expire seller subscriptions past their grace period
+    const { data: sellerExpired, error: sellerError } = await supabase
+      .from("seller_subscriptions")
+      .update({ status: "cancelled", cancelled_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+      .eq("status", "past_due")
+      .lt("grace_period_end", new Date().toISOString())
+      .select("id, user_id");
+
+    if (sellerError) {
+      console.error("[expire-subscriptions] Seller grace period error:", sellerError.message);
+    }
+
+    const sellerCount = sellerExpired?.length ?? 0;
+    console.log(`[expire-subscriptions] Expired ${sellerCount} seller subscriptions past grace period`);
+
+    // Reset is_pro flag on stores for expired seller subscriptions
+    if (sellerExpired?.length) {
+      for (const sub of sellerExpired) {
+        await supabase.from("stores").update({ is_pro: false }).eq("owner_id", sub.user_id);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ success: true, expired_admin_grants: adminCount }),
+      JSON.stringify({ success: true, expired_admin_grants: adminCount, expired_seller_grace: sellerCount }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

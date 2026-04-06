@@ -18,11 +18,17 @@ async function handleSellerProSubscription(
   supabase: any, subscription: any, userId: string, customerId: string, eventType: string
 ) {
   const isActive = subscription.status === 'active' || subscription.status === 'trialing';
+  const isPastDue = subscription.status === 'past_due';
   const periodStart = subscription.current_period_start
     ? new Date(subscription.current_period_start * 1000).toISOString() : null;
   const periodEnd = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000).toISOString() : null;
   const storeId = subscription.metadata?.store_id || null;
+
+  // Calculate grace period end (7 days from now) for past_due status
+  const gracePeriodEnd = isPastDue
+    ? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    : null;
 
   const subData: Record<string, unknown> = {
     user_id: userId,
@@ -32,7 +38,8 @@ async function handleSellerProSubscription(
     status: isActive ? 'active' : (subscription.status === 'canceled' ? 'cancelled' : subscription.status),
     current_period_start: periodStart,
     current_period_end: periodEnd,
-    cancelled_at: !isActive ? new Date().toISOString() : null,
+    cancelled_at: !isActive && !isPastDue ? new Date().toISOString() : null,
+    grace_period_end: isActive ? null : gracePeriodEnd,
     updated_at: new Date().toISOString(),
   };
 

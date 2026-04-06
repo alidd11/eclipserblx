@@ -9,6 +9,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { FileReviewConsentBanner } from '@/components/seller/FileReviewConsentBanner';
 import { SellerHeroBanner } from '@/components/seller/SellerHeroBanner';
 import { SellerOnboardingWizard } from '@/components/seller/SellerOnboardingWizard';
+import { GracePeriodBanner } from '@/components/seller/GracePeriodBanner';
 import { RevenueChart } from '@/components/seller/RevenueChart';
 import { RevenueSummaryStats } from '@/components/seller/RevenueSummaryStats';
 import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
@@ -30,7 +31,7 @@ const CURRENT_TOS_VERSION = "1.0";
 
 export default function SellerDashboard() {
   const { store } = useSellerStatus();
-  const { inFreePromo, freePromoEndsAt } = useSellerSubscription();
+  const { inFreePromo, freePromoEndsAt, isGracePeriod, gracePeriodEndsAt, openPortal } = useSellerSubscription();
 
   // Real-time order notifications
   useRealtimeOrders();
@@ -139,6 +140,11 @@ export default function SellerDashboard() {
         <TosBanner isLoading={tosLoading} hasSigned={!!hasSignedTos} />
         <FileReviewConsentBanner />
         <NonCompliantBanner count={productStats?.nonCompliant || 0} />
+
+        {/* ── Grace Period Warning ── */}
+        {isGracePeriod && gracePeriodEndsAt && (
+          <GracePeriodBanner gracePeriodEndsAt={gracePeriodEndsAt} onUpdatePayment={openPortal} />
+        )}
 
         {/* ── Free Commission Promo Banner ── */}
         {inFreePromo && freePromoEndsAt && (
