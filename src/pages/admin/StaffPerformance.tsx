@@ -72,12 +72,13 @@ export default function AdminStaffPerformance() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/30">
+              <tr className="border-b border-border bg-muted/30">
                   <th className="text-left p-3 font-medium text-muted-foreground">Staff Member</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Tickets</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Chats</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">CSAT</th>
+                  <th className="text-center p-3 font-medium text-muted-foreground">Avg Response</th>
                   <th className="text-center p-3 font-medium text-muted-foreground">Duty Hours</th>
-                  <th className="text-center p-3 font-medium text-muted-foreground">Total Actions</th>
                   <th className="text-right p-3 font-medium text-muted-foreground">Last Active</th>
                 </tr>
               </thead>
