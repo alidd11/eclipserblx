@@ -137,6 +137,7 @@ export default function AdminOrders() {
  enabled: orderUserIds.length > 0,
  });
  
+ // eslint-disable-next-line @typescript-eslint/no-explicit-any
  const getCustomerId = (order: any) => {
  if (order.user_id && customerProfiles?.[order.user_id]) {
  return customerProfiles[order.user_id];
