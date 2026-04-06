@@ -413,15 +413,6 @@ serve(async (req) => {
         }
       }
 
-      // Also assign eclipse_plus_member role when activating
-      if (isActive) {
-        const { error: roleErr } = await supabaseAdmin
-          .from("user_roles")
-          .upsert({ user_id: userId, role: "eclipse_plus_member" }, { onConflict: "user_id,role" });
-        if (roleErr) {
-          logStep("Error assigning eclipse_plus_member role", { error: roleErr.message });
-        }
-      }
 
       if (discordEvent && profile.discord_id) {
         logStep("Sending Discord webhook", { userId, discordEvent, discordId: profile.discord_id });
