@@ -1,82 +1,79 @@
+## Automated Compliance Suite — Amazon Account Health Style
 
+### What This Adds
 
-## Enterprise Payment & Auth Audit — Findings & Fixes
-
-### What I Checked
-
-I audited the full payment pipeline (PaymentIntent creation, Stripe webhook fulfillment, Checkout sessions, saved payment methods) and all authentication flows (email/password, Google, Apple, Discord, Roblox) against enterprise standards.
-
-### Security Scan Results
-
-The automated security scan surfaced **3 findings**:
-
-| Severity | Finding | Impact |
-|---|---|---|
-| **Critical** | Product-images storage bucket lets any seller delete/overwrite other sellers' images | Data integrity / vandalism risk |
-| **Critical** | No Realtime channel authorization — any authenticated user can subscribe to any topic | PII leakage (support tickets, push keys, chat) |
-| **Warning** | Extensions installed in the `public` schema | Best-practice hygiene |
+A fully automated system that monitors store health, enforces listing quality, and suspends policy violators — like Amazon's Account Health dashboard. Reduces manual admin workload and ensures marketplace quality at scale.
 
 ---
 
-### Finding 1: Deleted Functions Still Called (Breaks Payout Flow)
+### 1. Store Health Score System (Database + Edge Function)
 
-The `stripe-webhook` handler (lines 146 and 160) still calls `check-wise-funding` and `check-paypal-funding` — both were **deleted** in the cleanup round. When a `payout.paid` event fires for Wise or PayPal funding, the webhook silently fails these fetch calls. While wrapped in try/catch so it doesn't crash, **the downstream funding status check never runs**.
+Create a `store_health_scores` table that tracks key metrics per store:
+- **Dispute rate** — % of orders with refund requests
+- **Response time** — average seller response to support tickets  
+- **Listing quality** — % of products with descriptions >50 chars, 2+ images
+- **Delivery rate** — % of orders fulfilled (not cancelled)
+- **Policy violations** — count of active warnings/strikes
 
-**Fix**: Remove the two dead `fetch()` calls from `stripe-webhook/index.ts`. The `wise_funding_requests` table status is already updated to `'paid'` on the lines above — the downstream check functions were redundant.
+A scheduled edge function (`calculate-store-health`) runs daily to recalculate scores for all active stores and flag stores below threshold.
 
----
-
-### Finding 2: Orphaned `purchase-ad-pings` Function
-
-`purchase-ad-pings` is a legacy Stripe Checkout-based function with **zero frontend callers**. Ad ping purchases now go through `create-payment-intent` with `type: 'ad_pings'`. This function should be deleted — it duplicates pricing logic and adds maintenance/attack surface.
-
-**Fix**: Delete `supabase/functions/purchase-ad-pings/` and remove its config entry from `supabase/config.toml`.
-
----
-
-### Finding 3: Google/Apple OAuth Bypasses Lovable Cloud Bridge
-
-`SocialLoginButtons.tsx` calls `supabase.auth.signInWithOAuth()` directly for Google and Apple. The project has the Lovable Cloud auth bridge (`src/integrations/lovable/index.ts`) which should be used instead — it handles token exchange and session setting properly. Direct calls can cause session mismatches on custom domains.
-
-**Fix**: Update `SocialLoginButtons.tsx` to import from `@/integrations/lovable` and use `lovable.auth.signInWithOAuth('google')` / `lovable.auth.signInWithOAuth('apple')` instead of the direct Supabase call.
+**Scoring**: 0–100 scale. Below 40 = "At Risk", below 20 = "Critical" (auto-suspend candidate).
 
 ---
 
-### Finding 4: Product-Images Storage Bucket Missing Path-Ownership Check
+### 2. Compliance Violations & Strikes Table
 
-The `product-images` bucket RLS policies only verify the user owns *any* store, not that the file path belongs to *their* store. Any seller can overwrite or delete another seller's product images.
+Create `compliance_violations` table tracking:
+- Store ID, violation type (inactive, low_quality_listing, high_dispute_rate, policy_breach)
+- Severity (warning, strike, suspension)
+- Auto-resolved flag (clears when metric improves)
+- Created/resolved timestamps
 
-**Fix**: Add a path-ownership condition to the INSERT/UPDATE/DELETE policies:
-```sql
-(stores.id)::text = split_part(objects.name, '/', 1)
-```
-This matches the pattern already used on the `product-assets` bucket.
-
----
-
-### Finding 5: No Realtime Channel Authorization
-
-The `realtime.messages` table has no RLS policies. Any authenticated user can subscribe to any channel, exposing data from `support_tickets`, `notifications`, `chat_messages`, and `push_subscriptions`.
-
-**Fix**: Add RLS policies on `realtime.messages` that scope channel access by topic pattern and `auth.uid()`.
+**Auto-detection rules** (run by scheduled function):
+- Store inactive >30 days with listed products → "inactive" warning
+- Product with <30 char description or 0 images → "low_quality_listing" warning
+- Dispute rate >15% over rolling 30 days → "high_dispute_rate" strike
+- 3+ active strikes → auto-suspension (store `is_active = false`)
 
 ---
 
-### Summary
+### 3. Seller-Facing Account Health Page (`/seller/account-health`)
 
-| Priority | Fix | Effort |
-|---|---|---|
-| **P0 — Critical** | Fix product-images storage ownership check | Migration |
-| **P0 — Critical** | Add Realtime channel authorization | Migration |
-| **P1 — Breaking** | Remove dead `check-wise-funding` / `check-paypal-funding` calls from webhook | 2 lines |
-| **P1 — Cleanup** | Delete orphaned `purchase-ad-pings` function | Delete directory |
-| **P2 — Auth** | Switch Google/Apple OAuth to Lovable Cloud bridge | Edit 1 file |
+Shows sellers their own health score with:
+- Overall score gauge (colour-coded green/amber/red)
+- Metric breakdown (dispute rate, response time, listing quality, delivery)
+- Active violations with severity badges and resolution guidance
+- Historical score trend (last 30 days)
+
+---
+
+### 4. Admin Compliance Dashboard (`/admin/compliance`)
+
+Shows admins:
+- Stores sorted by health score (worst first)
+- Filter by status: All / At Risk / Critical / Suspended
+- Bulk actions: Issue warning, apply strike, suspend, reinstate
+- Violation log with auto/manual distinction
+
+---
+
+### 5. Scheduled Automation
+
+A `calculate-store-health` edge function runs daily via pg_cron:
+- Recalculates all store health scores
+- Auto-creates violations for policy breaches
+- Auto-suspends stores with 3+ strikes
+- Auto-resolves violations when metrics improve
+- Sends seller notifications for new violations
+
+---
 
 ### Files Changed
-- `supabase/functions/stripe-webhook/index.ts` — Remove dead fetch calls to deleted functions
-- **Delete** `supabase/functions/purchase-ad-pings/` — Orphaned, replaced by `create-payment-intent`
-- `supabase/config.toml` — Remove `purchase-ad-pings` entry
-- `src/components/auth/SocialLoginButtons.tsx` — Use `lovable.auth.signInWithOAuth` for Google/Apple
-- **Migration** — Fix `product-images` bucket policies with path-ownership check
-- **Migration** — Add `realtime.messages` RLS policies for channel authorization
-
+- **Migration** — Create `store_health_scores` and `compliance_violations` tables with RLS
+- `supabase/functions/calculate-store-health/index.ts` — Scheduled health calculator
+- `src/pages/seller/SellerAccountHealth.tsx` — Seller-facing health dashboard
+- `src/pages/admin/ComplianceDashboard.tsx` — Admin compliance overview
+- `src/components/AppRoutes.tsx` — Add new routes
+- `src/components/seller/SellerSidebar.tsx` — Add Account Health link
+- `src/components/admin/AdminSidebar.tsx` — Add Compliance link
+- **pg_cron job** — Schedule daily health calculation

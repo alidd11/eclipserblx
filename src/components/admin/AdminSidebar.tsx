@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, ChevronDown, MessageCircle, FileText, Star, 
   TrendingUp, Activity, ClipboardList, Mail, BarChart3, HelpCircle, 
   AlertTriangle, Tags, Ban, Gift, Inbox, LucideIcon, Archive, Headphones, Shield, Megaphone, Bell, IdCard, Gamepad2, Store, FolderOpen, Ticket, Bot, RotateCcw, Upload, Wallet, DollarSign,
-  UserCheck, Link2, Code, Globe, Scale, Rss, FileCode, Twitter
+  UserCheck, Link2, Code, Globe, Scale, Rss, FileCode, Twitter, ShieldCheck
 } from 'lucide-react';
 import { NavLink, useNavigate, useLocation, Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -100,6 +100,7 @@ const navGroups: NavGroup[] = [
     icon: Store,
     items: [
       { title: 'Seller Stores', icon: Store, href: '/admin/seller-commissions', permissions: ['view_seller_stores'] },
+      { title: 'Compliance', icon: ShieldCheck, href: '/admin/compliance', permissions: ['view_seller_stores'] },
       { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', permissions: ['view_store_applications'] },
       { title: 'Product Review', icon: Package, href: '/admin/seller-product-review', permissions: ['view_seller_stores'] },
       { title: 'All Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },

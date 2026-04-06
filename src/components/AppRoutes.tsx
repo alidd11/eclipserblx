@@ -165,6 +165,7 @@ const AdminAffiliateHub = lazyWithRetry(() => import("@/pages/admin/AffiliateHub
 const AdminPlatformLedger = lazyWithRetry(() => import("@/pages/admin/PlatformLedger"));
 const AdminCustomDomains = lazyWithRetry(() => import("@/pages/admin/CustomDomains"));
 const AdminRateLimitDashboard = lazyWithRetry(() => import("@/pages/admin/RateLimitDashboard"));
+const AdminComplianceDashboard = lazyWithRetry(() => import("@/pages/admin/ComplianceDashboard"));
 
 
 // Seller pages
@@ -207,6 +208,7 @@ const SellerSettingsPayments = lazyWithRetry(() => import("@/pages/seller/Seller
 const SellerSettingsNotifications = lazyWithRetry(() => import("@/pages/seller/SellerSettingsNotifications"));
 const SellerSettingsRoblox = lazyWithRetry(() => import("@/pages/seller/SellerSettingsRoblox"));
 const SellerSupport = lazyWithRetry(() => import("@/pages/seller/SellerSupport"));
+const SellerAccountHealth = lazyWithRetry(() => import("@/pages/seller/SellerAccountHealth"));
 const SellerMessages = lazyWithRetry(() => import("@/pages/seller/SellerMessages"));
 const SellerReviews = lazyWithRetry(() => import("@/pages/seller/SellerReviews"));
 const SellerDiscord = lazyWithRetry(() => import("@/pages/seller/SellerDiscord"));
@@ -411,6 +413,7 @@ export function AppRoutes() {
         <Route path="/seller/roblox" element={<SellerSettingsRoblox />} />
         <Route path="/seller/settings/domain" element={<SellerSettingsDomain />} />
         <Route path="/seller/support" element={<SellerSupport />} />
+        <Route path="/seller/account-health" element={<SellerAccountHealth />} />
         <Route path="/seller/webhooks" element={<SellerWebhooks />} />
         <Route path="/seller/messages" element={<SellerMessages />} />
         <Route path="/seller/reviews" element={<SellerReviews />} />
@@ -464,6 +467,7 @@ export function AppRoutes() {
         <Route path="/admin/incidents" element={<AdminIncidents />} />
         <Route path="/admin/changelog" element={<AdminChangelogManager />} />
         <Route path="/admin/rate-limits" element={<AdminRateLimitDashboard />} />
+        <Route path="/admin/compliance" element={<AdminComplianceDashboard />} />
         <Route path="/admin/help" element={<AdminHelp />} />
         <Route path="/admin/subscribers" element={<AdminSubscribers />} />
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
