@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell,
-  Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
+  Sparkles, Heart, LogOut,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
   Globe, PenTool, Zap, Crown, ShoppingBag
 } from 'lucide-react';
