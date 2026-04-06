@@ -10,13 +10,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Copy, Check, ChevronDown, ChevronRight, FileCode, FolderOpen, Bot, Terminal, Server, Shield, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { BOT_FILES } from '@/data/portalBotFiles';
 
 // Access controlled by admin role check below
-
-// All bot files embedded
-const BOT_FILES: Record<string, string> = {
-  'package.json': `{
-  "name": "eclipse-portal-bot",
   "version": "1.0.0",
   "description": "Persistent Eclipse Portal Bot — gateway-based Discord bot",
   "main": "index.js",
