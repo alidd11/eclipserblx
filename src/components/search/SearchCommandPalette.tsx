@@ -227,7 +227,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
               enterKeyHint="search"
               className={cn(
                 "w-full h-11 pl-10 pr-10 rounded-lg text-sm text-foreground",
-                "bg-muted/40 placeholder:text-muted-foreground/40",
+                "bg-muted/40 placeholder:text-muted-foreground",
                 "outline-none ring-1 ring-primary/50 focus:ring-2 focus:ring-primary/60",
                 "transition-all duration-150"
               )}
