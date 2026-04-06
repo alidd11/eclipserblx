@@ -87,7 +87,6 @@ export default function SellerDashboard() {
   });
 
   const createActions = [
-    { title: 'New Product', href: '/seller/products/new', icon: Plus, description: 'Upload a listing', primary: true },
     { title: 'Store Builder', href: '/seller/store-builder', icon: Sparkles, description: 'Customize look' },
   ];
 
