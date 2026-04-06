@@ -80,10 +80,6 @@ export default function DiscordSettings() {
                   <Gift className="h-4 w-4 text-emerald-500" />
                   <span>Affiliate Programme</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => sendAnnouncement('eclipse_plus')} disabled={isSendingAnnouncement !== null || !formData.eclipse_plus_discord_webhook_url} className="gap-3">
-                  <Sparkles className="h-4 w-4 text-amber-400" />
-                  <span>Eclipse+ Membership</span>
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => sendAnnouncement('marketplace')} disabled={isSendingAnnouncement !== null || !formData.marketplace_discord_webhook_url} className="gap-3">
                   <Megaphone className="h-4 w-4 text-purple-400" />
                   <span>Marketplace</span>
