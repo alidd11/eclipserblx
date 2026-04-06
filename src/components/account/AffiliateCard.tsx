@@ -106,14 +106,14 @@ export function AffiliateCard() {
   queryKey: ['affiliate-payouts', user?.id],
   queryFn: async () => {
    if (!user?.id) return [];
-   const { data, error } = await supabase
-    .from('affiliate_payouts')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(5);
-   if (error) throw error;
-   return data || [];
+    const { data, error } = await supabase
+     .from('affiliate_payouts_safe' as any)
+     .select('*')
+     .eq('user_id', user.id)
+     .order('created_at', { ascending: false })
+     .limit(5);
+    if (error) throw error;
+    return (data as any[]) || [];
   },
   enabled: !!user?.id,
  });

@@ -17,12 +17,12 @@ export function PayoutTimeline() {
  queryFn: async () => {
  if (!store?.id) return [];
  const { data } = await supabase
- .from('seller_payouts')
+ .from('seller_payouts_safe' as any)
  .select('id, amount, status, created_at, completed_at')
  .eq('store_id', store.id)
  .order('created_at', { ascending: false })
  .limit(6);
- return data || [];
+ return (data as any[]) || [];
  },
  enabled: !!store?.id,
  staleTime: 5 * 60 * 1000,

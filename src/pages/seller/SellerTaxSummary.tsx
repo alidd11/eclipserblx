@@ -111,13 +111,15 @@ export default function SellerTaxSummary() {
       if (!store?.id) return [];
 
       const { data, error } = await supabase
-        .from('seller_payouts')
+        .from('seller_payouts_safe' as any)
         .select('amount, status, created_at, completed_at')
         .eq('store_id', store.id)
         .eq('status', 'completed')
         .gte('created_at', selectedTaxYear.startDate + 'T00:00:00Z')
         .lte('created_at', selectedTaxYear.endDate + 'T23:59:59Z')
         .order('created_at', { ascending: true });
+      if (error) throw error;
+      return (data as any[]) || [];
 
       if (error) throw error;
       return data || [];

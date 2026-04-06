@@ -212,24 +212,16 @@ Deno.serve(async (req) => {
         )
       }
 
-      // Invalidate any existing codes for this email
-      await supabase
-        .from('password_reset_codes')
-        .update({ used: true })
-        .eq('email', normalizedEmail)
-        .eq('used', false)
-
       // Generate 6-digit code with crypto RNG
       const code = generateCode()
       const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
-      const { error: insertError } = await supabase
-        .from('password_reset_codes')
-        .insert({
-          email: normalizedEmail,
-          code,
-          expires_at: expiresAt.toISOString(),
-        })
+      // Store hashed code via RPC (invalidates existing codes too)
+      const { error: insertError } = await supabase.rpc('store_password_reset_code', {
+        p_email: normalizedEmail,
+        p_code: code,
+        p_expires_at: expiresAt.toISOString(),
+      })
 
       if (insertError) {
         console.error('Failed to store reset code:', insertError)
@@ -284,13 +276,7 @@ Deno.serve(async (req) => {
 
       // Check attempt count on the most recent unused code for this email
       const { data: recentCode } = await supabase
-        .from('password_reset_codes')
-        .select('id, attempts')
-        .eq('email', normalizedEmail)
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1)
+        .rpc('get_reset_code_attempts', { p_email: normalizedEmail })
         .maybeSingle();
 
       if (!recentCode) {
@@ -301,13 +287,10 @@ Deno.serve(async (req) => {
       }
 
       // Check if max attempts exceeded - invalidate code
-      const currentAttempts = (recentCode as any).attempts ?? 0;
+      const currentAttempts = recentCode.attempts ?? 0;
       if (currentAttempts >= MAX_VERIFY_ATTEMPTS) {
         // Burn the code
-        await supabase
-          .from('password_reset_codes')
-          .update({ used: true })
-          .eq('id', recentCode.id);
+        await supabase.rpc('burn_reset_code', { p_id: recentCode.id });
 
         console.warn(`[custom-password-reset] Max attempts exceeded for ${normalizedEmail}`);
         return new Response(
@@ -317,24 +300,13 @@ Deno.serve(async (req) => {
       }
 
       // Increment attempt counter BEFORE checking code (prevents timing attacks)
-      await supabase
-        .from('password_reset_codes')
-        .update({ attempts: currentAttempts + 1 })
-        .eq('id', recentCode.id);
+      await supabase.rpc('increment_reset_code_attempts', { p_id: recentCode.id });
 
-      // Now verify the code
-      const { data: resetCode, error: fetchError } = await supabase
-        .from('password_reset_codes')
-        .select('*')
-        .eq('email', normalizedEmail)
-        .eq('code', code)
-        .eq('used', false)
-        .gt('expires_at', new Date().toISOString())
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
+      // Verify the code against the hash
+      const { data: verifiedCodeId } = await supabase
+        .rpc('verify_password_reset_code', { p_email: normalizedEmail, p_code: code });
 
-      if (fetchError || !resetCode) {
+      if (!verifiedCodeId) {
         console.log('Invalid or expired code')
         return new Response(
           JSON.stringify({ error: 'Invalid or expired code' }),
@@ -343,10 +315,7 @@ Deno.serve(async (req) => {
       }
 
       // Mark code as used
-      await supabase
-        .from('password_reset_codes')
-        .update({ used: true })
-        .eq('id', resetCode.id)
+      await supabase.rpc('burn_reset_code', { p_id: verifiedCodeId });
 
       // Get user by email
       const { data: userProfile } = await supabase
