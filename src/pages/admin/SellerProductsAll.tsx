@@ -262,7 +262,7 @@ export default function SellerProductsAll() {
               <span>Actions</span>
             </div>
 
-            {filteredProducts?.map((product: any) => (
+            {filteredProducts?.map((product) => (
               <div key={product.id} className="overflow-hidden">
                 <div className="p-4 p-0">
                   <div className="grid grid-cols-1 md:grid-cols-[3fr_1.5fr_1fr_1fr_1fr_auto] gap-3 items-center px-4 py-3">
