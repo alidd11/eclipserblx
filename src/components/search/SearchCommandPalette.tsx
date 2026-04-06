@@ -204,7 +204,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         <div className="flex items-center gap-2">
           <button
             onClick={handleClose}
-            className="shrink-0 h-10 w-10 flex items-center justify-center rounded-lg hover:bg-muted/60 active:scale-[0.97] transition-all touch-manipulation"
+            className="shrink-0 h-10 w-10 flex items-center justify-center rounded-lg hover:bg-muted/60 transition-all touch-manipulation"
             aria-label="Close search"
           >
             <ArrowLeft className="h-5 w-5 text-muted-foreground" />
@@ -235,7 +235,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
             {searchQuery && (
               <button
                 onClick={() => { setSearchQuery(''); inputRef.current?.focus(); }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-muted/80 hover:bg-muted transition-colors active:scale-[0.95]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-muted/80 hover:bg-muted transition-colors"
                 aria-label="Clear search"
               >
                 <X className="h-3 w-3 text-muted-foreground" />
@@ -268,7 +268,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                       <SectionLabel>RECENT</SectionLabel>
                       <button
                         onClick={() => { hapticTap(); clearAll(); }}
-                        className="text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors active:scale-[0.97]"
+                        className="text-[11px] font-medium text-muted-foreground/50 hover:text-foreground transition-colors"
                       >
                         Clear all
                       </button>
@@ -303,7 +303,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                     <button
                       key={product.id}
                       onClick={() => handleSelect(`/products/${(product as any).product_number}`)}
-                      className="w-full flex items-center gap-3 py-2.5 text-left hover:bg-muted/30 active:bg-muted/50 transition-colors rounded-lg px-1 -mx-1 active:scale-[0.99] touch-manipulation"
+                      className="w-full flex items-center gap-3 py-2.5 text-left hover:bg-muted/30 active:bg-muted/50 transition-colors rounded-lg px-1 -mx-1 touch-manipulation"
                     >
                       <TrendingUp className="h-3.5 w-3.5 text-muted-foreground/30 shrink-0" />
                       <ProductRow product={product} formatPrice={formatPrice} />
@@ -354,7 +354,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                       }}
                       className={cn(
                         "w-full flex items-center gap-3 py-3 text-left",
-                        "hover:bg-muted/30 active:bg-muted/50 transition-colors active:scale-[0.99] touch-manipulation",
+                        "hover:bg-muted/30 active:bg-muted/50 transition-colors touch-manipulation",
                         "rounded-lg px-1 -mx-1",
                         "animate-in fade-in slide-in-from-bottom-1 duration-150",
                         idx > 0 && "border-t border-border/10"
@@ -383,7 +383,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                       onClick={() => handleSelect(`/store/${store.slug}`)}
                       className={cn(
                         "w-full flex items-center gap-3 py-3 text-left",
-                        "hover:bg-muted/30 active:bg-muted/50 transition-colors active:scale-[0.99] touch-manipulation",
+                        "hover:bg-muted/30 active:bg-muted/50 transition-colors touch-manipulation",
                         "rounded-lg px-1 -mx-1",
                         "animate-in fade-in slide-in-from-bottom-1 duration-150",
                         idx > 0 && "border-t border-border/10"
@@ -416,7 +416,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
                 <div className="px-4 py-3">
                   <button
                     onClick={handleViewAllResults}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 text-sm font-medium text-primary transition-all active:scale-[0.99] touch-manipulation"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-lg bg-primary/10 hover:bg-primary/15 text-sm font-medium text-primary transition-all touch-manipulation"
                   >
                     <span>View all results</span>
                     <ArrowRight className="h-4 w-4" />

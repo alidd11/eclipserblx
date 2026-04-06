@@ -160,7 +160,7 @@ export function RecentReleasesCarousel() {
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-300"
+                        className="w-full h-full object-contain transition-transform duration-300"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">

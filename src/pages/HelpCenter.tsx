@@ -35,7 +35,7 @@ export default function HelpCenter() {
         <div className="grid sm:grid-cols-2 gap-6">
           <Link
             to="/help-center/buyers"
-            className="group bg-card border border-border rounded-xl p-8 hover:border-primary/50 transition-all hover:shadow-lg"
+            className="group bg-card border border-border rounded-xl p-8 hover:border-primary/50 transition-all"
           >
             <div className="p-3 rounded-lg bg-blue-500/10 text-blue-500 w-fit mb-5">
               <ShoppingCart className="h-7 w-7" />
@@ -53,7 +53,7 @@ export default function HelpCenter() {
 
           <Link
             to="/help-center/sellers"
-            className="group bg-card border border-border rounded-xl p-8 hover:border-primary/50 transition-all hover:shadow-lg"
+            className="group bg-card border border-border rounded-xl p-8 hover:border-primary/50 transition-all"
           >
             <div className="p-3 rounded-lg bg-primary/10 text-primary w-fit mb-5">
               <Store className="h-7 w-7" />

@@ -328,7 +328,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
     const linkClassName = cn(
       "group rounded-md text-[13px] font-medium select-none",
-      "transition-all duration-150 active:scale-[0.98] active:opacity-90",
+      "transition-all duration-150",
       isCollapsed
         ? "flex items-center justify-center p-2.5"
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-[7px]",
@@ -398,7 +398,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
               <button
                 className={cn(
                   "w-full flex items-center justify-center p-2.5 rounded-md select-none",
-                  "transition-all duration-150 active:scale-[0.98]",
+                  "transition-all duration-150",
                   "focus:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
@@ -447,7 +447,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <button
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[11px] font-semibold uppercase tracking-wide select-none",
-              "transition-all duration-150 active:scale-[0.98]",
+              "transition-all duration-150",
               "focus:outline-none",
               hasActiveItem
                 ? "text-foreground"
@@ -527,7 +527,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted/60 rounded-md px-2.5 py-[7px] mt-2 active:scale-[0.98] transition-all duration-150"
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted/60 rounded-md px-2.5 py-[7px] mt-2 transition-all duration-150"
             onClick={() => {
               hapticTap();
               setShowSignOutDialog(true);

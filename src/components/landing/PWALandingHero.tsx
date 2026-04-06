@@ -62,7 +62,7 @@ function PWASpotlightCard({ product }: { product: ScoredProduct }) {
   return (
     <Link
       to={`/products/${(product as any).product_number}`}
-      className="block rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors active:scale-[0.99]"
+      className="block rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors"
     >
       <div className="aspect-[16/9] relative overflow-hidden bg-muted">
         {(() => {
@@ -139,7 +139,7 @@ function PWAProductCard({ product }: { product: ScoredProduct }) {
   return (
     <Link
       to={`/products/${(product as any).product_number}`}
-      className="block rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors active:scale-[0.98]"
+      className="block rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors"
     >
       <div className="aspect-[4/3] relative overflow-hidden bg-muted">
         {(() => {

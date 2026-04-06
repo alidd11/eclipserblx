@@ -60,7 +60,7 @@ export function MobileTabBar() {
               onClick={hapticTap}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full relative",
-                "transition-colors duration-150 select-none active:scale-95"
+                "transition-colors duration-150 select-none"
               )}
               role="tab"
               aria-selected={isActive}

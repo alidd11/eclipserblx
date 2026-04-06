@@ -176,7 +176,7 @@ export default function SellerSetup() {
                         ? 'bg-muted/30 border-border'
                         : isActive
                         ? 'bg-card border-primary/40 shadow-lg shadow-primary/5'
-                        : 'bg-card border-border hover:border-primary/20 hover:shadow-md'
+                        : 'bg-card border-border hover:border-primary/20'
                     )}
                   >
                     <div className="flex items-center gap-4 p-4">

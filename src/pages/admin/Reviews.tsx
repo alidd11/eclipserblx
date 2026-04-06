@@ -299,21 +299,21 @@ export default function AdminReviews() {
  <span className="text-xs text-muted-foreground">{format(new Date(review.created_at), 'MMM d, yyyy')}</span>
  <div className="flex items-center gap-1">
  {!review.is_approved && (
- <Button size="sm" variant="ghost" onClick={() => handleApprove(review.id, true)} className="h-9 w-9 p-0 touch-manipulation active:scale-95">
+ <Button size="sm" variant="ghost" onClick={() => handleApprove(review.id, true)} className="h-9 w-9 p-0 touch-manipulation">
  <Check className="h-4 w-4 text-emerald-400" />
  </Button>
  )}
  {review.is_approved && !review.is_featured && (
- <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, true)} className="h-9 w-9 p-0 touch-manipulation active:scale-95">
+ <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, true)} className="h-9 w-9 p-0 touch-manipulation">
  <Sparkles className="h-4 w-4 text-amber-400" />
  </Button>
  )}
  {review.is_featured && (
- <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, false)} className="h-9 w-9 p-0 touch-manipulation active:scale-95">
+ <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, false)} className="h-9 w-9 p-0 touch-manipulation">
  <X className="h-4 w-4 text-muted-foreground" />
  </Button>
  )}
- <Button size="sm" variant="ghost" onClick={() => deleteReviewMutation.mutate(review.id)} className="h-9 w-9 p-0 touch-manipulation active:scale-95">
+ <Button size="sm" variant="ghost" onClick={() => deleteReviewMutation.mutate(review.id)} className="h-9 w-9 p-0 touch-manipulation">
  <Trash2 className="h-4 w-4 text-destructive" />
  </Button>
  </div>

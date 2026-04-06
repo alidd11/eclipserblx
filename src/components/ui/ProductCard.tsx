@@ -131,7 +131,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     >
       <div className={cn(
         "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-all duration-300",
-        "border border-transparent hover:border-border hover:shadow-md",
+        "border border-transparent hover:border-border",
         isFeatured && "border-primary/20"
       )}>
         {/* Image */}
@@ -142,7 +142,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 ref={videoRef}
                 src={currentMedia!}
                 onError={handleMediaError}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-500"
               />
             ) : (
               <img
@@ -156,7 +156,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   const img = e.currentTarget;
                   if (img.naturalWidth === 0) handleMediaError();
                 }}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-500"
               />
             )
           ) : (

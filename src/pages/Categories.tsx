@@ -145,7 +145,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
         className={`group relative flex flex-col overflow-hidden rounded-xl border transition-all duration-300 ${
           isEmpty
             ? 'border-border/30 opacity-40 cursor-default'
-            : 'border-border/50 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 active:scale-[0.98]'
+            : 'border-border/50 hover:border-primary/50 hover:shadow-primary/5'
         }`}
       >
         {/* Hero Image Area — taller on mobile for better touch targets */}
@@ -162,7 +162,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
             </>
           ) : (
             <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-110"
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out"
               style={{
                 backgroundImage: bgImage
                   ? `url(${bgImage})`

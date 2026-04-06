@@ -76,7 +76,7 @@ export default function BotServers() {
         ) : (
           <div className="grid gap-2 sm:gap-3">
             {guilds.map((guild) => (
-              <div key={guild.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-background/5 border border-white/10 hover:bg-background/[0.07] transition-colors active:scale-[0.99]">
+              <div key={guild.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-background/5 border border-white/10 hover:bg-background/[0.07] transition-colors">
                 {getIconUrl(guild) ? (
                   <img src={getIconUrl(guild)!} alt={guild.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full shrink-0" />
                 ) : (

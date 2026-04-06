@@ -294,7 +294,7 @@ function HeroProductCard({ product }: { product: any }) {
               <>
                 <BackgroundVideo
                   src={displayMedia}
-                  className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                  className="w-full h-full object-cover transition-transform duration-500"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
@@ -306,7 +306,7 @@ function HeroProductCard({ product }: { product: any }) {
               <img
                 src={displayMedia}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                className="w-full h-full object-cover transition-transform duration-500"
                 loading="eager"
               />
             )

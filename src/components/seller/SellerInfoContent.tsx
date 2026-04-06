@@ -317,7 +317,7 @@ export function SellerInfoContent() {
           </p>
           <a 
             href="/become-seller"
-            className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97] text-sm"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
           >
             Start Selling
             <ArrowRight className="h-4 w-4" />
@@ -418,7 +418,7 @@ export function SellerInfoContent() {
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <a 
               href="/become-seller"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all active:scale-[0.97] text-sm"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
             >
               Apply Now
               <ArrowRight className="h-4 w-4" />

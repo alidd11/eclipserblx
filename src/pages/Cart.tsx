@@ -168,7 +168,7 @@ export default function Cart() {
                 </div>
               </div>
 
-              <Button asChild className="w-full h-12 gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.25)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.35)] transition-shadow">
+              <Button asChild className="w-full h-12 gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-shadow">
                 <Link to="/checkout">
                   {t('cart.proceedToCheckout')}
                   <ArrowRight className="ml-2 h-4 w-4" />

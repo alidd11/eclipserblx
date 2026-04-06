@@ -203,7 +203,7 @@ export function CategoriesGrid() {
                   <OptimizedImage
                     src={category.hero_image}
                     alt={category.name}
-                    className="h-full w-full group-hover:scale-105 transition-transform duration-300"
+                    className="h-full w-full transition-transform duration-300"
                     objectFit="cover"
                     blur={false}
                   />

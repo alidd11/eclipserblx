@@ -25,7 +25,7 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
           {(() => {
             const imgUrl = getFirstImageUrl(product.images);
             return imgUrl ? (
-              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500" />
+              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain transition-transform duration-500" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -80,7 +80,7 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
           {(() => {
             const imgUrl = getFirstImageUrl(product.images);
             return imgUrl ? (
-              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-[1.03] transition-transform duration-300" />
+              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain transition-transform duration-300" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <span className="text-muted-foreground text-sm">No image</span>

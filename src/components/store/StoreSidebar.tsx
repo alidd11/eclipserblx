@@ -362,7 +362,7 @@ export function StoreSidebar({
               <button
                 className={cn(
                   "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
-                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                  "transition-all duration-100",
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem
                     ? "bg-muted text-foreground"
@@ -466,7 +466,7 @@ export function StoreSidebar({
               <button
                 className={cn(
                   "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
-                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                  "transition-all duration-100",
                   "focus:outline-none focus-visible:outline-none",
                   isBrowseActive
                     ? "bg-muted text-foreground"

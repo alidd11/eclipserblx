@@ -53,7 +53,7 @@ export function CategoryShowcase() {
               to={`/products?category=${category.slug}`}
               className="group"
             >
-              <div className="border border-border rounded-xl p-6 h-full flex flex-col hover:border-primary/30 hover:shadow-md transition-all">
+              <div className="border border-border rounded-xl p-6 h-full flex flex-col hover:border-primary/30 transition-all">
                 <div className={cn(
                   "w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br",
                   category.gradient

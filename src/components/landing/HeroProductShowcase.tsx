@@ -43,13 +43,13 @@ function CompactProductCard({ product, index }: { product: HeroProduct; index: n
             isVideo ? (
               <BackgroundVideo
                 src={displayMedia}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover transition-transform duration-300"
               />
             ) : (
               <img
                 src={displayMedia}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover transition-transform duration-300"
               />
             )
           ) : (

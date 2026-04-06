@@ -247,7 +247,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
       "text-[13px] font-medium select-none transition-all duration-100",
       isCollapsed
         ? "flex w-full max-w-full items-center justify-center py-2 rounded-lg overflow-hidden"
-        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-2 rounded-lg overflow-hidden active:scale-[0.98] active:opacity-80 border-l-2 border-transparent",
+        : "flex w-full max-w-full min-w-0 flex-row flex-nowrap items-center gap-3 px-3 py-2 ml-2 rounded-lg overflow-hidden border-l-2 border-transparent",
       isActive
         ? "bg-primary/10 text-foreground font-semibold !border-l-2 !border-primary"
         : "text-foreground/70 hover:text-foreground hover:bg-muted/50 hover:border-primary/40"
@@ -326,7 +326,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               <button
                 className={cn(
                   "w-full flex items-center justify-center py-2.5 rounded-lg select-none",
-                  "transition-all duration-100 active:scale-[0.97] active:opacity-90",
+                  "transition-all duration-100",
                   "focus:outline-none focus-visible:outline-none",
                   hasActiveItem ? "bg-muted text-foreground" : "text-foreground/80 hover:text-foreground hover:bg-muted"
                 )}
@@ -456,7 +456,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleNavClick}
-              className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary/10 text-primary border border-primary/20 py-2 text-[13px] font-semibold transition-colors hover:bg-primary/15 active:scale-[0.98]"
+              className="flex items-center justify-center gap-2 w-full rounded-lg bg-primary/10 text-primary border border-primary/20 py-2 text-[13px] font-semibold transition-colors hover:bg-primary/15"
             >
               <Zap className="h-3.5 w-3.5" />
               Seller Dashboard
@@ -475,7 +475,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={handleNavClick}
-                className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors hover:bg-primary/15 active:scale-[0.95]"
+                className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors hover:bg-primary/15"
               >
                 <Zap className="h-3.5 w-3.5" />
               </a>

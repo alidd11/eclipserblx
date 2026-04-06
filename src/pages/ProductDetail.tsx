@@ -322,7 +322,7 @@ export default function ProductDetail() {
  <img
  src={images[selectedImage]}
  alt={product.name}
- className="w-full h-full object-contain pointer-events-none transition-transform duration-300 group-hover:scale-[1.02]"
+ className="w-full h-full object-contain pointer-events-none transition-transform duration-300"
  draggable={false}
  onError={() => {
  if (selectedImage + 1 < images.length) {

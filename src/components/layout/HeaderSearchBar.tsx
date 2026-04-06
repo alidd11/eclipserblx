@@ -33,7 +33,7 @@ export const HeaderSearchBar = forwardRef<HTMLButtonElement, HeaderSearchBarProp
             "bg-background",
             "border-border/80 hover:border-primary/50",
             "text-foreground",
-            "active:scale-[0.98]",
+            "",
           ],
           className
         )}

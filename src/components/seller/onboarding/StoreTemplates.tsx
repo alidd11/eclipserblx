@@ -53,8 +53,6 @@ export function StoreTemplates({ selected, onSelect }: StoreTemplatesProps) {
           return (
             <motion.button
               key={template.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => onSelect(template)}
               className={cn(
                 'relative rounded-xl border-2 p-4 text-left transition-all',
