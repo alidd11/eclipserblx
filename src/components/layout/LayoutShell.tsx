@@ -84,6 +84,7 @@ function LayoutShellInner({
   return (
     <>
       <ScrollProgressIndicator />
+      <MaintenanceBanner />
       {/* Skip to main content — accessibility */}
       <a
         href="#main-content"
