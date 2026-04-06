@@ -304,7 +304,7 @@ export default function SupportTicketDetail() {
                 <div className="flex items-center gap-2 text-sm bg-muted rounded-md px-3 py-1.5">
                   <Paperclip className="h-3 w-3 shrink-0" />
                   <span className="truncate flex-1">{attachmentFile.name}</span>
-                  <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
+                  <Button variant="ghost" size="icon" aria-label="Close" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
                     <X className="h-3 w-3" />
                   </Button>
                 </div>
@@ -317,7 +317,7 @@ export default function SupportTicketDetail() {
                   accept="image/*,.pdf,.zip,.rar,.txt,.doc,.docx"
                   onChange={handleFileSelect}
                 />
-                <Button variant="outline" size="icon" className="shrink-0" onClick={() => fileInputRef.current?.click()}>
+                <Button variant="outline" size="icon" aria-label="Attach file" className="shrink-0" onClick={() => fileInputRef.current?.click()}>
                   <Paperclip className="h-4 w-4" />
                 </Button>
                 <Textarea

@@ -385,7 +385,7 @@ export default function CustomerTicketDetail() {
         {/* ── Top bar (compact on mobile) ──────────────────────────────── */}
         <div className="shrink-0 sm:rounded-xl border-b sm:border border-border bg-card px-3 py-2 sm:p-3 space-y-1.5 sm:space-y-3">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => navigate('/admin/customer-tickets')}>
+            <Button variant="ghost" size="icon" aria-label="Go back" className="h-8 w-8 shrink-0" onClick={() => navigate('/admin/customer-tickets')}>
               <ArrowLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-sm sm:text-xl font-bold leading-tight truncate flex-1">{ticket.subject}</h1>
@@ -550,7 +550,7 @@ export default function CustomerTicketDetail() {
                   <div className="flex items-center gap-2 text-xs bg-muted rounded-md px-2 py-1">
                     <Paperclip className="h-3 w-3 shrink-0" />
                     <span className="truncate flex-1">{attachmentFile.name}</span>
-                    <Button variant="ghost" size="icon" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
+                    <Button variant="ghost" size="icon" aria-label="Close" className="h-5 w-5" onClick={() => setAttachmentFile(null)}>
                       <X className="h-3 w-3" />
                     </Button>
                   </div>

@@ -199,7 +199,7 @@ export default function SellerFlashSales() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(sale)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(sale.id)}>
+                    <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => setDeleteId(sale.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>

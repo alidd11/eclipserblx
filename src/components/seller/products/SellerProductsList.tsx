@@ -224,7 +224,7 @@ export function SellerProductsList({
                       <TableCell className="text-sm">{product.download_count || 0}</TableCell>
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         {isLocked ? (
-                          <Button variant="ghost" size="icon" disabled title="Managed by Eclipse admins">
+                          <Button variant="ghost" size="icon" aria-label="Lock" disabled title="Managed by Eclipse admins">
                             <Lock className="h-4 w-4 text-muted-foreground" />
                           </Button>
                         ) : (
@@ -232,7 +232,7 @@ export function SellerProductsList({
                             <Button variant="ghost" size="icon" onClick={() => onEdit(product)}>
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => onDelete(product.id)}>
+                            <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => onDelete(product.id)}>
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </>

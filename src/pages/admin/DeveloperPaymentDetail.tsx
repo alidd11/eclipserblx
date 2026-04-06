@@ -125,7 +125,7 @@ export default function DeveloperPaymentDetail() {
  <div className="flex items-center gap-4">
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Go back"
  onClick={() => navigate('/admin/developer-payments')}
  className="shrink-0"
  >

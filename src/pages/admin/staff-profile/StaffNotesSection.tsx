@@ -147,7 +147,7 @@ export function StaffNotesSection({
                       <span className="text-xs text-muted-foreground">by {note.author_name}</span>
                     </div>
                     {note.author_id === currentUserId && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setNoteToDelete(note.id)} disabled={deleteNoteMutation.isPending}>
+                      <Button variant="ghost" size="icon" aria-label="Delete" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setNoteToDelete(note.id)} disabled={deleteNoteMutation.isPending}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     )}

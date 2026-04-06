@@ -298,7 +298,7 @@ export function StaffChatRoom({
             <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setShowPinnedList(!showPinnedList)}>
+                  <Button variant="ghost" size="icon" aria-label="Pin" className="h-8 w-8" onClick={() => setShowPinnedList(!showPinnedList)}>
                     <Pin className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -306,7 +306,7 @@ export function StaffChatRoom({
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={toggleSearch}>
+                  <Button variant="ghost" size="icon" aria-label="Search" className="h-8 w-8" onClick={toggleSearch}>
                     <Search className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
@@ -343,7 +343,7 @@ export function StaffChatRoom({
               <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Pinned Messages ({pinnedMessages.length})
               </span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowPinnedList(false)}>
+              <Button variant="ghost" size="icon" aria-label="Close" className="h-6 w-6" onClick={() => setShowPinnedList(false)}>
                 <X className="h-3 w-3" />
               </Button>
             </div>
@@ -545,7 +545,7 @@ export function StaffChatRoom({
               <span className="text-xs text-muted-foreground">
                 {(selectedFile.size / 1024).toFixed(1)} KB
               </span>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setSelectedFile(null)}>
+              <Button variant="ghost" size="icon" aria-label="Close" className="h-6 w-6" onClick={() => setSelectedFile(null)}>
                 <X className="h-3 w-3" />
               </Button>
             </div>
@@ -654,7 +654,7 @@ export function StaffChatRoom({
           <div data-gesture-exempt="true" className="flex items-center gap-2 rounded-[1.25rem] border border-border/60 bg-background/70 p-1.5 shadow-sm">
             <Button
               variant="ghost"
-              size="icon"
+              size="icon" aria-label="Add"
               className="h-10 w-10 flex-shrink-0 rounded-2xl"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}
@@ -693,7 +693,7 @@ export function StaffChatRoom({
             <Button
               onClick={handleSend}
               disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
-              size="icon"
+              size="icon" aria-label="Loading"
               className="h-10 w-10 flex-shrink-0 rounded-2xl shadow-sm"
             >
               {isUploading ? (

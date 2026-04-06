@@ -228,7 +228,7 @@ export default function SellerGoals() {
                         </div>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          size="icon" aria-label="Delete"
                           className="h-7 w-7 text-muted-foreground hover:text-destructive"
                           onClick={() => deleteMutation.mutate(goal.id)}
                         >

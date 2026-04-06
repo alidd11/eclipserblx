@@ -135,10 +135,10 @@ function SortableRow({
  </TableCell>
  <TableCell>
  <div className="flex items-center gap-2 justify-end">
- <Button variant="ghost" size="icon" onClick={onEdit}>
+ <Button variant="ghost" size="icon" aria-label="Edit" onClick={onEdit}>
  <Pencil className="h-4 w-4" />
  </Button>
- <Button variant="ghost" size="icon" onClick={onDelete}>
+ <Button variant="ghost" size="icon" aria-label="Delete" onClick={onDelete}>
  <Trash2 className="h-4 w-4 text-destructive" />
  </Button>
  </div>

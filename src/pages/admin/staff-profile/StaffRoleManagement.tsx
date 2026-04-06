@@ -83,7 +83,7 @@ export function StaffRoleManagement({
                   ))}
                 </SelectContent>
               </Select>
-              <Button size="icon" disabled={!newRole || addRoleMutation.isPending} onClick={() => newRole && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}>
+              <Button size="icon" aria-label="Loading" disabled={!newRole || addRoleMutation.isPending} onClick={() => newRole && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}>
                 {addRoleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               </Button>
             </div>
@@ -102,7 +102,7 @@ export function StaffRoleManagement({
                       <span className="text-xs text-muted-foreground">Assigned {format(new Date(created_at), 'MMM d, yyyy')}</span>
                     </div>
                     {canRemoveRole(role) && (
-                      <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setRoleToRemove({ role, displayName: roleInfo.displayName })}>
+                      <Button variant="ghost" size="icon" aria-label="Close" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setRoleToRemove({ role, displayName: roleInfo.displayName })}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}

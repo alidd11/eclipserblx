@@ -144,7 +144,7 @@ export function DisputeEvidenceUpload({
               <span className="truncate flex-1">{file.file_name}</span>
               <span className="text-xs text-muted-foreground shrink-0">{formatSize(file.file_size)}</span>
               {!disabled && (
-                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => removeFile(i)}>
+                <Button type="button" variant="ghost" size="icon" aria-label="Close" className="h-6 w-6" onClick={() => removeFile(i)}>
                   <X className="h-3 w-3" />
                 </Button>
               )}

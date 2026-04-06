@@ -408,7 +408,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon" aria-label="Go forward"
                 className="h-6 w-6 min-h-0 min-w-0 text-muted-foreground hover:text-foreground"
                 onClick={onToggle}
                 haptic

@@ -138,7 +138,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon" aria-label="Menu"
                 className="shrink-0 md:hidden"
                 onClick={onMenuClick}
               >

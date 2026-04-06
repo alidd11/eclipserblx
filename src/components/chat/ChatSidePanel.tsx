@@ -282,8 +282,8 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                   <span className="text-[10px] text-muted-foreground">{openingStatus.isOpen ? 'Open' : 'Closed'}</span>
                 </div>
                 <div className="flex items-center gap-0.5">
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setIsMinimized(true)}><Minimize2 className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={closeChat}><X className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" aria-label="Minimize" className="h-7 w-7" onClick={() => setIsMinimized(true)}><Minimize2 className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" aria-label="Close" className="h-7 w-7" onClick={closeChat}><X className="h-3.5 w-3.5" /></Button>
                 </div>
               </>
             )}
@@ -329,7 +329,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                   <div className="p-3 border-t bg-background">
                     <div className="flex items-center gap-2">
                       <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx,.txt" />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                      <Button variant="ghost" size="icon" aria-label="Loading" className="h-8 w-8 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setShowSecureInput(true)} title="Submit secure code">
@@ -342,7 +342,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                         placeholder="Type a message..."
                         className="flex-1 h-8 text-sm min-w-0"
                       />
-                      <Button size="icon" className="h-8 w-8 shrink-0" onClick={sendMessage} disabled={!newMessage.trim() || isSending}>
+                      <Button size="icon" aria-label="Send" className="h-8 w-8 shrink-0" onClick={sendMessage} disabled={!newMessage.trim() || isSending}>
                         <Send className="h-4 w-4" />
                       </Button>
                     </div>

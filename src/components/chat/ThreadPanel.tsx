@@ -63,7 +63,7 @@ export function ThreadPanel({
           <h3 className="text-sm font-semibold">Thread</h3>
           <p className="text-xs text-muted-foreground">{threadMessages.length} {threadMessages.length === 1 ? 'reply' : 'replies'}</p>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onClose}>
+        <Button variant="ghost" size="icon" aria-label="Close" className="h-8 w-8" onClick={onClose}>
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -169,7 +169,7 @@ export function ThreadPanel({
           <Button
             onClick={handleSend}
             disabled={!reply.trim() || sendThreadReply.isPending}
-            size="icon"
+            size="icon" aria-label="Loading"
             className="h-10 w-10 flex-shrink-0 rounded-2xl shadow-sm"
           >
             {sendThreadReply.isPending ? (

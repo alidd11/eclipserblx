@@ -213,10 +213,10 @@ export default function SellerWebhooks() {
                             ? wh.secret
                             : '••••••••••••'}
                         </code>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => toggleSecret(wh.id)} aria-label="Toggle secret visibility">
+                        <Button variant="ghost" size="icon" aria-label="Hide" className="h-6 w-6" onClick={() => toggleSecret(wh.id)} aria-label="Toggle secret visibility">
                           {revealedSecrets.has(wh.id) ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => copySecret(wh.secret)} aria-label="Copy secret">
+                        <Button variant="ghost" size="icon" aria-label="Copy" className="h-6 w-6" onClick={() => copySecret(wh.secret)} aria-label="Copy secret">
                           <Copy className="h-3 w-3" />
                         </Button>
                       </div>
@@ -245,7 +245,7 @@ export default function SellerWebhooks() {
                     <TableCell className="text-right">
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Delete"
                         onClick={() => deleteMutation.mutate(wh.id)}
                         aria-label="Delete webhook"
                       >

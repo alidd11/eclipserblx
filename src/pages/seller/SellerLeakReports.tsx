@@ -404,7 +404,7 @@ export default function SellerLeakReports() {
                     </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8">
+                        <Button variant="ghost" size="icon" aria-label="More options" className="shrink-0 h-8 w-8">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -599,7 +599,7 @@ export default function SellerLeakReports() {
                     </div>
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="icon" aria-label="Close"
                       className="h-6 w-6 shrink-0"
                       onClick={(e) => { e.stopPropagation(); removeFile(i); }}
                     >

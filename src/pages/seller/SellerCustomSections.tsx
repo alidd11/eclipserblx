@@ -167,7 +167,7 @@ export default function SellerCustomSections() {
                   <Label className="text-xs">Question {i + 1}</Label>
                   {items.length > 1 && (
                     <Button
-                      variant="ghost" size="icon" className="h-6 w-6"
+                      variant="ghost" size="icon" aria-label="Delete" className="h-6 w-6"
                       onClick={() => onChange({ items: items.filter((_: FaqItem, j: number) => j !== i) })}
                     >
                       <Trash2 className="h-3 w-3" />
@@ -215,7 +215,7 @@ export default function SellerCustomSections() {
                   <Label className="text-xs">Testimonial {i + 1}</Label>
                   {items.length > 1 && (
                     <Button
-                      variant="ghost" size="icon" className="h-6 w-6"
+                      variant="ghost" size="icon" aria-label="Delete" className="h-6 w-6"
                       onClick={() => onChange({ items: items.filter((_: TestimonialItem, j: number) => j !== i) })}
                     >
                       <Trash2 className="h-3 w-3" />
@@ -389,7 +389,7 @@ export default function SellerCustomSections() {
                       </div>
                       <div className="flex items-center gap-1">
                         <Button
-                          variant="ghost" size="icon" className="h-8 w-8"
+                          variant="ghost" size="icon" aria-label="View" className="h-8 w-8"
                           onClick={() => toggleVisibility(section)}
                         >
                           {section.is_visible ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
@@ -402,7 +402,7 @@ export default function SellerCustomSections() {
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+                            <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-destructive">
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>

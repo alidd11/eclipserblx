@@ -193,7 +193,7 @@ export default function InternalNotes() {
                         </Button>
                       )}
                       {(note.author_id === user?.id || isAdmin) && (
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => deleteNote.mutate(note.id)}>
+                        <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-destructive" onClick={() => deleteNote.mutate(note.id)}>
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}

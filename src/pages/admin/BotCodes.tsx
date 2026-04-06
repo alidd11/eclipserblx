@@ -311,7 +311,7 @@ export default function AdminBotCodes() {
  </code>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Copy"
  className="h-7 w-7 shrink-0"
  onClick={() => handleCopyCode(code.installation_code)}
  >
@@ -422,7 +422,7 @@ export default function AdminBotCodes() {
  </code>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Copy"
  className="h-6 w-6"
  onClick={() => handleCopyCode(code.installation_code)}
  >

@@ -39,7 +39,7 @@ export function QuotedMessage({
       {onClear && (
         <Button
           variant="ghost"
-          size="icon"
+          size="icon" aria-label="Close"
           className="h-5 w-5 flex-shrink-0"
           onClick={onClear}
         >

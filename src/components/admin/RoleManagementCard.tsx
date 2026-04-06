@@ -265,7 +265,7 @@ export function RoleManagementCard() {
  <TooltipTrigger asChild>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Edit"
  className="h-8 w-8"
  onClick={() => handleEdit(role)}
  disabled={!canManageRole(role)}
@@ -286,7 +286,7 @@ export function RoleManagementCard() {
  <TooltipTrigger asChild>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="h-8 w-8"
  onClick={() => handleDelete(role)}
  disabled={deleteMutation.isPending || !canDeleteRole(role)}

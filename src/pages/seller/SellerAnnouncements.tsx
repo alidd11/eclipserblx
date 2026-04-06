@@ -221,7 +221,7 @@ export default function SellerAnnouncements() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(a)}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => setDeleteId(a.id)}>
+                    <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => setDeleteId(a.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>

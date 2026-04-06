@@ -109,7 +109,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
  </div>
  <div className="flex items-center gap-2">
  <Button 
- size="icon" 
+ size="icon" aria-label="Remove" 
  variant="outline" 
  className="h-7 w-7"
  onClick={() => setAdditionalServers(Math.max(0, additionalServers - 1))}
@@ -119,7 +119,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
  </Button>
  <span className="w-8 text-center font-mono">{additionalServers}</span>
  <Button 
- size="icon" 
+ size="icon" aria-label="Add" 
  variant="outline" 
  className="h-7 w-7"
  onClick={() => setAdditionalServers(additionalServers + 1)}

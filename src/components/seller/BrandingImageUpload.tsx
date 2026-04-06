@@ -152,7 +152,7 @@ export function BrandingImageUpload({
           <Button
             type="button"
             variant="destructive"
-            size="icon"
+            size="icon" aria-label="Close"
             className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
             onClick={handleRemove}
           >

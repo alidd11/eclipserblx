@@ -50,7 +50,7 @@ export default function SellerProductEditor() {
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/seller/products')}>
+          <Button variant="ghost" size="icon" aria-label="Go back" onClick={() => navigate('/seller/products')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>

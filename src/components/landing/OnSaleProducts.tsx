@@ -123,10 +123,10 @@ export function OnSaleProducts() {
           </div>
           <div className="flex items-center gap-2">
             <div className="hidden sm:flex items-center gap-1">
-              <Button variant="outline" size="icon" className="h-7 w-7 rounded-md" onClick={() => scroll('left')}>
+              <Button variant="outline" size="icon" aria-label="Go back" className="h-7 w-7 rounded-md" onClick={() => scroll('left')}>
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="outline" size="icon" className="h-7 w-7 rounded-md" onClick={() => scroll('right')}>
+              <Button variant="outline" size="icon" aria-label="Go forward" className="h-7 w-7 rounded-md" onClick={() => scroll('right')}>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>

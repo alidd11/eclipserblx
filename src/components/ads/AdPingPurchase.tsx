@@ -137,7 +137,7 @@ export function AdPingPurchase({
  </div>
  </div>
  <div className="flex items-center gap-2">
- <Button variant="outline" size="icon" onClick={() => setHerePingsToBuy(Math.max(0, herePingsToBuy - 1))} className="shrink-0">
+ <Button variant="outline" size="icon" aria-label="Remove" onClick={() => setHerePingsToBuy(Math.max(0, herePingsToBuy - 1))} className="shrink-0">
  <Minus className="h-4 w-4" />
  </Button>
  <Input
@@ -146,7 +146,7 @@ export function AdPingPurchase({
  onChange={(e) => setHerePingsToBuy(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
  className="w-full text-center"
  />
- <Button variant="outline" size="icon" onClick={() => setHerePingsToBuy(Math.min(100, herePingsToBuy + 1))} className="shrink-0">
+ <Button variant="outline" size="icon" aria-label="Add" onClick={() => setHerePingsToBuy(Math.min(100, herePingsToBuy + 1))} className="shrink-0">
  <Plus className="h-4 w-4" />
  </Button>
  </div>
@@ -169,7 +169,7 @@ export function AdPingPurchase({
  </div>
  </div>
  <div className="flex items-center gap-2">
- <Button variant="outline" size="icon" onClick={() => setEveryonePingsToBuy(Math.max(0, everyonePingsToBuy - 1))} className="shrink-0">
+ <Button variant="outline" size="icon" aria-label="Remove" onClick={() => setEveryonePingsToBuy(Math.max(0, everyonePingsToBuy - 1))} className="shrink-0">
  <Minus className="h-4 w-4" />
  </Button>
  <Input
@@ -178,7 +178,7 @@ export function AdPingPurchase({
  onChange={(e) => setEveryonePingsToBuy(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
  className="w-full text-center"
  />
- <Button variant="outline" size="icon" onClick={() => setEveryonePingsToBuy(Math.min(100, everyonePingsToBuy + 1))} className="shrink-0">
+ <Button variant="outline" size="icon" aria-label="Add" onClick={() => setEveryonePingsToBuy(Math.min(100, everyonePingsToBuy + 1))} className="shrink-0">
  <Plus className="h-4 w-4" />
  </Button>
  </div>

@@ -192,7 +192,7 @@ export default function BotAutoMod() {
  <p className="text-xs text-foreground/40 mt-0.5">Action: {ACTIONS.find(a => a.value === rule.action)?.label}</p>
  </div>
  <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule)} />
- <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400 hover:text-red-300" onClick={() => deleteMutation.mutate(rule.id)}>
+ <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-red-400 hover:text-red-300" onClick={() => deleteMutation.mutate(rule.id)}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>

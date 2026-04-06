@@ -98,7 +98,7 @@ export function SoundCustomizationCard() {
                 </Select>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="icon" aria-label="Play"
                   onClick={() => handlePreview(type)}
                   disabled={preferences[type] === 'none'}
                   className="shrink-0"

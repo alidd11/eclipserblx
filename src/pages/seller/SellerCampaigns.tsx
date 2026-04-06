@@ -213,7 +213,7 @@ export default function SellerCampaigns() {
                         />
                         <Button
                           variant="ghost"
-                          size="icon"
+                          size="icon" aria-label="Delete"
                           className="h-8 w-8 text-muted-foreground hover:text-destructive"
                           onClick={() => deleteMutation.mutate(campaign.id)}
                         >

@@ -353,7 +353,7 @@ export default function GameNewsFeeds() {
  {isAdded && (
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="h-8 w-8 text-destructive hover:text-destructive"
  onClick={() => {
  if (confirm(`Remove ${preset.name} feed?`)) {
@@ -460,7 +460,7 @@ export default function GameNewsFeeds() {
  {isAdded && (
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="h-8 w-8 text-destructive hover:text-destructive"
  onClick={() => {
  if (confirm(`Remove ${preset.name} feed?`)) {
@@ -651,7 +651,7 @@ export default function GameNewsFeeds() {
  />
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="h-8 w-8 text-destructive hover:text-destructive"
  onClick={() => {
  if (confirm(`Delete "${feed.name}"?`)) {

@@ -137,7 +137,7 @@ export default function BotCustomCommands() {
  <p className="text-xs text-foreground/40 mt-0.5 truncate">{cmd.response}</p>
  </div>
  <Switch checked={cmd.enabled} onCheckedChange={() => toggleMutation.mutate(cmd)} />
- <Button variant="ghost" size="icon" className="h-8 w-8 text-red-400" onClick={() => deleteMutation.mutate(cmd.id)}>
+ <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-red-400" onClick={() => deleteMutation.mutate(cmd.id)}>
  <Trash2 className="h-4 w-4" />
  </Button>
  </div>

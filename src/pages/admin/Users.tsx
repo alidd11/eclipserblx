@@ -167,10 +167,10 @@ export default function AdminUsers() {
                         <p className="text-xs text-muted-foreground">Joined {new Date(profile.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="flex items-center gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
-                        {isPrimaryAdmin && <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setViewProfileUser(profile)} title="View Profile"><Eye className="h-4 w-4" /></Button>}
-                        <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => setSelectedUser(profile)} title="Manage Roles"><Shield className="h-4 w-4" /></Button>
-                        {isAdmin && <Button variant="outline" size="icon" className="h-9 w-9 text-orange-500 border-orange-500/50 hover:bg-orange-500/10" onClick={() => setIpBanDialogUser(profile)} title="IP Ban"><Ban className="h-4 w-4" /></Button>}
-                        {canDeleteUser(profile) && <Button variant="outline" size="icon" className="h-9 w-9 text-destructive border-destructive/50 hover:bg-destructive/10" onClick={() => setDeleteConfirmUser(profile)} title="Delete Account"><Trash2 className="h-4 w-4" /></Button>}
+                        {isPrimaryAdmin && <Button variant="outline" size="icon" aria-label="View" className="h-9 w-9" onClick={() => setViewProfileUser(profile)} title="View Profile"><Eye className="h-4 w-4" /></Button>}
+                        <Button variant="outline" size="icon" aria-label="Security" className="h-9 w-9" onClick={() => setSelectedUser(profile)} title="Manage Roles"><Shield className="h-4 w-4" /></Button>
+                        {isAdmin && <Button variant="outline" size="icon" aria-label="Ban" className="h-9 w-9 text-orange-500 border-orange-500/50 hover:bg-orange-500/10" onClick={() => setIpBanDialogUser(profile)} title="IP Ban"><Ban className="h-4 w-4" /></Button>}
+                        {canDeleteUser(profile) && <Button variant="outline" size="icon" aria-label="Delete" className="h-9 w-9 text-destructive border-destructive/50 hover:bg-destructive/10" onClick={() => setDeleteConfirmUser(profile)} title="Delete Account"><Trash2 className="h-4 w-4" /></Button>}
                       </div>
                     </div>
                   );

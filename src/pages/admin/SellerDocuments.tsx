@@ -490,7 +490,7 @@ export default function AdminSellerDocuments() {
                     <div className="flex gap-1">
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon" aria-label="Hide"
                         className="h-8 w-8"
                         onClick={() => toggleActiveMutation.mutate({ id: doc.id, is_active: !doc.is_active })}
                       >
@@ -498,7 +498,7 @@ export default function AdminSellerDocuments() {
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                          <Button variant="ghost" size="icon" aria-label="Delete" className="h-8 w-8 text-destructive hover:text-destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>

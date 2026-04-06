@@ -305,7 +305,7 @@ export default function RobloxSettings() {
  onChange={(e) => setGameUrl(e.target.value)}
  />
  {gameUrl && (
- <Button variant="outline" size="icon" asChild>
+ <Button variant="outline" size="icon" aria-label="Open in new tab" asChild>
  <a href={gameUrl} target="_blank" rel="noopener noreferrer">
  <ExternalLink className="h-4 w-4" />
  </a>
@@ -362,7 +362,7 @@ export default function RobloxSettings() {
  />
  <Button
  variant="outline"
- size="icon"
+ size="icon" aria-label="Confirm"
  onClick={() => copyToClipboard(
  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/robux-webhook`,
  'webhook'
@@ -530,7 +530,7 @@ export default function RobloxSettings() {
  />
  <Button
  variant="outline"
- size="icon"
+ size="icon" aria-label="Confirm"
  onClick={() => copyToClipboard(
  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/robux-ad-webhook`,
  'ad-webhook'

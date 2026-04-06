@@ -233,7 +233,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  <TableCell className="font-medium">{formatCurrency(order.total)}</TableCell>
  <TableCell>{getStatusBadge(order.status)}</TableCell>
  <TableCell>
- <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+ <Button variant="ghost" size="icon" aria-label="View" onClick={() => setSelectedOrder(order)}>
  <Eye className="h-4 w-4" />
  </Button>
  </TableCell>

@@ -287,7 +287,7 @@ export default function SellerMessages() {
           <div className="bg-card rounded-xl border border-border overflow-hidden">
             {/* Conversation Header */}
             <div className="flex items-center gap-3 p-4 border-b border-border">
-              <Button variant="ghost" size="icon" onClick={() => {
+              <Button variant="ghost" size="icon" aria-label="Go back" onClick={() => {
                 setSelectedConversation(null);
                 setSearchParams({});
               }}>
@@ -377,7 +377,7 @@ export default function SellerMessages() {
                   />
                 </div>
                 <Button
-                  size="icon"
+                  size="icon" aria-label="Loading"
                   className="rounded-full h-10 w-10"
                   onClick={handleSend}
                   disabled={!newMessage.trim() || sendMessageMutation.isPending}

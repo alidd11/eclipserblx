@@ -319,7 +319,7 @@ export default function Disputes() {
                               {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); setSelectedDispute(d); setNewStatus(d.status); setAdminResponse(d.admin_response || ''); }}>
+                              <Button variant="ghost" size="icon" aria-label="View" onClick={(e) => { e.stopPropagation(); setSelectedDispute(d); setNewStatus(d.status); setAdminResponse(d.admin_response || ''); }}>
                                 <Eye className="h-4 w-4" />
                               </Button>
                             </TableCell>

@@ -343,7 +343,7 @@ export default function AdminHelp() {
  <HelpCircle className="h-5 w-5" />
  Quick Tips & Getting Started
  </h3>
- <Button variant="ghost" size="icon" className="h-8 w-8">
+ <Button variant="ghost" size="icon" aria-label="Navigate up" className="h-8 w-8">
  {quickTipsOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
  </Button>
  </div>

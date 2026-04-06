@@ -334,7 +334,7 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  </Button>
  <Button
  variant="ghost"
- size="icon"
+ size="icon" aria-label="Delete"
  className="text-destructive hover:text-destructive"
  onClick={() => setDeleteRole(role)}
  >

@@ -438,7 +438,7 @@ export default function StoreMessages() {
           <div className="bg-card rounded-xl border border-border p-4">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-medium">Contact a Store</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowNewConversation(false)}>
+              <Button variant="ghost" size="icon" aria-label="Close" onClick={() => setShowNewConversation(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -626,7 +626,7 @@ export default function StoreMessages() {
           <div className="bg-card rounded-xl border border-border overflow-hidden">
             {/* Conversation Header */}
             <div className="flex items-center gap-3 p-4 border-b border-border">
-              <Button variant="ghost" size="icon" onClick={() => {
+              <Button variant="ghost" size="icon" aria-label="Go back" onClick={() => {
                 setSelectedConversation(null);
                 setSearchParams({});
               }}>
@@ -703,7 +703,7 @@ export default function StoreMessages() {
                   />
                 </div>
                 <Button
-                  size="icon"
+                  size="icon" aria-label="Loading"
                   className="rounded-full h-10 w-10"
                   onClick={handleSend}
                   disabled={!newMessage.trim() || sendMessageMutation.isPending}

@@ -105,7 +105,7 @@ export function ProductMobileCards({
  )}
  </div>
  </div>
- <Button variant="ghost" size="icon" onClick={() => onEdit(product)} className="h-10 w-10 touch-manipulation active:scale-95 flex-shrink-0">
+ <Button variant="ghost" size="icon" aria-label="Edit" onClick={() => onEdit(product)} className="h-10 w-10 touch-manipulation active:scale-95 flex-shrink-0">
  <Pencil className="h-4 w-4 text-muted-foreground" />
  </Button>
  </div>

@@ -114,7 +114,7 @@ export default function Cart() {
                         )}
                         <Button
                           variant="ghost"
-                          size="icon"
+                          size="icon" aria-label="Delete"
                           onClick={() => removeItem(item.id)}
                           className="text-muted-foreground hover:text-destructive h-7 w-7 sm:h-8 sm:w-8"
                         >

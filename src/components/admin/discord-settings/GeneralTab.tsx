@@ -29,10 +29,10 @@ export function GeneralTab({ formData, handleChange, handleCopy, copiedField }: 
             placeholder="https://discord.gg/yourserver"
             className="bg-background flex-1 h-9 text-sm"
           />
-          <Button variant="outline" size="icon" className="h-9 w-9" onClick={() => handleCopy(formData.discord_invite_url, 'invite')} disabled={!formData.discord_invite_url}>
+          <Button variant="outline" size="icon" aria-label="Confirm" className="h-9 w-9" onClick={() => handleCopy(formData.discord_invite_url, 'invite')} disabled={!formData.discord_invite_url}>
             {copiedField === 'invite' ? <Check className="h-4 w-4 text-green-400" /> : <Copy className="h-4 w-4" />}
           </Button>
-          <Button variant="outline" size="icon" className="h-9 w-9" asChild disabled={!formData.discord_invite_url}>
+          <Button variant="outline" size="icon" aria-label="Open in new tab" className="h-9 w-9" asChild disabled={!formData.discord_invite_url}>
             <a href={formData.discord_invite_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4" /></a>
           </Button>
         </div>

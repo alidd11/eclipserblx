@@ -137,7 +137,7 @@ async function checkGuildLicense(guildId) {
  </p>
  </div>
  </div>
- <Button variant="ghost" size="icon">
+ <Button variant="ghost" size="icon" aria-label="Navigate up">
  {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
  </Button>
  </div>

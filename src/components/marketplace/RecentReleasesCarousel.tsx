@@ -114,7 +114,7 @@ export function RecentReleasesCarousel() {
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Go back"
             className="h-7 w-7"
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
@@ -123,7 +123,7 @@ export function RecentReleasesCarousel() {
           </Button>
           <Button
             variant="ghost"
-            size="icon"
+            size="icon" aria-label="Go forward"
             className="h-7 w-7"
             onClick={() => scroll('right')}
             disabled={!canScrollRight}

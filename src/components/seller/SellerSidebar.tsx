@@ -372,7 +372,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             {isMobileDrawer ? (
               <Button
                 variant="ghost"
-                size="icon"
+                size="icon" aria-label="Log out"
                 className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
                 onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
               >
@@ -383,7 +383,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
-                    size="icon"
+                    size="icon" aria-label="Log out"
                     className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive hover:bg-muted/60"
                     onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
                   >
@@ -414,7 +414,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon"
+                  size="icon" aria-label="Log out"
                   className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-muted/60"
                   onClick={() => { hapticTap(); setShowSignOutDialog(true); }}
                 >

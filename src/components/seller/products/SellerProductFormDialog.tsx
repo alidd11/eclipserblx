@@ -360,7 +360,7 @@ export function SellerProductFormDialog({
                 <FileCheck className="h-5 w-5 text-green-500" />
                 <span className="flex-1 text-sm truncate">{form.asset_file_url.split('/').pop()}</span>
                 <Badge variant="secondary" className="text-xs">Main</Badge>
-                <Button type="button" variant="ghost" size="icon" onClick={removeAssetFile} className="h-8 w-8">
+                <Button type="button" variant="ghost" size="icon" aria-label="Close" onClick={removeAssetFile} className="h-8 w-8">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -375,7 +375,7 @@ export function SellerProductFormDialog({
                 <FileCheck className="h-5 w-5 text-green-500" />
                 <span className="flex-1 text-sm truncate">{file.split('/').pop()}</span>
                 <Badge variant="outline" className="text-xs">Extra</Badge>
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeAdditionalFile(index)} className="h-8 w-8">
+                <Button type="button" variant="ghost" size="icon" aria-label="Close" onClick={() => removeAdditionalFile(index)} className="h-8 w-8">
                   <X className="h-4 w-4" />
                 </Button>
               </div>
