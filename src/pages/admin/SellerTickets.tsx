@@ -87,15 +87,7 @@ const CATEGORY_LABELS: Record<string, string> = {
  other: 'Other',
 };
 
-const CANNED_RESPONSES = [
- { label: 'Greeting', text: 'Hi there! Thanks for reaching out. I\'d be happy to help you with this.' },
- { label: 'Need more info', text: 'Could you please provide more details so we can investigate further?' },
- { label: 'Looking into it', text: 'I\'m looking into this now. Please give me a moment to review the details.' },
- { label: 'Payout info', text: 'Payouts are processed within 7 business days. You can track the status in your Seller Dashboard under Payouts.' },
- { label: 'Account change processed', text: 'Your account link change has been processed. Please verify your new account from the Settings page.' },
- { label: 'Issue resolved', text: 'The issue has been resolved. Please let us know if you need anything else!' },
- { label: 'Escalating', text: 'I\'m escalating this to our senior team for further review. You\'ll hear back shortly.' },
-];
+// Canned responses are now loaded from DB via useCannedResponses hook
 
 export default function SellerTickets() {
  const { user } = useAuth();
