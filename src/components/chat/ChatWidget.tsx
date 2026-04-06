@@ -36,8 +36,9 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
   const cookieBannerVisible = showBanner && !showSettings;
   // On mobile (<768px), offset above the tab bar (56px + safe area)
   const tabBarOffset = isMobile ? '5rem' : '0px';
+  // When cookie banner is visible, push chat widget above it (banner ~4.5rem + gap)
   const bottomOffset = cookieBannerVisible
-    ? `calc(4rem + ${tabBarOffset} + env(safe-area-inset-bottom, 0px))`
+    ? `calc(8rem + ${tabBarOffset} + env(safe-area-inset-bottom, 0px))`
     : `calc(${tabBarOffset} + max(1.5rem, env(safe-area-inset-bottom, 0px) + 1rem))`;
 
   const { isCustomStoreDomain } = useStoreDomain();

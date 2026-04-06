@@ -83,7 +83,7 @@ export function LandingHero() {
 
         {/* Mobile: compact layout */}
         <div className="lg:hidden w-full flex flex-col items-center px-2">
-          <h1 className="font-display text-[4.2vw] sm:text-2xl font-bold leading-[1.15] tracking-tight mb-3 text-center uppercase whitespace-nowrap">
+          <h1 className="font-display text-[clamp(1.1rem,4.2vw,1.5rem)] font-bold leading-[1.15] tracking-tight mb-3 text-center uppercase">
             The <span className="text-gradient-hero">Marketplace</span> For {wordRotator} Creators
           </h1>
 
