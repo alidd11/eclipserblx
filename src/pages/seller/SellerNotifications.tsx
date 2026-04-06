@@ -176,7 +176,7 @@ export default function SellerNotifications() {
                   )}
                   onClick={() => handleClick(n)}
                 >
-                  <CardContent className="flex items-start gap-3 py-3 px-4">
+                  <div className="flex items-start gap-3 py-3 px-4">
                     <div className={cn('mt-0.5 shrink-0', colorClass)}>
                       <Icon className="h-5 w-5" />
                     </div>
