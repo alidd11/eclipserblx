@@ -46,7 +46,7 @@ function useChartAnimationEnabled() {
 
 /* ── Integer ticks helper ── */
 
-function useIntegerTicks(data: Record<string, unknown>[], seriesKeys: string[], maxTicks = 5): number[] {
+function useIntegerTicks(data: Record<string, number | string>[], seriesKeys: string[], maxTicks = 5): number[] {
   return useMemo(() => {
     if (!data || data.length === 0) return [0];
     let max = 0;
