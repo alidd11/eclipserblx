@@ -177,7 +177,7 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
         <div className="hidden md:flex h-16 items-center gap-4">
           {/* Left side - Back button + Logo */}
           <div className="flex items-center gap-3 shrink-0">
-            <BackButton showLabel={true} />
+            
             <Link to="/" className="flex items-center shrink-0">
               {isCustomStoreDomain && storeLogoUrl ? (
                 <img src={storeLogoUrl} alt={storeName || 'Store'} className="h-8 w-8 object-contain" />

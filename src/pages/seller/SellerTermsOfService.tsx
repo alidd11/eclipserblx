@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { SITE_NAME } from "@/lib/constants";
 import { 
   FileText, Scale, ShieldCheck, Ban, CreditCard, AlertTriangle, 
-  Mail, CheckCircle2, ArrowLeft, Loader2, DollarSign, Package,
+  Mail, CheckCircle2, Loader2, DollarSign, Package,
   Globe, Clock
 } from "lucide-react";
 import { Link } from "react-router-dom";

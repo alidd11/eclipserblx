@@ -1,5 +1,4 @@
-import { Link } from "react-router-dom";
-import { ArrowLeft, Printer } from "lucide-react";
+import { Printer } from "lucide-react";
 import { SellerLayout } from "@/components/seller/SellerLayout";
 import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
