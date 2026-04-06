@@ -231,7 +231,7 @@ export default function AdminLogin() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="gaming-card p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="border border-border rounded-xl p-6 space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
