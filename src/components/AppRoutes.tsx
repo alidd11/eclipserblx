@@ -207,6 +207,7 @@ const SellerSettingsPayments = lazyWithRetry(() => import("@/pages/seller/Seller
 const SellerSettingsNotifications = lazyWithRetry(() => import("@/pages/seller/SellerSettingsNotifications"));
 const SellerSettingsRoblox = lazyWithRetry(() => import("@/pages/seller/SellerSettingsRoblox"));
 const SellerSupport = lazyWithRetry(() => import("@/pages/seller/SellerSupport"));
+const SellerAccountHealth = lazyWithRetry(() => import("@/pages/seller/SellerAccountHealth"));
 const SellerMessages = lazyWithRetry(() => import("@/pages/seller/SellerMessages"));
 const SellerReviews = lazyWithRetry(() => import("@/pages/seller/SellerReviews"));
 const SellerDiscord = lazyWithRetry(() => import("@/pages/seller/SellerDiscord"));
