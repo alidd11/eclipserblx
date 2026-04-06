@@ -180,7 +180,7 @@ export default function Products() {
     { value: 'price-high', label: t('products.priceHighLow') },
   ];
 
-  const activeCategory = categories?.find(c => c.slug === categorySlug);
+  // activeCategory already defined above for SEO
 
   return (
     <MainLayout>
