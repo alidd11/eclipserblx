@@ -11550,6 +11550,7 @@ export type Database = {
       }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       auto_escalate_all_tickets: { Args: never; Returns: Json }
+      burn_reset_code: { Args: { p_id: string }; Returns: undefined }
       calculate_level_from_xp: { Args: { xp: number }; Returns: number }
       can_access_realtime_topic: { Args: { _topic: string }; Returns: boolean }
       can_assign_role: {
@@ -11698,6 +11699,13 @@ export type Database = {
       }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
       get_push_subscription_total: { Args: never; Returns: number }
+      get_reset_code_attempts: {
+        Args: { p_email: string }
+        Returns: {
+          attempts: number
+          id: string
+        }[]
+      }
       get_store_qualification_progress: {
         Args: { p_store_id: string }
         Returns: {
@@ -11746,6 +11754,10 @@ export type Database = {
       }
       increment_promotion_impression: {
         Args: { p_date: string; p_promotion_id: string }
+        Returns: undefined
+      }
+      increment_reset_code_attempts: {
+        Args: { p_id: string }
         Returns: undefined
       }
       increment_seller_pending_balance: {
@@ -11928,6 +11940,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      store_password_reset_code: {
+        Args: { p_code: string; p_email: string; p_expires_at: string }
+        Returns: undefined
+      }
       suggest_correction: { Args: { search_query: string }; Returns: string }
       update_category_affinity: {
         Args: { p_category_id: string; p_user_id: string; p_weight?: number }
@@ -12006,6 +12022,10 @@ export type Database = {
       validate_team_invite: {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
+      }
+      verify_password_reset_code: {
+        Args: { p_code: string; p_email: string }
+        Returns: string
       }
     }
     Enums: {
