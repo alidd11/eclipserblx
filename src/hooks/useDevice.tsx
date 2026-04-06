@@ -133,6 +133,23 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  // Network quality listener
+  useEffect(() => {
+    const conn = (navigator as any).connection;
+    if (!conn) return;
+    const handler = () => setConnectionQuality((conn.effectiveType as ConnectionQuality) ?? 'unknown');
+    conn.addEventListener('change', handler);
+    return () => conn.removeEventListener('change', handler);
+  }, []);
+
+  // Landscape orientation listener
+  useEffect(() => {
+    const mql = window.matchMedia('(orientation: landscape)');
+    const handler = () => setIsLandscape(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
   const value = useMemo<DeviceState>(() => ({
     ...breakpoint,
     isStandalone: standalone,
