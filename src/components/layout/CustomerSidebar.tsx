@@ -382,40 +382,15 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
     <aside
       aria-label="Main navigation"
       className={cn(
-        "bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-200 shrink-0 overflow-x-hidden",
-        isMobileDrawer
-          ? "h-full w-full border-0"
-          : "h-[100dvh] sticky top-0 border-r border-border/40",
-        !isMobileDrawer && (isCollapsed ? "w-12" : "w-56"),
+        "bg-sidebar text-sidebar-foreground flex flex-col shrink-0 overflow-x-hidden h-full w-full border-0",
         className
       )}
       data-gesture-exempt="true"
     >
       {/* Branded Header */}
-      <div className={cn(
-        "border-b border-border/50 flex items-center shrink-0",
-        isCollapsed ? "px-1.5 py-3 justify-center" : "px-4 py-3.5 gap-2.5"
-      )}>
+      <div className="border-b border-border/50 flex items-center shrink-0 px-4 py-3.5 gap-2.5">
         <EclipseLogo size="sm" />
-        {!isCollapsed && (
-          <span className="font-display font-bold text-sm text-foreground tracking-wide flex-1">Eclipse</span>
-        )}
-        {!isMobileDrawer && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon" aria-label="Go forward"
-                className="h-6 w-6 min-h-0 min-w-0 text-muted-foreground hover:text-foreground"
-                onClick={onToggle}
-                haptic
-              >
-                {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">{isCollapsed ? 'Expand' : 'Collapse'}</TooltipContent>
-          </Tooltip>
-        )}
+        <span className="font-display font-bold text-sm text-foreground tracking-wide flex-1">Eclipse</span>
       </div>
 
       {/* Profile Section — enterprise: tight, no gaming visuals */}
