@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.warn('[Auth] Refreshed token still invalid/stale');
           return null;
         }
-        console.log('[Auth] Refresh succeeded');
+        console.debug('[Auth] Refresh succeeded');
         return refreshed;
       })();
 
