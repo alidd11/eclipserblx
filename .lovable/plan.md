@@ -1,71 +1,106 @@
 
 
-## Redundancy & Bottleneck Audit — What to Clean Up
+## Unified UX System — Enterprise Device Adaptation Layer
 
-After a full codebase scan, there are two major categories of dead weight slowing down your deployments, adding cold-start costs, and creating confusion.
+### Problem
+
+The codebase has **7+ independent device/platform detection mechanisms** scattered across 40+ files, each implementing its own logic inline:
+
+1. `useIsMobile()` — breakpoint-based (768px), used in ~20 files
+2. `usePlatform()` — UA-based device detection, used in 1 file
+3. `useIOSKeyboardFix()` — keyboard visibility, used in 2 files
+4. `useIOSChatKeyboard()` — chat-specific keyboard handling, used in 3 files
+5. `useNetworkQuality()` — connection speed, used in **0 files** (dead code)
+6. `useEdgeSwipe()` — touch gesture, used in 1 file
+7. `useSwipeGesture()` — another touch gesture, used in 1 file
+8. Inline `isStandalone` detection — copy-pasted in **6 files** (AdminLayout, SellerLayout, InstallPrompt, AdminInstallPrompt, NotificationSettingsCard, PWAAdminRedirect)
+9. Inline `isPWA` detection — copy-pasted in **2 more files** (StaffChatRoom, PWAWrapper)
+
+An enterprise company would have **one unified device context** that all components consume, not 9 ad-hoc detection patterns.
 
 ---
 
-### Category 1: Ghost Config Entries (24 entries)
+### What Changes
 
-Your `supabase/config.toml` has **24 function entries** pointing to functions that **no longer have code**. Every deployment, the platform tries to resolve these — wasting build time and cluttering logs. These are pure noise:
+#### 1. Create `useDevice()` — Single Source of Truth
 
-`check-offender-activity`, `generate-vapid-keys`, `get-vapid-public-key`, `create-global-guard-checkout`, `create-credit-checkout`, `create-ad-subscription-checkout`, `create-identity-verification`, `check-product-purchase`, `verify-roblox-badge`, `verify-roblox-gamepass`, `verify-roblox-premium`, `verify-roblox-group`, `send-mass-email`, `send-store-deactivation-email`, `send-store-reactivation-email`, `list-staff`, `ionos-dns-manager`, `check-paypal-funding`, `check-wise-funding`, `claim-free-product`, `create-subscription-checkout`, `create-checkout`, `send-eclipse-plus-announcement`, `grant-eclipse-credits-to-members`
+A new `src/hooks/useDevice.tsx` context provider that consolidates all device state into one place:
 
-**Fix**: Remove all 24 entries from `config.toml`. Also call the delete tool to remove any lingering deployed versions.
+```text
+useDevice() returns:
+├── isMobile        (breakpoint: <768px)
+├── isTablet        (breakpoint: 768-1024px)
+├── isDesktop       (breakpoint: >1024px)
+├── isStandalone    (PWA installed mode)
+├── isIOS / isAndroid / isSafari
+├── supportsApplePay / supportsGooglePay
+├── networkQuality  ('low' | 'medium' | 'high')
+├── prefersReducedMotion
+└── isKeyboardVisible
+```
 
----
+This replaces: `useIsMobile`, `usePlatform`, `useNetworkQuality`, `useReducedMotion` (partially), and all inline `isStandalone`/`isPWA` checks.
 
-### Category 2: Eclipse+ Ghost Code (The Big One)
+#### 2. Delete Dead Code
 
-Eclipse+ was removed as a feature — the hooks (`useSubscription`, `useSubscriptionTiers`) are stubbed to return "not subscribed / no discount". But **the entire Eclipse+ surface area is still in the codebase**, creating:
+- **`useNetworkQuality.ts`** — zero consumers, delete entirely
+- **`useIOSKeyboardFix.ts`** — merge into `useDevice` (only 2 consumers)
+- **`usePlatform.ts`** — merge into `useDevice` (only 1 consumer)
 
-- **Wasted computation**: ~18 components still call `useSubscription()`, run discount calculations, and render "Join Eclipse+" CTAs that will never activate
-- **Confusing UX**: Product pages show "Eclipse+" badges and links to `/eclipse-plus` (a page that likely doesn't work)
-- **Dead backend logic**: `stripe-subscription-webhook` still grants `eclipse_plus_member` roles and credit bonuses; `sync-discord-roles` still assigns Eclipse+ Discord roles; `charge-saved-method` still calculates Eclipse+ discounts server-side
-- **Dead admin features**: Promotions page still manages "Eclipse+ days" rewards; Discord settings still configure Eclipse+ webhooks; `GrantEclipsePlusDialog` still exists
+#### 3. Consolidate Gesture Hooks
 
-Specific files with Eclipse+ dead code:
+- **`useSwipeGesture.ts`** — only used in ProductDetail for image swiping, keep as-is (purpose-specific)
+- **`useEdgeSwipe.ts`** — only used in LayoutShell for drawer, keep as-is (purpose-specific)
+- These are correctly scoped; no consolidation needed
 
-| Area | Files |
-|---|---|
-| **Frontend components** | `PriceDisplay.tsx`, `FeaturedProductCard.tsx`, `MostPopularSection.tsx`, `RecentReleasesCarousel.tsx`, `MarketplaceSection.tsx`, `PWAFeaturedProducts.tsx`, `LandingFeaturedProducts.tsx` |
-| **Pages** | `ProductDetail.tsx`, `Featured.tsx`, `Products.tsx`, `StorePage.tsx`, `Cart.tsx`, `Checkout.tsx`, `Promotions.tsx`, `TermsOfService.tsx` |
-| **Admin** | `GrantEclipsePlusDialog.tsx`, `AnnouncementsTab.tsx`, `DiscordSettings.tsx`, `StaffDirectory.tsx` |
-| **Hooks** | `useSubscription.ts` (stub), `useSubscriptionTiers.ts` (stub), `useDiscordSettings.ts` |
-| **Edge functions** | `stripe-subscription-webhook` (Eclipse+ role grants + credit bonuses), `sync-discord-roles` (Eclipse+ role sync), `charge-saved-method` (Eclipse+ pricing), `claim-signup-promotion` (Eclipse+ days rewards), `check-subscription` (full Eclipse+ check) |
-| **SEO/Sitemap** | `dynamic-sitemap` and `submit-indexnow` reference `/eclipse-plus` |
+#### 4. Migrate Consumers
 
-**Fix**: Strip all Eclipse+ references — remove discount calculations from components, remove "Join Eclipse+" CTAs, clean the edge functions of dead Eclipse+ logic, remove the Eclipse+ promotion type from admin, and remove the stubbed hooks' discount functions.
+Replace all inline `isStandalone` detection in 6 files with `const { isStandalone } = useDevice()`:
+- `AdminLayout.tsx` — remove 8 lines of standalone detection
+- `SellerLayout.tsx` — remove 8 lines of standalone detection
+- `InstallPrompt.tsx` — remove `isStandalone()` function
+- `AdminInstallPrompt.tsx` — remove `isStandalone()` function
+- `NotificationSettingsCard.tsx` — remove inline `isPWA` check
+- `StaffChatRoom.tsx` — remove inline `isPWA` check
+
+Replace `useIsMobile()` imports in ~20 files with `const { isMobile } = useDevice()`.
+
+Replace `usePlatform()` in `PaymentMethodDisplay.tsx` with `useDevice()`.
+
+Replace `useIOSKeyboardFix()` in `StoreMessages.tsx` and `SellerMessages.tsx` with `useDevice()`.
+
+#### 5. Add `DeviceProvider` to App.tsx
+
+Wrap below `AuthProvider` so all components have access.
 
 ---
 
 ### Steps
 
-1. **Remove 24 ghost entries from `config.toml`** and delete deployed ghosts
-2. **Strip Eclipse+ from frontend** — remove `useSubscription()` calls from ~18 components, remove discount badges/CTAs, remove `storeEclipseEnabled` prop threading
-3. **Strip Eclipse+ from edge functions** — remove credit bonus grant and role assignment from `stripe-subscription-webhook`, remove Eclipse+ role sync from `sync-discord-roles`, remove Eclipse+ pricing from `charge-saved-method`
-4. **Clean admin pages** — remove Eclipse+ promotion type from Promotions, remove Eclipse+ webhook config from Discord Settings, remove `GrantEclipsePlusDialog`
-5. **Clean SEO** — remove `/eclipse-plus` from sitemap and IndexNow
-6. **Simplify stubs** — since nothing uses them anymore, reduce `useSubscription.ts` and `useSubscriptionTiers.ts` to bare re-exports or delete entirely
-
-### Impact
-- Faster deployments (24 fewer ghost resolutions)
-- Cleaner product pages (no phantom discount UI)
-- Reduced edge function execution time (no dead discount math on every purchase)
-- Smaller bundle (removing ~18 unnecessary `useSubscription` hook imports)
+1. **Create `src/hooks/useDevice.tsx`** — context provider combining breakpoint listener, UA detection, standalone detection, network quality, and keyboard visibility into one subscription
+2. **Delete** `useNetworkQuality.ts`, `useIOSKeyboardFix.ts`, `usePlatform.ts`
+3. **Keep** `use-mobile.tsx` as a thin re-export (`export const useIsMobile = () => useDevice().isMobile`) for backward compat during migration
+4. **Update 6 files** with inline `isStandalone` — replace with `useDevice()`
+5. **Update ~20 files** using `useIsMobile` — switch import to `useDevice`
+6. **Update `PaymentMethodDisplay.tsx`** — replace `usePlatform()` with `useDevice()`
+7. **Update `StoreMessages.tsx` and `SellerMessages.tsx`** — replace `useIOSKeyboardFix()` with `useDevice()`
+8. **Add `DeviceProvider`** to `App.tsx` provider tree
+9. **Verify build** passes with zero errors
 
 ### Files Changed
-- `supabase/config.toml` — Remove 24 ghost entries
-- ~18 frontend component/page files — Remove `useSubscription` imports and Eclipse+ UI
-- `supabase/functions/stripe-subscription-webhook/index.ts` — Remove Eclipse+ role/credit logic
-- `supabase/functions/sync-discord-roles/index.ts` — Remove Eclipse+ role sync
-- `supabase/functions/charge-saved-method/index.ts` — Remove Eclipse+ pricing
-- `supabase/functions/_shared/stripe-helpers.ts` — Remove Eclipse+ discount constants
-- `src/pages/admin/Promotions.tsx` — Remove Eclipse+ promotion type
-- `src/components/admin/GrantEclipsePlusDialog.tsx` — Delete
-- `src/components/admin/discord-settings/AnnouncementsTab.tsx` — Remove Eclipse+ webhook
-- `src/hooks/useDiscordSettings.ts` — Remove Eclipse+ webhook/channel fields
-- `supabase/functions/dynamic-sitemap/index.ts` — Remove `/eclipse-plus` URL
-- `supabase/functions/submit-indexnow/index.ts` — Remove `/eclipse-plus` URL
+- **Create**: `src/hooks/useDevice.tsx`
+- **Delete**: `src/hooks/useNetworkQuality.ts`, `src/hooks/useIOSKeyboardFix.ts`, `src/hooks/usePlatform.ts`
+- **Edit**: `src/hooks/use-mobile.tsx` (thin re-export wrapper)
+- **Edit**: `src/App.tsx` (add DeviceProvider)
+- **Edit**: `src/components/admin/AdminLayout.tsx`, `src/components/seller/SellerLayout.tsx`, `src/components/pwa/InstallPrompt.tsx`, `src/components/pwa/AdminInstallPrompt.tsx`, `src/components/account/NotificationSettingsCard.tsx`, `src/components/chat/StaffChatRoom.tsx` (replace inline standalone)
+- **Edit**: `src/components/payments/PaymentMethodDisplay.tsx` (replace usePlatform)
+- **Edit**: `src/pages/StoreMessages.tsx`, `src/pages/seller/SellerMessages.tsx` (replace useIOSKeyboardFix)
+- **Edit**: ~15 additional files replacing `useIsMobile` imports
+
+### Impact
+- One device context subscription per app mount instead of 20+ independent listeners
+- Zero copy-pasted standalone detection
+- 3 dead/redundant hooks deleted
+- Every component gets consistent device state from the same source
+- Adding new device capabilities (e.g., `hasNotch`, `supportsHaptics`) is a one-line addition to the provider instead of a new hook
 
