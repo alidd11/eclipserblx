@@ -1036,3 +1036,39 @@ img[data-fade-in="true"][data-loaded="true"] {
     --tab-bar-height: 0px;
   }
 }
+
+/* ── Scrollbar hide utilities ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+
+/* ── Hover guard: disable sticky hover on touch devices ── */
+@media (hover: none) {
+  .hover\:bg-accent:hover,
+  .hover\:bg-muted:hover,
+  .hover\:bg-muted\/50:hover,
+  .hover\:bg-primary:hover,
+  .hover\:bg-secondary:hover,
+  .hover\:bg-destructive:hover,
+  .hover\:bg-card:hover,
+  .hover\:text-foreground:hover,
+  .hover\:text-primary:hover,
+  .hover\:text-accent-foreground:hover,
+  .hover\:opacity-80:hover,
+  .hover\:opacity-90:hover,
+  .hover\:opacity-100:hover,
+  .hover\:underline:hover,
+  .hover\:no-underline:hover,
+  .hover\:shadow-md:hover,
+  .hover\:shadow-lg:hover,
+  .hover\:scale-105:hover,
+  .hover\:border-primary:hover {
+    all: unset;
+  }
+}
+
+/* ── Overscroll containment for native feel ── */
+main, [role="main"] {
+  overscroll-behavior-y: contain;
+}

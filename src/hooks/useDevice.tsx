@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState, ReactNode, useMemo } fr
 const MOBILE_BREAKPOINT = 768;
 const TABLET_BREAKPOINT = 1024;
 
+type ConnectionQuality = '4g' | '3g' | '2g' | 'slow-2g' | 'unknown';
+
 interface DeviceState {
   // Breakpoints
   isMobile: boolean;
@@ -23,6 +25,11 @@ interface DeviceState {
   isKeyboardVisible: boolean;
   // Accessibility
   prefersReducedMotion: boolean;
+  // Network
+  connectionQuality: ConnectionQuality;
+  isSlowConnection: boolean;
+  // Orientation
+  isLandscape: boolean;
 }
 
 const defaults: DeviceState = {
@@ -39,6 +46,9 @@ const defaults: DeviceState = {
   supportsGooglePay: false,
   isKeyboardVisible: false,
   prefersReducedMotion: false,
+  connectionQuality: 'unknown',
+  isSlowConnection: false,
+  isLandscape: false,
 };
 
 const DeviceContext = createContext<DeviceState>(defaults);
@@ -76,6 +86,14 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     if (typeof window === 'undefined') return false;
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  });
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>(() => {
+    if (typeof navigator === 'undefined') return 'unknown';
+    return ((navigator as any).connection?.effectiveType as ConnectionQuality) ?? 'unknown';
+  });
+  const [isLandscape, setIsLandscape] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(orientation: landscape)').matches;
   });
 
   // Breakpoint listener
@@ -115,6 +133,25 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     return () => mql.removeEventListener('change', handler);
   }, []);
 
+  // Network quality listener
+  useEffect(() => {
+    const conn = (navigator as any).connection;
+    if (!conn) return;
+    const handler = () => setConnectionQuality((conn.effectiveType as ConnectionQuality) ?? 'unknown');
+    conn.addEventListener('change', handler);
+    return () => conn.removeEventListener('change', handler);
+  }, []);
+
+  // Landscape orientation listener
+  useEffect(() => {
+    const mql = window.matchMedia('(orientation: landscape)');
+    const handler = () => setIsLandscape(mql.matches);
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
+  const isSlowConnection = connectionQuality === 'slow-2g' || connectionQuality === '2g' || connectionQuality === '3g';
+
   const value = useMemo<DeviceState>(() => ({
     ...breakpoint,
     isStandalone: standalone,
@@ -123,7 +160,10 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
     supportsGooglePay: platform.isAndroid,
     isKeyboardVisible,
     prefersReducedMotion,
-  }), [breakpoint, standalone, platform, isKeyboardVisible, prefersReducedMotion]);
+    connectionQuality,
+    isSlowConnection,
+    isLandscape,
+  }), [breakpoint, standalone, platform, isKeyboardVisible, prefersReducedMotion, connectionQuality, isSlowConnection, isLandscape]);
 
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;
 }

@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { useChatPanel } from '@/hooks/useChatPanel';
 import { useCookieConsent } from '@/hooks/useCookieConsent';
 import { useStoreDomain } from '@/hooks/useStoreDomain';
+import { useDevice } from '@/hooks/useDevice';
 import { forwardRef } from 'react';
 
 // Opening hours configuration (24-hour format)
@@ -31,9 +32,9 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
   const { showBanner, showSettings } = useCookieConsent();
   const status = getOpeningStatus();
 
+  const { isMobile } = useDevice();
   const cookieBannerVisible = showBanner && !showSettings;
   // On mobile (<768px), offset above the tab bar (56px + safe area)
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const tabBarOffset = isMobile ? '5rem' : '0px';
   const bottomOffset = cookieBannerVisible
     ? `calc(4rem + ${tabBarOffset} + env(safe-area-inset-bottom, 0px))`
