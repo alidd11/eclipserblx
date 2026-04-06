@@ -49,7 +49,7 @@ const faqSections: FAQSection[] = [
     questions: [
       {
         q: "How much do I earn per sale?",
-        a: "Base sellers keep 85% of net earnings (after Stripe fees). Eclipse+ member sellers keep 90%. Commission is calculated AFTER payment processing fees, not on the gross amount.",
+        a: "Sellers keep 85% of net earnings (after Stripe fees). Pro+ member sellers keep 90%. Commission is calculated AFTER payment processing fees, not on the gross amount.",
       },
       {
         q: "When can I request a payout?",
@@ -59,10 +59,8 @@ const faqSections: FAQSection[] = [
         q: "How long do payouts take?",
         a: "Stripe Connect: 2-7 business days (automatic). PayPal: 3-5 business days (manual request). Bank Transfer via Wise: 5-7 business days (manual request).",
       },
-      {
-        q: "Do Eclipse+ buyer discounts affect my earnings?",
-        a: "No. When an Eclipse+ member buys your product at a discounted price, the platform absorbs the discount. You always earn based on the full listing price.",
-      },
+
+
       {
         q: "Are there any hidden fees?",
         a: "No. The only deductions are the Stripe payment processing fee (1.5% + £0.20 for UK transactions) and the platform commission. Everything is transparent in your earnings dashboard.",
