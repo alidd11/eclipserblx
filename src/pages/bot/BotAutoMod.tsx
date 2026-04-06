@@ -177,7 +177,7 @@ export default function BotAutoMod() {
  <div className="p-8 text-center text-foreground/40">No auto-mod rules configured yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {rules.map((rule: any) => {
+ {rules.map((rule) => {
  const ruleType = RULE_TYPES.find(t => t.value === rule.rule_type);
  const Icon = ruleType?.icon || ShieldAlert;
  return (
