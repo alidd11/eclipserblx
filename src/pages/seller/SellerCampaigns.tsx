@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format, formatDistanceToNow, isPast, isFuture } from '@/lib/dateUtils';
-import { Calendar, Clock, Percent, Plus, Trash2, Megaphone, Timer } from 'lucide-react';
+import { Calendar, Clock, Percent, Plus, Trash2, Timer } from 'lucide-react';
 
 export default function SellerCampaigns() {
   const { store } = useSellerStatus();
