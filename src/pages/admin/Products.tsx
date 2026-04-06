@@ -170,7 +170,7 @@ export default function AdminProducts() {
       cm.push(watermarkedUrl);
       setForm({ ...form, images: cm.join(', ') });
       toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
-    } catch (error: unknown) { toast.error(`Upload failed: ${error.message}`); }
+    } catch (error: unknown) { toast.error(`Upload failed: ${(error as Error).message}`); }
     finally {
       if (type === 'image') { setIsUploadingImage(false); if (imageInputRef.current) imageInputRef.current.value = ''; }
       else { setIsUploadingVideo(false); if (videoInputRef.current) videoInputRef.current.value = ''; }
