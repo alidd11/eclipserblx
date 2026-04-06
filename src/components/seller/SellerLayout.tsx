@@ -122,9 +122,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <LayoutShell
-        desktopSidebar={
-          <SellerSidebar collapsed={false} onToggle={() => {}} className="hidden md:flex" />
-        }
+        desktopSidebar={null}
         mobileSidebar={(onClose) => (
           <SellerSidebar
             collapsed={false}
@@ -139,7 +137,7 @@ export function SellerLayout({ children }: SellerLayoutProps) {
               <Button
                 variant="ghost"
                 size="icon" aria-label="Menu"
-                className="shrink-0 md:hidden"
+                className="shrink-0"
                 onClick={onMenuClick}
               >
                 <Menu className="h-5 w-5" />

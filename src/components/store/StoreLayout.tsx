@@ -81,7 +81,7 @@ export function StoreLayout({
 
   return (
     <LayoutShell
-      desktopSidebar={<StoreSidebar {...sidebarProps} />}
+      desktopSidebar={null}
       mobileSidebar={(onClose) => (
         <StoreSidebar {...sidebarProps} onNavigate={onClose} isMobileDrawer />
       )}

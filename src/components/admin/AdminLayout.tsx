@@ -191,9 +191,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   return (
     <TooltipProvider delayDuration={0}>
       <LayoutShell
-        desktopSidebar={
-          <AdminSidebar collapsed={false} onToggle={() => {}} />
-        }
+        desktopSidebar={null}
         mobileSidebar={(onClose) => (
           <AdminSidebar
             collapsed={false}
@@ -214,7 +212,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
                 <Button
                   variant="ghost"
                   size="icon" aria-label="Menu"
-                  className="shrink-0 md:hidden"
+                  className="shrink-0"
                   onClick={onMenuClick}
                 >
                   <Menu className="h-5 w-5" />
