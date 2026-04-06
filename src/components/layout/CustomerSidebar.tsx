@@ -3,7 +3,7 @@ import {
   Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
   HelpCircle, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell,
-  Sparkles, Heart, LogOut, ChevronLeft, ChevronRight,
+  Sparkles, Heart, LogOut,
   MessageSquareText, Megaphone, FileQuestion, LayoutGrid, Shield,
   Globe, PenTool, Zap, Crown, ShoppingBag
 } from 'lucide-react';
@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { useNotifications } from '@/hooks/useNotifications';
 
 import { DiscordIcon } from './sidebar/SidebarBrandIcons';
-import { ICON_SIZE, ICON_SIZE_SMALL, ICON_STROKE_ACTIVE, ICON_STROKE_DEFAULT, SIDEBAR_STORAGE_KEY } from './sidebar/sidebarConstants';
+import { ICON_SIZE, ICON_SIZE_SMALL, ICON_STROKE_ACTIVE, ICON_STROKE_DEFAULT, SIDEBAR_GROUPS_KEY } from './sidebar/sidebarConstants';
 import { SidebarFooter } from './sidebar/SidebarFooter';
 
 interface NavItem {
@@ -48,14 +48,11 @@ interface NavGroup {
 }
 
 interface CustomerSidebarProps {
-  collapsed: boolean;
-  onToggle: () => void;
   onNavigate?: () => void;
-  isMobileDrawer?: boolean;
   className?: string;
 }
 
-export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer = false, className }: CustomerSidebarProps) {
+export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps) {
   const { user, signOut } = useAuth();
   const { discordUrl } = useDiscordUrl();
   const { isSeller } = useSellerStatus();
@@ -101,7 +98,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   });
 
   const { unreadCount: unreadNotifications } = useNotifications();
-  const isCollapsed = isMobileDrawer ? false : collapsed;
+  const isCollapsed = false; // Always expanded in drawer mode
 
   // Build browse items: explore + resource categories merged
   const browseItems: NavItem[] = [
@@ -162,7 +159,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
 
   // Initialize open groups from localStorage
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
-    const stored = safeStorage.getItem(SIDEBAR_STORAGE_KEY);
+    const stored = safeStorage.getItem(SIDEBAR_GROUPS_KEY);
     if (stored) {
       try { return JSON.parse(stored); } catch { return {}; }
     }
@@ -170,7 +167,7 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
   });
 
   useEffect(() => {
-    safeStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(openGroups));
+    safeStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(openGroups));
   }, [openGroups]);
 
   // Auto-expand group containing current route
@@ -385,40 +382,15 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
     <aside
       aria-label="Main navigation"
       className={cn(
-        "bg-sidebar text-sidebar-foreground flex flex-col transition-all duration-200 shrink-0 overflow-x-hidden",
-        isMobileDrawer
-          ? "h-full w-full border-0"
-          : "h-[100dvh] sticky top-0 border-r border-border/40",
-        !isMobileDrawer && (isCollapsed ? "w-12" : "w-56"),
+        "bg-sidebar text-sidebar-foreground flex flex-col shrink-0 overflow-x-hidden h-full w-full border-0",
         className
       )}
       data-gesture-exempt="true"
     >
       {/* Branded Header */}
-      <div className={cn(
-        "border-b border-border/50 flex items-center shrink-0",
-        isCollapsed ? "px-1.5 py-3 justify-center" : "px-4 py-3.5 gap-2.5"
-      )}>
+      <div className="border-b border-border/50 flex items-center shrink-0 px-4 py-3.5 gap-2.5">
         <EclipseLogo size="sm" />
-        {!isCollapsed && (
-          <span className="font-display font-bold text-sm text-foreground tracking-wide flex-1">Eclipse</span>
-        )}
-        {!isMobileDrawer && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon" aria-label="Go forward"
-                className="h-6 w-6 min-h-0 min-w-0 text-muted-foreground hover:text-foreground"
-                onClick={onToggle}
-                haptic
-              >
-                {isCollapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">{isCollapsed ? 'Expand' : 'Collapse'}</TooltipContent>
-          </Tooltip>
-        )}
+        <span className="font-display font-bold text-sm text-foreground tracking-wide flex-1">Eclipse</span>
       </div>
 
       {/* Profile Section — enterprise: tight, no gaming visuals */}
@@ -465,25 +437,6 @@ export function CustomerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawe
         </div>
       )}
 
-      {/* Collapsed: seller CTA */}
-      {user && isCollapsed && isSeller && (
-        <div className="border-b border-border/50 px-1.5 py-2 flex justify-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <a
-                href="/seller"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleNavClick}
-                className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors hover:bg-primary/15"
-              >
-                <Zap className="h-3.5 w-3.5" />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="right">Seller Dashboard</TooltipContent>
-          </Tooltip>
-        </div>
-      )}
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-2 pb-[env(safe-area-inset-bottom)] overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0 touch-pan-y">

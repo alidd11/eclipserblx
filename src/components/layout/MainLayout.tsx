@@ -1,44 +1,25 @@
-import { ReactNode, useState, useCallback } from 'react';
+import { ReactNode } from 'react';
 import { LayoutShell } from './LayoutShell';
 import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
 import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
-import { safeStorage } from '@/lib/safeStorage';
 import { useAutoPageMeta } from '@/hooks/useAutoPageMeta';
 
 interface MainLayoutProps {
   children: ReactNode;
   showFooter?: boolean;
-  
 }
-
-const COLLAPSE_KEY = 'sidebar-collapsed';
 
 function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
   useDeferredScheduledReleaseCheck();
   useAutoPageMeta();
 
-  const [collapsed, setCollapsed] = useState(() => safeStorage.getItem(COLLAPSE_KEY) === 'true');
-
-  const handleToggle = useCallback(() => {
-    setCollapsed(prev => {
-      const next = !prev;
-      safeStorage.setItem(COLLAPSE_KEY, String(next));
-      return next;
-    });
-  }, []);
-
   return (
     <LayoutShell
-      desktopSidebar={
-        <CustomerSidebar collapsed={collapsed} onToggle={handleToggle} />
-      }
+      desktopSidebar={null}
       mobileSidebar={(onClose) => (
         <CustomerSidebar
-          collapsed={false}
-          onToggle={onClose}
           onNavigate={onClose}
-          isMobileDrawer
         />
       )}
       headerProps={{ mobileFixed: true, showDesktopNav: true }}

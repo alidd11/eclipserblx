@@ -175,9 +175,17 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
 
         {/* Desktop header row */}
         <div className="hidden md:flex h-16 items-center gap-4">
-          {/* Left side - Back button + Logo */}
+          {/* Left side - Hamburger + Logo */}
           <div className="flex items-center gap-3 shrink-0">
-            
+            {onMenuClick && (
+              <button
+                className="h-9 w-9 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                onClick={onMenuClick}
+                aria-label={t('common.openMenu', 'Open menu')}
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            )}
             <Link to="/" className="flex items-center shrink-0">
               {isCustomStoreDomain && storeLogoUrl ? (
                 <img src={storeLogoUrl} alt={storeName || 'Store'} className="h-8 w-8 object-contain" />
