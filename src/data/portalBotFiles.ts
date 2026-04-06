@@ -1,5 +1,5 @@
 // Static bot source code files for the Portal Bot Setup page.
-export const BOT_FILES: Record<string, string> = 
+export const BOT_FILES: Record<string, string> = {
   'package.json': `{
   "name": "eclipse-portal-bot",
   "version": "1.0.0",
