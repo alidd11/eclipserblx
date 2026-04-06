@@ -159,7 +159,6 @@ export default function SellerDashboard() {
         {/* ── Onboarding ── */}
         <SellerOnboardingWizard />
         <SellerHeroBanner />
-        <StoreSetupChecklist />
 
         {/* ── Revenue Summary Stats ── */}
         <RevenueSummaryStats />
