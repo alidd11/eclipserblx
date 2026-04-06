@@ -105,11 +105,6 @@ export default function SellerTermsOfService() {
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Link to="/seller/documents">
-            <Button variant="ghost" size="icon" aria-label="Go back">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
           <div className="flex-1">
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">Seller Terms of Service</h1>
