@@ -130,7 +130,7 @@ export function SocialLoginButtons({ loading, onError }: SocialLoginButtonsProps
           key={provider.id}
           type="button"
           variant="outline"
-          className="w-full h-11 text-sm font-medium border-border/60 hover:bg-accent/50 hover:border-border transition-all"
+          className="w-full h-12 text-sm font-medium border-border/60 hover:bg-accent/50 hover:border-border transition-all"
           disabled={disabled}
           onClick={provider.onClick}
         >

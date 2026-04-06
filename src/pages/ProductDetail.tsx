@@ -1,20 +1,18 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { ShoppingCart, Check, ChevronLeft, Package, Sparkles, ZoomIn, Star, MessageSquare, BadgeCheck, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Sparkles, ZoomIn, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
-import { ReviewForm } from '@/components/reviews/ReviewForm';
-import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
@@ -40,6 +38,8 @@ import { ReviewSchema } from '@/components/seo/ReviewSchema';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { FrequentlyBoughtTogether } from '@/components/product/FrequentlyBoughtTogether';
+import { ProductReviewsSection } from '@/components/product/ProductReviewsSection';
+import { RelatedProductsSection } from '@/components/product/RelatedProductsSection';
 import { usePromotedProduct } from '@/hooks/usePromotedProduct';
 import { PromotedProductCard } from '@/components/marketplace/PromotedProductCard';
 import { PriceAlertButton } from '@/components/product/PriceAlertButton';
@@ -59,8 +59,6 @@ export default function ProductDetail() {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isZoomOpen, setIsZoomOpen] = useState(false);
   const [showSwipeHint, setShowSwipeHint] = useState(true);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [showVerifiedOnly, setShowVerifiedOnly] = useState(false);
   const [showIPReportDialog, setShowIPReportDialog] = useState(false);
   const [pwywAmount, setPwywAmount] = useState<string>('');
   const [selectedBundle, setSelectedBundle] = useState<{
@@ -81,7 +79,6 @@ export default function ProductDetail() {
     const timer = setTimeout(() => setShowSwipeHint(false), 3000);
     return () => clearTimeout(timer);
   }, [showSwipeHint]);
-
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['product', productNumber] });
@@ -281,16 +278,8 @@ export default function ProductDetail() {
     enabled: !!product?.id,
   });
 
-  // Filter reviews based on verified purchase toggle
-  const filteredReviews = useMemo(() => {
-    if (!productReviews) return [];
-    if (!showVerifiedOnly) return productReviews;
-    return productReviews.filter(r => r.is_verified_purchase);
-  }, [productReviews, showVerifiedOnly]);
 
-  const verifiedCount = useMemo(() => {
-    return productReviews?.filter(r => r.is_verified_purchase).length || 0;
-  }, [productReviews]);
+
 
   // Calculate average rating and review count for the overlay
   const { averageRating, reviewCount } = useMemo(() => {
@@ -307,7 +296,6 @@ export default function ProductDetail() {
     if (location.hash === '#reviews' && reviewSectionRef.current && product) {
       setTimeout(() => {
         reviewSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-        setShowReviewForm(true);
       }, 500);
     }
   }, [location.hash, product]);
@@ -827,194 +815,18 @@ export default function ProductDetail() {
           </div>
 
         {/* Reviews Section */}
-        <section ref={reviewSectionRef} id="reviews" className="scroll-mt-8 border-t border-border/60 pt-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-foreground/70">
-              Reviews
-              {productReviews && productReviews.length > 0 && (
-                <span className="text-xs font-normal text-muted-foreground normal-case tracking-normal">({productReviews.length})</span>
-              )}
-            </h2>
-            {hasPurchased && !existingReview && user && (
-              <Button 
-                onClick={() => setShowReviewForm(!showReviewForm)}
-                variant={showReviewForm ? "outline" : "default"}
-                size="sm"
-                className="h-8 text-xs"
-              >
-                {showReviewForm ? 'Cancel' : 'Write a Review'}
-              </Button>
-            )}
-          </div>
-          <div className="space-y-4">
-              {/* Review Form - only show if user purchased and hasn't reviewed */}
-              {showReviewForm && hasPurchased && !existingReview && user && (
-                <div className="border-b border-border pb-6">
-                  <ReviewForm 
-                    productId={product.id} 
-                    productName={product.name}
-                    isVerifiedPurchase={true}
-                    onSuccess={() => {
-                      setShowReviewForm(false);
-                      queryClient.invalidateQueries({ queryKey: ['product-reviews', product.id] });
-                      queryClient.invalidateQueries({ queryKey: ['user-existing-review', product.id, user.id] });
-                      // Mark review reminder as submitted (fire-and-forget, errors are non-critical)
-                      supabase
-                        .from('review_reminders')
-                        .update({ review_submitted: true })
-                        .eq('user_id', user.id)
-                        .eq('product_id', product.id)
-                        .then(({ error }) => {
-                          if (error) console.warn('Failed to mark review reminder:', error.message);
-                        });
-                    }}
-                  />
-                </div>
-              )}
-
-              {/* Existing Review Notice */}
-              {existingReview && (
-                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 text-center">
-                  <p className="text-sm text-primary">
-                    ✓ You've already submitted a review for this product. Thank you!
-                  </p>
-                </div>
-              )}
-
-              {/* Purchase Required Notice */}
-              {user && !hasPurchased && (
-                <div className="bg-muted/50 border border-border rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Purchase this product to leave a review
-                  </p>
-                </div>
-              )}
-
-              {/* Sign In Notice */}
-              {!user && (
-                <div className="bg-muted/50 border border-border rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    <Link to="/auth" className="text-primary hover:underline">Sign in</Link> to leave a review
-                  </p>
-                </div>
-              )}
-
-              {/* Verified Filter Toggle */}
-              {productReviews && productReviews.length > 0 && verifiedCount > 0 && (
-                <div className="flex items-center justify-between border-b border-border pb-4">
-                  <span className="text-sm text-muted-foreground">
-                    {productReviews.length} {productReviews.length === 1 ? 'review' : 'reviews'} 
-                    {verifiedCount > 0 && ` (${verifiedCount} verified)`}
-                  </span>
-                  <Button
-                    variant={showVerifiedOnly ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setShowVerifiedOnly(!showVerifiedOnly)}
-                    className="gap-1.5"
-                  >
-                    <BadgeCheck className="h-4 w-4" />
-                    Verified Only
-                  </Button>
-                </div>
-              )}
-
-              {/* Reviews List */}
-              {filteredReviews && filteredReviews.length > 0 ? (
-                <div className="space-y-4">
-                  {filteredReviews.map((review) => (
-                    <div key={review.id} className="border-b border-border pb-4 last:border-0 last:pb-0">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          {review.profile?.avatar_url ? (
-                            <img 
-                              src={review.profile.avatar_url} 
-                              alt="" 
-                              className="w-full h-full rounded-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-sm font-bold text-primary">
-                              {(review.profile?.display_name || review.external_reviewer_name || 'U').charAt(0).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-sm">
-                              {review.profile?.display_name || review.external_reviewer_name || 'Anonymous'}
-                            </span>
-                            {review.is_verified_purchase && <VerifiedPurchaseBadge />}
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star 
-                                  key={star}
-                                  className={cn(
-                                    "h-3.5 w-3.5",
-                                    star <= review.rating 
-                                      ? "text-amber-400 fill-amber-400" 
-                                      : "text-muted-foreground"
-                                  )}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(review.created_at).toLocaleDateString()}
-                            </span>
-                          </div>
-                          {review.title && (
-                            <h4 className="font-medium mt-1">{review.title}</h4>
-                          )}
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {review.content}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : showVerifiedOnly && productReviews && productReviews.length > 0 ? (
-                <p className="text-center text-muted-foreground py-4">
-                  No verified purchase reviews yet.
-                </p>
-              ) : (
-                <p className="text-center text-muted-foreground py-4">
-                  No reviews yet. Be the first to share your experience!
-                </p>
-              )}
-          </div>
-        </section>
+        <ProductReviewsSection
+          ref={reviewSectionRef as React.RefObject<HTMLElement>}
+          productId={product.id}
+          productName={product.name}
+          reviews={productReviews || []}
+          userId={user?.id}
+          hasPurchased={!!hasPurchased}
+          existingReview={!!existingReview}
+        />
         </div>
 
-        {relatedProducts && relatedProducts.length > 0 && (
-          <section className="border-t border-border pt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Package className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-sm font-semibold text-foreground">Related Products</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {relatedProducts.map((p) => (
-                <Link 
-                  key={p.id} 
-                  to={`/products/${(p as any).product_number}`}
-                  className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
-                >
-                  <div className="aspect-square bg-muted overflow-hidden">
-                    {p.images?.[0] ? (
-                      <img src={p.images[0]} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-lg font-bold text-muted-foreground/30">{p.name.charAt(0)}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-2">
-                    <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
-                    <p className="text-xs font-bold text-muted-foreground">{formatPrice(p.price)}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        <RelatedProductsSection products={relatedProducts || []} />
         <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
         <SponsoredProductSection categoryId={product.category_id} />
         <RecentlyViewedProducts currentProductId={product.id} />
