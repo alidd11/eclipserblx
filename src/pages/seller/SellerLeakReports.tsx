@@ -125,17 +125,25 @@ export default function SellerLeakReports() {
     onError: () => toast.error('Failed to update auto-scan setting'),
   });
 
-  const dismissResult = useMutation({
-    mutationFn: async (id: string) => {
+  const updateResultStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { error } = await (supabase as any)
         .from('leak_scan_results')
-        .update({ dismissed: true })
+        .update({ status, dismissed: status !== 'active' })
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, { status }) => {
+      const labels: Record<string, string> = {
+        ignored: 'Marked as ignored',
+        resolved: 'Marked as resolved',
+        false_positive: 'Marked as false positive',
+        active: 'Restored to active',
+      };
+      toast.success(labels[status] || 'Status updated');
       queryClient.invalidateQueries({ queryKey: ['leak-scan-results'] });
     },
+    onError: () => toast.error('Failed to update status'),
   });
 
   // --- File validation & handling ---
