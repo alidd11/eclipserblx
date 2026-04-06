@@ -47,15 +47,15 @@ export function LandingHero() {
     <section aria-labelledby="hero-heading" className="relative overflow-hidden">
       <HeroBanner />
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-10 relative z-10">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12 relative z-10">
         {/* Desktop: centered layout */}
         <div className="hidden lg:flex lg:flex-col lg:items-center lg:text-center">
           <h1 id="hero-heading" className="font-display text-3xl lg:text-5xl font-bold leading-[1.08] tracking-tight mb-4 max-w-2xl drop-shadow-md">
             The Marketplace for {wordRotator} Creators
           </h1>
 
-          <p className="text-sm text-foreground/60 max-w-md mb-6 leading-relaxed">
-            Premium scripts, models, UI kits and game assets. Lower fees, instant delivery.
+          <p className="text-sm sm:text-base text-foreground/60 max-w-md mb-6 leading-relaxed">
+            Premium scripts, models, UI kits and game assets.<br className="hidden sm:block" /> Lower fees, instant delivery.
           </p>
 
           <div className="flex items-center gap-4 mt-2">
