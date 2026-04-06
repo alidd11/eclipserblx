@@ -316,7 +316,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Check if user has active Eclipse+ subscription
+      // Check if user has active subscription
       if (eclipsePlusRoleId) {
         const { data: subscription } = await supabase
           .from("subscriptions")
@@ -326,8 +326,8 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (subscription) {
-          const result = await assignDiscordRole(botToken, guildId, eclipsePlusRoleId, discordUser.id, "Eclipse+");
-          if (result.success) rolesAssigned.push("Eclipse+");
+          const result = await assignDiscordRole(botToken, guildId, eclipsePlusRoleId, discordUser.id, "Pro");
+          if (result.success) rolesAssigned.push("Pro");
         }
       }
 

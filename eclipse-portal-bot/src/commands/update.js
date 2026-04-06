@@ -44,8 +44,8 @@ export async function handleUpdate(interaction, serverContext) {
         if (config.customerRoleId) rolesToRemove.push({ id: config.customerRoleId, name: 'Customer' });
         if (config.loyalCustomerRoleId) rolesToRemove.push({ id: config.loyalCustomerRoleId, name: 'Loyal Customer' });
       }
-      if (hasSubscription && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Eclipse+' });
-      else if (config.eclipsePlusRoleId) rolesToRemove.push({ id: config.eclipsePlusRoleId, name: 'Eclipse+' });
+      if (hasSubscription && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Pro' });
+      else if (config.eclipsePlusRoleId) rolesToRemove.push({ id: config.eclipsePlusRoleId, name: 'Pro' });
       if (hasStore && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       else if (config.storeCreatorRoleId) rolesToRemove.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       if (isVerified && config.verifiedSellerRoleId) rolesToAssign.push({ id: config.verifiedSellerRoleId, name: 'Verified Seller' });

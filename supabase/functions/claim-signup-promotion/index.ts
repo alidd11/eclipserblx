@@ -107,7 +107,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Check if user already has an active paid Eclipse+ subscription
+      // Check if user already has an active paid subscription
       const { data: existingSub } = await supabase
         .from("subscriptions")
         .select("*")
@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
         .maybeSingle();
 
       if (existingSub && existingSub.status === "active" && existingSub.stripe_subscription_id) {
-        console.log("User already has paid Eclipse+ subscription");
+        console.log("User already has paid subscription");
         continue;
       }
 
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
         continue;
       }
 
-      // Grant the Eclipse+ subscription
+      // Grant the subscription
       const startDate = new Date();
       const endDate = new Date(startDate);
       const days = Math.min(promo.eclipse_plus_days || 30, 365); // Cap at 365 days
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
         .eq("id", promo.id)
         .lte("current_claims", promo.current_claims || 0); // Only if count hasn't changed
 
-      console.log(`Successfully granted ${days} days Eclipse+ from promotion: ${promo.name}`);
+      console.log(`Successfully granted ${days} days Pro from promotion: ${promo.name}`);
 
       return new Response(
         JSON.stringify({

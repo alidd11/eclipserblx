@@ -221,7 +221,7 @@ serve(async (req) => {
       if (offer.reward_type && offer.reward_value) {
         let rewardText = '';
         if (offer.reward_type === 'eclipse_plus_days') {
-          rewardText = `${offer.reward_value} days of Eclipse+ free!`;
+          rewardText = `${offer.reward_value} days of Pro free!`;
         } else if (offer.reward_type === 'discount') {
           rewardText = `${offer.reward_value}% discount`;
         } else {

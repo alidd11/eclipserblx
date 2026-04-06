@@ -359,7 +359,7 @@ serve(async (req) => {
                 storeId: store.id, 
                 oldRate: store.commission_rate, 
                 newRate: newCommissionRate,
-                reason: isActive ? "Eclipse+ activated" : "Eclipse+ deactivated"
+                reason: isActive ? "Subscription activated" : "Subscription deactivated"
               });
             }
           } else {

@@ -200,7 +200,7 @@ Deno.serve(async (req) => {
         guildId,
         guildName,
         status: "failed",
-        error: "Server limit exceeded - upgrade to Eclipse+ for unlimited servers",
+        error: "Server limit exceeded - upgrade your plan for unlimited servers",
       });
     }
 

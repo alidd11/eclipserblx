@@ -321,8 +321,8 @@ Deno.serve(async (req) => {
           
           if (sellerId) {
             // Calculate net-based seller earnings
-            // Use full product price so sellers earn the same regardless of Eclipse+ discounts
-            // The platform absorbs the Eclipse+ discount
+            // Use full product price so sellers earn the same regardless of membership discounts
+            // The platform absorbs the membership discount
             const grossAmount = product.price;
             // Allocate Stripe fee proportionally (for record-keeping only)
             const proportionalStripeFee = sellerProductCount > 0 

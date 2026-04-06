@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
 
       const staticPages = [
         "/", "/products", "/stores", "/categories", "/featured",
-        "/eclipse-plus", "/faq", "/help-center", "/sell", "/contact",
+        "/faq", "/help-center", "/sell", "/contact",
         "/affiliate", "/advertise", "/jobs",
       ];
 

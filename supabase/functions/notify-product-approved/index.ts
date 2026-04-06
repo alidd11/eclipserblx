@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
             ? "\uD83D\uDC51 Early Access Drop!"
             : "\uD83C\uDF89 New Product Drop!",
           description: earlyAccess
-            ? `**${product.name}**\n\n*Eclipse+ members get early access!*${description ? `\n\n${description}` : ""}`
+            ? `**${product.name}**\n\n*Members get early access!*${description ? `\n\n${description}` : ""}`
             : `**${product.name}**${description ? `\n\n${description}` : ""}`,
           color: earlyAccess ? 0x8b5cf6 : 0x00ced1,
           fields: [
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
             ? {
                 footer: {
                   text: earlyAccess
-                    ? "Eclipse Marketplace \u2022 Eclipse+ Early Access"
+                    ? "Eclipse Marketplace \u2022 Early Access"
                     : "Eclipse Marketplace \u2022 Product Drop",
                 },
                 timestamp: new Date().toISOString(),
@@ -133,7 +133,7 @@ Deno.serve(async (req) => {
           image: { url: images[1] },
           footer: {
             text: earlyAccess
-              ? "Eclipse Marketplace \u2022 Eclipse+ Early Access"
+              ? "Eclipse Marketplace \u2022 Early Access"
               : "Eclipse Marketplace \u2022 Product Drop",
           },
           timestamp: new Date().toISOString(),
