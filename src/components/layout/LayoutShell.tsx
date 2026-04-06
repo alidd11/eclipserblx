@@ -31,6 +31,12 @@ interface LayoutShellProps {
   };
   /** Completely replace the default Header with a custom element */
   customHeader?: (onMenuClick: () => void) => ReactNode;
+  /**
+   * When true (default when customHeader is provided), LayoutShell automatically
+   * renders a spacer after the header to prevent content from being hidden behind
+   * a fixed/sticky header + device safe-area. Set to false to opt out.
+   */
+  fixedHeaderSpacer?: boolean;
   /** Show the footer at the bottom of main (default: true) */
   showFooter?: boolean;
   /** Show floating action buttons (default: true) */
@@ -59,7 +65,7 @@ function LayoutShellInner({
   mobileSidebar,
   headerProps = {},
   customHeader,
-  
+  fixedHeaderSpacer,
   showFooter = true,
   showFABs = true,
   extra,
@@ -71,6 +77,8 @@ function LayoutShellInner({
   innerClassName,
   chatMode,
 }: LayoutShellProps) {
+  // Default: auto-add spacer when customHeader is provided (fixed headers need it)
+  const shouldRenderSpacer = fixedHeaderSpacer ?? !!customHeader;
   const [mobileOpen, setMobileOpen] = useState(false);
   const { open: searchOpen, setOpen: setSearchOpen } = useSearchCommand();
   const scrollDir = useScrollDirection(12);
@@ -94,7 +102,7 @@ function LayoutShellInner({
       </a>
 
       <div
-        className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-clip relative max-w-full min-w-0"}
+        className={wrapperClassName ?? "min-h-[100dvh] flex w-full overflow-x-hidden relative max-w-full min-w-0"}
         style={wrapperStyle}
       >
         {/* Desktop Sidebar */}
@@ -118,7 +126,20 @@ function LayoutShellInner({
         {/* Main Content */}
       <div className={innerClassName ?? "flex-1 flex flex-col min-w-0"}>
           {customHeader ? (
-            customHeader(() => setMobileOpen(true))
+            <>
+              {customHeader(() => setMobileOpen(true))}
+              {/* Auto-spacer: prevents content from hiding behind fixed custom headers.
+                  Height = safe-area-inset-top + header height (~3rem).
+                  On non-notched devices env() resolves to 0, so spacer = 3rem (header only).
+                  Opt out via fixedHeaderSpacer={false}. */}
+              {shouldRenderSpacer && (
+                <div
+                  className="shrink-0 lg:hidden"
+                  style={{ height: 'calc(env(safe-area-inset-top, 0px) + 3rem)' }}
+                  aria-hidden="true"
+                />
+              )}
+            </>
           ) : (
             <div
               className="sticky top-0 z-50 transition-transform duration-300 ease-out"
