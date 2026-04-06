@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { sanitizeSearch } from '@/lib/searchUtils';
 import { submitProductUrl } from '@/lib/submitIndexNow';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, Edit3, Clock, Calendar, Store, Crown } from 'lucide-react';
