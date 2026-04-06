@@ -67,13 +67,13 @@ export function StoreCustomSections({ storeId, accentColor }: StoreCustomSection
  </div>
  )}
 
- {section.section_type === 'text_block' && section.content?.body && (
- <p className="text-sm text-muted-foreground whitespace-pre-wrap">{section.content.body}</p>
- )}
+          {section.section_type === 'text_block' && content?.body && (
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{content.body}</p>
+          )}
 
- {section.section_type === 'gallery' && section.content?.images && (
- <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
- {section.content.images.map((url: string, idx: number) => (
+          {section.section_type === 'gallery' && content?.images && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {content.images.map((url: string, idx: number) => (
  <img key={idx} src={url} alt="" className="rounded-lg object-cover w-full h-32" loading="lazy" />
  ))}
  </div>
