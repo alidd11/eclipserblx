@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { applyProductWatermark } from '@/lib/watermark';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -611,58 +611,60 @@ export default function SellerProducts() {
 
   return (
     <SellerLayout>
-      <div>
+      <div className="space-y-4">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <div>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <h1 className="text-2xl font-display font-bold">Products</h1>
             <p className="text-sm text-muted-foreground">
               Manage your store's product catalog
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             {store?.slug && (
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <Link to={`/store/${store.slug}`}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  View Store
+                  <Eye className="h-4 w-4 mr-1.5" />
+                  <span className="hidden sm:inline">View Store</span>
                 </Link>
               </Button>
             )}
-            <Button onClick={openCreate}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Product
+            <Button size="sm" onClick={openCreate}>
+              <Plus className="h-4 w-4 mr-1.5" />
+              <span className="hidden sm:inline">Add Product</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           </div>
         </div>
 
-        {/* Inline stats */}
-        {!productsLoading && (
-          <div className="flex items-center gap-4 text-sm mb-4 flex-wrap">
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-foreground">{totalCount}</span> total
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-green-500">{products.filter((p: any) => p.moderation_status === 'approved' && p.is_active).length}</span> live
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-yellow-500">{products.filter((p: any) => p.moderation_status === 'pending').length}</span> pending
-            </span>
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-muted-foreground">{products.filter((p: any) => !p.is_active).length}</span> inactive
-            </span>
-          </div>
-        )}
+        {/* Stats + Search row */}
+        <div className="space-y-3">
+          {!productsLoading && (
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-foreground">{totalCount}</span> total
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-green-500">{products.filter((p: any) => p.moderation_status === 'approved' && p.is_active).length}</span> live
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-yellow-500">{products.filter((p: any) => p.moderation_status === 'pending').length}</span> pending
+              </span>
+              <span className="text-muted-foreground">
+                <span className="font-semibold text-muted-foreground">{products.filter((p: any) => !p.is_active).length}</span> inactive
+              </span>
+            </div>
+          )}
 
-        {/* Search */}
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search products..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10"
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="pl-10 h-10"
+            />
+          </div>
         </div>
 
         {/* Bulk Actions */}
@@ -680,42 +682,42 @@ export default function SellerProducts() {
           {productsLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
-                <Skeleton key={i} className="h-20" />
+                <Skeleton key={i} className="h-16" />
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="divide-y divide-border">
+            <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
               {filteredProducts.map((product: any) => {
                 const isLocked = isAdminManagedProduct(product);
                 return (
                   <div
                     key={product.id}
-                    className={`py-3 flex items-start gap-3 ${isLocked ? 'opacity-75' : 'cursor-pointer active:bg-muted/30'}`}
+                    className={`px-3 py-3 flex items-center gap-3 ${isLocked ? 'opacity-75' : 'cursor-pointer active:bg-muted/30'}`}
                     onClick={() => !isLocked && openEdit(product)}
                   >
                     {product.images?.[0] ? (
                       <img
                         src={product.images[0]}
                         alt={product.name}
-                        className="h-12 w-12 rounded-lg object-cover flex-shrink-0"
+                        className="h-11 w-11 rounded-lg object-cover flex-shrink-0"
                       />
                     ) : (
-                      <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
+                      <div className="h-11 w-11 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                         <Package className="h-5 w-5 text-muted-foreground" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-medium truncate text-sm">{product.name}</p>
+                        <p className="font-medium truncate text-sm leading-tight">{product.name}</p>
                         {isLocked && (
-                          <Badge variant="secondary" className="gap-1 text-xs flex-shrink-0">
+                          <Badge variant="secondary" className="gap-1 text-[10px] px-1.5 py-0 flex-shrink-0">
                             <ShieldCheck className="h-3 w-3" />
                             Eclipse
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                        <span className="text-sm font-medium">{formatCurrency(product.price)}</span>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-sm font-medium tabular-nums">{formatCurrency(product.price)}</span>
                         <span className="text-muted-foreground text-xs">·</span>
                         {getModerationBadge(product.moderation_status)}
                         {!product.is_active && (
@@ -724,16 +726,16 @@ export default function SellerProducts() {
                       </div>
                     </div>
                     {isLocked ? (
-                      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                      <Lock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     ) : (
-                      <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-1" />
+                      <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     )}
                   </div>
                 );
               })}
             </div>
           ) : (
-            <div className="text-center py-12">
+            <div className="text-center py-12 border border-border rounded-xl">
               <Package className="h-10 w-10 mx-auto mb-3 text-muted-foreground opacity-50" />
               <h3 className="text-sm font-medium mb-1">No products yet</h3>
               <p className="text-xs text-muted-foreground mb-3">
@@ -880,8 +882,8 @@ export default function SellerProducts() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground tabular-nums">
               {((currentPage - 1) * PRODUCTS_PER_PAGE) + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, totalCount)} of {totalCount}
             </p>
             <div className="flex items-center gap-2">
@@ -893,7 +895,7 @@ export default function SellerProducts() {
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <span className="text-xs font-medium px-1">
+              <span className="text-xs font-medium tabular-nums px-1">
                 {currentPage}/{totalPages}
               </span>
               <Button
@@ -908,8 +910,8 @@ export default function SellerProducts() {
           </div>
         )}
 
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-4">
-          <AlertCircle className="h-3.5 w-3.5" />
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
           All new products are reviewed within 24-48 hours before going live.
         </p>
 
