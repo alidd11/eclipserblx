@@ -12,6 +12,7 @@ import { Loader2, Menu, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
+import { useDevice } from '@/hooks/useDevice';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
 import { Button } from '@/components/ui/button';
 import { TooltipProvider } from '@/components/ui/tooltip';
