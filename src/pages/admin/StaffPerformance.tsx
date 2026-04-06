@@ -97,7 +97,7 @@ export default function AdminStaffPerformance() {
                   ))
                 ) : !staff?.length ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    <td colSpan={7} className="p-8 text-center text-muted-foreground">
                       No staff activity in the last 30 days.
                     </td>
                   </tr>
