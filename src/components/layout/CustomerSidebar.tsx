@@ -437,25 +437,6 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
         </div>
       )}
 
-      {/* Collapsed: seller CTA */}
-      {user && isCollapsed && isSeller && (
-        <div className="border-b border-border/50 px-1.5 py-2 flex justify-center">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <a
-                href="/seller"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleNavClick}
-                className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-colors hover:bg-primary/15"
-              >
-                <Zap className="h-3.5 w-3.5" />
-              </a>
-            </TooltipTrigger>
-            <TooltipContent side="right">Seller Dashboard</TooltipContent>
-          </Tooltip>
-        </div>
-      )}
 
       {/* Navigation */}
       <nav className="flex-1 px-2 py-2 pb-[env(safe-area-inset-bottom)] overflow-y-auto overflow-x-hidden overscroll-contain [-webkit-overflow-scrolling:touch] min-h-0 touch-pan-y">
