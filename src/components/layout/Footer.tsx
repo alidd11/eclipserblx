@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { SITE_NAME } from '@/lib/constants';
 import { useTranslation } from 'react-i18next';
 import { useStoreDomain } from '@/hooks/useStoreDomain';
+import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { Shield, Lock } from 'lucide-react';
 
 export function Footer() {
