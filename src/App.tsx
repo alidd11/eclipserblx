@@ -23,6 +23,7 @@ import { ConnectionErrorBoundary } from "@/components/ConnectionErrorBoundary";
 import { PWARouteRestorer } from "@/hooks/usePWALastRoute";
 import { NavigationProgress } from "@/components/NavigationProgress";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { RouteAnnouncer } from "@/components/RouteAnnouncer";
 import { GlobalBackground } from "@/components/layout/GlobalBackground";
 import { SafeLazyWidget } from "@/components/SafeLazyWidget";
 const AppRoutes = lazy(() => import("@/components/AppRoutes").then(m => ({ default: m.AppRoutes })));
@@ -54,6 +55,15 @@ const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
       retry: 1,
       // refetchInterval queries automatically pause when focusManager reports unfocused
+    },
+    mutations: {
+      onError: (error) => {
+        // Global mutation error reporter — catches unhandled mutation failures
+        console.error('[QueryClient] Mutation failed:', error);
+        import('@/lib/sentry').then(({ captureException }) => {
+          captureException(error instanceof Error ? error : new Error(String(error)), { source: 'mutation' });
+        });
+      },
     },
   },
 });
@@ -89,6 +99,7 @@ function App() {
                           <GlobalBackground />
                           <NavigationProgress />
                           <ScrollToTop />
+                          <RouteAnnouncer />
                           <IpBanCheck>
                             <PWAWrapper>
                               <AdminManifestHandler />
