@@ -123,7 +123,6 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
       icon: Home,
       items: [
         { title: t('sidebar.home'), icon: Home, href: '/' },
-        ...(isStaff ? [{ title: 'Admin Dashboard', icon: Shield, href: '/admin' }] : []),
       ],
     },
     {
