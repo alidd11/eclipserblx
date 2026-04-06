@@ -35,6 +35,7 @@ const ChatHistory = lazyWithRetry(() => import("@/pages/ChatHistory"));
 const SupportTickets = lazyWithRetry(() => import("@/pages/SupportTickets"));
 const SupportTicketDetail = lazyWithRetry(() => import("@/pages/SupportTicketDetail"));
 const Jobs = lazyWithRetry(() => import("@/pages/Jobs"));
+const ApplicantPortal = lazyWithRetry(() => import("@/pages/ApplicantPortal"));
 const RefundPolicy = lazyWithRetry(() => import("@/pages/RefundPolicy"));
 const PrivacyPolicy = lazyWithRetry(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazyWithRetry(() => import("@/pages/TermsOfService"));
