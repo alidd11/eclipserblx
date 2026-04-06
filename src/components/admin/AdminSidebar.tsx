@@ -333,7 +333,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
         ? "flex items-center justify-center p-2.5"
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-[7px]",
       isActive
-        ? "bg-primary text-primary-foreground shadow-sm"
+        ? "border-l-2 border-primary bg-muted/60 text-foreground !rounded-l-none pl-[calc(0.625rem-2px)]"
         : "text-foreground/80 hover:text-foreground hover:bg-muted/60"
     );
 
