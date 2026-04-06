@@ -77,7 +77,7 @@ export function SpecialOffersTab() {
       if (error) throw error;
     },
     onSuccess: () => { toast.success('Deleted'); queryClient.invalidateQueries({ queryKey: ['admin-promotions'] }); setDeleteDialogOpen(false); },
-    onError: (e: any) => toast.error(e.message),
+    onError: (e: Error) => toast.error(e.message),
   });
 
   const getStatusBadge = (p: any) => {
