@@ -101,18 +101,20 @@ export function useSellerSubscription() {
     subscriptionEnd: null,
     status: null,
     isLoading: true,
+    isGracePeriod: false,
+    gracePeriodEndsAt: null,
   });
 
   const fetchSubscription = useCallback(async () => {
     if (!user) {
-      setState({ isPro: false, subscriptionEnd: null, status: null, isLoading: false });
+      setState({ isPro: false, subscriptionEnd: null, status: null, isLoading: false, isGracePeriod: false, gracePeriodEndsAt: null });
       return;
     }
 
     try {
       const { data, error } = await (supabase as any)
         .from('seller_subscriptions')
-        .select('status, current_period_end')
+        .select('status, current_period_end, grace_period_end')
         .eq('user_id', user.id)
         .maybeSingle();
 
@@ -123,11 +125,18 @@ export function useSellerSubscription() {
       }
 
       const isActive = data?.status === 'active';
+      const isPastDue = data?.status === 'past_due';
+      const graceEnd = data?.grace_period_end;
+      const now = new Date();
+      const inGrace = isPastDue && graceEnd && new Date(graceEnd) > now;
+
       setState({
-        isPro: isActive,
+        isPro: isActive || !!inGrace,
         subscriptionEnd: data?.current_period_end || null,
         status: data?.status || null,
         isLoading: false,
+        isGracePeriod: !!inGrace,
+        gracePeriodEndsAt: inGrace ? graceEnd : null,
       });
     } catch (err) {
       console.error('Error fetching seller subscription:', err);
