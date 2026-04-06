@@ -474,7 +474,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   if (!user) {
     return (
       <MainLayout>
-        <div className="container py-16 text-center space-y-4">
+        <div className="container min-h-[60vh] flex flex-col items-center justify-center text-center space-y-4">
           <h1 className="text-2xl font-display font-bold">Please Sign In</h1>
           <p className="text-muted-foreground">You need to be signed in to view your account.</p>
           <Button asChild className="gradient-button border-0">
