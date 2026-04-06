@@ -53,11 +53,11 @@ export default function Affiliate() {
       <div className="grid md:grid-cols-2 gap-4">
        {benefits.map((benefit, index) => (
         <motion.div key={benefit.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
-         <div className="border border-border rounded-xl overflow-hidden bg-card/50 border-border h-full">
-          <div className="p-4 pt-6"><div className="flex gap-4">
-           <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center shrink-0"><benefit.icon className="h-6 w-6 text-primary" /></div>
-           <div><h3 className="font-semibold">{benefit.title}</h3><p className="text-sm text-muted-foreground">{benefit.description}</p></div>
-          </div></div>
+          <div className="border border-border rounded-xl overflow-hidden bg-card/50 h-full">
+           <div className="p-5">
+            <h3 className="font-semibold mb-1">{benefit.title}</h3>
+            <p className="text-sm text-muted-foreground">{benefit.description}</p>
+           </div>
          </div>
         </motion.div>
        ))}
