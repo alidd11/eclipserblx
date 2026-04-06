@@ -26,7 +26,7 @@ const navLinkDefs = [
   { href: '/products', labelKey: 'nav.products', icon: Package },
   { href: '/categories', labelKey: 'nav.categories', icon: Grid3X3 },
   
-  { href: '/jobs', labelKey: 'nav.jobs', icon: Briefcase },
+  { href: '/jobs', labelKey: 'nav.careers', icon: Briefcase },
 ];
 const legalLinkDefs = [
   { href: '/faq', labelKey: 'nav.faq', icon: HelpCircle },
