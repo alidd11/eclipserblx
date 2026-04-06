@@ -177,7 +177,7 @@ export default function AdminOrders() {
  setSelectedOrder(null);
  showSuccessNotification('Order Deleted', 'Order has been removed');
  },
- onError: (error: any) => {
+ onError: (error: Error) => {
  showErrorNotification('Delete Failed', error.message);
  },
  });
