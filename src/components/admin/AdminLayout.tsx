@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useLayoutEffect } from 'react';
 import { PageTransition } from '@/components/layout/PageTransition';
 import { useIOSChatKeyboard } from '@/hooks/useIOSChatKeyboard';
+import { useDevice } from '@/hooks/useDevice';
 import { Navigate, useLocation, Link } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminInstallPrompt } from './AdminInstallPrompt';
