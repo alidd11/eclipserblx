@@ -1,78 +1,44 @@
 
+## Full Codebase Sweep — Catch Every Legacy Pattern
 
-## Enterprise Polish Pass — Seller Dashboard Pages
+### What the audit found
 
-### What We Found
+**Zero type errors** ✅ — TypeScript is clean.
 
-Audited all 48 seller pages. Most follow the enterprise flat pattern well (Products, Orders, Finance, Analytics, Settings, Reviews, Discounts). However, **11 pages** still have legacy patterns that break visual consistency:
+**Remaining issues across the codebase:**
 
-### Issues to Fix
+| Issue | Count | Where |
+|-------|-------|-------|
+| `glass-card` class (legacy gaming aesthetic) | 38 uses | Legal pages, Jobs, Admin, 1 seller page |
+| `gaming-card` / `gaming-card-hover` | 2 uses | CategoryShowcase, Admin Login |
+| `gradient-button` (outside seller) | 225 uses in 30 files | Customer pages, Admin, Checkout, etc. |
+| Card imports in non-seller pages | 70+ files | Admin, customer, bot pages |
+| Hardcoded `text-white`/`bg-black` | ~50 uses | Store pages, Featured, Product Detail, Admin |
+| Stray `console.log` | 2 | BotIntegrationGuide |
 
-**1. Legacy `Card`/`CardContent` wrappers (11 pages)**
-These pages still import and use Shadcn `Card` components instead of the standardized `border-border rounded-xl` flat containers:
-- `SellerCampaigns.tsx` — imports Card but doesn't actually render them (dead import)
-- `SellerNotifications.tsx` — uses `CardContent` for notification rows without a parent Card (broken semantics)
-- `SellerBundles.tsx` — imports Card (needs audit of actual usage)
-- `SellerRefunds.tsx` — imports Card (needs audit)
-- `SellerCustomerInsights.tsx` — uses `Card`/`CardHeader`/`CardTitle` wrappers
-- `SellerCustomSections.tsx` — uses Card wrappers
-- `SellerProductEditor.tsx` — uses Card wrappers
-- `SellerDiscord.tsx` — imports Card
-- `SellerTermsOfService.tsx` — imports Card
-- `SellerBundles.tsx` — imports Card
-- `AcceptTeamInvite.tsx` — uses Card (standalone page, acceptable)
+### What we'll fix now (safe, no-breakage)
 
-**2. Decorative icons in page headings (3 pages)**
-Enterprise standard: no icons in `h1` titles. These pages violate that:
-- `SellerCampaigns.tsx` — `<Megaphone>` icon in h1
-- Possibly others using icon + h1 pattern
+**Priority 1 — Seller area final cleanup (1 file)**
+- Remove `glass-card` from `SellerTermsOfService.tsx` line 238
 
-**3. `gradient-button` class (3 pages)**
-Legacy gaming aesthetic — should be replaced with standard `<Button>` primary variant:
-- `SellerCampaigns.tsx` — 2 instances
-- `SellerGoals.tsx` — 2 instances  
-- `SellerWebhooks.tsx` — 1 instance
+**Priority 2 — Console.log cleanup (1 file)**
+- Remove 2 `console.log` statements from `BotIntegrationGuide.tsx`
 
-**4. Notification rows using `CardContent` without parent Card**
-`SellerNotifications.tsx` wraps each notification in `<CardContent>` inside a plain `<div>`, which applies card padding without the card border — inconsistent spacing.
+**Priority 3 — Legacy `gaming-card` in public pages (2 files)**
+- `CategoryShowcase.tsx` — replace `gaming-card-hover` with enterprise container
+- Admin Login — replace `gaming-card` with flat containers
 
-### Implementation
+**Priority 4 — `glass-card` in legal/public pages (4 files)**
+- `Jobs.tsx` — replace 4 `glass-card` uses
+- `PrivacyPolicy.tsx` — replace 5 `glass-card` uses
+- `RefundPolicy.tsx` — replace 6 `glass-card` uses
+- `TermsOfService.tsx` — replace 1 `glass-card` use
 
-**Step 1: Fix SellerCampaigns.tsx**
-- Remove `Card` import (dead)
-- Remove `<Megaphone>` icon from h1
-- Replace `gradient-button border-0` with standard Button (no class override)
+### What we'll NOT touch (intentional / context-dependent)
 
-**Step 2: Fix SellerNotifications.tsx**
-- Remove `Card`/`CardContent` import
-- Replace `<CardContent>` wrapper with a plain `<div>` using `flex items-start gap-3 py-3 px-4`
-- Wrap notification list in `border border-border rounded-xl overflow-hidden divide-y divide-border`
-
-**Step 3: Fix SellerCustomerInsights.tsx**
-- Replace `Card`/`CardHeader`/`CardTitle` with flat `border-border rounded-xl` sections with `bg-muted/30` headers
-
-**Step 4: Fix SellerGoals.tsx**
-- Replace `gradient-button border-0` with standard Button
-
-**Step 5: Fix SellerWebhooks.tsx**
-- Replace `gradient-button border-0` with standard Button
-
-**Step 6: Fix remaining Card imports**
-- `SellerBundles.tsx`, `SellerRefunds.tsx`, `SellerDiscord.tsx`, `SellerTermsOfService.tsx`, `SellerCustomSections.tsx`, `SellerProductEditor.tsx` — replace Card wrappers with flat enterprise containers
-
-### Files Changed
-- `src/pages/seller/SellerCampaigns.tsx`
-- `src/pages/seller/SellerNotifications.tsx`
-- `src/pages/seller/SellerCustomerInsights.tsx`
-- `src/pages/seller/SellerGoals.tsx`
-- `src/pages/seller/SellerWebhooks.tsx`
-- `src/pages/seller/SellerBundles.tsx`
-- `src/pages/seller/SellerRefunds.tsx`
-- `src/pages/seller/SellerDiscord.tsx`
-- `src/pages/seller/SellerTermsOfService.tsx`
-- `src/pages/seller/SellerCustomSections.tsx`
-- `src/pages/seller/SellerProductEditor.tsx`
+- **`gradient-button`** — This is the primary CTA style used across checkout, product pages, and the chat widget. Changing it site-wide is a visual redesign decision, not a bug fix. These 225 instances are intentional brand styling for conversion-critical buttons (Add to Cart, Checkout, etc.).
+- **`text-white`/`bg-black`** — Most are contextually correct (image overlays `bg-black/60`, dark store themes, Twitter/X preview component, badge colors). These aren't design token violations — they're semantic uses where the exact color matters regardless of theme.
+- **Card imports in admin/customer pages** — These are functional and visually consistent within their own sections. Migrating 70+ files would be a separate initiative.
 
 ### Risk
-Low — purely visual. No logic, data, or API changes. All edits are CSS class and component wrapper swaps following the established pattern already used by Products, Orders, Finance, Analytics, and Settings pages.
-
+Very low — removing dead classes and replacing decorative wrappers with the established flat pattern. No logic changes.
