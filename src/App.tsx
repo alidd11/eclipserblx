@@ -82,6 +82,12 @@ function PageLoader() {
   );
 }
 
+/** Invisible component that triggers predictive data preloading after auth */
+function PredictivePreloader() {
+  usePredictivePreload();
+  return null;
+}
+
 function App() {
   return (
     <ConnectionErrorBoundary>
