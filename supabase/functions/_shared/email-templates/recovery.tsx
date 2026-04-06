@@ -39,6 +39,9 @@ export const RecoveryEmail = ({
           If you didn't request a password reset, you can safely ignore this
           email. Your password will not be changed.
         </Text>
+        <Text style={disclaimer}>
+          This email is intended solely for the named addressee. If you have received this message in error, please notify the sender immediately and delete it. Do not copy, distribute, or take action based on its contents.
+        </Text>
       </Container>
     </Body>
   </Html>
