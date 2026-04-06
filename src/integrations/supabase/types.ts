@@ -2032,6 +2032,69 @@ export type Database = {
         }
         Relationships: []
       }
+      compliance_violations: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          is_auto_detected: boolean
+          is_resolved: boolean
+          related_product_id: string | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          store_id: string
+          updated_at: string
+          violation_type: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          is_auto_detected?: boolean
+          is_resolved?: boolean
+          related_product_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          store_id: string
+          updated_at?: string
+          violation_type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          is_auto_detected?: boolean
+          is_resolved?: boolean
+          related_product_id?: string | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          store_id?: string
+          updated_at?: string
+          violation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_violations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compliance_violations_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consent_records: {
         Row: {
           action: string
@@ -9293,6 +9356,66 @@ export type Database = {
             foreignKeyName: "store_follows_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_health_scores: {
+        Row: {
+          active_violations: number
+          avg_response_hours: number
+          created_at: string
+          delivery_rate: number
+          dispute_rate: number
+          id: string
+          last_calculated_at: string
+          listing_quality_score: number
+          overall_score: number
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          active_violations?: number
+          avg_response_hours?: number
+          created_at?: string
+          delivery_rate?: number
+          dispute_rate?: number
+          id?: string
+          last_calculated_at?: string
+          listing_quality_score?: number
+          overall_score?: number
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          active_violations?: number
+          avg_response_hours?: number
+          created_at?: string
+          delivery_rate?: number
+          dispute_rate?: number
+          id?: string
+          last_calculated_at?: string
+          listing_quality_score?: number
+          overall_score?: number
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_health_scores_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_health_scores_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
             referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
