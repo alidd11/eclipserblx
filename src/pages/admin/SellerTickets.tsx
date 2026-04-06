@@ -92,6 +92,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function SellerTickets() {
  const { user } = useAuth();
  const queryClient = useQueryClient();
+ const { responses: cannedResponses } = useCannedResponses();
 
  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
  const [newMessage, setNewMessage] = useState('');
