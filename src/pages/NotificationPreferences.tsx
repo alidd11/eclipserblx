@@ -240,14 +240,11 @@ export default function NotificationPreferences() {
 
  {/* Alert Preferences Card */}
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
- <Bell className="h-5 w-5 text-primary" />
- Alert Preferences
- </h3>
- <p className="text-sm text-muted-foreground">
- Control which types of alerts you receive
- </p>
+  <div className="px-4 py-3 border-b border-border bg-muted/30">
+  <h3 className="font-semibold text-lg">Alert Preferences</h3>
+  <p className="text-sm text-muted-foreground">
+  Control which types of alerts you receive
+  </p>
  </div>
  <div className="p-4 space-y-4">
  {/* Product Alerts */}

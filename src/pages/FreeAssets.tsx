@@ -154,7 +154,6 @@ export default function FreeAssets() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <Gift className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No free assets found in this category.</p>
           </div>
         )}

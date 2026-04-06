@@ -112,12 +112,9 @@ export default function RecoverOrder() {
 
         <div className="border border-border rounded-xl overflow-hidden">
           <div className="bg-muted/30 px-6 py-5 border-b border-border">
-            <div className="flex items-center gap-3">
-              <Package className="h-5 w-5 text-primary" />
-              <div>
-                <h1 className="text-lg font-semibold">Recover a Missing Order</h1>
-                <p className="text-sm text-muted-foreground mt-0.5">If you completed a payment but can't see your order, enter your payment reference to link it.</p>
-              </div>
+            <div>
+              <h1 className="text-lg font-semibold">Recover a Missing Order</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">If you completed a payment but can't see your order, enter your payment reference to link it.</p>
             </div>
           </div>
 

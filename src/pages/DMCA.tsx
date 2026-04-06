@@ -224,10 +224,7 @@ export default function DMCA() {
  {/* Repeat Offenders */}
  <div className="border border-border rounded-xl overflow-hidden border-destructive/30">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-destructive">
- <AlertTriangle className="h-5 w-5" />
- Repeat Infringer Policy
- </h3>
+ <h3 className="font-semibold text-sm text-destructive">Repeat Infringer Policy</h3>
  </div>
  <div className="p-4 prose prose-sm dark:prose-invert max-w-none">
  <p>

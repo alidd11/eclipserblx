@@ -159,7 +159,7 @@ export default function Affiliate() {
      {/* Referral Link */}
      <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
       <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
-       <h3 className="font-semibold text-sm text-lg flex items-center gap-2"><Zap className="h-5 w-5 text-primary" />Your Referral Link</h3>
+       <h3 className="font-semibold text-lg">Your Referral Link</h3>
        <p className="text-sm text-muted-foreground">Share this link to earn {d.affiliateSettings.commissionRate}% on every sale</p>
       </div>
       <div className="p-4"><div className="flex gap-2">
