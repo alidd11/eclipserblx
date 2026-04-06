@@ -32,11 +32,6 @@ const PRODUCTS_PER_PAGE_MOBILE = 12;
 
 export default function Products() {
   usePageTracking({ pagePath: '/products' });
-  usePageMeta({
-    title: 'Browse Products',
-    description: 'Browse premium Roblox scripts, vehicles, maps and game assets on Eclipse marketplace. Instant delivery, lower fees.',
-    canonicalPath: '/products',
-  });
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();

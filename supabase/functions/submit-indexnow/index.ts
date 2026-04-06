@@ -1,8 +1,4 @@
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { corsHeaders } from '@supabase/supabase-js/cors'
 
 const INDEXNOW_KEY = "eclipse-indexnow-key-2026";
 const SITE_URL = "https://eclipserblx.com";
@@ -20,27 +16,24 @@ Deno.serve(async (req) => {
   try {
     const { urls, type } = await req.json();
 
-    // If no specific URLs, generate from database
     let urlsToSubmit: string[] = urls || [];
 
     if (!urlsToSubmit.length || type === "all") {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-      // Fetch active product numbers
       const productsRes = await fetch(
         `${supabaseUrl}/rest/v1/products?select=product_number&is_active=eq.true&moderation_status=eq.approved&limit=1000`,
         { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
       );
       const products = await productsRes.json();
-      // Fetch active store slugs
+
       const storesRes = await fetch(
         `${supabaseUrl}/rest/v1/stores?select=slug&is_active=eq.true&limit=1000`,
         { headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` } }
       );
       const stores = await storesRes.json();
 
-      // Static pages
       const staticPages = [
         "/", "/products", "/stores", "/categories", "/featured",
         "/eclipse-plus", "/faq", "/help-center", "/sell", "/contact",
@@ -70,7 +63,6 @@ Deno.serve(async (req) => {
         urlList: batch,
       };
 
-      // Submit to all IndexNow endpoints in parallel
       const submissions = await Promise.allSettled(
         INDEXNOW_ENDPOINTS.map(async (endpoint) => {
           const controller = new AbortController();
@@ -83,7 +75,7 @@ Deno.serve(async (req) => {
               signal: controller.signal,
             });
             const status = res.status;
-            await res.text(); // consume body
+            await res.text();
             return { endpoint, status, ok: status >= 200 && status < 300 };
           } finally {
             clearTimeout(timeout);
@@ -94,20 +86,9 @@ Deno.serve(async (req) => {
       results.push({
         urlCount: batch.length,
         submissions: submissions.map((s) =>
-          s.status === "fulfilled" ? s.value : { error: s.reason?.message }
+          s.status === "fulfilled" ? s.value : { error: (s.reason as Error)?.message }
         ),
       });
-    }
-
-    // Ping Google to re-crawl the sitemap
-    const sitemapUrl = "https://qlnbergwjfrmgkjhrbkj.supabase.co/functions/v1/dynamic-sitemap";
-    let googlePing = { status: 0, ok: false };
-    try {
-      const gRes = await fetch(`https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`);
-      googlePing = { status: gRes.status, ok: gRes.status >= 200 && gRes.status < 300 };
-      await gRes.text();
-    } catch (e) {
-      googlePing = { status: 0, ok: false, error: e.message } as any;
     }
 
     return new Response(
@@ -115,14 +96,13 @@ Deno.serve(async (req) => {
         success: true,
         totalUrls: urlsToSubmit.length,
         results,
-        googlePing,
-        message: `Submitted ${urlsToSubmit.length} URLs to IndexNow + pinged Google sitemap`,
+        message: `Submitted ${urlsToSubmit.length} URLs to IndexNow (Bing, Yandex)`,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     return new Response(
-      JSON.stringify({ error: "IndexNow submission failed", message: error.message }),
+      JSON.stringify({ error: "IndexNow submission failed", message: (error as Error).message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
