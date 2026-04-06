@@ -280,16 +280,8 @@ export default function ProductDetail() {
     enabled: !!product?.id,
   });
 
-  // Filter reviews based on verified purchase toggle
-  const filteredReviews = useMemo(() => {
-    if (!productReviews) return [];
-    if (!showVerifiedOnly) return productReviews;
-    return productReviews.filter(r => r.is_verified_purchase);
-  }, [productReviews, showVerifiedOnly]);
 
-  const verifiedCount = useMemo(() => {
-    return productReviews?.filter(r => r.is_verified_purchase).length || 0;
-  }, [productReviews]);
+
 
   // Calculate average rating and review count for the overlay
   const { averageRating, reviewCount } = useMemo(() => {
