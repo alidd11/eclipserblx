@@ -77,7 +77,7 @@ export interface Store {
   payout_method?: string;
   // Pay What You Want
   pwyw_enabled?: boolean;
-  // Eclipse+ discount
+  // Member discount
   eclipse_plus_discount_enabled?: boolean;
   // Testing mode
   is_testing?: boolean;

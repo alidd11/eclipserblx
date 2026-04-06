@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   // One-time hydration for older carts that predate `is_resellable` / `category_id`.
-  // Ensures Eclipse+ eligibility is computed correctly even for already-saved carts.
+  // Ensures discount eligibility is computed correctly even for already-saved carts.
   const hasHydratedRef = useRef(false);
   useEffect(() => {
     if (hasHydratedRef.current) return;

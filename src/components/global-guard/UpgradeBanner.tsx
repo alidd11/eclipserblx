@@ -20,9 +20,9 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
   
   const isAtLimit = maxServers !== null && currentServers >= maxServers;
   const basePrice = 2.99;
-  // Eclipse+ members get £1.00/server, non-members pay £1.50/server
+  // Members get £1.00/server, non-members pay £1.50/server
   const additionalPrice = isSubscribed ? 1.00 : 1.50;
-  const includedServers = isSubscribed ? 3 : 2; // Eclipse+ gets 3 included, others get 2
+  const includedServers = isSubscribed ? 3 : 2; // Members get 3 included, others get 2
   const totalPrice = basePrice + (additionalServers * additionalPrice);
   const totalServers = includedServers + additionalServers;
 

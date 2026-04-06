@@ -21,7 +21,7 @@ const sizeClasses = {
 
 /**
  * Centralized price display component.
- * Eclipse+ has been removed — this now simply formats and displays the price.
+ * Centralized price formatter — simply formats and displays the price.
  */
 export const PriceDisplay = memo(function PriceDisplay({
   price,

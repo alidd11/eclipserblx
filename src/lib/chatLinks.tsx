@@ -23,7 +23,7 @@ const VALID_ROUTES = [
   '/advertise',
 ];
 
-// Pattern to match route paths like /products, /eclipse-plus, /categories/vehicles
+// Pattern to match route paths like /products, /categories/vehicles
 const ROUTE_PATTERN = /(?<=^|\s)(\/[a-z][-a-z0-9]*(?:\/[a-z][-a-z0-9]*)*)(?=\s|$|[.,!?])/gi;
 
 /**

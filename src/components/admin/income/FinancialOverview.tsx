@@ -235,7 +235,7 @@ export function FinancialOverview() {
       .filter(a => { const d = safeDateParse(a.posted_at); return d && isAfter(d, thisMonth); })
       .reduce((s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0);
 
-    // Eclipse+ MRR estimate
+    // Subscription MRR estimate
     const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
     const mrr = activeSubs.reduce((s, sub) => {
       if (sub.billing_period === 'annual') return s + 49.99 / 12;

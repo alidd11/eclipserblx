@@ -41,7 +41,7 @@ export default function Checkout() {
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Calculate Eclipse+ member pricing
+  // Calculate member pricing
   const calculateMemberPricing = () => {
     const itemsWithMemberPricing = items.map(item => {
       const effectivePrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
