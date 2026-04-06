@@ -41,7 +41,7 @@ export default function SellerRevenueBreakdown() {
       const d = format(subDays(new Date(), i), 'MMM dd');
       map.set(d, 0);
     }
-    transactions.forEach((t: any) => {
+    transactions.forEach((t) => {
       const d = format(new Date(t.created_at), 'MMM dd');
       map.set(d, (map.get(d) || 0) + Number(t.net_amount || 0));
     });
