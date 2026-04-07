@@ -1,5 +1,6 @@
 import { SellerLayout } from '@/components/seller/SellerLayout';
-import { EarlyAccessCard } from '@/components/seller/EarlyAccessCard';
+import { LaunchStrategyCard } from '@/components/seller/LaunchStrategyCard';
+import type { EarlyAccessStrategy } from '@/components/seller/LaunchStrategyCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
