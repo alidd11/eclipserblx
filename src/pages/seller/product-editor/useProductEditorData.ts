@@ -89,7 +89,7 @@ export function useProductEditorData() {
         release_at: product.release_at ? new Date(product.release_at).toISOString().slice(0, 16) : '',
         early_access_enabled: hasSchedule && hasEarlyAccess,
         early_access_hours: product.early_access_hours?.toString() || '',
-        early_access_strategy: (p.early_access_strategy as string) || 'timed',
+        early_access_strategy: ((p.early_access_strategy as string) || 'timed') as import('@/components/seller/LaunchStrategyCard').EarlyAccessStrategy,
         early_access_min_orders: (p.early_access_min_orders as number)?.toString() || '2',
         early_access_link_token: (p.early_access_link_token as string) || '',
         ip_ownership_confirmed: product.ip_ownership_confirmed ?? false,
