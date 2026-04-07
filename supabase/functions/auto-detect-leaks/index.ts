@@ -295,7 +295,7 @@ Deno.serve(async (req) => {
     // Get stores with leak_scan_enabled
     const { data: stores, error: storesErr } = await supabase
       .from("stores")
-      .select("id, owner_id, store_name")
+      .select("id, owner_id, name")
       .eq("leak_scan_enabled", true);
 
     if (storesErr) throw storesErr;
