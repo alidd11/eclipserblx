@@ -73,6 +73,7 @@ export function useProductEditorData() {
     if (product) {
       const hasSchedule = !!product.release_at && new Date(product.release_at) > new Date();
       const hasEarlyAccess = product.early_access_hours !== null && product.early_access_hours !== undefined;
+      const p = product as Record<string, unknown>;
       setFormData({
         name: product.name || '',
         slug: product.slug || '',
@@ -88,10 +89,13 @@ export function useProductEditorData() {
         release_at: product.release_at ? new Date(product.release_at).toISOString().slice(0, 16) : '',
         early_access_enabled: hasSchedule && hasEarlyAccess,
         early_access_hours: product.early_access_hours?.toString() || '',
+        early_access_strategy: (p.early_access_strategy as string) || 'timed',
+        early_access_min_orders: (p.early_access_min_orders as number)?.toString() || '2',
+        early_access_link_token: (p.early_access_link_token as string) || '',
         ip_ownership_confirmed: product.ip_ownership_confirmed ?? false,
         is_pay_what_you_want: product.is_pay_what_you_want ?? false,
         min_price: (product.min_price ?? 0).toString(),
-        max_downloads_per_purchase: (product as Record<string, unknown>).max_downloads_per_purchase?.toString() || '',
+        max_downloads_per_purchase: p.max_downloads_per_purchase?.toString() || '',
       });
     }
   }, [product]);
