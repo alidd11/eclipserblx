@@ -274,17 +274,24 @@ export default function SellerProductEditor() {
             </div>
           </div>
 
-          {/* Early Access */}
-          <EarlyAccessCard
+          {/* Launch Strategy */}
+          <LaunchStrategyCard
             enabled={formData.early_access_enabled}
             onEnabledChange={(enabled) => setFormData({ 
               ...formData, 
               early_access_enabled: enabled,
               early_access_hours: enabled ? formData.early_access_hours : '',
             })}
+            strategy={formData.early_access_strategy}
+            onStrategyChange={(strategy: EarlyAccessStrategy) => setFormData({ ...formData, early_access_strategy: strategy })}
             customHours={formData.early_access_hours}
             onCustomHoursChange={(hours) => setFormData({ ...formData, early_access_hours: hours })}
+            minOrders={formData.early_access_min_orders}
+            onMinOrdersChange={(orders) => setFormData({ ...formData, early_access_min_orders: orders })}
+            linkToken={formData.early_access_link_token}
+            onLinkTokenChange={(token) => setFormData({ ...formData, early_access_link_token: token })}
             scheduleEnabled={formData.schedule_enabled}
+            productSlug={formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}
           />
 
           {/* Images */}
