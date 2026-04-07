@@ -5927,6 +5927,9 @@ export type Database = {
           discord_thread_id: string | null
           download_count: number | null
           early_access_hours: number | null
+          early_access_link_token: string | null
+          early_access_min_orders: number | null
+          early_access_strategy: string
           eclipse_free_eligible: boolean
           external_link: string | null
           feed_notified_at: string | null
@@ -5971,6 +5974,9 @@ export type Database = {
           discord_thread_id?: string | null
           download_count?: number | null
           early_access_hours?: number | null
+          early_access_link_token?: string | null
+          early_access_min_orders?: number | null
+          early_access_strategy?: string
           eclipse_free_eligible?: boolean
           external_link?: string | null
           feed_notified_at?: string | null
@@ -6015,6 +6021,9 @@ export type Database = {
           discord_thread_id?: string | null
           download_count?: number | null
           early_access_hours?: number | null
+          early_access_link_token?: string | null
+          early_access_min_orders?: number | null
+          early_access_strategy?: string
           eclipse_free_eligible?: boolean
           external_link?: string | null
           feed_notified_at?: string | null
