@@ -8,7 +8,7 @@ export function PlatformSettingsTab() {
     <div className="space-y-6">
       <MarketplaceControlsCard />
       <ForceUpdateCard />
-      <EarlyAccessSettingsCard />
+      
       <AffiliateSettingsCard />
     </div>
   );
