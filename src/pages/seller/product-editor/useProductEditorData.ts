@@ -230,6 +230,12 @@ export function useProductEditorData() {
         earlyAccessHours = data.early_access_hours ? parseInt(data.early_access_hours) : null;
       }
 
+      const earlyAccessStrategy = data.schedule_enabled && data.early_access_enabled ? data.early_access_strategy : 'timed';
+      const earlyAccessMinOrders = data.schedule_enabled && data.early_access_enabled && data.early_access_strategy === 'repeat_buyers'
+        ? (parseInt(data.early_access_min_orders) || 2) : null;
+      const earlyAccessLinkToken = data.schedule_enabled && data.early_access_enabled && data.early_access_strategy === 'private_link'
+        ? (data.early_access_link_token || null) : null;
+
       const shouldAutoApprove = !hasSecurityFlags();
       const moderationStatus = shouldAutoApprove ? 'approved' : 'pending';
 
