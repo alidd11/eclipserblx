@@ -535,28 +535,29 @@ a,
   animation: nav-progress-complete 0.3s ease-out forwards;
 }
 
-/* ── Route transition (exit/enter) ── */
+/* ── Route transition (exit/enter) — GPU-accelerated ── */
 @keyframes route-enter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translate3d(0, 4px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .route-transition-enter {
-  animation: route-enter 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  animation: route-enter 0.15s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  will-change: opacity, transform;
 }
 
-/* ── View Transitions API (progressive enhancement) ── */
+/* ── View Transitions API (progressive enhancement) — snappy timings ── */
 ::view-transition-old(root) {
-  animation: 150ms ease-out both fade-out;
+  animation: 100ms ease-out both fade-out;
 }
 ::view-transition-new(root) {
-  animation: 200ms ease-in 50ms both fade-in;
+  animation: 120ms ease-in 30ms both fade-in;
 }
 
 @media (prefers-reduced-motion: reduce) {
