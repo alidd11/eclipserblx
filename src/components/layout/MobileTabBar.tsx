@@ -34,8 +34,8 @@ export function MobileTabBar() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-[60] overflow-visible border-t border-border md:hidden"
-      style={{ paddingBottom: 'var(--bottom-safe-area, 0px)', backgroundColor: 'hsl(var(--background))' }}
+      className="fixed bottom-0 left-0 right-0 z-[60] overflow-visible border-t border-border md:hidden gpu-layer"
+      style={{ paddingBottom: 'var(--bottom-safe-area, 0px)', backgroundColor: 'hsl(var(--background))', willChange: 'transform' }}
       role="tablist"
       aria-label="Main navigation"
     >

@@ -418,7 +418,8 @@
 }
 
 .animate-page-in {
-  animation: page-in 0.15s ease-out both;
+  animation: page-in 0.12s ease-out both;
+  will-change: opacity;
 }
 
 /* Offline banner slide-down — CSS-only, replaces framer-motion */
