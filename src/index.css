@@ -492,6 +492,17 @@ a,
 .touch-target {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Native-feel active press — instant tactile response on touch ── */
+@media (hover: none) and (pointer: coarse) {
+  button:active,
+  a:active,
+  [role="button"]:active,
+  [role="tab"]:active {
+    transform: scale(0.97);
+    transition: transform 0.06s ease-out;
+  }
+}
 *:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;

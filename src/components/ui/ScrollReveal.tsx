@@ -94,6 +94,8 @@ export const ScrollReveal = forwardRef<HTMLDivElement, ScrollRevealProps>(functi
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translate3d(0, 0, 0)' : `translate3d(${offsets[direction]}, 0)`,
         transition: `opacity ${duration}s cubic-bezier(0.25, 0.1, 0.25, 1) ${delay}s, transform ${duration}s cubic-bezier(0.25, 0.1, 0.25, 1) ${delay}s`,
+        willChange: isVisible ? 'auto' : 'opacity, transform',
+        backfaceVisibility: 'hidden',
       }}
     >
       {children}
