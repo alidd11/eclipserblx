@@ -149,6 +149,8 @@
     min-height: 100%;
     min-height: -webkit-fill-available;
     background-color: hsl(var(--background));
+    /* GPU-accelerate the root to eliminate initial compositing stutter */
+    -webkit-transform: translateZ(0);
   }
   
   body {
@@ -166,6 +168,9 @@
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
+    /* Promote body to its own compositing layer for smoother scroll */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   #root {
