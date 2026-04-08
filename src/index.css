@@ -224,6 +224,24 @@
     contain-intrinsic-size: 0 500px;
   }
 
+  /* ── Enterprise GPU compositing ── */
+  /* Force hardware-accelerated layers on fixed/sticky UI chrome */
+  .gpu-layer {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* CSS containment for independent layout sections (cards, rows) */
+  .contain-layout {
+    contain: layout style;
+  }
+
+  .contain-strict {
+    contain: layout style paint;
+  }
+
   /* Lightweight CSS noise texture — replaces render-blocking SVG filter */
   .bg-noise {
     background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAElBMVEUAAAAAAAAAAAAAAAAAAAAAAADgKxmiAAAABnRSTlMFBQUFBQWJBBjHAAAASUlEQVQ4y2MYBaNg2AImKAMYGBhYoQwWBkYGIRiDkYEJzmBiYIIzmBmY4QwWBhY4g5WBFc5gY2CDM9gZ2OEMDgYOOIOTgRMAAN7wCQly/KPlAAAAAElFTkSuQmCC");
