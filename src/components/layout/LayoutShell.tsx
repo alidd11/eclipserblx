@@ -97,7 +97,7 @@ function LayoutShellInner({
       </a>
 
       <div
-        className={wrapperClassName ?? "flex w-full overflow-x-hidden relative max-w-full min-w-0"}
+        className={wrapperClassName ?? "flex w-full overflow-x-clip relative max-w-full min-w-0"}
         style={wrapperStyle ? { minHeight: 'var(--app-vh, 100dvh)', ...wrapperStyle } : { minHeight: 'var(--app-vh, 100dvh)' }}
       >
         {/* Desktop sidebar removed — drawer-only pattern */}

@@ -142,9 +142,10 @@
     --bottom-safe-area: 0px;
     --app-vh: 100dvh;
     overscroll-behavior: none;
-    overflow-x: hidden;
+    /* clip prevents scroll context creation (unlike hidden) — no horizontal shift */
+    overflow-x: clip;
     width: 100%;
-    max-width: 100%;
+    max-width: 100vw;
     height: 100%;
     min-height: 100%;
     min-height: -webkit-fill-available;
@@ -157,9 +158,9 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Source Sans 3', ui-sans-serif, system-ui, sans-serif;
     -webkit-overflow-scrolling: touch;
-    overflow-x: hidden;
+    overflow-x: clip;
     width: 100%;
-    max-width: 100%;
+    max-width: 100vw;
     min-height: -webkit-fill-available;
     min-height: var(--app-vh, 100dvh);
     position: relative;
@@ -175,7 +176,8 @@
 
   #root {
     width: 100%;
-    max-width: 100%;
+    max-width: 100vw;
+    overflow-x: clip;
     min-height: -webkit-fill-available;
     min-height: var(--app-vh, 100dvh);
     background-color: hsl(var(--background));

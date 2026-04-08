@@ -46,11 +46,9 @@ export function TrendingProducts() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="columns-2 sm:columns-3 lg:columns-4 gap-3 space-y-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="break-inside-avoid">
-              <ProductCardSkeleton />
-            </div>
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       </section>
@@ -75,25 +73,21 @@ export function TrendingProducts() {
         </div>
 
         {/* Masonry layout using CSS columns */}
-        <div className="columns-2 sm:columns-3 lg:columns-4 xl:columns-5 gap-3 [column-fill:_balance]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           {products.map((product, idx) => {
             const store = product.stores as any;
             const category = product.categories as any;
-            const isTall = idx % 3 === 0;
             return (
               <div 
                 key={product.id} 
-                className={cn(
-                  "break-inside-avoid mb-3",
-                  "animate-fade-in",
-                )}
+                className="animate-fade-in"
                 style={{ animationDelay: `${idx * 60}ms` }}
               >
                 <MasonryProductCard
                   product={product}
                   store={store}
                   category={category}
-                  isTall={isTall}
+                  isTall={false}
                   rank={idx + 1}
                 />
               </div>
