@@ -133,7 +133,7 @@ function LayoutShellInner({
               )}
             </>
           ) : (
-            <div className="sticky top-0 z-50">
+            <div className="sticky top-0 z-50 gpu-layer" style={{ willChange: 'transform' }}>
               <Header
                 showDesktopNav={false}
                 onMenuClick={() => setMobileOpen(true)}

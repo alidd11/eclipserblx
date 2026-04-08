@@ -149,6 +149,8 @@
     min-height: 100%;
     min-height: -webkit-fill-available;
     background-color: hsl(var(--background));
+    /* GPU-accelerate the root to eliminate initial compositing stutter */
+    -webkit-transform: translateZ(0);
   }
   
   body {
@@ -166,6 +168,9 @@
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
+    /* Promote body to its own compositing layer for smoother scroll */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   #root {
@@ -217,6 +222,24 @@
   .content-auto {
     content-visibility: auto;
     contain-intrinsic-size: 0 500px;
+  }
+
+  /* ── Enterprise GPU compositing ── */
+  /* Force hardware-accelerated layers on fixed/sticky UI chrome */
+  .gpu-layer {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  /* CSS containment for independent layout sections (cards, rows) */
+  .contain-layout {
+    contain: layout style;
+  }
+
+  .contain-strict {
+    contain: layout style paint;
   }
 
   /* Lightweight CSS noise texture — replaces render-blocking SVG filter */
@@ -395,7 +418,8 @@
 }
 
 .animate-page-in {
-  animation: page-in 0.15s ease-out both;
+  animation: page-in 0.12s ease-out both;
+  will-change: opacity;
 }
 
 /* Offline banner slide-down — CSS-only, replaces framer-motion */
@@ -468,6 +492,17 @@ a,
 .touch-target {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ── Native-feel active press — instant tactile response on touch ── */
+@media (hover: none) and (pointer: coarse) {
+  button:active,
+  a:active,
+  [role="button"]:active,
+  [role="tab"]:active {
+    transform: scale(0.97);
+    transition: transform 0.06s ease-out;
+  }
+}
 *:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
@@ -511,28 +546,29 @@ a,
   animation: nav-progress-complete 0.3s ease-out forwards;
 }
 
-/* ── Route transition (exit/enter) ── */
+/* ── Route transition (exit/enter) — GPU-accelerated ── */
 @keyframes route-enter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translate3d(0, 4px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .route-transition-enter {
-  animation: route-enter 0.2s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  animation: route-enter 0.15s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  will-change: opacity, transform;
 }
 
-/* ── View Transitions API (progressive enhancement) ── */
+/* ── View Transitions API (progressive enhancement) — snappy timings ── */
 ::view-transition-old(root) {
-  animation: 150ms ease-out both fade-out;
+  animation: 100ms ease-out both fade-out;
 }
 ::view-transition-new(root) {
-  animation: 200ms ease-in 50ms both fade-in;
+  animation: 120ms ease-in 30ms both fade-in;
 }
 
 @media (prefers-reduced-motion: reduce) {

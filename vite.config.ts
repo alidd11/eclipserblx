@@ -106,7 +106,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
-        cacheId: 'eclipse-v6',
+        cacheId: 'eclipse-v7',
         // Only precache static assets — JS/CSS are content-hashed and served fresh from network.
         // Precaching JS/CSS causes stale chunk errors after deploys on iOS Safari.
         globPatterns: ["**/*.{ico,png,svg,woff,woff2}"],
@@ -117,6 +117,18 @@ export default defineConfig(({ mode }) => ({
         importScripts: ["/custom-sw.js"],
         runtimeCaching: [
           // No Supabase caching — stale auth tokens cause boot failures
+          {
+            // Content-hashed JS/CSS — immutable, serve from cache instantly
+            urlPattern: /\/assets\/.*\.[a-f0-9]{8}\.(js|css)$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "asset-cache-v1",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year — hash changes on update
+              },
+            },
+          },
           {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
             handler: "CacheFirst",
