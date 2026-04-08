@@ -130,7 +130,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onTouchStart={() => prefetchProduct(slug)}
     >
       <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-all duration-300",
+        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-all duration-300 contain-layout",
         "border border-transparent hover:border-border",
         isFeatured && "border-primary/20"
       )}>
