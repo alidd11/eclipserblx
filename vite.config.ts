@@ -118,6 +118,18 @@ export default defineConfig(({ mode }) => ({
         runtimeCaching: [
           // No Supabase caching — stale auth tokens cause boot failures
           {
+            // Content-hashed JS/CSS — immutable, serve from cache instantly
+            urlPattern: /\/assets\/.*\.[a-f0-9]{8}\.(js|css)$/,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "asset-cache-v1",
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year — hash changes on update
+              },
+            },
+          },
+          {
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
             handler: "CacheFirst",
             options: {
