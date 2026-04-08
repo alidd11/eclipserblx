@@ -1,41 +1,51 @@
 
-# Early Access — Enterprise Product Drop System
 
-## Research Summary
-Top platforms (Nike SNKRS, Shopify, SNIPES Reserve, Supreme) use multi-strategy early access:
-- **Timed windows** — hours/days before public release (current feature, basic)
-- **Loyalty-gated** — only repeat customers or high-spend buyers
-- **Follower-gated** — only store followers get early access
-- **Password/link-gated** — private access via secret link
+# Payouts Not Appearing — Root Cause & Fix
 
-## What Changes
+## Problem
+Every payout-related table and view in the database has **zero role grants** for the `authenticated` role. This means all client-side queries (PostgREST/Supabase JS) silently return empty arrays — no errors, just no data. This affects:
 
-### Seller EarlyAccessCard → Enterprise "Launch Strategy" Card
-Replace the simple toggle + hours input with a multi-option card:
+- `seller_payouts` — admin management + seller balance page
+- `seller_payouts_safe` — seller dashboard timeline + tax summary
+- `affiliate_payouts` — affiliate payout requests
+- `affiliate_payouts_safe` / `affiliate_payouts_masked` — affiliate views
+- `seller_payouts_masked` — admin masked view
+- `developer_payments` — developer payment cards
 
-| Strategy | Description | Who Gets Access |
-|----------|-------------|-----------------|
-| **Timed Window** | Access X hours before public release | All eligible customers |
-| **Followers Only** | Only store followers see it early | Users who follow the store |
-| **Repeat Buyers** | Customers with 2+ orders from this store | Loyal customers |
-| **Private Link** | Generate a secret URL for VIP sharing | Anyone with the link |
+RLS policies exist and are correct (sellers see own payouts, staff with `manage_payouts` see all), but without `GRANT SELECT/INSERT/UPDATE` the RLS policies never even get evaluated.
 
-### Database
-- Add `early_access_strategy` column to `products` (`timed`, `followers`, `repeat_buyers`, `private_link`) — defaults to `timed` for backwards compatibility
-- Add `early_access_link_token` for private link strategy
+## Fix
 
-### UI Changes
-- Replace `EarlyAccessCard` with new `LaunchStrategyCard` — radio-style strategy picker with description cards
-- Timed: keeps the hours input
-- Followers: no extra config needed
-- Repeat Buyers: optional min-order threshold (default 2)
-- Private Link: auto-generates a shareable URL with copy button
+A single migration that grants proper permissions on all payout tables and views:
 
-### Files
-| File | Change |
+```sql
+-- Base tables (have RLS policies already)
+GRANT SELECT, INSERT ON public.seller_payouts TO authenticated;
+GRANT UPDATE ON public.seller_payouts TO authenticated;
+
+GRANT SELECT, INSERT ON public.affiliate_payouts TO authenticated;
+GRANT UPDATE ON public.affiliate_payouts TO authenticated;
+
+GRANT SELECT ON public.developer_payments TO authenticated;
+GRANT UPDATE ON public.developer_payments TO authenticated;
+
+-- Safe/masked views (read-only for sellers)
+GRANT SELECT ON public.seller_payouts_safe TO authenticated;
+GRANT SELECT ON public.seller_payouts_masked TO authenticated;
+GRANT SELECT ON public.affiliate_payouts_safe TO authenticated;
+GRANT SELECT ON public.affiliate_payouts_masked TO authenticated;
+```
+
+The existing RLS policies already handle access control:
+- Sellers: `auth.uid() = seller_id` for SELECT/INSERT
+- Staff: `has_permission(auth.uid(), 'manage_payouts')` for ALL operations
+
+No code changes needed — the queries are correct, they just need the database permissions to actually execute.
+
+## Scope
+| Item | Change |
 |------|--------|
-| Migration | Add `early_access_strategy`, `early_access_min_orders`, `early_access_link_token` to products |
-| `src/components/seller/EarlyAccessCard.tsx` | Replace with `LaunchStrategyCard` |
-| `src/pages/seller/SellerProductEditor.tsx` | Wire new component |
-| `src/pages/seller/product-editor/types.ts` | Update form types |
-| `src/pages/seller/product-editor/useProductEditorData.ts` | Map new fields |
+| New migration | GRANT statements for 8 tables/views |
+| Code changes | None |
+| Risk | Low — RLS already enforced, grants just unlock the door |
+
