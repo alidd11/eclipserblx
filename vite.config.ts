@@ -106,7 +106,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
-        cacheId: 'eclipse-v6',
+        cacheId: 'eclipse-v7',
         // Only precache static assets — JS/CSS are content-hashed and served fresh from network.
         // Precaching JS/CSS causes stale chunk errors after deploys on iOS Safari.
         globPatterns: ["**/*.{ico,png,svg,woff,woff2}"],
