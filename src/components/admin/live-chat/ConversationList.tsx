@@ -63,7 +63,7 @@ export function ConversationList({
                   </Badge>
                 )}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Circle className={cn('h-2 w-2 fill-current', conv.status !== 'closed' ? 'text-green-500' : 'text-gray-400')} />
+                  <Circle className={cn('h-2 w-2 fill-current', conv.status !== 'closed' ? 'text-green-500' : 'text-muted-foreground')} />
                   <span>{formatDistanceToNow(new Date(conv.updated_at), { addSuffix: true })}</span>
                 </div>
               </button>

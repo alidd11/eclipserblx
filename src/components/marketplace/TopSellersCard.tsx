@@ -65,11 +65,11 @@ export function TopSellersCard() {
                   {index < 3 && (
                     <div className="absolute -top-1 -left-1 z-10">
                       <Crown 
-                        className={`h-3.5 w-3.5 ${
+                      className={`h-3.5 w-3.5 ${
                           index === 0 ? 'text-amber-400' : 
-                          index === 1 ? 'text-gray-400' : 
+                          index === 1 ? 'text-muted-foreground' : 
                           'text-amber-600'
-                        }`} 
+                        }`}
                       />
                     </div>
                   )}

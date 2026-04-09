@@ -85,14 +85,14 @@ export function LandingHero() {
 
           <div className="flex items-center gap-2.5 w-full max-w-sm mt-1">
             <Link to="/products" className="flex-1">
-              <Button size="sm" className="w-full h-9 text-xs font-semibold">
+              <Button className="w-full h-12 text-sm font-semibold">
                 Browse
-                <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </Link>
             <Link to="/sell" className="flex-1">
-              <Button size="sm" variant="outline" className="w-full h-9 text-xs font-semibold">
-                <Store className="mr-1.5 h-3.5 w-3.5" />
+              <Button variant="outline" className="w-full h-12 text-sm font-semibold">
+                <Store className="mr-1.5 h-4 w-4" />
                 Sell
               </Button>
             </Link>
