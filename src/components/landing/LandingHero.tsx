@@ -47,37 +47,33 @@ export function LandingHero() {
     <section aria-labelledby="hero-heading" className="relative overflow-hidden min-h-[180px] sm:min-h-[200px] lg:min-h-[200px]">
       <HeroBanner />
 
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-10 relative z-10">
-        {/* Desktop: horizontal strip layout */}
-        <div className="hidden lg:flex lg:items-center lg:justify-between lg:gap-8">
-          <h1 id="hero-heading" className="font-display text-4xl xl:text-5xl font-bold leading-[1.05] tracking-tight drop-shadow-md uppercase">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12 relative z-10">
+        {/* Desktop: stacked layout — headline dominates */}
+        <div className="hidden lg:flex lg:flex-col lg:gap-5">
+          <h1 id="hero-heading" className="font-display text-5xl xl:text-6xl font-bold leading-[1.05] tracking-tight drop-shadow-md uppercase whitespace-nowrap">
             The <span className="text-gradient-hero">Marketplace</span> For {wordRotator} Creators
           </h1>
 
-          <div className="flex flex-col items-end gap-3 flex-shrink-0">
-            <div className="flex items-center gap-4">
-              <Link to="/products">
-                <Button size="lg" className="h-12 px-8 text-sm font-semibold transition-colors">
-                  Browse Marketplace
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link
-                to="/sell"
-                className="text-xs font-medium text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5"
-              >
-                <Store className="h-3.5 w-3.5" />
-                Start selling
-              </Link>
-            </div>
-
-            <div className="flex items-center gap-2">
-              {STATS.map((stat, i) => (
-                <span key={i} className="text-[11px] font-medium text-muted-foreground bg-muted/40 border border-border/50 px-3 py-1 rounded-full">
-                  {stat}
-                </span>
-              ))}
-            </div>
+          <div className="flex items-center gap-4">
+            <Link to="/products">
+              <Button size="lg" className="h-12 px-8 text-sm font-semibold transition-colors">
+                Browse Marketplace
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+            <Link
+              to="/sell"
+              className="text-sm font-medium text-foreground/60 hover:text-foreground transition-colors flex items-center gap-1.5"
+            >
+              <Store className="h-4 w-4" />
+              Start selling
+            </Link>
+            <span className="w-px h-5 bg-border/60 mx-1" />
+            {STATS.map((stat, i) => (
+              <span key={i} className="text-xs font-medium text-muted-foreground">
+                {stat}
+              </span>
+            ))}
           </div>
         </div>
 
