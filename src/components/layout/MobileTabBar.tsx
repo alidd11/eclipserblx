@@ -76,7 +76,7 @@ export function MobileTabBar() {
                   </span>
                 )}
               </div>
-              <span className={cn("text-[11px] leading-tight", isActive ? "text-primary font-semibold" : "text-muted-foreground font-medium")}>
+              <span className={cn("text-xs leading-tight", isActive ? "text-foreground font-semibold" : "text-muted-foreground font-medium")}>
                 {label}
               </span>
               {isActive && (
