@@ -55,7 +55,7 @@ export function FreeAssetsTeaser() {
                 No fees
               </span>
             </div>
-            <Link to="/free" className="text-xs text-primary hover:underline flex items-center gap-1">
+            <Link to="/free" className="text-sm text-foreground hover:text-primary hover:underline flex items-center gap-1">
               View All <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
