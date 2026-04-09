@@ -1421,6 +1421,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bot_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bot_reaction_roles: {
@@ -2564,6 +2571,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "developer_product_submissions_approved_product_id_fkey"
+            columns: ["approved_product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "developer_product_submissions_category_id_fkey"
             columns: ["category_id"]
             isOneToOne: false
@@ -3422,6 +3436,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "download_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       download_tokens: {
@@ -3484,6 +3505,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "download_tokens_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
         ]
@@ -4837,6 +4865,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "ip_violation_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       job_applications: {
@@ -4991,6 +5026,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "leak_reports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "leak_reports_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -5074,6 +5116,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leak_scan_results_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
           {
@@ -5341,6 +5390,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       orders: {
@@ -5547,6 +5603,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "price_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       processed_webhook_events: {
@@ -5689,6 +5752,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "product_imports_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "product_imports_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -5812,6 +5882,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "product_promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "product_promotions_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -5870,6 +5947,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "product_translations_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       product_views: {
@@ -5910,6 +5994,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_views_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
         ]
@@ -6376,6 +6467,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "quarantined_files_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "quarantined_files_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
@@ -6733,6 +6831,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "review_reminders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       reviews: {
@@ -6806,6 +6911,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
         ]
@@ -6928,6 +7040,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "search_logs_clicked_product_id_fkey"
+            columns: ["clicked_product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       seller_agreements: {
@@ -7022,6 +7141,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_analytics_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
           {
@@ -7516,6 +7642,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "seller_notifications_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
         ]
@@ -9314,6 +9447,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "store_tab_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "store_tab_products_tab_id_fkey"
             columns: ["tab_id"]
             isOneToOne: false
@@ -9862,6 +10002,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_free_claims_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
             referencedColumns: ["id"]
           },
         ]
@@ -10648,6 +10795,13 @@ export type Database = {
             referencedRelation: "products_public"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "wishlist_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
         ]
       }
       youtube_podcasts: {
@@ -10813,7 +10967,6 @@ export type Database = {
           difficulty: string | null
           id: string | null
           question: string | null
-          wrong_answers: string[] | null
         }
         Insert: {
           category?: string | null
@@ -10821,7 +10974,6 @@ export type Database = {
           difficulty?: string | null
           id?: string | null
           question?: string | null
-          wrong_answers?: string[] | null
         }
         Update: {
           category?: string | null
@@ -10829,7 +10981,6 @@ export type Database = {
           difficulty?: string | null
           id?: string | null
           question?: string | null
-          wrong_answers?: string[] | null
         }
         Relationships: []
       }
@@ -10983,6 +11134,133 @@ export type Database = {
           moderation_status?: string | null
           name?: string | null
           price?: number | null
+          release_at?: string | null
+          robux_enabled?: boolean | null
+          robux_price?: number | null
+          seller_price?: number | null
+          slug?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products_storefront: {
+        Row: {
+          additional_asset_files: string[] | null
+          category_id: string | null
+          created_at: string | null
+          deleted_at: string | null
+          delivery_type: string | null
+          description: string | null
+          download_count: number | null
+          early_access_hours: number | null
+          early_access_min_orders: number | null
+          early_access_strategy: string | null
+          eclipse_free_eligible: boolean | null
+          external_link: string | null
+          id: string | null
+          images: string[] | null
+          is_active: boolean | null
+          is_featured: boolean | null
+          is_pay_what_you_want: boolean | null
+          is_resellable: boolean | null
+          is_seller_product: boolean | null
+          max_downloads_per_purchase: number | null
+          min_price: number | null
+          moderation_status: string | null
+          name: string | null
+          price: number | null
+          product_number: number | null
+          release_at: string | null
+          robux_enabled: boolean | null
+          robux_price: number | null
+          seller_price: number | null
+          slug: string | null
+          store_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          additional_asset_files?: string[] | null
+          category_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          delivery_type?: string | null
+          description?: string | null
+          download_count?: number | null
+          early_access_hours?: number | null
+          early_access_min_orders?: number | null
+          early_access_strategy?: string | null
+          eclipse_free_eligible?: boolean | null
+          external_link?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_pay_what_you_want?: boolean | null
+          is_resellable?: boolean | null
+          is_seller_product?: boolean | null
+          max_downloads_per_purchase?: number | null
+          min_price?: number | null
+          moderation_status?: string | null
+          name?: string | null
+          price?: number | null
+          product_number?: number | null
+          release_at?: string | null
+          robux_enabled?: boolean | null
+          robux_price?: number | null
+          seller_price?: number | null
+          slug?: string | null
+          store_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          additional_asset_files?: string[] | null
+          category_id?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          delivery_type?: string | null
+          description?: string | null
+          download_count?: number | null
+          early_access_hours?: number | null
+          early_access_min_orders?: number | null
+          early_access_strategy?: string | null
+          eclipse_free_eligible?: boolean | null
+          external_link?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          is_pay_what_you_want?: boolean | null
+          is_resellable?: boolean | null
+          is_seller_product?: boolean | null
+          max_downloads_per_purchase?: number | null
+          min_price?: number | null
+          moderation_status?: string | null
+          name?: string | null
+          price?: number | null
+          product_number?: number | null
           release_at?: string | null
           robux_enabled?: boolean | null
           robux_price?: number | null
