@@ -29,7 +29,7 @@ export function usePredictivePreload() {
             const { data } = await supabase
               .from('stores')
               .select('id, name, slug, logo_url, is_verified')
-              .eq('user_id', user.id)
+              .eq('owner_id', user.id)
               .maybeSingle();
             return data;
           },
@@ -45,7 +45,7 @@ export function usePredictivePreload() {
           queryFn: async () => {
             const { data } = await supabase
               .from('profiles')
-              .select('user_id, username, display_name, avatar_url, bio')
+              .select('user_id, username, display_name, avatar_url')
               .eq('user_id', user.id)
               .maybeSingle();
             return data;
