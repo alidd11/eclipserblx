@@ -1,0 +1,1 @@
+ALTER VIEW public.products_storefront SET (security_invoker = on);
