@@ -47,7 +47,7 @@ export function TopSellers() {
             </div>
             <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Top Creators</h2>
           </div>
-          <Link to="/stores" className="text-xs text-primary hover:underline flex items-center gap-1">
+          <Link to="/stores" className="text-sm text-foreground hover:text-primary hover:underline flex items-center gap-1">
             All stores <ArrowRight className="h-3 w-3" />
           </Link>
         </div>

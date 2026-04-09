@@ -80,7 +80,7 @@ export function RecentReleases() {
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <Link to="/products?sort=newest" className="text-xs text-primary hover:underline flex items-center gap-1">
+            <Link to="/products?sort=newest" className="text-sm text-foreground hover:text-primary hover:underline flex items-center gap-1">
               View all <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
