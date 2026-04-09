@@ -71,7 +71,7 @@ export function MyMessagesCard() {
     if (!user?.email) return;
 
     const channel = supabase
-      .channel('customer-message-replies')
+      .channel(`customer-message-replies-${user.id}`)
       .on(
         'postgres_changes',
         {

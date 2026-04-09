@@ -72,7 +72,7 @@ export function useUnreadChatMessages(isPanelOpen: boolean) {
     if (!user || isPanelOpen) return;
 
     const channel = supabase
-      .channel('chat_unread_counter')
+      .channel(`chat_unread_counter-${user.id}`)
       .on(
         'postgres_changes',
         {

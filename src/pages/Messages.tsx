@@ -89,7 +89,7 @@ export default function Messages() {
     fetchNotifications();
 
     const channel = supabase
-      .channel('messages-page-notifications')
+      .channel(`messages-page-notifications-${user.id}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` },
