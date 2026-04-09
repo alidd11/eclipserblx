@@ -28,7 +28,7 @@ export function usePrefetchRoute() {
 
           const { data: products } = await supabase
             .from('products')
-            .select('id, name, slug, price, images, product_number, average_rating, review_count')
+            .select('id, name, slug, price, images, product_number, download_count')
             .eq('category_id', cat.id)
             .eq('is_active', true)
             .order('created_at', { ascending: false })
