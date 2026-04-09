@@ -224,34 +224,34 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         </div>
 
         {/* Content */}
-        <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1">
+        <div className="p-3 sm:p-3.5 flex flex-col flex-1 gap-1.5">
           {/* Category label */}
           {category && (
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+            <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
               {category}
             </span>
           )}
 
           {/* Title */}
-          <h3 className="font-display font-semibold text-xs sm:text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+          <h3 className="font-display font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
             {name}
           </h3>
 
           {/* Store + verified — inline */}
-          <div className="flex items-center gap-1 mt-0.5">
+          <div className="flex items-center gap-1.5 mt-0.5">
             {storeLogo ? (
               <img 
                 src={storeLogo} 
                 alt={storeName || ''}
-                className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0"
+                className="h-4 w-4 rounded-sm object-cover flex-shrink-0"
               />
             ) : (
-              <div className="h-3.5 w-3.5 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+              <div className="h-4 w-4 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
                 <Store className="h-2.5 w-2.5 text-muted-foreground" />
               </div>
             )}
             <span 
-              className="text-[10px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
+              className="text-[11px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
               onClick={(e) => {
                 if (storeSlug) {
                   e.preventDefault();
@@ -270,7 +270,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
 
           {/* Price row + rating + quick-add */}
-          <div className="flex items-center gap-1.5 mt-auto pt-1.5">
+          <div className="flex items-center gap-2 mt-auto pt-2">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {isPayWhatYouWant ? (
                 <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-emerald-500">
@@ -278,7 +278,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 </span>
               ) : hasMemberDiscount ? (
                 <>
-                  <span className="text-[10px] text-muted-foreground leading-none line-through">
+                  <span className="text-[11px] text-muted-foreground leading-none line-through">
                     {formatPrice(price)}
                   </span>
                   <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-amber-400">
@@ -308,7 +308,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             <button
               onClick={handleAddToCart}
               className={cn(
-                "flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-colors",
+                "flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
                 inCart 
                   ? "bg-emerald-500/20 text-emerald-500" 
                   : "bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground"
