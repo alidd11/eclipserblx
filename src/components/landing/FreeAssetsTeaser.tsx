@@ -64,8 +64,8 @@ export function FreeAssetsTeaser() {
             {products.map((product) => {
               const imageUrl = getFirstImageUrl(product.images);
               return (
-                <Link key={product.id} to={`/product/${product.slug}`} className="block min-w-[120px] lg:min-w-0 group">
-                  <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border">
+                <Link key={product.id} to={`/product/${product.slug}`} className="block min-w-[160px] lg:min-w-0 group">
+                  <div className="aspect-[4/5] sm:aspect-square rounded-lg overflow-hidden bg-muted border border-border">
                     {imageUrl ? (
                       <img
                         src={optimizeImageUrl(imageUrl, 300)}
