@@ -425,13 +425,16 @@ export default function ProductDetail() {
  </div>
  )}
  
+ {/* Store card - mobile only, desktop shows in right column */}
+ <div className="lg:hidden">
  {product.stores && (
  <StoreDetailsCard store={product.stores} className="w-full" />
  )}
  </div>
+ </div>
 
  {/* Details */}
- <div className="space-y-4">
+ <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
  <div className="rounded-xl border-border/50 bg-card overflow-hidden relative">
  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
  <div className="p-4 pt-5 space-y-4">
