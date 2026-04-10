@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { MainLayout } from '@/components/layout/MainLayout';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +24,7 @@ import {
  SelectValue,
 } from '@/components/ui/select';
 import { usePublicStore } from '@/hooks/usePublicStore';
+import { usePublicReviews } from '@/hooks/usePublicReviews';
 import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
 
