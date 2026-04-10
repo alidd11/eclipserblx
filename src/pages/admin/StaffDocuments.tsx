@@ -1,5 +1,6 @@
 import { FileText, Users, Printer, FolderOpen, BookOpen, ClipboardList } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 
 interface StaffDocument {
