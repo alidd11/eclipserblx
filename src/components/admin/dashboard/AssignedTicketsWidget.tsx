@@ -5,6 +5,19 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
+function relativeTime(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+const PRIORITY_ORDER: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+
 export function AssignedTicketsWidget() {
   const { user } = useAuth();
 
@@ -31,7 +44,12 @@ export function AssignedTicketsWidget() {
       const customer = (customerRes.data || []).map(t => ({ ...t, type: 'customer' as const }));
       const seller = (sellerRes.data || []).map(t => ({ ...t, type: 'seller' as const }));
       return [...customer, ...seller]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .sort((a, b) => {
+          const pa = PRIORITY_ORDER[a.priority] ?? 99;
+          const pb = PRIORITY_ORDER[b.priority] ?? 99;
+          if (pa !== pb) return pa - pb;
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        })
         .slice(0, 6);
     },
     enabled: !!user?.id,
@@ -53,9 +71,14 @@ export function AssignedTicketsWidget() {
           <Ticket className="h-4 w-4 text-muted-foreground" />
           Your Assigned Tickets
         </h3>
-        <Badge variant="secondary" className="text-xs">{assignedTickets.length}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">{assignedTickets.length}</Badge>
+          <Link to="/admin/customer-tickets" className="text-xs text-primary hover:underline">
+            View All
+          </Link>
+        </div>
       </div>
-      <div className="p-4 space-y-2">
+      <div className="p-4 space-y-1.5">
         {assignedTickets.map((ticket) => {
           const href = ticket.type === 'customer'
             ? `/admin/customer-tickets/${ticket.id}`
@@ -72,6 +95,9 @@ export function AssignedTicketsWidget() {
                     {(ticket.priority === 'high' || ticket.priority === 'urgent') && (
                       <AlertCircle className="h-3 w-3 text-destructive" />
                     )}
+                    <span className="text-[10px] text-muted-foreground ml-auto hidden sm:inline">
+                      {relativeTime(ticket.created_at)}
+                    </span>
                   </div>
                   <p className="text-sm font-medium truncate">{ticket.subject}</p>
                 </div>

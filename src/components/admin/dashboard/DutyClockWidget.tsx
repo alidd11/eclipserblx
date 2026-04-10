@@ -83,71 +83,73 @@ export function DutyClockWidget() {
   });
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden max-w-md">
+    <div className="border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
         <Clock className="h-4 w-4 text-muted-foreground" />
         <h3 className="font-semibold text-sm">Duty Status</h3>
       </div>
-      <div className="p-4 space-y-3">
+      <div className="p-4">
         {activeSession ? (
-          <div className="space-y-3">
-            <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20 space-y-1">
-              <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-green-500 shrink-0" />
-                <span className="font-medium text-green-500 text-sm">Currently On Duty</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 min-w-0 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+              <Timer className="h-4 w-4 text-green-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-green-500 text-sm">On Duty</span>
+                <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">
+                  since {format(new Date(activeSession.clock_in), 'h:mm a')}
+                </span>
               </div>
-              <p className="text-xs text-muted-foreground whitespace-nowrap">
-                Clocked in at {format(new Date(activeSession.clock_in), 'h:mm a')}
-              </p>
-              <p className="text-xl font-mono font-bold text-green-500">{elapsedTime}</p>
+              <span className="text-lg font-mono font-bold text-green-500 shrink-0">{elapsedTime}</span>
             </div>
-            <Textarea
-              placeholder="Add notes for this session (optional)..."
-              value={clockOutNotes}
-              onChange={(e) => setClockOutNotes(e.target.value)}
-              rows={2}
-              className="text-sm"
-            />
-            <Dialog open={showClockOutConfirm} onOpenChange={setShowClockOutConfirm}>
-              <DialogTrigger asChild>
-                <Button variant="destructive" className="w-full" size="sm">
-                  <Square className="h-3.5 w-3.5 mr-1.5" />
-                  Clock Out
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Confirm Clock Out</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <p className="text-muted-foreground">
-                    You've been on duty for <span className="font-mono font-bold text-foreground">{elapsedTime}</span>. Are you sure you want to clock out?
-                  </p>
-                  <div className="flex gap-3">
-                    <Button variant="outline" className="flex-1" onClick={() => setShowClockOutConfirm(false)}>Cancel</Button>
-                    <Button
-                      variant="destructive"
-                      className="flex-1"
-                      disabled={clockOutMutation.isPending}
-                      onClick={() => { clockOutMutation.mutate(); setShowClockOutConfirm(false); }}
-                    >
-                      {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
-                    </Button>
+            <div className="flex items-center gap-2 sm:flex-col sm:gap-1.5">
+              <Textarea
+                placeholder="Session notes..."
+                value={clockOutNotes}
+                onChange={(e) => setClockOutNotes(e.target.value)}
+                rows={1}
+                className="text-sm flex-1 sm:w-48 min-h-[36px]"
+              />
+              <Dialog open={showClockOutConfirm} onOpenChange={setShowClockOutConfirm}>
+                <DialogTrigger asChild>
+                  <Button variant="destructive" className="h-12 shrink-0" size="sm">
+                    <Square className="h-3.5 w-3.5 mr-1.5" />
+                    Clock Out
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Confirm Clock Out</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-muted-foreground">
+                      You've been on duty for <span className="font-mono font-bold text-foreground">{elapsedTime}</span>. Are you sure you want to clock out?
+                    </p>
+                    <div className="flex gap-3">
+                      <Button variant="outline" className="flex-1 h-12" onClick={() => setShowClockOutConfirm(false)}>Cancel</Button>
+                      <Button
+                        variant="destructive"
+                        className="flex-1 h-12"
+                        disabled={clockOutMutation.isPending}
+                        onClick={() => { clockOutMutation.mutate(); setShowClockOutConfirm(false); }}
+                      >
+                        {clockOutMutation.isPending ? 'Clocking Out...' : 'Clock Out'}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         ) : (
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-1 p-3 rounded-lg bg-muted/50">
               <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
               <div>
                 <p className="text-sm font-medium">Not On Duty</p>
-                <p className="text-xs text-muted-foreground whitespace-nowrap">Clock in to start logging hours</p>
+                <p className="text-xs text-muted-foreground">Clock in to start logging hours</p>
               </div>
             </div>
-            <Button onClick={() => clockInMutation.mutate()} disabled={clockInMutation.isPending} className="w-full" size="sm">
+            <Button onClick={() => clockInMutation.mutate()} disabled={clockInMutation.isPending} className="h-12 shrink-0">
               <Play className="h-3.5 w-3.5 mr-1.5" />
               {clockInMutation.isPending ? 'Clocking In...' : 'Clock In'}
             </Button>
