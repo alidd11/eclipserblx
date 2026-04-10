@@ -1,31 +1,15 @@
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { StoreLayout } from '@/components/store/StoreLayout';
 import { ChevronLeft, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { sanitizeHtml } from '@/lib/sanitize';
-import { PUBLIC_STORE_COLUMNS } from '@/lib/storeColumns';
+import { usePublicStore } from '@/hooks/usePublicStore';
+import { StoreNotFound } from '@/components/store/StoreNotFound';
 
 export default function StoreAbout() {
   const { storeSlug: slug } = useParams<{ storeSlug: string }>();
-
-  const { data: store, isLoading } = useQuery({
-    queryKey: ['store-about', slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stores')
-        .select(PUBLIC_STORE_COLUMNS)
-        .eq('slug', slug)
-        .eq('is_active', true)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!slug,
-  });
+  const { store, isLoading, notFound } = usePublicStore(slug);
 
   if (isLoading) {
     return (
@@ -35,15 +19,8 @@ export default function StoreAbout() {
     );
   }
 
-  if (!store) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 safe-area-page">
-        <h1 className="text-2xl font-bold">Store not found</h1>
-        <Button asChild>
-          <Link to="/products">Browse All Stores</Link>
-        </Button>
-      </div>
-    );
+  if (notFound) {
+    return <StoreNotFound />;
   }
 
   const accentColor = store.accent_color || '#8b5cf6';

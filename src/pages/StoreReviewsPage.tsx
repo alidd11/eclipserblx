@@ -24,28 +24,16 @@ import {
  SelectTrigger,
  SelectValue,
 } from '@/components/ui/select';
+import { usePublicStore } from '@/hooks/usePublicStore';
+import { StoreNotFound } from '@/components/store/StoreNotFound';
 
 export default function StoreReviewsPage() {
  const { storeSlug } = useParams<{ storeSlug: string }>();
  const [sortBy, setSortBy] = useState<'recent' | 'highest' | 'lowest'>('recent');
  const [filterRating, setFilterRating] = useState<string>('all');
 
- // Fetch store details
- const { data: store, isLoading: storeLoading } = useQuery({
- queryKey: ['store-for-reviews', storeSlug],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('stores')
- .select('id, name, slug, logo_url, accent_color, average_rating')
- .eq('slug', storeSlug)
- .eq('is_active', true)
- .single();
-
- if (error) throw error;
- return data;
- },
- enabled: !!storeSlug,
- });
+ // Fetch store details via centralised hook
+ const { store, isLoading: storeLoading, notFound } = usePublicStore(storeSlug);
 
  // Fetch all reviews for the store's products
  const { data: reviews, isLoading: reviewsLoading } = useQuery({
@@ -167,24 +155,8 @@ export default function StoreReviewsPage() {
  );
  }
 
- if (!store) {
- return (
- <MainLayout>
- <div className="container py-16 text-center">
- <StoreIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
- <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
- <p className="text-muted-foreground mb-6">
- The store you're looking for doesn't exist.
- </p>
- <Button asChild>
- <Link to="/">
- <ArrowLeft className="h-4 w-4 mr-2" />
- Back to Marketplace
- </Link>
- </Button>
- </div>
- </MainLayout>
- );
+ if (notFound) {
+ return <StoreNotFound />;
  }
 
  return (

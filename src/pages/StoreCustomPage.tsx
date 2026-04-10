@@ -3,33 +3,32 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import DOMPurify from 'dompurify';
+import { usePublicStore } from '@/hooks/usePublicStore';
+import { StoreNotFound } from '@/components/store/StoreNotFound';
 
 export default function StoreCustomPage() {
   const { storeSlug, pageSlug } = useParams<{ storeSlug: string; pageSlug: string }>();
 
-  const { data: page, isLoading, error } = useQuery({
-    queryKey: ['store-custom-page', storeSlug, pageSlug],
-    queryFn: async () => {
-      // First get the store by slug
-      const { data: store, error: storeErr } = await supabase
-        .from('stores')
-        .select('id')
-        .eq('slug', storeSlug!)
-        .single();
-      if (storeErr || !store) throw new Error('Store not found');
+  // Centralised store validation
+  const { store, isLoading: storeLoading, notFound: storeNotFound } = usePublicStore(storeSlug);
 
+  const { data: page, isLoading: pageLoading, error } = useQuery({
+    queryKey: ['store-custom-page', store?.id, pageSlug],
+    queryFn: async () => {
       const { data, error: pageErr } = await supabase
         .from('store_pages')
         .select('*')
-        .eq('store_id', store.id)
+        .eq('store_id', store!.id)
         .eq('slug', pageSlug!)
         .eq('is_published', true)
         .single();
       if (pageErr || !data) throw new Error('Page not found');
       return data;
     },
-    enabled: !!storeSlug && !!pageSlug,
+    enabled: !!store?.id && !!pageSlug,
   });
+
+  const isLoading = storeLoading || pageLoading;
 
   if (isLoading) {
     return (
@@ -40,6 +39,10 @@ export default function StoreCustomPage() {
         <Skeleton className="h-64 w-full" />
       </div>
     );
+  }
+
+  if (storeNotFound) {
+    return <StoreNotFound />;
   }
 
   if (error || !page) {
