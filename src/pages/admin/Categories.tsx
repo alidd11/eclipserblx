@@ -439,17 +439,12 @@ export default function AdminCategories() {
 
  return (
  <AdminLayout requiredPermissions={['manage_products']}>
- <div className="space-y-6">
- <div className="flex items-center justify-between">
- <div>
- <h1 className="text-2xl font-bold">Categories</h1>
- <p className="text-muted-foreground">Manage product categories</p>
- </div>
- <Button onClick={openCreate}>
- <Plus className="h-4 w-4 mr-2" />
- Add Category
- </Button>
- </div>
+  <div className="space-y-6">
+  <AdminPageHeader
+    title="Categories"
+    description="Manage product categories"
+    actions={<Button onClick={openCreate} className="h-12"><Plus className="h-4 w-4 mr-2" />Add Category</Button>}
+  />
 
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
