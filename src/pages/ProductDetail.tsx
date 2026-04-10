@@ -642,16 +642,6 @@ export default function ProductDetail() {
  </div>
  
 
- {/* Mobile sticky buy bar */}
- {product && (
- <StickyBuyBar
- productName={product.name}
- formattedPrice={formatPrice(Number(product.price))}
- inCart={inCart}
- onAddToCart={handleAddToCart}
- ctaRef={ctaButtonRef}
- />
- )}
 
  {/* IP Violation Report Dialog */}
  <ReportIPViolationDialog
