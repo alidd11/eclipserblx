@@ -119,7 +119,7 @@ export default function AdminAffiliates() {
  if (error) throw error;
 
  // Get user profiles
- const userIds = [...new Set(data.map(p => p.user_id))];
+ const userIds = [...new Set((data as any[]).map((p: any) => p.user_id))] as string[];
 
   const { data: profiles } = await supabase
   .from('profiles')
