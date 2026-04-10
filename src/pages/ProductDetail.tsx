@@ -635,7 +635,9 @@ export default function ProductDetail() {
  </div>
  </div>
 
- {/* Reviews Section */}
+ </div>
+
+ {/* Reviews Section - full width */}
  <ProductReviewsSection
  ref={reviewSectionRef as React.RefObject<HTMLElement>}
  productId={product.id}
@@ -645,7 +647,6 @@ export default function ProductDetail() {
  hasPurchased={!!hasPurchased}
  existingReview={!!existingReview}
  />
- </div>
 
  <RelatedProductsSection products={relatedProducts || []} />
  <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
