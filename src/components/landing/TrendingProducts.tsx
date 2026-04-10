@@ -12,7 +12,7 @@ import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 export function TrendingProducts() {
-  const { data: products, isLoading } = useQuery({
+  const { data: products, isLoading, isError } = useQuery({
     queryKey: ['trending-products-home'],
     queryFn: async () => {
       const { data, error } = await supabase
