@@ -25,6 +25,7 @@ interface StaffMember {
  customer_id: string | null;
  roles: string[];
  created_at: string;
+ last_seen: string | null;
 }
 
 interface StaffIdLog {
@@ -104,10 +105,10 @@ export default function StaffDirectory() {
  );
 
  // Get profiles for these users - exclude email for privacy
- const { data: profiles, error: profilesError } = await supabase
- .from('profiles')
- .select('user_id, display_name, username, avatar_url, staff_id, customer_id, created_at')
- .in('user_id', staffUserIds);
+  const { data: profiles, error: profilesError } = await supabase
+  .from('profiles')
+  .select('user_id, display_name, username, avatar_url, staff_id, customer_id, created_at, last_seen')
+  .in('user_id', staffUserIds);
 
  if (profilesError) throw profilesError;
 
@@ -123,19 +124,20 @@ export default function StaffDirectory() {
  // Combine data
  const staffMap = new Map<string, StaffMember>();
 
- profiles?.forEach(profile => {
- const userRoles = roles?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
- staffMap.set(profile.user_id, {
- user_id: profile.user_id,
- display_name: profile.display_name,
- username: profile.username,
- avatar_url: profile.avatar_url,
- staff_id: profile.staff_id,
- customer_id: profile.customer_id,
- roles: userRoles,
- created_at: profile.created_at,
- });
- });
+  profiles?.forEach(profile => {
+  const userRoles = roles?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
+  staffMap.set(profile.user_id, {
+  user_id: profile.user_id,
+  display_name: profile.display_name,
+  username: profile.username,
+  avatar_url: profile.avatar_url,
+  staff_id: profile.staff_id,
+  customer_id: profile.customer_id,
+  roles: userRoles,
+  created_at: profile.created_at,
+  last_seen: profile.last_seen,
+  });
+  });
 
  const getHighestRoleRank = (roles: string[]): number => {
  if (roles.length === 0) return 999;
