@@ -36,7 +36,6 @@ export default function AdminUsers() {
     <AdminLayout requiredPermissions={['view_users']}>
       <div className="space-y-6 min-h-0">
         <AdminPageHeader title="User Management" description="Manage customers, staff, and roles" />
-        </div>
 
         {/* View Toggle - Mobile: Select, Desktop: Tabs */}
         <div className="sm:hidden">

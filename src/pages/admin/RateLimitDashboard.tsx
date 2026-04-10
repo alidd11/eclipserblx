@@ -58,21 +58,21 @@ export default function RateLimitDashboard() {
   return (
     <AdminLayout requiredPermissions={['view_audit_logs']}>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-display font-bold">Rate Limits</h1>
-            <p className="text-sm text-muted-foreground mt-1">Monitor rate-limited requests across the platform</p>
-          </div>
-          <Select value={timeRange} onValueChange={(v) => setTimeRange(v as '24h' | '7d')}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24h">Last 24h</SelectItem>
-              <SelectItem value="7d">Last 7 days</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <AdminPageHeader
+          title="Rate Limits"
+          description="Monitor rate-limited requests across the platform"
+          actions={
+            <Select value={timeRange} onValueChange={(v) => setTimeRange(v as '24h' | '7d')}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="24h">Last 24h</SelectItem>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
 
         {isLoading ? (
           <div className="flex justify-center py-16">
