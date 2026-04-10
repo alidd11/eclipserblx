@@ -51,8 +51,8 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  />
  )}
  
- {/* Content area - dark background */}
- <div className="bg-foreground/95 px-3 py-2.5 space-y-2">
+  {/* Content area */}
+  <div className="bg-muted/60 px-3 py-2.5 space-y-2">
  {/* Store header */}
  <div className="flex items-center gap-3">
  {/* Store Logo - positioned to overlap banner slightly */}
@@ -60,10 +60,10 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  <img 
  src={optimizeImageUrl(store.logo_url, 48, 48, 'contain')} 
  alt={store.name}
- className="h-12 w-12 rounded-lg object-contain bg-background/10 border border-white/10 flex-shrink-0 group-hover:border-primary/50 transition-colors"
+ className="h-12 w-12 rounded-lg object-contain bg-muted border border-border flex-shrink-0 group-hover:border-primary/50 transition-colors"
  />
  ) : (
- <div className="h-12 w-12 rounded-lg bg-background/10 flex items-center justify-center flex-shrink-0 border border-white/10">
+ <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 border border-border">
  <Store className="h-5 w-5 text-foreground/60" />
  </div>
  )}
@@ -74,10 +74,10 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  {store.name}
  </h3>
  {store.is_verified && (
- <BadgeCheck className="h-4 w-4 text-blue-400 flex-shrink-0" />
+ <BadgeCheck className="h-4 w-4 text-primary flex-shrink-0" />
  )}
  {store.is_trusted && (
- <Shield className="h-4 w-4 text-amber-400 flex-shrink-0" />
+ <Shield className="h-4 w-4 text-warning flex-shrink-0" />
  )}
  </div>
  
@@ -100,7 +100,7 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  
  {store.average_rating !== undefined && store.average_rating > 0 && (
  <div className="flex items-center gap-1.5">
- <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+ <Star className="h-3.5 w-3.5 fill-warning text-warning" />
  <span>{store.average_rating.toFixed(1)}</span>
  </div>
  )}
