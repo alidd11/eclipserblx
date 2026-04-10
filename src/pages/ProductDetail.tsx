@@ -425,12 +425,10 @@ export default function ProductDetail() {
  </div>
  )}
  
- {/* Store card - mobile only, desktop shows in right column */}
- <div className="lg:hidden">
- {product.stores && (
- <StoreDetailsCard store={product.stores} className="w-full" />
- )}
- </div>
+  {/* Store card - below image gallery */}
+  {product.stores && (
+  <StoreDetailsCard store={product.stores} className="w-full" />
+  )}
  </div>
 
  {/* Details */}
@@ -626,12 +624,6 @@ export default function ProductDetail() {
  </div>
  </div>
  </div>
- </div>
- {/* Store card - desktop only */}
- <div className="hidden lg:block">
- {product.stores && (
- <StoreDetailsCard store={product.stores} className="w-full" />
- )}
  </div>
  </div>
 

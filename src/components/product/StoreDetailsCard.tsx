@@ -51,8 +51,8 @@ export function StoreDetailsCard({ store, className }: StoreDetailsCardProps) {
  />
  )}
  
- {/* Content area - dark background */}
- <div className="bg-foreground/95 px-3 py-2.5 space-y-2">
+  {/* Content area */}
+  <div className="bg-muted/60 px-3 py-2.5 space-y-2">
  {/* Store header */}
  <div className="flex items-center gap-3">
  {/* Store Logo - positioned to overlap banner slightly */}
