@@ -1,6 +1,7 @@
 import { Search, Shield, Ban, Trash2, Eye, ChevronLeft, ChevronRight, Users, IdCard } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
