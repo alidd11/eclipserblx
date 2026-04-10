@@ -5,7 +5,7 @@ export const ProductCardSkeleton = memo(function ProductCardSkeleton() {
   return (
     <div className="overflow-hidden h-full flex flex-col rounded-xl bg-card">
       {/* Image skeleton — square */}
-      <Skeleton className="aspect-[4/5] sm:aspect-square w-full" />
+      <Skeleton className="aspect-[5/4] sm:aspect-square w-full" />
       
       {/* Content skeleton */}
       <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1.5">
