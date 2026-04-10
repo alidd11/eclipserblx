@@ -16,6 +16,8 @@ import { useStaffPresence } from '@/hooks/useStaffPresence';
 import { useAdminManifest } from '@/hooks/useAdminManifest';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { useAdminTextScaling } from '@/hooks/useAdminTextScaling';
+import { useAdminScrollRestoration } from '@/hooks/useAdminScrollRestoration';
+import { AdminCommandSearch } from './AdminCommandSearch';
 import { useIsInsideHub } from './AdminHubContext';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
@@ -89,6 +91,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
   useStaffPresence();
   useAdminManifest();
   useAdminTextScaling();
+  useAdminScrollRestoration();
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -260,7 +263,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
               ? 'p-0'
               : 'p-4 md:p-6 lg:p-8'
         )}
-        extra={<AdminInstallPrompt />}
+        extra={<><AdminInstallPrompt /><AdminCommandSearch /></>}
       >
         <PageTransition className={isChatPage ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : undefined}>
           {children}
