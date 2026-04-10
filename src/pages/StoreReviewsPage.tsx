@@ -155,24 +155,8 @@ export default function StoreReviewsPage() {
  );
  }
 
- if (!store) {
- return (
- <MainLayout>
- <div className="container py-16 text-center">
- <StoreIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
- <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
- <p className="text-muted-foreground mb-6">
- The store you're looking for doesn't exist.
- </p>
- <Button asChild>
- <Link to="/">
- <ArrowLeft className="h-4 w-4 mr-2" />
- Back to Marketplace
- </Link>
- </Button>
- </div>
- </MainLayout>
- );
+ if (notFound) {
+ return <StoreNotFound />;
  }
 
  return (
