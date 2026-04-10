@@ -80,11 +80,11 @@ export function ProductReviewDialog({
             </div>
             <div>
               <span className="text-muted-foreground">Price:</span>
-              <p className="font-medium">{formatGBP(selectedProduct?.price?)}</p>
+              <p className="font-medium">{formatGBP(selectedProduct?.price ?? 0)}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Seller Earnings:</span>
-              <p className="font-medium">{formatGBP(selectedProduct?.seller_price?)}</p>
+              <p className="font-medium">{formatGBP(selectedProduct?.seller_price ?? 0)}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Status:</span>

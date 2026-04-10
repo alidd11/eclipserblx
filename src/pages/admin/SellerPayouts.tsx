@@ -382,7 +382,7 @@ export default function SellerPayouts() {
  </div>
  </TableCell>
  <TableCell>{payout.stores?.name}</TableCell>
- <TableCell className="font-medium">{formatGBP(payout.amount?)}</TableCell>
+ <TableCell className="font-medium">{formatGBP(payout.amount ?? 0)}</TableCell>
  <TableCell>
  {getPayoutMethodBadge(payout)}
  </TableCell>
@@ -459,7 +459,7 @@ export default function SellerPayouts() {
  <p className="font-medium truncate">{payout.profiles?.display_name}</p>
  <p className="text-xs text-muted-foreground truncate">{payout.stores?.name}</p>
  </div>
- <span className="text-lg font-bold flex-shrink-0">{formatGBP(payout.amount?)}</span>
+ <span className="text-lg font-bold flex-shrink-0">{formatGBP(payout.amount ?? 0)}</span>
  </div>
  <div className="flex flex-wrap gap-1.5">
  {getStatusBadge(payout.status, payout)}
@@ -530,7 +530,7 @@ export default function SellerPayouts() {
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Amount:</span>
- <span className="font-medium text-lg">{formatGBP(selectedPayout?.amount?)}</span>
+ <span className="font-medium text-lg">{formatGBP(selectedPayout?.amount ?? 0)}</span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Payout Method:</span>
