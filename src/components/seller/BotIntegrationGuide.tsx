@@ -184,7 +184,7 @@ async function checkGuildLicense(guildId) {
  <Button
  variant="ghost"
  size="sm"
- onClick={() => copyToClipboard(apiEndpoint, 'api')}
+ onClick={() => handleCopy(apiEndpoint, 'api')}
  >
  {copiedField === 'api' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
  </Button>
@@ -251,7 +251,7 @@ async function checkGuildLicense(guildId) {
  variant="ghost"
  size="sm"
  className="absolute top-2 right-2 z-10"
- onClick={() => copyToClipboard(javascriptExample, 'js')}
+ onClick={() => handleCopy(javascriptExample, 'js')}
  >
  {copiedField === 'js' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
  </Button>
@@ -266,7 +266,7 @@ async function checkGuildLicense(guildId) {
  variant="ghost"
  size="sm"
  className="absolute top-8 right-2 z-10"
- onClick={() => copyToClipboard(checkLicenseExample, 'check')}
+ onClick={() => handleCopy(checkLicenseExample, 'check')}
  >
  {copiedField === 'check' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
  </Button>
@@ -282,7 +282,7 @@ async function checkGuildLicense(guildId) {
  variant="ghost"
  size="sm"
  className="absolute top-2 right-2 z-10"
- onClick={() => copyToClipboard(pythonExample, 'py')}
+ onClick={() => handleCopy(pythonExample, 'py')}
  >
  {copiedField === 'py' ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
  </Button>

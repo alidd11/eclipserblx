@@ -110,10 +110,10 @@ export function ReferralCard() {
           url: referralLink,
         });
       } catch {
-        copyToClipboard(referralLink, 'link');
+        handleCopy(referralLink, 'link');
       }
     } else {
-      copyToClipboard(referralLink, 'link');
+      handleCopy(referralLink, 'link');
     }
   };
 
@@ -162,7 +162,7 @@ export function ReferralCard() {
             <Button
               variant="outline"
               size="icon" aria-label="Confirm"
-              onClick={() => copyToClipboard(referralCode, 'code')}
+              onClick={() => handleCopy(referralCode, 'code')}
             >
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>
