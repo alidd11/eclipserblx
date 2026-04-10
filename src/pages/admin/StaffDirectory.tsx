@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { format } from '@/lib/dateUtils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate, Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 // Note: Roles are now dynamic, fetched from custom_roles table
 
@@ -25,6 +26,7 @@ interface StaffMember {
  customer_id: string | null;
  roles: string[];
  created_at: string;
+ last_seen: string | null;
 }
 
 interface StaffIdLog {
@@ -104,10 +106,10 @@ export default function StaffDirectory() {
  );
 
  // Get profiles for these users - exclude email for privacy
- const { data: profiles, error: profilesError } = await supabase
- .from('profiles')
- .select('user_id, display_name, username, avatar_url, staff_id, customer_id, created_at')
- .in('user_id', staffUserIds);
+  const { data: profiles, error: profilesError } = await supabase
+  .from('profiles')
+  .select('user_id, display_name, username, avatar_url, staff_id, customer_id, created_at, last_seen')
+  .in('user_id', staffUserIds);
 
  if (profilesError) throw profilesError;
 
@@ -123,19 +125,20 @@ export default function StaffDirectory() {
  // Combine data
  const staffMap = new Map<string, StaffMember>();
 
- profiles?.forEach(profile => {
- const userRoles = roles?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
- staffMap.set(profile.user_id, {
- user_id: profile.user_id,
- display_name: profile.display_name,
- username: profile.username,
- avatar_url: profile.avatar_url,
- staff_id: profile.staff_id,
- customer_id: profile.customer_id,
- roles: userRoles,
- created_at: profile.created_at,
- });
- });
+  profiles?.forEach(profile => {
+  const userRoles = roles?.filter(r => r.user_id === profile.user_id).map(r => r.role) || [];
+  staffMap.set(profile.user_id, {
+  user_id: profile.user_id,
+  display_name: profile.display_name,
+  username: profile.username,
+  avatar_url: profile.avatar_url,
+  staff_id: profile.staff_id,
+  customer_id: profile.customer_id,
+  roles: userRoles,
+  created_at: profile.created_at,
+  last_seen: profile.last_seen,
+  });
+  });
 
  const getHighestRoleRank = (roles: string[]): number => {
  if (roles.length === 0) return 999;
@@ -186,11 +189,17 @@ export default function StaffDirectory() {
  });
 
  // Filter staff members based on search (no email search for privacy)
- const filteredStaff = staffMembers.filter(member =>
- (member.display_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
- (member.staff_id?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
- (member.customer_id?.toLowerCase() || '').includes(searchQuery.toLowerCase())
- );
+  const filteredStaff = staffMembers.filter(member =>
+  (member.display_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+  (member.staff_id?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+  (member.customer_id?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  );
+
+  const isOnline = (lastSeen: string | null) => {
+    if (!lastSeen) return false;
+    const diff = Date.now() - new Date(lastSeen).getTime();
+    return diff < 3 * 60_000; // Online if seen within 3 minutes
+  };
 
  if (authLoading) {
  return (
@@ -277,12 +286,18 @@ export default function StaffDirectory() {
  <div className="p-4">
  <Link to={`/admin/staff/${member.user_id}`}>
  <div className="flex items-start gap-3">
- <Avatar className="h-12 w-12">
- <AvatarImage src={member.avatar_url || undefined} />
- <AvatarFallback className="bg-primary/10 text-primary font-medium">
- {(member.display_name || 'U').slice(0, 2).toUpperCase()}
- </AvatarFallback>
- </Avatar>
+  <div className="relative">
+  <Avatar className="h-12 w-12">
+  <AvatarImage src={member.avatar_url || undefined} />
+  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+  {(member.display_name || 'U').slice(0, 2).toUpperCase()}
+  </AvatarFallback>
+  </Avatar>
+  <span className={cn(
+    'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
+    isOnline(member.last_seen) ? 'bg-green-500' : 'bg-muted-foreground/40'
+  )} />
+  </div>
  <div className="flex-1 min-w-0">
  <p className="font-medium truncate">
  {member.display_name || 'Unknown User'}
