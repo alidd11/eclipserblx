@@ -13,15 +13,13 @@ import { RevenueChart } from '@/components/seller/RevenueChart';
 import { RevenueSummaryStats } from '@/components/seller/RevenueSummaryStats';
 import { ProductHealthDonut } from '@/components/seller/ProductHealthDonut';
 import { RecentOrdersTable } from '@/components/seller/RecentOrdersTable';
-import { TosBanner, NonCompliantBanner, PendingReviewBanner } from '@/components/seller/banners';
+import { TosBanner, NonCompliantBanner } from '@/components/seller/banners';
 import { DashboardCardSkeleton } from '@/components/seller/DashboardSkeletons';
-import { SellerCommandCenter } from '@/components/seller/SellerCommandCenter';
 import { SellerPromoBanner } from '@/components/seller/SellerPromoBanner';
 
 // Lazy-load below-fold heavy widgets
 const TopProductsLeaderboard = lazy(() => import('@/components/seller/TopProductsLeaderboard').then(m => ({ default: m.TopProductsLeaderboard })));
 const NotificationCenter = lazy(() => import('@/components/seller/NotificationCenter').then(m => ({ default: m.NotificationCenter })));
-const StoreHealthScore = lazy(() => import('@/components/seller/StoreHealthScore').then(m => ({ default: m.StoreHealthScore })));
 
 const CURRENT_TOS_VERSION = "1.0";
 
@@ -97,7 +95,6 @@ export default function SellerDashboard() {
         <SellerOnboardingWizard />
         <SellerHeroBanner />
         <RevenueSummaryStats />
-        <SellerCommandCenter />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
@@ -116,12 +113,6 @@ export default function SellerDashboard() {
             <NotificationCenter />
           </Suspense>
         </div>
-
-        <Suspense fallback={<DashboardCardSkeleton />}>
-          <StoreHealthScore />
-        </Suspense>
-
-        <PendingReviewBanner count={productStats?.pending || 0} />
       </div>
     </SellerLayout>
   );
