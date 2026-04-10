@@ -11089,6 +11089,97 @@ export type Database = {
         }
         Relationships: []
       }
+      product_promotions_public: {
+        Row: {
+          campaign_name: string | null
+          category_id: string | null
+          creative_images: string[] | null
+          expires_at: string | null
+          goal: string | null
+          id: string | null
+          placement_zones: string[] | null
+          product_id: string | null
+          started_at: string | null
+          status: string | null
+          store_id: string | null
+          target_countries: string[] | null
+          target_devices: string[] | null
+        }
+        Insert: {
+          campaign_name?: string | null
+          category_id?: string | null
+          creative_images?: string[] | null
+          expires_at?: string | null
+          goal?: string | null
+          id?: string | null
+          placement_zones?: string[] | null
+          product_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          store_id?: string | null
+          target_countries?: string[] | null
+          target_devices?: string[] | null
+        }
+        Update: {
+          campaign_name?: string | null
+          category_id?: string | null
+          creative_images?: string[] | null
+          expires_at?: string | null
+          goal?: string | null
+          id?: string | null
+          placement_zones?: string[] | null
+          product_id?: string | null
+          started_at?: string | null
+          status?: string | null
+          store_id?: string | null
+          target_countries?: string[] | null
+          target_devices?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_promotions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products_storefront"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_promotions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products_public: {
         Row: {
           category_id: string | null

@@ -26,41 +26,37 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
   const { data: promotedStore } = useQuery({
     queryKey: ['store-spotlight-promotion'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('product_promotions')
-        .select(`
-          id,
-          store_id,
-          stores!product_promotions_store_id_fkey (
-            id, name, slug, description, logo_url, banner_url, accent_color,
-            is_verified, is_trusted, follower_count, status, is_active, is_testing
-          )
-        `)
-        .eq('slot_type', 'store_spotlight')
-        .eq('status', 'active')
-        .order('current_bid', { ascending: false })
+      const { data, error } = await (supabase
+        .from('product_promotions_public' as any)
+        .select('id, store_id') as any)
+        .eq('goal', 'store_spotlight')
         .limit(1);
-
+      
       if (error) throw error;
       if (!data || data.length === 0) return null;
 
-      const promo = data[0];
-      const s = promo.stores as any;
-      if (!s || s.status !== 'approved' || !s.is_active || s.is_testing) return null;
+      // Fetch store details separately from the safe public view
+      const { data: storeData } = await (supabase
+        .from('stores_public' as any)
+        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count, status, is_active, is_testing') as any)
+        .eq('id', data[0].store_id)
+        .maybeSingle();
+
+      if (!storeData || storeData.status !== 'approved' || !storeData.is_active || storeData.is_testing) return null;
 
       return {
-        id: s.id,
-        name: s.name,
-        slug: s.slug,
-        description: s.description,
-        logo_url: s.logo_url,
-        banner_url: s.banner_url,
-        accent_color: s.accent_color,
-        is_verified: s.is_verified,
-        is_trusted: s.is_trusted,
-        follower_count: s.follower_count,
+        id: storeData.id,
+        name: storeData.name,
+        slug: storeData.slug,
+        description: storeData.description,
+        logo_url: storeData.logo_url,
+        banner_url: storeData.banner_url,
+        accent_color: storeData.accent_color,
+        is_verified: storeData.is_verified,
+        is_trusted: storeData.is_trusted,
+        follower_count: storeData.follower_count,
         isPromoted: true,
-        promotionId: promo.id,
+        promotionId: data[0].id,
       } as TopStore & { promotionId: string };
     },
   });
@@ -69,9 +65,9 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
   const { data: fallbackStores, isLoading } = useQuery({
     queryKey: ['top-stores-featured'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stores')
-        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count')
+      const { data, error } = await (supabase
+        .from('stores_public' as any)
+        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count') as any)
         .eq('status', 'approved')
         .eq('is_active', true)
         .eq('is_testing', false)
