@@ -39,7 +39,7 @@ export default function AdminStaffPerformance() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Staff Performance</h1>
           <p className="text-sm text-muted-foreground mt-1">30-day activity summary across all staff members</p>

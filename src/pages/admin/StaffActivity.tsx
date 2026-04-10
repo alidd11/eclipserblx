@@ -206,7 +206,7 @@ export default function StaffActivityPage() {
 
  return (
  <AdminLayout requiredPermissions={['view_staff_activity']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
  <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display flex items-center gap-2">

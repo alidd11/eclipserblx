@@ -25,7 +25,7 @@ export default function SEOIndexing() {
  };
 
  return (
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-bold">SEO & Indexing</h1>
  <p className="text-muted-foreground">Submit your pages to search engines for faster discovery</p>

@@ -105,7 +105,7 @@ export default function AdminBotRequests() {
 
  return (
  <AdminLayout requiredPermissions={['manage_products']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-bold">Bot Installation Requests</h1>
  <p className="text-muted-foreground">Pending bot installations requiring manual processing</p>

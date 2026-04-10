@@ -170,7 +170,7 @@ export default function Disputes() {
 
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {!isInsideHub && (
           <>
             <div>

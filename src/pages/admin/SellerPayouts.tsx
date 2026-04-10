@@ -274,7 +274,7 @@ export default function SellerPayouts() {
 
  return (
  <AdminLayout requiredPermissions={['view_seller_payouts']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  {!isInsideHub && (
  <div className="flex items-center justify-between">
  <div>

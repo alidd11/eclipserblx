@@ -104,7 +104,7 @@ export default function InternalNotes() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <AdminPageHeader
           title="Internal Notes"
           description="Shared notes, proof, and evidence for the team."

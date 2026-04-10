@@ -97,7 +97,7 @@ export default function ChangelogManager() {
 
   return (
     <AdminLayout requiredPermissions={['manage_settings']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-display font-bold">Changelog</h1>

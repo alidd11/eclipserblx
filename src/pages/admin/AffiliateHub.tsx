@@ -37,7 +37,7 @@ export default function AffiliateHub() {
  </div>
  </div>
 
- <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+ <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  <TabsList className="hidden sm:grid w-full max-w-xl grid-cols-2">
  {tabs.map(t => (
  <TabsTrigger key={t.value} value={t.value} className="gap-2">

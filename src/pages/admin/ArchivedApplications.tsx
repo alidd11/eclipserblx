@@ -83,7 +83,7 @@ export default function AdminArchivedApplications() {
 
  return (
  <AdminLayout requiredPermissions={['review_applications']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
  <h3 className="font-semibold text-sm text-2xl sm:text-3xl font-display flex items-center gap-2">

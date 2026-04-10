@@ -47,7 +47,7 @@ export default function AdvertisementAnalytics() {
  if (isLoading) {
  return (
  <AdminLayout requiredPermissions={['view_analytics']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <Skeleton className="h-8 w-64" />
  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
  {[...Array(8)].map((_, i) => (
@@ -65,7 +65,7 @@ export default function AdvertisementAnalytics() {
 
  return (
  <AdminLayout requiredPermissions={['view_analytics']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  {/* Header */}
  <div>
  <h1 className="text-2xl font-bold flex items-center gap-2">

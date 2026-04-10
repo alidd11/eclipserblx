@@ -80,7 +80,7 @@ export default function DeveloperPaymentDetail() {
  if (isLoading) {
  return (
  <AdminLayout requiredRoles={['admin', 'developer']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <Skeleton className="h-8 w-48" />
  <Skeleton className="h-64 w-full" />
  </div>
@@ -121,7 +121,7 @@ export default function DeveloperPaymentDetail() {
  
  return (
  <AdminLayout requiredRoles={['admin', 'developer']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div className="flex items-center gap-4">
  <Button
  variant="ghost"

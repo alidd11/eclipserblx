@@ -139,7 +139,7 @@ export default function SellerStoreDetail() {
   if (isLoading) {
     return (
       <AdminLayout requiredPermissions={['view_seller_stores']}>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <Skeleton className="h-8 w-48" />
           <div className="grid gap-6 md:grid-cols-2"><Skeleton className="h-64" /><Skeleton className="h-64" /></div>
         </div>
@@ -168,7 +168,7 @@ export default function SellerStoreDetail() {
 
   return (
     <AdminLayout requiredPermissions={['view_seller_stores']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="icon" aria-label="Go back" onClick={() => navigate('/admin/seller-commissions')}>

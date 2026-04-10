@@ -370,7 +370,7 @@ export default function StoreApplications() {
 
   return (
     <AdminLayout requiredPermissions={['view_store_applications']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h1 className="text-2xl font-display font-bold">Store Applications</h1>
           <p className="text-muted-foreground">Review and manage seller applications</p>

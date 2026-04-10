@@ -57,7 +57,7 @@ export default function RateLimitDashboard() {
 
   return (
     <AdminLayout requiredPermissions={['view_audit_logs']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <AdminPageHeader
           title="Rate Limits"
           description="Monitor rate-limited requests across the platform"

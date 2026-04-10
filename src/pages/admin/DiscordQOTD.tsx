@@ -393,7 +393,7 @@ export default function DiscordQOTD() {
  if (profile && !hasDiscordLinked) {
  return (
  <AdminLayout requiredPermissions={['manage_discord_engagement']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-bold">Question of the Day</h1>
  <p className="text-muted-foreground">
@@ -430,7 +430,7 @@ export default function DiscordQOTD() {
 
  return (
  <AdminLayout requiredPermissions={['manage_discord_engagement']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-bold">Question of the Day</h1>
  <p className="text-muted-foreground">

@@ -26,7 +26,7 @@ export default function DisputesRefundsHub() {
       <div className="space-y-6 w-full">
         <AdminPageHeader title="Refunds & Disputes" description="Track refunded orders, commission reversals, and customer disputes" />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList className="hidden sm:grid w-full max-w-md grid-cols-2">
             {tabs.map(t => (
               <TabsTrigger key={t.value} value={t.value} className="gap-2">

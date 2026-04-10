@@ -111,7 +111,7 @@ export default function BotServers() {
 
   return (
     <AdminLayout requiredPermissions={['view_bot_codes']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h1 className="text-2xl font-bold">Bot Servers</h1>
           <p className="text-muted-foreground">View all Discord servers with active bot installations</p>

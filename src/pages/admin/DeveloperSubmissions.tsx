@@ -163,7 +163,7 @@
  
    return (
      <AdminLayout requiredPermissions={['manage_developer_submissions']}>
-       <div className="space-y-6">
+       <div className="space-y-4">
           <AdminPageHeader
             title="Developer Submissions"
             description="Manage internal product submissions"

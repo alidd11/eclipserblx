@@ -385,7 +385,7 @@ export default function AdminReviews() {
 
  return (
  <AdminLayout requiredPermissions={['view_reviews']}>
-  <div className="space-y-6">
+  <div className="space-y-4">
   <AdminPageHeader title="Reviews" description="Manage customer and external reviews" />
 
  <div className="border border-border rounded-xl overflow-hidden">

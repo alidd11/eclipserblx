@@ -59,7 +59,7 @@ export default function PayoutsHub() {
  </div>
 
  {/* Tabs */}
- <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+ <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  <div className="hidden sm:flex items-center justify-between gap-3">
  <TabsList className="grid w-full max-w-xl grid-cols-3">
  {tabs.map(t => (

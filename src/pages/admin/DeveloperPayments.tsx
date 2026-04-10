@@ -216,7 +216,7 @@ export default function DeveloperPayments() {
  
    return (
      <AdminLayout requiredRoles={['admin', 'developer']}>
-        <div className="space-y-6">
+        <div className="space-y-4">
         {!isInsideHub && (
           <AdminPageHeader
             title={isDeveloperOnly ? 'My Payments' : 'Developer Payments'}
