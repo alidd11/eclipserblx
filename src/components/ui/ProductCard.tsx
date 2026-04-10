@@ -135,14 +135,14 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         isFeatured && "border-primary/20"
       )}>
         {/* Image */}
-        <div className="relative aspect-[5/4] sm:aspect-square bg-muted/40 overflow-hidden flex-shrink-0">
+        <div className="relative aspect-[5/4] sm:aspect-square bg-muted overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
                 ref={videoRef}
                 src={currentMedia!}
                 onError={handleMediaError}
-                className="w-full h-full object-cover transition-transform duration-500"
+                className="w-full h-full object-contain sm:object-cover transition-transform duration-500"
               />
             ) : (
               <img
@@ -158,7 +158,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   const img = e.currentTarget;
                   if (img.naturalWidth === 0) handleMediaError();
                 }}
-                className="w-full h-full object-cover transition-transform duration-500"
+                className="w-full h-full object-contain sm:object-cover transition-transform duration-500"
               />
             )
           ) : (
