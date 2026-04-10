@@ -188,11 +188,17 @@ export default function StaffDirectory() {
  });
 
  // Filter staff members based on search (no email search for privacy)
- const filteredStaff = staffMembers.filter(member =>
- (member.display_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
- (member.staff_id?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
- (member.customer_id?.toLowerCase() || '').includes(searchQuery.toLowerCase())
- );
+  const filteredStaff = staffMembers.filter(member =>
+  (member.display_name?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+  (member.staff_id?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+  (member.customer_id?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  );
+
+  const isOnline = (lastSeen: string | null) => {
+    if (!lastSeen) return false;
+    const diff = Date.now() - new Date(lastSeen).getTime();
+    return diff < 3 * 60_000; // Online if seen within 3 minutes
+  };
 
  if (authLoading) {
  return (
@@ -279,12 +285,18 @@ export default function StaffDirectory() {
  <div className="p-4">
  <Link to={`/admin/staff/${member.user_id}`}>
  <div className="flex items-start gap-3">
- <Avatar className="h-12 w-12">
- <AvatarImage src={member.avatar_url || undefined} />
- <AvatarFallback className="bg-primary/10 text-primary font-medium">
- {(member.display_name || 'U').slice(0, 2).toUpperCase()}
- </AvatarFallback>
- </Avatar>
+  <div className="relative">
+  <Avatar className="h-12 w-12">
+  <AvatarImage src={member.avatar_url || undefined} />
+  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+  {(member.display_name || 'U').slice(0, 2).toUpperCase()}
+  </AvatarFallback>
+  </Avatar>
+  <span className={cn(
+    'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
+    isOnline(member.last_seen) ? 'bg-green-500' : 'bg-muted-foreground/40'
+  )} />
+  </div>
  <div className="flex-1 min-w-0">
  <p className="font-medium truncate">
  {member.display_name || 'Unknown User'}
