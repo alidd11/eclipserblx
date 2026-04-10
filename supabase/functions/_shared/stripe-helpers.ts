@@ -48,3 +48,26 @@ export function logStep(prefix: string, step: string, details?: unknown) {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[${prefix}] ${step}${detailsStr}`);
 }
+
+const ECLIPSE_SAVERS_CATEGORY_ID = '26463de5-38f4-4203-a379-78f6f92be3c7';
+
+export function calculateMemberPrice(
+  originalPrice: number,
+  categoryId: string | null,
+  isResellable: boolean,
+  storeEclipseEnabled?: boolean
+): number {
+  // Eclipse Savers category gets 15% off
+  if (categoryId === ECLIPSE_SAVERS_CATEGORY_ID) {
+    return Math.round(originalPrice * 0.85 * 100) / 100;
+  }
+  // Resellable items get 10% off
+  if (isResellable) {
+    return Math.round(originalPrice * 0.90 * 100) / 100;
+  }
+  // Store-enabled eclipse discount: 5% off
+  if (storeEclipseEnabled) {
+    return Math.round(originalPrice * 0.95 * 100) / 100;
+  }
+  return originalPrice;
+}
