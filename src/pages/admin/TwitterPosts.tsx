@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { TwitterComposer } from '@/components/admin/twitter/TwitterComposer';
 import { TwitterFeed } from '@/components/admin/twitter/TwitterFeed';
 import { TwitterMentions } from '@/components/admin/twitter/TwitterMentions';
@@ -8,6 +9,7 @@ import { TwitterPostHistoryTab } from '@/components/admin/twitter/TwitterPostHis
 import { TwitterScheduledPostsPanel } from '@/components/admin/twitter/TwitterScheduledPostsPanel';
 import { TwitterAnalyticsBar } from '@/components/admin/twitter/TwitterAnalyticsBar';
 import { TwitterContentCalendar } from '@/components/admin/twitter/TwitterContentCalendar';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
 type Tab = 'for-you' | 'mentions' | 'posts' | 'hashtags' | 'calendar';
@@ -49,22 +51,29 @@ export default function TwitterPosts() {
   return (
     <AdminLayout>
       <div className="space-y-5 w-full">
-        {/* Header */}
-        <div>
-          <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" className="h-6 w-6 text-foreground" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-            </svg>
-            <div>
-              <h1 className="text-2xl font-display font-bold">X / Twitter</h1>
-              <p className="text-sm text-muted-foreground mt-0.5">Compose, schedule, and manage posts</p>
-            </div>
-          </div>
+        <AdminPageHeader
+          title="X / Twitter"
+          description="Compose, schedule, and manage posts"
+        />
+
+        {/* Mobile dropdown */}
+        <div className="sm:hidden">
+          <Select value={activeTab} onValueChange={v => setActiveTab(v as Tab)}>
+            <SelectTrigger className="bg-card">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {tabs.map(tab => (
+                <SelectItem key={tab.key} value={tab.key}>{tab.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Tabs */}
         <div className="border border-border rounded-xl overflow-hidden">
-          <div className="flex overflow-x-auto border-b border-border bg-muted/30">
+          {/* Desktop tabs */}
+          <div className="hidden sm:flex overflow-x-auto border-b border-border bg-muted/30">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -110,10 +119,9 @@ export default function TwitterPosts() {
               )}
             </div>
 
-            {/* Right sidebar — desktop only */}
+            {/* Right sidebar — desktop only, only show scheduled posts (calendar moved to tab) */}
             <div className="hidden lg:block w-[320px] border-l border-border p-4 space-y-4">
               <TwitterScheduledPostsPanel xTheme={xTheme} />
-              <TwitterContentCalendar xTheme={xTheme} />
             </div>
           </div>
         </div>
