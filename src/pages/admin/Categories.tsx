@@ -455,10 +455,12 @@ export default function AdminCategories() {
  <div className="p-4">
  {isLoading ? (
  <div className="text-center py-8 text-muted-foreground">Loading...</div>
- ) : categories.length === 0 ? (
- <div className="text-center py-8 text-muted-foreground">
- No categories yet. Click "Add Category" to create one.
- </div>
+  ) : categories.length === 0 ? (
+  <AdminEmptyState
+    title="No categories yet"
+    description="Create your first category to organize products."
+    action={{ label: 'Add Category', onClick: openCreate }}
+  />
  ) : (
  <DndContext
  sensors={sensors}
