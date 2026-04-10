@@ -129,24 +129,8 @@ export default function StorePage() {
              !enabledGlobalCategories?.some(c => c.slug === activeTab),
   });
 
-  // Fetch store products
-  const { data: products, isLoading: productsLoading } = useQuery({
-    queryKey: ['store-products', store?.id],
-    queryFn: async () => {
-      if (!store?.id) return [];
-      const { data, error } = await supabase
-        .from('products')
-        .select('*, categories(id, name, slug)')
-        .eq('store_id', store.id)
-        .eq('is_active', true)
-        .eq('moderation_status', 'approved')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: !!store?.id,
-    staleTime: 2 * 60_000,
-  });
+  // Fetch store products via centralised hook
+  const { data: products, isLoading: productsLoading } = usePublicStoreProducts(store?.id);
 
   const activeGlobalCategory = enabledGlobalCategories?.find(c => c.slug === activeTab);
 
@@ -196,7 +180,7 @@ export default function StorePage() {
     return <StoreNotFound />;
   }
 
-  const accentColor = store.accent_color || '#8b5cf6';
+  const { accentColor } = useStoreTheme(store);
   const bio = store.bio;
 
   return (
