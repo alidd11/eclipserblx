@@ -185,10 +185,7 @@
  <AdminLayout>
  <div className="space-y-6">
  {/* Header */}
- <div>
- <h1 className="text-2xl font-bold">Customer Support Tickets</h1>
- <p className="text-muted-foreground text-sm">Manage and respond to customer support requests</p>
- </div>
+ <AdminPageHeader title="Customer Support Tickets" description="Manage and respond to customer support requests" />
  
  {/* Stats */}
  <div className="grid grid-cols-3 gap-3">
