@@ -302,7 +302,7 @@ export default function ProductDetail() {
  {/* Images */}
  <div className="space-y-3 min-w-0">
  <div 
- className="aspect-[16/10] lg:aspect-auto lg:max-h-[500px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
+ className="aspect-[16/10] lg:aspect-[16/9] lg:max-h-[480px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
  onContextMenu={(e) => e.preventDefault()}
  onClick={() => {
  const currentImg = images[selectedImage];
@@ -626,6 +626,12 @@ export default function ProductDetail() {
  </div>
  </div>
  </div>
+ </div>
+ {/* Store card - desktop only */}
+ <div className="hidden lg:block">
+ {product.stores && (
+ <StoreDetailsCard store={product.stores} className="w-full" />
+ )}
  </div>
  </div>
 
