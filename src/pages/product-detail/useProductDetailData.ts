@@ -6,7 +6,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
-import { STORE_LISTING_COLUMNS } from '@/lib/storeColumns';
+import { usePublicProduct } from '@/hooks/usePublicProduct';
 
 export function useProductDetailData(productNumber: string | undefined) {
   const queryClient = useQueryClient();
@@ -14,36 +14,10 @@ export function useProductDetailData(productNumber: string | undefined) {
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
 
-  const isNumericParam = /^\d+$/.test(productNumber || '');
-  const isUuidParam = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(productNumber || '');
-
-  const { data: product, isLoading } = useQuery({
-    queryKey: ['product', productNumber, isStaff],
-    queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select(`*, categories(name, slug), stores(${STORE_LISTING_COLUMNS})`);
-
-      if (isNumericParam) {
-        query = query.eq('product_number' as any, Number(productNumber));
-      } else if (isUuidParam) {
-        query = query.eq('id', productNumber!);
-      } else {
-        query = query.eq('slug', productNumber!);
-      }
-
-      if (!isStaff) {
-        query = query
-          .eq('is_active', true)
-          .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
-      }
-
-      const { data, error } = await query.maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !adminLoading && productNumber !== undefined,
-    staleTime: 0,
+  // Centralised product fetching with resilient lookup chain
+  const { product, isLoading } = usePublicProduct(productNumber, {
+    isStaff,
+    enabled: !adminLoading,
   });
 
   const { getTranslatedName, getTranslatedDescription } = useProductTranslation(product?.id);
