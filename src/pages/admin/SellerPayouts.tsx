@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/table";
 import { format, formatDistanceToNow } from "date-fns";
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 const safeFmt = (dateStr: string | null | undefined, fmt_str: string) => {
  if (!dateStr) return '—';

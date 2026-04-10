@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { formatGBP } from '@/lib/formatters';
 
 const STEPS = ['Product', 'Goal', 'Audience', 'Budget', 'Creative', 'Review'] as const;
 type Step = typeof STEPS[number];
@@ -584,7 +585,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  { label: 'Campaign', value: campaignName || selectedProduct?.name || '—' },
  { label: 'Product', value: selectedProduct?.name || '—' },
  { label: 'Goal', value: goal },
- { label: 'Pricing', value: pricingModel === 'cpc' ? `CPC — £${cpcBid.toFixed(2)}/click` : `CPM — £${cpmBid.toFixed(2)}/1K views` },
+ { label: 'Pricing', value: pricingModel === 'cpc' ? `CPC — {formatGBP(cpcBid)}/click` : `CPM — {formatGBP(cpmBid)}/1K views` },
  { label: 'Total Budget', value: `£${totalBudget}` },
  { label: 'Daily Cap', value: dailyBudgetLimit ? `£${dailyBudgetLimit}/day` : 'No limit' },
  { label: 'Placements', value: placementZones.map(z => PLACEMENT_ZONES.find(pz => pz.id === z)?.label || z).join(', ') },

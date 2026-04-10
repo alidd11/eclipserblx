@@ -18,6 +18,7 @@ import {
   ArrowUpRight, Store, FileImage,
 } from 'lucide-react';
 import { DisputeEvidenceUpload } from './DisputeEvidenceUpload';
+import { formatGBP } from '@/lib/formatters';
 
 interface DisputeStatusDialogProps {
   open: boolean;

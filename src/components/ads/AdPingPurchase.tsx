@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, ShoppingCart, Plus, Minus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
+import { formatGBP } from '@/lib/formatters';
 
 const formatCurrency = (amount: number) =>
  new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);

@@ -36,6 +36,7 @@ import { CreditsCard } from '@/components/account/CreditsCard';
 import { DataExportButton } from '@/components/account/DataExportButton';
 
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { formatGBP } from '@/lib/formatters';
 
 /* ─────────── Navigation Row ─────────── */
 function NavRow({ icon: Icon, label, to, badge, destructive }: {

@@ -14,6 +14,7 @@ import { Search, Download, ArrowUpDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerTransactionHistory() {
   const isInsideHub = useIsInsideHub();

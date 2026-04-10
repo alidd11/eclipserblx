@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import { formatGBP } from '@/lib/formatters';
 
 const applicationSteps = [
   { key: 'submitted', label: 'Submitted' },

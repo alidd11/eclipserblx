@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart, Star } from 'lucide-react';
+import { formatGBP } from '@/lib/formatters';
 
 interface LiveThemePreviewProps {
  theme: string;

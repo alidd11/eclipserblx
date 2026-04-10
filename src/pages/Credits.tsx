@@ -19,6 +19,7 @@ import { MyPaymentsCard } from '@/components/wallet/MyPaymentsCard';
 
 // Embedded payment
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
+import { formatGBP } from '@/lib/formatters';
 
 export default function Credits() {
   usePageTracking({ pagePath: '/credits' });
@@ -56,7 +57,7 @@ export default function Credits() {
   };
 
   const handlePaymentSuccess = () => {
-    toast.success(`Successfully added £${creditAmount.toFixed(2)} to your wallet!`);
+    toast.success(`Successfully added {formatGBP(creditAmount)} to your wallet!`);
     fetchBalance();
     setPaymentModalOpen(false);
   };

@@ -13,6 +13,7 @@ import { Megaphone, Plus, Coins, Eye, MousePointerClick, TrendingUp, ArrowLeft, 
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { format, subDays } from '@/lib/dateUtils';
+import { formatGBP } from '@/lib/formatters';
 
 type DateRange = '7d' | '30d' | 'all';
 

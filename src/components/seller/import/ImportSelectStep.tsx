@@ -27,6 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { productImportApi } from '@/lib/api/productImport';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
 import { Link } from 'react-router-dom';
+import { formatGBP } from '@/lib/formatters';
 
 interface ImportSelectStepProps {
   products: ExternalProduct[];

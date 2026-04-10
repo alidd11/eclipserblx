@@ -9,6 +9,7 @@ import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays } from '@/lib/dateUtils';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerRevenueBreakdown() {
   const isInsideHub = useIsInsideHub();
@@ -123,7 +124,7 @@ export default function SellerRevenueBreakdown() {
             series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
             height={256}
             yFormatter={(v) => `£${v}`}
-            tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+            tooltipFormatter={(v) => [`{formatGBP(v)}`, 'Revenue']}
           />
         </div>
       </div>
@@ -139,7 +140,7 @@ export default function SellerRevenueBreakdown() {
               height={256}
               layout="vertical"
               yFormatter={(v) => `£${v}`}
-              tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+              tooltipFormatter={(v) => [`{formatGBP(v)}`, 'Revenue']}
             />
           </div>
         </div>

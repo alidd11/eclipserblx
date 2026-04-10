@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Trash2, Clock } from 'lucide-react';
 import {
+import { formatGBP } from '@/lib/formatters';
   Table,
   TableBody,
   TableCell,

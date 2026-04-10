@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { format, differenceInDays } from '@/lib/dateUtils';
 import { Target, Plus, Trophy, TrendingUp, Calendar, Trash2 } from 'lucide-react';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerGoals() {
   const { store } = useSellerStatus();
@@ -240,7 +241,7 @@ export default function SellerGoals() {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">
                             {goal.goal_type === 'revenue'
-                              ? `£${goal.current_amount.toFixed(2)} / £${goal.target_amount.toFixed(2)}`
+                              ? `{formatGBP(goal.current_amount)} / {formatGBP(goal.target_amount)}`
                               : `${goal.current_amount} / ${goal.target_amount} orders`}
                           </span>
                           <span className="font-bold">{progress.toFixed(0)}%</span>

@@ -22,6 +22,7 @@ import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import type { EnrichedDispute, DisputeTicket } from './disputes/disputeTypes';
 import { statusConfig, getDeadlineInfo, getEscrowBadge, getDeadlineBadge, PAGE_SIZE } from './disputes/disputeHelpers';
 import { DisputeDetailDialog } from './disputes/DisputeDetailDialog';
+import { formatGBP } from '@/lib/formatters';
 
 export default function Disputes() {
   const isInsideHub = useIsInsideHub();

@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 export default function AdminAffiliates() {
  const isInsideHub = useIsInsideHub();
@@ -216,7 +217,7 @@ export default function AdminAffiliates() {
  },
  });
 
- const formatAmount = (pence: number) => `£${(pence / 100).toFixed(2)}`;
+ const formatAmount = (pence: number) => `{formatGBP((pence / 100))}`;
 
  const getCommissionStatusBadge = (status: string) => {
  const configs: Record<string, { color: string; icon: React.ElementType }> = {

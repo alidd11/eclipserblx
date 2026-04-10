@@ -22,6 +22,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { EnrichedDispute } from './disputeTypes';
 import { statusConfig, getDeadlineInfo, buildTimeline, getEscrowBadge } from './disputeHelpers';
+import { formatGBP } from '@/lib/formatters';
 
 interface Props {
   dispute: EnrichedDispute | null;

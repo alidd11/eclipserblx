@@ -6,6 +6,7 @@ import { ShoppingCart, UserPlus, MessageCircle, Package, Star, Activity } from '
 import { formatDistanceToNow } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatGBP } from '@/lib/formatters';
 
 interface FeedItem {
  id: string;
@@ -52,7 +53,7 @@ export function ActivityFeed() {
  recentOrders.data?.forEach(o => items.push({
  id: `order-${o.id}`,
  type: 'order',
- title: `New order — £${(o.total || 0).toFixed(2)}`,
+ title: `New order — {formatGBP((o.total || 0))}`,
  subtitle: (o.user_id && orderCustomerMap[o.user_id]) || 'Guest checkout',
  time: o.created_at,
  icon: ShoppingCart,

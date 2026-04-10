@@ -10,6 +10,7 @@ import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
+import { formatGBP } from '@/lib/formatters';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
@@ -190,7 +191,7 @@ export function RobuxEarningsTab() {
  label={p.label}
  value={`R$${(p.value?.net ?? 0).toLocaleString()}`}
  valueColor={p.color}
- subtitle={`≈ £${(p.value?.gbp ?? 0).toFixed(2)}`}
+ subtitle={`≈ {formatGBP((p.value?.gbp ?? 0))}`}
  />
  ))}
  </div>

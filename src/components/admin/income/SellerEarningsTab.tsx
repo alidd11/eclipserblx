@@ -9,6 +9,7 @@ import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
+import { formatGBP } from '@/lib/formatters';
 
 export function SellerEarningsTab() {
  // 1. Seller transactions aggregate
@@ -199,31 +200,31 @@ export function SellerEarningsTab() {
  <>
  <AdminStatCard
  label="Platform Commission"
- value={`£${(summary?.totalCommission ?? 0).toFixed(2)}`}
+ value={`{formatGBP((summary?.totalCommission ?? 0))}`}
  valueColor="primary"
  subtitle="Your cut from sales"
  />
  <AdminStatCard
  label="Seller Earnings"
- value={`£${(summary?.totalSellerEarnings ?? 0).toFixed(2)}`}
+ value={`{formatGBP((summary?.totalSellerEarnings ?? 0))}`}
  valueColor="green"
  subtitle="Net earned by sellers"
  />
  <AdminStatCard
  label="Outstanding Balances"
- value={`£${(balanceSummary?.outstanding ?? 0).toFixed(2)}`}
+ value={`{formatGBP((balanceSummary?.outstanding ?? 0))}`}
  valueColor="yellow"
  subtitle="Owed to sellers"
  />
  <AdminStatCard
  label="Total Paid Out"
- value={`£${(balanceSummary?.totalPaid ?? 0).toFixed(2)}`}
+ value={`{formatGBP((balanceSummary?.totalPaid ?? 0))}`}
  valueColor="blue"
  subtitle="Paid to sellers"
  />
  <AdminStatCard
  label="Stripe Fees (Seller)"
- value={`£${(summary?.totalStripeFees ?? 0).toFixed(2)}`}
+ value={`{formatGBP((summary?.totalStripeFees ?? 0))}`}
  valueColor="destructive"
  subtitle="Fees on seller sales"
  />

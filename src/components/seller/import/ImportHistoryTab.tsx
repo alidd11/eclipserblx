@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { productImportApi, ImportHistoryItem } from '@/lib/api/productImport';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
+import { formatGBP } from '@/lib/formatters';
 
 export function ImportHistoryTab() {
  const { activeStoreId } = useActiveStore();

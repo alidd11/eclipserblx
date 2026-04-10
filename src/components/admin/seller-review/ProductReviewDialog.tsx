@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Package, AlertTriangle, ShieldAlert, ImageMinus } from 'lucide-react';
 import { getStatusBadge } from './ProductReviewCard';
+import { formatGBP } from '@/lib/formatters';
 
 interface ProductReviewDialogProps {
   selectedProduct: any;

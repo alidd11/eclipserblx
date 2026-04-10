@@ -18,6 +18,7 @@ import {
   ShieldAlert, MessageSquare, FileImage
 } from 'lucide-react';
 import { DisputeEvidenceUpload } from '@/components/purchases/DisputeEvidenceUpload';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerRefunds() {
   const queryClient = useQueryClient();

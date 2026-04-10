@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EarningsCalculator } from '@/components/seller/EarningsCalculator';
+import { formatGBP } from '@/lib/formatters';
 
 function getEdgeFunctionErrorMessage(err: unknown): string {
   if (!err) return 'Unknown error';

@@ -7,6 +7,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, TrendingUp, Globe } from 'lucide-react';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerCustomerInsights() {
   const { store } = useSellerStatus();

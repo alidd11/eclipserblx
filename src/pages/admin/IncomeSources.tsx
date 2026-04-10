@@ -21,6 +21,7 @@ import { showSuccessNotification } from '@/lib/nativeNotification';
 import { cn } from '@/lib/utils';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { formatGBP } from '@/lib/formatters';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
@@ -250,9 +251,9 @@ export default function AdminIncomeSources() {
       const storeName = (c as any).stores?.name ?? 'Unknown Store';
       txns.push({
         id: `comm-${c.id}`, source: 'commission',
-        description: `Commission on £${(c.gross_amount ?? 0).toFixed(2)} sale · ${storeName}`,
+        description: `Commission on {formatGBP((c.gross_amount ?? 0))} sale · ${storeName}`,
         amount: platformFee, currency: '£', status: c.status ?? 'completed', date: c.created_at,
-        metadata: `${storeName} · Seller earned £${(c.net_amount ?? 0).toFixed(2)} · Stripe fee £${(c.stripe_fee ?? 0).toFixed(2)}`,
+        metadata: `${storeName} · Seller earned {formatGBP((c.net_amount ?? 0))} · Stripe fee {formatGBP((c.stripe_fee ?? 0))}`,
       });
     });
 

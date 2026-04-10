@@ -17,6 +17,7 @@
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { formatGBP } from '@/lib/formatters';
  import { format } from '@/lib/dateUtils';
  import { Wallet, Clock, CheckCircle, XCircle, AlertCircle, Plus, CreditCard, Banknote, ChevronRight } from 'lucide-react';
  import { Skeleton } from '@/components/ui/skeleton';

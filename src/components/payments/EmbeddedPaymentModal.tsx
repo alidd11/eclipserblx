@@ -8,6 +8,7 @@ import { Loader2, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { formatGBP } from '@/lib/formatters';
 
 const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51Sl84pCjEHxHwNl9cWPDitNkEcjiqaiOiq9l3Y0Z9HY89atChTJEY19WK2O9447JBz97YzdpLqefTVmjjyHmfiCo00wpuvzsB9';
 
@@ -225,7 +226,7 @@ function PaymentForm({
           </>
         ) : (
           <>
-            Pay {amount ? `£${(amount / 100).toFixed(2)}` : 'Now'}
+            Pay {amount ? `{formatGBP((amount / 100))}` : 'Now'}
           </>
         )}
       </Button>
@@ -349,7 +350,7 @@ export function EmbeddedPaymentModal({
   const getDescription = () => {
     switch (paymentType) {
       case 'checkout': return 'Enter your payment details to complete your order.';
-      case 'credits': return `Add £${amount?.toFixed(2)} to your account balance.`;
+      case 'credits': return `Add {formatGBP(amount?)} to your account balance.`;
       case 'subscription': return `Start subscription ${tier} (${billingPeriod}).`;
       case 'ad_pings': return 'Purchase additional pings for your advertisements.';
       default: return 'Complete your payment securely.';

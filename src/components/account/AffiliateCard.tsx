@@ -22,6 +22,7 @@ import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/copyToClipboard';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { format } from '@/lib/dateUtils';
+import { formatGBP } from '@/lib/formatters';
 
 export function AffiliateCard() {
  const { user } = useAuth();

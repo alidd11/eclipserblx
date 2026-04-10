@@ -45,6 +45,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { ORDER_STATUSES } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { formatGBP } from '@/lib/formatters';
 
 const ORDERS_PER_PAGE = 20;
 

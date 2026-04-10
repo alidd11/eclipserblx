@@ -5,6 +5,7 @@ import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Lock, FileC
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { formatGBP } from '@/lib/formatters';
 
 interface ModerationFlags {
   nsfw_flags?: string[];

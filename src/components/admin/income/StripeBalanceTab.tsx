@@ -9,6 +9,7 @@ import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
+import { formatGBP } from '@/lib/formatters';
 
 interface StripeBalanceData {
  balance: { available: number; pending: number; currency: string };
@@ -77,19 +78,19 @@ export function StripeBalanceTab() {
  <>
  <AdminStatCard
  label="Available Balance"
- value={`£${(stripeBalance?.balance.available ?? 0).toFixed(2)}`}
+ value={`{formatGBP((stripeBalance?.balance.available ?? 0))}`}
  valueColor="green"
  subtitle="Ready to pay out"
  />
  <AdminStatCard
  label="Pending Balance"
- value={`£${(stripeBalance?.balance.pending ?? 0).toFixed(2)}`}
+ value={`{formatGBP((stripeBalance?.balance.pending ?? 0))}`}
  valueColor="yellow"
  subtitle="In transit"
  />
  <AdminStatCard
  label="30-Day Net"
- value={`£${(stripeBalance?.summary.last30Days.net ?? 0).toFixed(2)}`}
+ value={`{formatGBP((stripeBalance?.summary.last30Days.net ?? 0))}`}
  valueColor="blue"
  subtitle="After fees"
  />
@@ -101,7 +102,7 @@ export function StripeBalanceTab() {
  />
  <AdminStatCard
  label="30-Day Refunds"
- value={`£${(stripeBalance?.summary.last30Days.refunds ?? 0).toFixed(2)}`}
+ value={`{formatGBP((stripeBalance?.summary.last30Days.refunds ?? 0))}`}
  valueColor="orange"
  subtitle={`${stripeBalance?.summary.last30Days.refundCount ?? 0} refund${(stripeBalance?.summary.last30Days.refundCount ?? 0) !== 1 ? 's' : ''}`}
  />

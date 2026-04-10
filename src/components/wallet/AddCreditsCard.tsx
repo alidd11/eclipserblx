@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { formatGBP } from '@/lib/formatters';
 
 const MIN_AMOUNT = 5;
 const MAX_AMOUNT = 500;

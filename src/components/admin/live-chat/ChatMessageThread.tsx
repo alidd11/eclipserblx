@@ -18,6 +18,7 @@ import { format } from '@/lib/dateUtils';
 import { hapticTap } from '@/lib/haptics';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
 import { Conversation, Message, SecureData, CANNED_RESPONSES, ISSUE_CATEGORY_LABELS, ISSUE_CATEGORY_COLORS } from './ChatConstants';
+import { formatGBP } from '@/lib/formatters';
 
 interface ChatMessageThreadProps {
   selectedConversation: Conversation;

@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 interface PayoutRequest {
   id: string;
@@ -366,8 +367,8 @@ export default function ManualPayouts() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionType === "approve" 
-                ? `You are about to approve a payout of £${selectedRequest?.amount.toFixed(2)} to ${selectedRequest?.profile?.display_name || "this user"}.`
-                : `You are about to reject the payout request of £${selectedRequest?.amount.toFixed(2)} from ${selectedRequest?.profile?.display_name || "this user"}.`
+                ? `You are about to approve a payout of {formatGBP(selectedRequest?.amount)} to ${selectedRequest?.profile?.display_name || "this user"}.`
+                : `You are about to reject the payout request of {formatGBP(selectedRequest?.amount)} from ${selectedRequest?.profile?.display_name || "this user"}.`
               }
             </AlertDialogDescription>
           </AlertDialogHeader>

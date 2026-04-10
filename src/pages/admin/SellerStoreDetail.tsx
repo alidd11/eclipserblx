@@ -14,6 +14,7 @@ import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 import { StoreOwnerCard } from '@/components/admin/store-detail/StoreOwnerCard';
 import { StoreCommissionCard } from '@/components/admin/store-detail/StoreCommissionCard';
 import { StoreControlsCard } from '@/components/admin/store-detail/StoreControlsCard';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerStoreDetail() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -162,7 +163,7 @@ export default function SellerStoreDetail() {
   const statItems = [
     { icon: Package, label: 'Products', value: stats?.productCount || 0 },
     { icon: TrendingUp, label: 'Orders', value: stats?.orderCount || 0 },
-    { icon: DollarSign, label: 'Total Revenue', value: `£${(stats?.totalRevenue || 0).toFixed(2)}` },
+    { icon: DollarSign, label: 'Total Revenue', value: `{formatGBP((stats?.totalRevenue || 0))}` },
     { icon: User, label: 'Followers', value: stats?.followerCount || 0 },
   ];
 

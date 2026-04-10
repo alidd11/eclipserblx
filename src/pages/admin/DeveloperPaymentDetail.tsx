@@ -14,6 +14,7 @@ import { format } from '@/lib/dateUtils';
 import { ArrowLeft, Clock, CheckCircle, XCircle, AlertCircle, User, Calendar, CreditCard, FileText } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useState } from 'react';
+import { formatGBP } from '@/lib/formatters';
  
  const statusConfig = {
  pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500', icon: Clock },

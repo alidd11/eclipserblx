@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { formatGBP } from '@/lib/formatters';
 
 const ADMIN_PRODUCTS_PER_PAGE = 25;
 

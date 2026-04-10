@@ -30,6 +30,7 @@ import { performSecurityScan } from '@/lib/secureFileUpload';
 import { QUANTIS_STORE_ID, VINO_STORE_ID } from '@/lib/constants';
 import { ProductTable } from '@/components/admin/products/ProductTable';
 import { ProductMobileCards } from '@/components/admin/products/ProductMobileCards';
+import { formatGBP } from '@/lib/formatters';
 
 interface ProductForm {
   id?: string;

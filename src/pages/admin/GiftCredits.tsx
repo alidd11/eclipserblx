@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { formatGBP } from '@/lib/formatters';
 
 export default function AdminGiftCredits() {
  const { session } = useAuth();
@@ -97,7 +98,7 @@ export default function AdminGiftCredits() {
  if (error) throw error;
  if (data.error) throw new Error(data.error);
 
- toast.success(`Successfully gifted £${amountNum.toFixed(2)} to ${selectedUser.display_name}`);
+ toast.success(`Successfully gifted {formatGBP(amountNum)} to ${selectedUser.display_name}`);
  setAmount('');
  setReason('');
  setSelectedUser(null);
