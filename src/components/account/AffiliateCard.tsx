@@ -264,10 +264,7 @@ export function AffiliateCard() {
        <Button
         variant="outline"
         size="sm"
-        onClick={() => {
-         navigator.clipboard.writeText(`${window.location.origin}?ref=${profile.referral_code}`);
-         toast.success("Copied!", { description: "Referral link copied to clipboard" });
-        }}
+         onClick={() => copyToClipboard(`${window.location.origin}?ref=${profile.referral_code}`, 'Referral link copied!')}
        >
         Copy
        </Button>

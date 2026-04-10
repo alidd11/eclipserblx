@@ -74,9 +74,8 @@ export function LaunchStrategyCard({
 
   const handleCopy = () => {
     if (!privateLink) return;
-    navigator.clipboard.writeText(privateLink);
+    copyToClipboard(privateLink, 'Link copied!');
     setCopied(true);
-    toast.success('Link copied');
     setTimeout(() => setCopied(false), 2000);
   };
 

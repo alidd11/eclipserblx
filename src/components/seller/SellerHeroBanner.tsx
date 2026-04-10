@@ -24,10 +24,7 @@ export function SellerHeroBanner() {
   const storeUrl = store?.slug ? `${window.location.origin}/store/${store.slug}` : '';
 
   const copyStoreLink = () => {
-    if (storeUrl) {
-      navigator.clipboard.writeText(storeUrl);
-      toast.success('Store link copied!');
-    }
+    if (storeUrl) copyToClipboard(storeUrl, 'Store link copied!');
   };
 
   return (

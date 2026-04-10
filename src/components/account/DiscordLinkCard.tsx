@@ -46,13 +46,9 @@ export const DiscordLinkCard = ({
 
  const copyRedirectUri = async () => {
  const redirectUri = getRedirectUri();
- try {
- await navigator.clipboard.writeText(redirectUri);
+ await copyToClipboard(redirectUri, 'Redirect URI copied!');
  setCopiedRedirect(true);
  setTimeout(() => setCopiedRedirect(false), 1500);
- } catch {
- toast.error("Copy failed", { description: "Could not copy the redirect URI. Please copy it manually." });
- }
  };
 
  // Handle OAuth callback when component mounts

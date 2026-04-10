@@ -280,13 +280,9 @@ export function LinkedAccountsCard({
   };
 
   const copyRedirectUri = async () => {
-    try {
-      await navigator.clipboard.writeText(getRedirectUri());
-      setCopiedRedirect(true);
-      setTimeout(() => setCopiedRedirect(false), 1500);
-    } catch {
-      toast.error("Could not copy the redirect URI");
-    }
+    await copyToClipboard(getRedirectUri(), 'Redirect URI copied!');
+    setCopiedRedirect(true);
+    setTimeout(() => setCopiedRedirect(false), 1500);
   };
 
   if (isProcessingOAuth || isProcessingRobloxOAuth) {

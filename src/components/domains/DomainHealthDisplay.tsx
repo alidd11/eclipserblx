@@ -202,8 +202,7 @@ const ERROR_INFO: Record<string, {
 };
 
 function copyText(text: string) {
-  navigator.clipboard.writeText(text);
-  toast.success('Copied!');
+  copyToClipboard(text);
 }
 
 function SeverityIcon({ severity }: { severity: 'critical' | 'warning' | 'info' }) {

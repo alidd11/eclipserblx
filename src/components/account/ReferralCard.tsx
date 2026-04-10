@@ -95,10 +95,9 @@ export function ReferralCard() {
     ? `${window.location.origin}/auth?ref=${referralCode}` 
     : '';
 
-  const copyToClipboard = async (text: string, type: 'code' | 'link') => {
-    await navigator.clipboard.writeText(text);
+  const handleCopy = async (text: string, type: 'code' | 'link') => {
+    await copyToClipboard(text, `Referral ${type} copied!`);
     setCopied(true);
-    showSuccessNotification('Copied!', `Referral ${type} copied to clipboard`);
     setTimeout(() => setCopied(false), 2000);
   };
 

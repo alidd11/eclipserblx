@@ -15,8 +15,7 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
   const text = description ? `${title} — ${description}` : title;
 
   const handleCopyForDiscord = () => {
-    navigator.clipboard.writeText(`\uD83C\uDFAE **${title}**\n${sharePath}`);
-    toast.success('Copied for Discord!');
+    copyToClipboard(`\uD83C\uDFAE **${title}**\n${sharePath}`, 'Copied for Discord!');
   };
 
   const handleNativeShare = async () => {
@@ -25,8 +24,7 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
         await navigator.share({ title, text: description, url: sharePath });
       } catch {}
     } else {
-      navigator.clipboard.writeText(sharePath);
-      toast.success('Link copied!');
+      copyToClipboard(sharePath, 'Link copied!');
     }
   };
 

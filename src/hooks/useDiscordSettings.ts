@@ -157,9 +157,8 @@ export function useDiscordSettings() {
   }, []);
 
   const handleCopy = useCallback((text: string, field: string) => {
-    navigator.clipboard.writeText(text);
+    copyToClipboard(text);
     setCopiedField(field);
-    toast.success('Copied');
     setTimeout(() => setCopiedField(null), 2000);
   }, []);
 

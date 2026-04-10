@@ -109,7 +109,7 @@ export function DiscountCodesTab() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `£${d.discount_value.toFixed(2)}`;
 
-  const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
+  const copyCode = (code: string) => { copyToClipboard(code, 'Code copied!'); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
 
   const openCreate = () => { setForm(emptyForm); setDialogOpen(true); };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

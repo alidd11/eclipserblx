@@ -129,10 +129,10 @@ export function ChatMessageThread({
                     className="h-5 w-5 shrink-0"
                     onClick={() => {
                       const customerId = customerProfiles[selectedConversation.user_id!]?.customer_id;
-                      if (customerId) {
-                        navigator.clipboard.writeText(customerId);
+                       if (customerId) {
+                        copyToClipboard(customerId, 'Customer ID copied!');
                         hapticTap();
-                      }
+                       }
                     }}
                   >
                     <Copy className="h-3 w-3" />

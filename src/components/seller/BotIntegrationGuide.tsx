@@ -27,8 +27,8 @@ export function BotIntegrationGuide({ storeId, apiEndpoint }: BotIntegrationGuid
  const [isExpanded, setIsExpanded] = useState(false);
  const [copiedField, setCopiedField] = useState<string | null>(null);
 
- const copyToClipboard = (text: string, field: string) => {
- navigator.clipboard.writeText(text);
+ const handleCopy = (text: string, field: string) => {
+ copyToClipboardUtil(text, 'Copied!');
  setCopiedField(field);
  setTimeout(() => setCopiedField(null), 2000);
  };

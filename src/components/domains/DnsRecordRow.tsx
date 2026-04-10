@@ -16,9 +16,8 @@ export function DnsRecordRow({ type, name, value, note, proxied }: DnsRecordRowP
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    navigator.clipboard.writeText(value);
+    copyToClipboard(value);
     setCopied(true);
-    toast.success('Copied!');
     setTimeout(() => setCopied(false), 2000);
   };
 
