@@ -274,7 +274,7 @@ function formatDownloads(count: number): string {
 function HeroProductCard({ product }: { product: any }) {
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
-  const displayMedia = getFirstMediaPrioritizeVideo(product.images);
+  const displayMedia = getFirstMediaPrioritizeVideo(product.images, 400);
   const isVideo = isVideoUrl(displayMedia);
 
   const storeEclipseEnabled = product.stores?.eclipse_plus_discount_enabled;
