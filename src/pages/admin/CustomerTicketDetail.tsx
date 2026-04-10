@@ -24,6 +24,7 @@ import {
   Collapsible, CollapsibleContent, CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
+import { TicketContextSidebar } from '@/components/admin/tickets/TicketContextSidebar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
