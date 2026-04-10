@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useDevice } from '@/hooks/useDevice';
-import { format ,  formatRelative } from '@/lib/dateUtils';
+import { format , formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hapticTap } from '@/lib/haptics';

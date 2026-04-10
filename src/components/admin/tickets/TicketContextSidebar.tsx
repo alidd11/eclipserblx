@@ -7,7 +7,7 @@ import {
 import {
   Clock, User, Mail, ShoppingBag, ChevronDown, UserCheck, History,
 } from 'lucide-react';
-import { formatDistanceToNow, format ,  formatRelative } from '@/lib/dateUtils';
+import { formatDistanceToNow, format , formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface CustomerProfile {

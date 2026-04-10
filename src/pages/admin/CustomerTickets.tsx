@@ -20,7 +20,7 @@
  Search, Ticket, MessageSquare, Clock, User, ChevronRight,
  AlertCircle, CheckCircle, Filter
  } from 'lucide-react';
- import {,  formatRelative } from '@/lib/dateUtils';
+ import { formatRelative } from '@/lib/dateUtils';
  import { toast } from 'sonner';
  import { cn } from '@/lib/utils';
  

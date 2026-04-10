@@ -13,7 +13,7 @@ import {
  Package, Store, Star, Upload, Clock, AlertTriangle,
  ShieldAlert, ExternalLink, ArrowRight
 } from 'lucide-react';
-import {,  formatRelative } from '@/lib/dateUtils';
+import { formatRelative } from '@/lib/dateUtils';
 
 type QueueTab = 'all' | 'products' | 'stores' | 'reviews' | 'submissions';
 

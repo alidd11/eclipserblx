@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, Clock, ArrowRight, Wallet } from 'lucide-react';
-import {,  formatRelative } from '@/lib/dateUtils';
+import { formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';

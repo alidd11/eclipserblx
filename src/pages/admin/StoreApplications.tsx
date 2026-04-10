@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import {,  formatRelative } from '@/lib/dateUtils';
+import { formatRelative } from '@/lib/dateUtils';
 import { ApplicationDetailDialog } from '@/components/admin/store-applications/ApplicationDetailDialog';
 
 interface VerificationResults {

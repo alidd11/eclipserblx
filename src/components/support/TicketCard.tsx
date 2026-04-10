@@ -1,7 +1,7 @@
  import { Link } from 'react-router-dom';
  import { Badge } from '@/components/ui/badge';
  import { ChevronRight, Clock, MessageSquare, Tag } from 'lucide-react';
- import {,  formatRelative } from '@/lib/dateUtils';
+ import { formatRelative } from '@/lib/dateUtils';
  import { cn } from '@/lib/utils';
  
  interface TicketCardProps {

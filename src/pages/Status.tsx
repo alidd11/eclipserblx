@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { format,  formatRelative } from '@/lib/dateUtils';
+import { format, formatRelative } from '@/lib/dateUtils';
 
 interface Incident {
  id: string;
