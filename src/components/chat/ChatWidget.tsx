@@ -51,7 +51,8 @@ export const ChatWidget = forwardRef<HTMLButtonElement>(function ChatWidget(_pro
       type="button"
       data-gesture-exempt="true"
       onClick={toggleChat}
-      className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center transition-transform"
+      className="fixed z-[9999] h-14 w-14 rounded-full gradient-button shadow-lg touch-manipulation cursor-pointer flex items-center justify-center transition-transform contain-layout"
+      data-cls-ignore="true"
       style={{
         WebkitTapHighlightColor: 'transparent',
         bottom: bottomOffset,

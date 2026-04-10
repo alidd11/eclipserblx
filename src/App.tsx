@@ -72,11 +72,17 @@ const queryClient = new QueryClient({
 // Minimal loading fallback
 function PageLoader() {
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
-      <div className="space-y-4 w-full max-w-md px-4">
-        <Skeleton className="h-8 w-3/4 mx-auto" />
-        <Skeleton className="h-4 w-1/2 mx-auto" />
-        <Skeleton className="h-64 w-full rounded-lg" />
+    <div className="min-h-screen bg-background safe-area-page">
+      {/* Match the actual page structure to prevent CLS when content replaces skeleton */}
+      <div className="h-14" /> {/* Header placeholder */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 pt-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="aspect-square rounded-lg" />
+          ))}
+        </div>
       </div>
     </div>
   );
