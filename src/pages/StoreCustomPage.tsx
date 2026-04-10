@@ -41,6 +41,10 @@ export default function StoreCustomPage() {
     );
   }
 
+  if (storeNotFound) {
+    return <StoreNotFound />;
+  }
+
   if (error || !page) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">

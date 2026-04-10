@@ -193,23 +193,7 @@ export default function StorePage() {
   }
 
   if (error || !store) {
-    return (
-      <div className="min-h-[100dvh] flex flex-col bg-background items-center justify-center">
-        <div className="container py-16 text-center">
-          <StoreIcon className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-          <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
-          <p className="text-muted-foreground mb-6">
-            The store you're looking for doesn't exist or is no longer available.
-          </p>
-          <Button asChild>
-            <Link to="/products">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Browse Products
-            </Link>
-          </Button>
-        </div>
-      </div>
-    );
+    return <StoreNotFound />;
   }
 
   const accentColor = store.accent_color || '#8b5cf6';
