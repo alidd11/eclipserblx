@@ -7,17 +7,21 @@ interface LazySectionProps {
   minHeight?: string;
   /** Root margin for intersection observer (load before visible) */
   rootMargin?: string;
+  /** Max time (ms) to wait before force-rendering, prevents cascading blank pages */
+  timeoutMs?: number;
 }
 
 /**
  * Defers rendering of children until the section is near the viewport.
- * Reduces initial JS work and improves TTI on mobile.
+ * Includes a timeout fallback to prevent cascading blank pages when
+ * above-the-fold content collapses (e.g. failed data fetches).
  */
 export function LazySection({ 
   children, 
   className, 
   minHeight = '200px',
-  rootMargin = '200px'
+  rootMargin = '200px',
+  timeoutMs = 3000,
 }: LazySectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -43,8 +47,19 @@ export function LazySection({
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
-  }, [rootMargin]);
+
+    // Timeout fallback: if content above collapses (empty queries),
+    // the section may never intersect. Force-render after timeout.
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+      observer.disconnect();
+    }, timeoutMs);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
+  }, [rootMargin, timeoutMs]);
 
   return (
     <div ref={ref} className={className} style={isVisible ? undefined : { minHeight }}>
