@@ -25,6 +25,7 @@ import {
  SelectValue,
 } from '@/components/ui/select';
 import { usePublicStore } from '@/hooks/usePublicStore';
+import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
 
 export default function StoreReviewsPage() {
@@ -138,7 +139,7 @@ export default function StoreReviewsPage() {
  return acc;
  }, {} as Record<number, number>) || {};
 
- const accentColor = store?.accent_color || '#8b5cf6';
+ const { accentColor } = useStoreTheme(store);
 
  if (storeLoading) {
  return (

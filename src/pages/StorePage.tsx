@@ -17,6 +17,8 @@ import { StoreProductGrid } from '@/components/store/StoreProductGrid';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { useAuth } from '@/hooks/useAuth';
 import { usePublicStore } from '@/hooks/usePublicStore';
+import { usePublicStoreProducts } from '@/hooks/usePublicStoreProducts';
+import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
 import { 
   Store as StoreIcon, 

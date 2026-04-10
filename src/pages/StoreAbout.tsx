@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { usePublicStore } from '@/hooks/usePublicStore';
+import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
 
 export default function StoreAbout() {
@@ -23,9 +24,7 @@ export default function StoreAbout() {
     return <StoreNotFound />;
   }
 
-  const accentColor = store.accent_color || '#8b5cf6';
-  const theme = store.theme || 'default';
-  const isDarkTheme = theme === 'dark';
+  const { accentColor, isDarkTheme, mutedTextClass } = useStoreTheme(store);
 
   return (
     <StoreLayout
