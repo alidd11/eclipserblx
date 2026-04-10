@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Shield, UserPlus, UserMinus, Filter, Ban, Wifi, Trash2, Eye } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 // Card imports removed — using enterprise flat sections

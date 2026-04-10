@@ -3,6 +3,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, Eye, Package, Trash2 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
