@@ -55,7 +55,11 @@ export function TrendingProducts() {
     );
   }
 
-  if (!products?.length) return null;
+  // Don't collapse to null — maintain layout space so LazySection below can trigger
+  if (!products?.length && !isError) return null;
+  if (isError || !products?.length) {
+    return <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6" />;
+  }
 
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
