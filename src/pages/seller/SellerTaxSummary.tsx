@@ -15,6 +15,7 @@ import { Loader2 } from 'lucide-react';
 import { format } from '@/lib/dateUtils';
 import { SITE_NAME } from '@/lib/constants';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 // UK tax year: 6 April – 5 April
 function getTaxYears(): { label: string; startDate: string; endDate: string }[] {
@@ -133,7 +134,7 @@ export default function SellerTaxSummary() {
     window.print();
   };
 
-  const fmt = (n: number) => `£${n.toFixed(2)}`;
+  const fmt = (n: number) => `{formatGBP(n)}`;
 
   return (
     <SellerLayout>

@@ -3,9 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShoppingCart, UserPlus, MessageCircle, Package, Star, Activity } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatGBP } from '@/lib/formatters';
 
 interface FeedItem {
  id: string;
@@ -52,12 +53,11 @@ export function ActivityFeed() {
  recentOrders.data?.forEach(o => items.push({
  id: `order-${o.id}`,
  type: 'order',
- title: `New order — £${(o.total || 0).toFixed(2)}`,
+ title: `New order — {formatGBP((o.total || 0))}`,
  subtitle: (o.user_id && orderCustomerMap[o.user_id]) || 'Guest checkout',
  time: o.created_at,
  icon: ShoppingCart,
- color: 'text-blue-500',
- }));
+ color: 'text-blue-500' }));
 
  recentUsers.data?.forEach(u => items.push({
  id: `user-${u.user_id}`,
@@ -66,8 +66,7 @@ export function ActivityFeed() {
  subtitle: u.customer_id || 'Signed up',
  time: u.created_at,
  icon: UserPlus,
- color: 'text-green-500',
- }));
+ color: 'text-green-500' }));
 
  recentTickets.data?.forEach(t => items.push({
  id: `ticket-${t.id}`,
@@ -76,8 +75,7 @@ export function ActivityFeed() {
  subtitle: `Status: ${t.status}`,
  time: t.created_at,
  icon: MessageCircle,
- color: 'text-orange-500',
- }));
+ color: 'text-orange-500' }));
 
  recentProducts.data?.forEach(p => items.push({
  id: `product-${p.id}`,
@@ -86,8 +84,7 @@ export function ActivityFeed() {
  subtitle: `Status: ${p.moderation_status}`,
  time: p.created_at,
  icon: Package,
- color: 'text-primary',
- }));
+ color: 'text-primary' }));
 
  recentReviews.data?.forEach(r => items.push({
  id: `review-${r.id}`,
@@ -96,8 +93,7 @@ export function ActivityFeed() {
  subtitle: 'Product review submitted',
  time: r.created_at,
  icon: Star,
- color: 'text-yellow-500',
- }));
+ color: 'text-yellow-500' }));
 
  // Sort by time descending and take top 12
  return items
@@ -105,8 +101,7 @@ export function ActivityFeed() {
  .slice(0, 12);
  },
  refetchInterval: 5 * 60_000, // 5 minutes (reduced from 1 min)
- staleTime: 2 * 60_000,
- });
+ staleTime: 2 * 60_000 });
 
  if (isLoading) {
  return (
@@ -153,7 +148,7 @@ export function ActivityFeed() {
  <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
  </div>
  <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
- {formatDistanceToNow(new Date(item.time), { addSuffix: true })}
+ {formatRelative(item.time)}
  </span>
  </div>
  ))}

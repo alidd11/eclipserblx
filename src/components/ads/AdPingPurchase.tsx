@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Bell, ShoppingCart, Plus, Minus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
+import { formatGBP } from '@/lib/formatters';
 
 const formatCurrency = (amount: number) =>
  new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP' }).format(amount);
@@ -131,7 +132,7 @@ export function AdPingPurchase({
  )}
  <span className="text-xs text-muted-foreground whitespace-nowrap">
  {herePingsToBuy >= 5
- ? `£${(0.79 * (1 - getDiscount(herePingsToBuy))).toFixed(2)} each`
+ ? `{formatGBP((0.79 * (1 - getDiscount(herePingsToBuy))))} each`
  : '£0.79 each'}
  </span>
  </div>
@@ -163,7 +164,7 @@ export function AdPingPurchase({
  )}
  <span className="text-xs text-muted-foreground whitespace-nowrap">
  {everyonePingsToBuy >= 5
- ? `£${(1.49 * (1 - getDiscount(everyonePingsToBuy))).toFixed(2)} each`
+ ? `{formatGBP((1.49 * (1 - getDiscount(everyonePingsToBuy))))} each`
  : '£1.49 each'}
  </span>
  </div>

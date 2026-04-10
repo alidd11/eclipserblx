@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useDevice } from '@/hooks/useDevice';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+import { format } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hapticTap } from '@/lib/haptics';
@@ -115,14 +115,12 @@ export default function SellerMessages() {
       const conversationsWithData = data.map(conv => ({
         ...conv,
         customer_profile: profileMap.get(conv.customer_id) || { customer_id: null, display_name: null, username: 'Unknown' },
-        unread_count: unreadCounts.get(conv.id) || 0,
-      }));
+        unread_count: unreadCounts.get(conv.id) || 0 }));
       
       return { conversations: conversationsWithData as StoreConversation[], totalCount: count || 0 };
     },
     enabled: !!storeId,
-    staleTime: 2 * 60_000,
-  });
+    staleTime: 2 * 60_000 });
 
   const conversations = conversationsData?.conversations || [];
   const totalCount = conversationsData?.totalCount || 0;
@@ -143,8 +141,7 @@ export default function SellerMessages() {
       if (error) throw error;
       return data as StoreMessage[];
     },
-    enabled: !!selectedConversation,
-  });
+    enabled: !!selectedConversation });
 
   // Mark messages as read
   useEffect(() => {
@@ -174,8 +171,7 @@ export default function SellerMessages() {
           event: '*',
           schema: 'public',
           table: 'store_messages',
-          filter: `store_id=eq.${storeId}`,
-        },
+          filter: `store_id=eq.${storeId}` },
         () => {
           queryClient.invalidateQueries({ queryKey: ['seller-store-messages'] });
           queryClient.invalidateQueries({ queryKey: ['seller-store-conversations'] });
@@ -217,8 +213,7 @@ export default function SellerMessages() {
         store_id: storeId,
         customer_id: conversation.customer_id,
         sender_type: 'seller',
-        message,
-      });
+        message });
       
       if (error) throw error;
       
@@ -237,8 +232,7 @@ export default function SellerMessages() {
     onError: (error) => {
       console.error('Failed to send message:', error);
       toast.error('Failed to send message');
-    },
-  });
+    } });
 
   const handleSend = () => {
     const trimmed = newMessage.trim();
@@ -430,7 +424,7 @@ export default function SellerMessages() {
                             )}
                           </div>
                           <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}
+                            {formatRelative(conv.last_message_at)}
                           </span>
                         </div>
                         {conv.subject && (

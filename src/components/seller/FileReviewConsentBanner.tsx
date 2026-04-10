@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ShieldAlert, Eye, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import {
  AlertDialog,
  AlertDialogAction,
@@ -15,8 +15,7 @@ import {
  AlertDialogDescription,
  AlertDialogFooter,
  AlertDialogHeader,
- AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+ AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 export function FileReviewConsentBanner() {
  const { store } = useSellerStatus();
@@ -41,8 +40,7 @@ export function FileReviewConsentBanner() {
  if (error) throw error;
  return data || [];
  },
- enabled: !!store?.id,
- });
+ enabled: !!store?.id });
 
  const consentMutation = useMutation({
  mutationFn: async (productId: string) => {
@@ -73,8 +71,7 @@ export function FileReviewConsentBanner() {
  },
  onError: () => {
  toast.error('Failed to submit consent');
- },
- });
+ } });
 
  if (!flaggedProducts?.length) return null;
 
@@ -96,7 +93,7 @@ export function FileReviewConsentBanner() {
  <Badge variant="secondary" className="text-xs gap-1">
  <Clock className="h-3 w-3" />
  {product.file_review_requested_at && 
- formatDistanceToNow(new Date(product.file_review_requested_at), { addSuffix: true })
+ formatRelative(product.file_review_requested_at)
  }
  </Badge>
  </div>

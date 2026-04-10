@@ -9,6 +9,7 @@ import { AdminStatCard } from '@/components/admin/AdminStatCard';
 import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
+import { formatGBP } from '@/lib/formatters';
 
 export function SellerEarningsTab() {
  // 1. Seller transactions aggregate
@@ -199,31 +200,31 @@ export function SellerEarningsTab() {
  <>
  <AdminStatCard
  label="Platform Commission"
- value={`£${(summary?.totalCommission ?? 0).toFixed(2)}`}
+ value={`{formatGBP((summary?.totalCommission ?? 0))}`}
  valueColor="primary"
  subtitle="Your cut from sales"
  />
  <AdminStatCard
  label="Seller Earnings"
- value={`£${(summary?.totalSellerEarnings ?? 0).toFixed(2)}`}
+ value={`{formatGBP((summary?.totalSellerEarnings ?? 0))}`}
  valueColor="green"
  subtitle="Net earned by sellers"
  />
  <AdminStatCard
  label="Outstanding Balances"
- value={`£${(balanceSummary?.outstanding ?? 0).toFixed(2)}`}
+ value={`{formatGBP((balanceSummary?.outstanding ?? 0))}`}
  valueColor="yellow"
  subtitle="Owed to sellers"
  />
  <AdminStatCard
  label="Total Paid Out"
- value={`£${(balanceSummary?.totalPaid ?? 0).toFixed(2)}`}
+ value={`{formatGBP((balanceSummary?.totalPaid ?? 0))}`}
  valueColor="blue"
  subtitle="Paid to sellers"
  />
  <AdminStatCard
  label="Stripe Fees (Seller)"
- value={`£${(summary?.totalStripeFees ?? 0).toFixed(2)}`}
+ value={`{formatGBP((summary?.totalStripeFees ?? 0))}`}
  valueColor="destructive"
  subtitle="Fees on seller sales"
  />
@@ -258,9 +259,9 @@ export function SellerEarningsTab() {
  {periodBreakdown.map(p => (
  <TableRow key={p.label}>
  <TableCell className="font-medium">{p.label}</TableCell>
- <TableCell className="text-right">£{p.gross.toFixed(2)}</TableCell>
- <TableCell className="text-right text-primary">£{p.commission.toFixed(2)}</TableCell>
- <TableCell className="text-right text-green-600">£{p.sellerEarnings.toFixed(2)}</TableCell>
+ <TableCell className="text-right">{formatGBP(p.gross)}</TableCell>
+ <TableCell className="text-right text-primary">{formatGBP(p.commission)}</TableCell>
+ <TableCell className="text-right text-green-600">{formatGBP(p.sellerEarnings)}</TableCell>
  </TableRow>
  ))}
  </TableBody>
@@ -290,7 +291,7 @@ export function SellerEarningsTab() {
  </Badge>
  <span className="text-sm text-muted-foreground">{data.count} payout{data.count !== 1 ? 's' : ''}</span>
  </div>
- <span className="font-medium">£{data.total.toFixed(2)}</span>
+ <span className="font-medium">{formatGBP(data.total)}</span>
  </div>
  ))}
  </div>
@@ -354,9 +355,9 @@ export function SellerEarningsTab() {
  <TableRow key={store.id}>
  <TableCell className="text-muted-foreground">{i + 1}</TableCell>
  <TableCell className="font-medium">{store.name}</TableCell>
- <TableCell className="text-right">£{store.gross.toFixed(2)}</TableCell>
- <TableCell className="text-right text-primary">£{store.commission.toFixed(2)}</TableCell>
- <TableCell className="text-right text-green-600">£{store.net.toFixed(2)}</TableCell>
+ <TableCell className="text-right">{formatGBP(store.gross)}</TableCell>
+ <TableCell className="text-right text-primary">{formatGBP(store.commission)}</TableCell>
+ <TableCell className="text-right text-green-600">{formatGBP(store.net)}</TableCell>
  </TableRow>
  ))}
  </TableBody>

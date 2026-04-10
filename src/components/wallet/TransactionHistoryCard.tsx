@@ -7,6 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { format } from '@/lib/dateUtils';
 import type { CreditTransaction } from '@/hooks/useCredits';
+import { formatGBP } from '@/lib/formatters';
 
 interface TransactionHistoryCardProps {
   transactions: CreditTransaction[];
@@ -98,7 +99,7 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
                     "font-semibold shrink-0 text-sm whitespace-nowrap",
                     getTransactionColor(tx.type)
                   )}>
-                    {tx.type === 'spend' ? '-' : '+'}£{Math.abs(tx.amount).toFixed(2)}
+                    {tx.type === 'spend' ? '-' : '+'}{formatGBP(Math.abs(tx.amount))}
                   </div>
                 </div>
               ))}

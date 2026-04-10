@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { formatGBP } from '@/lib/formatters';
 
 const MIN_AMOUNT = 5;
 const MAX_AMOUNT = 500;
@@ -105,7 +106,7 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurc
           ) : (
             <>
               <Sparkles className="h-4 w-4 mr-2" />
-              Add £{parseFloat(customAmount || '0').toFixed(2)}
+              Add {formatGBP(parseFloat(customAmount || '0'))}
             </>
           )}
         </Button>

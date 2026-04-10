@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Store, CheckCircle2, Clock, AlertTriangle, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
+import {} from "date-fns";
 
 const CURRENT_TOS_VERSION = "1.0";
 
@@ -75,10 +75,8 @@ export default function SellerAgreements() {
  owner_email: profileMap.get(store.owner_id)?.email,
  owner_name: profileMap.get(store.owner_id)?.name,
  agreement_signed_at: agreementMap.get(store.id)?.signed_at,
- agreement_version: agreementMap.get(store.id)?.version,
- })) as StoreWithAgreement[];
- },
- });
+ agreement_version: agreementMap.get(store.id)?.version })) as StoreWithAgreement[];
+ } });
 
  // Filter stores based on tab and search
  const filteredStores = stores?.filter(store => {
@@ -266,13 +264,13 @@ export default function SellerAgreements() {
  )}
  {store.agreement_signed_at && (
  <p className="text-xs text-muted-foreground mt-1">
- {formatDistanceToNow(new Date(store.agreement_signed_at), { addSuffix: true })}
+ {formatRelative(store.agreement_signed_at)}
  </p>
  )}
  </TableCell>
  <TableCell>
  <span className="text-sm text-muted-foreground">
- {formatDistanceToNow(new Date(store.created_at), { addSuffix: true })}
+ {formatRelative(store.created_at)}
  </span>
  </TableCell>
  <TableCell className="text-right">

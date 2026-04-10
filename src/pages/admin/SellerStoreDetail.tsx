@@ -14,6 +14,7 @@ import { ADMIN_MANAGED_STORES } from '@/lib/constants';
 import { StoreOwnerCard } from '@/components/admin/store-detail/StoreOwnerCard';
 import { StoreCommissionCard } from '@/components/admin/store-detail/StoreCommissionCard';
 import { StoreControlsCard } from '@/components/admin/store-detail/StoreControlsCard';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerStoreDetail() {
   const { storeId } = useParams<{ storeId: string }>();
@@ -162,7 +163,7 @@ export default function SellerStoreDetail() {
   const statItems = [
     { icon: Package, label: 'Products', value: stats?.productCount || 0 },
     { icon: TrendingUp, label: 'Orders', value: stats?.orderCount || 0 },
-    { icon: DollarSign, label: 'Total Revenue', value: `£${(stats?.totalRevenue || 0).toFixed(2)}` },
+    { icon: DollarSign, label: 'Total Revenue', value: `{formatGBP((stats?.totalRevenue || 0))}` },
     { icon: User, label: 'Followers', value: stats?.followerCount || 0 },
   ];
 
@@ -227,11 +228,11 @@ export default function SellerStoreDetail() {
             </div>
             <div className="p-4">
               <div className="grid gap-3 text-sm">
-                <div className="flex justify-between"><span className="text-muted-foreground">Available Balance</span><span className="font-medium text-green-500">£{(stats?.balance?.available_balance || 0).toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Pending Balance</span><span className="font-medium text-yellow-500">£{(stats?.balance?.pending_balance || 0).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Available Balance</span><span className="font-medium text-green-500">{formatGBP((stats?.balance?.available_balance || 0))}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Pending Balance</span><span className="font-medium text-yellow-500">{formatGBP((stats?.balance?.pending_balance || 0))}</span></div>
                 <Separator />
-                <div className="flex justify-between"><span className="text-muted-foreground">Total Earned</span><span className="font-medium">£{(stats?.balance?.total_earned || 0).toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Total Paid Out</span><span className="font-medium">£{(stats?.balance?.total_paid || 0).toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Total Earned</span><span className="font-medium">{formatGBP((stats?.balance?.total_earned || 0))}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Total Paid Out</span><span className="font-medium">{formatGBP((stats?.balance?.total_paid || 0))}</span></div>
               </div>
             </div>
           </div>

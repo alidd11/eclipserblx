@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { useState } from 'react';
+import { formatGBP } from '@/lib/formatters';
 
 interface VerificationResults {
   discord_server?: { valid: boolean; is_permanent: boolean; guild_name?: string; member_count?: number; error?: string };
@@ -80,7 +81,7 @@ export function ApplicationDetailDialog({ application, onClose, onApprove, onRej
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               {getStatusBadge(application.status)}
-              <span className="text-sm text-muted-foreground">Submitted {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}</span>
+              <span className="text-sm text-muted-foreground">Submitted {formatRelative(application.created_at)}</span>
             </div>
 
             {application.verification_results && <VerificationResultsCard results={application.verification_results} />}
@@ -168,7 +169,7 @@ function VerificationResultsCard({ results }: { results: VerificationResults }) 
   }
   if (results.purchase_history) {
     const ph = results.purchase_history;
-    items.push({ icon: ShoppingBag, label: `Purchases: ${ph.count} (£${ph.total_spent.toFixed(2)})`, passed: ph.meets_requirement, detail: ph.required_count > 0 ? `Required: ${ph.required_count}+ orders` : undefined });
+    items.push({ icon: ShoppingBag, label: `Purchases: ${ph.count} ({formatGBP(ph.total_spent)})`, passed: ph.meets_requirement, detail: ph.required_count > 0 ? `Required: ${ph.required_count}+ orders` : undefined });
   }
   if (results.identity_consistency) {
     const ic = results.identity_consistency;

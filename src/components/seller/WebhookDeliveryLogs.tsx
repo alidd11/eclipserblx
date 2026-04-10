@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface DeliveryLog {
@@ -38,8 +38,7 @@ export function WebhookDeliveryLogs({ webhookId }: WebhookDeliveryLogsProps) {
       if (error) throw error;
       return (data || []) as unknown as DeliveryLog[];
     },
-    enabled: expanded,
-  });
+    enabled: expanded });
 
   return (
     <div className="border-t border-border">
@@ -82,7 +81,7 @@ export function WebhookDeliveryLogs({ webhookId }: WebhookDeliveryLogsProps) {
                       <Badge variant="outline" className="text-[10px]">retry #{log.attempt_number}</Badge>
                     )}
                     <span className="text-muted-foreground shrink-0">
-                      {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+                      {formatRelative(log.created_at)}
                     </span>
                     {log.error_message && (
                       <span className="text-destructive truncate max-w-[120px]" title={log.error_message}>

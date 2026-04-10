@@ -13,8 +13,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { format } from '@/lib/dateUtils';
 import { useAuth } from '@/hooks/useAuth';
+import { formatGBP } from '@/lib/formatters';
 
 interface DiscountForm {
   id?: string;
@@ -107,9 +109,9 @@ export function DiscountCodesTab() {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `£${d.discount_value.toFixed(2)}`;
+  const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `{formatGBP(d.discount_value)}`;
 
-  const copyCode = (code: string) => { navigator.clipboard.writeText(code); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
+  const copyCode = (code: string) => { copyToClipboard(code, 'Code copied!'); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
 
   const openCreate = () => { setForm(emptyForm); setDialogOpen(true); };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

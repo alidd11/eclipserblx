@@ -16,7 +16,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useDropZone } from '@/hooks/useDropZone';
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
 import type { ChatRoomConfig, ChatMember, ChatMessage } from './chatHelpers';
@@ -44,8 +44,7 @@ export function StaffChatRoom({
   config,
   fetchMembers,
   membersQueryKey,
-  enabled = true,
-}: StaffChatRoomProps) {
+  enabled = true }: StaffChatRoomProps) {
   const { user } = useAuth();
   const { isAdmin } = useAdminAuth();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -85,8 +84,7 @@ export function StaffChatRoom({
     sendMentionNotifications,
     isUploading,
     setIsUploading,
-    getRoleBadgeStyle,
-  } = useChatMessages(config, enabled);
+    getRoleBadgeStyle } = useChatMessages(config, enabled);
 
   // ── Filter out thread replies from main feed ───────────────────────────────
   const mainMessages = useMemo(() =>
@@ -119,12 +117,10 @@ export function StaffChatRoom({
     data: allMembers = [],
     isLoading: isMembersLoading,
     error: membersError,
-    refetch: refetchMembers,
-  } = useQuery({
+    refetch: refetchMembers } = useQuery({
     queryKey: membersQueryKey,
     queryFn: fetchMembers,
-    enabled,
-  });
+    enabled });
 
   // ── Mentions ───────────────────────────────────────────────────────────────
   const {
@@ -136,8 +132,7 @@ export function StaffChatRoom({
     allSuggestions,
     handleInputChange: handleMentionInputChange,
     handleKeyDown: handleMentionKeyDown,
-    insertMention,
-  } = useChatMentions(allMembers, config.groupMentions, user?.id, inputRef);
+    insertMention } = useChatMentions(allMembers, config.groupMentions, user?.id, inputRef);
 
   // ── Presence / typing ──────────────────────────────────────────────────────
   const { typingUsers, handleTyping } = useChatPresence(
@@ -163,8 +158,7 @@ export function StaffChatRoom({
     accept: ['image/*', '.pdf', '.doc', '.docx', '.txt', '.zip'],
     maxSize: 10 * 1024 * 1024,
     maxFiles: 1,
-    disabled: isUploading,
-  });
+    disabled: isUploading });
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   const getDisplayName = (userId: string) => {
@@ -216,8 +210,7 @@ export function StaffChatRoom({
       await sendMessageMutation.mutateAsync({
         message: messageToSend,
         attachmentUrl,
-        replyToId: replyTo?.id || null,
-      });
+        replyToId: replyTo?.id || null });
 
       if (messageToSend.trim()) {
         await sendMentionNotifications(messageToSend.trim(), user!.id, allMembers);
@@ -378,8 +371,7 @@ export function StaffChatRoom({
           style={{
             WebkitOverflowScrolling: 'touch',
             overscrollBehavior: 'contain',
-            scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 6rem)',
-          }}
+            scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 6rem)' }}
         >
           <div className="py-4 flex flex-col">
             {isLoading ? (
@@ -437,7 +429,7 @@ export function StaffChatRoom({
                             <Pin className="h-3 w-3 text-amber-500 rotate-45" />
                           )}
                           <span className="text-[10px] sm:text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                            {formatRelative(message.created_at)}
                           </span>
                         </div>
                       )}
@@ -568,8 +560,7 @@ export function StaffChatRoom({
           data-gesture-exempt="true"
           className="relative flex-shrink-0 border-t border-border/70 bg-card px-3 pt-3 sm:px-4 supports-[backdrop-filter]:bg-card/85 supports-[backdrop-filter]:backdrop-blur-xl"
           style={{
-            paddingBottom: 'max(0.75rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))',
-          }}
+            paddingBottom: 'max(0.75rem, var(--chat-safe-bottom, env(safe-area-inset-bottom)))' }}
         >
           {/* Mention suggestions */}
           {showSuggestions && (

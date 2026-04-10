@@ -14,6 +14,7 @@ import { format } from '@/lib/dateUtils';
 import { Link } from 'react-router-dom';
 import { useAffiliateData } from './affiliate/useAffiliateData';
 import { PayoutSettingsSection } from './affiliate/PayoutSettingsSection';
+import { formatGBP } from '@/lib/formatters';
 
 export default function Affiliate() {
  usePageMeta({ title: 'Affiliate Programme', description: 'Earn commissions by referring customers to Eclipse marketplace. Join our affiliate programme today.', canonicalPath: '/affiliate' });
@@ -110,7 +111,7 @@ export default function Affiliate() {
       <div className="p-4 pt-6 pb-6"><div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
        <div className="flex items-center gap-5">
         <div className="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0"><DollarSign className="h-8 w-8 text-primary" /></div>
-        <div><p className="text-sm text-muted-foreground mb-1">Available Balance</p><p className="text-4xl md:text-5xl font-bold text-foreground">£{d.availableBalance.toFixed(2)}</p></div>
+        <div><p className="text-sm text-muted-foreground mb-1">Available Balance</p><p className="text-4xl md:text-5xl font-bold text-foreground">{formatGBP(d.availableBalance)}</p></div>
        </div>
        <div className="flex flex-col gap-3 md:items-end">
         {d.hasPendingPayout ? (
@@ -141,8 +142,8 @@ export default function Affiliate() {
      {/* Stats Grid */}
      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {[
-       { icon: DollarSign, value: `£${d.availableBalance.toFixed(2)}`, label: 'Available', color: 'bg-primary/10 text-primary' },
-       { icon: TrendingUp, value: `£${d.totalEarned.toFixed(2)}`, label: 'Total Earned', color: 'bg-muted text-muted-foreground' },
+       { icon: DollarSign, value: `{formatGBP(d.availableBalance)}`, label: 'Available', color: 'bg-primary/10 text-primary' },
+       { icon: TrendingUp, value: `{formatGBP(d.totalEarned)}`, label: 'Total Earned', color: 'bg-muted text-muted-foreground' },
        { icon: MousePointerClick, value: d.totalClicks.toLocaleString(), label: 'Link Clicks', color: 'bg-blue-500/10 text-blue-500' },
        { icon: UserPlus, value: d.totalSignups.toLocaleString(), label: 'Signups', color: 'bg-green-500/10 text-green-500' },
        { icon: BadgePercent, value: `${d.conversionRate}%`, label: 'Conversion', color: 'bg-purple-500/10 text-purple-500' },
@@ -195,7 +196,7 @@ export default function Affiliate() {
          <div className="space-y-2">
           {d.commissions.map(c => (
            <div key={c.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-            <div><p className="font-medium">£{(c.commission_amount / 100).toFixed(2)}</p><p className="text-xs text-muted-foreground">{format(new Date(c.created_at), 'dd MMM yyyy, HH:mm')}</p></div>
+            <div><p className="font-medium">{formatGBP((c.commission_amount / 100))}</p><p className="text-xs text-muted-foreground">{format(new Date(c.created_at), 'dd MMM yyyy, HH:mm')}</p></div>
             <Badge variant="outline" className={c.status === 'paid' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'}>{c.status}</Badge>
            </div>
           ))}
@@ -214,7 +215,7 @@ export default function Affiliate() {
           {d.pendingPayouts.map(p => (
            <div key={p.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div>
-             <p className="font-medium flex items-center gap-2">£{(p.amount / 100).toFixed(2)}<Badge variant="outline" className="text-xs">{p.payout_method === 'stripe' ? 'Stripe' : p.payout_method === 'bank_transfer' ? 'Bank' : 'PayPal'}</Badge></p>
+             <p className="font-medium flex items-center gap-2">{formatGBP((p.amount / 100))}<Badge variant="outline" className="text-xs">{p.payout_method === 'stripe' ? 'Stripe' : p.payout_method === 'bank_transfer' ? 'Bank' : 'PayPal'}</Badge></p>
              <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM yyyy')}</p>
             </div>
             <Badge variant="outline" className={p.status === 'completed' ? 'bg-green-500/10 text-green-500 border-green-500/30' : p.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}>{p.status}</Badge>

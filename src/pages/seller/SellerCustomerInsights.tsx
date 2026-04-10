@@ -7,6 +7,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Users, TrendingUp, Globe } from 'lucide-react';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerCustomerInsights() {
   const { store } = useSellerStatus();
@@ -152,7 +153,7 @@ export default function SellerCustomerInsights() {
                 <span className="font-semibold text-foreground">{data?.newCustomers || 0}</span> new
               </span>
               <span className="text-muted-foreground">
-                Avg order: <span className="font-semibold text-foreground">£{(data?.avgOrderValue || 0).toFixed(2)}</span>
+                Avg order: <span className="font-semibold text-foreground">{formatGBP((data?.avgOrderValue || 0))}</span>
               </span>
             </div>
 
@@ -180,7 +181,7 @@ export default function SellerCustomerInsights() {
                             <p className="text-sm font-medium truncate">{customer.name}</p>
                             <p className="text-xs text-muted-foreground">{customer.orders} order{customer.orders > 1 ? 's' : ''}</p>
                           </div>
-                          <span className="text-sm font-bold">£{customer.total.toFixed(2)}</span>
+                          <span className="text-sm font-bold">{formatGBP(customer.total)}</span>
                         </div>
                       ))}
                     </div>

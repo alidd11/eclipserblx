@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { cn } from '@/lib/utils';
+import { formatGBP } from '@/lib/formatters';
 
 export function GrossRevenueTab() {
  const { data: incomeBreakdown, isLoading: breakdownLoading, isError: breakdownError, refetch: refetchBreakdown } = useQuery({
@@ -115,7 +116,7 @@ export function GrossRevenueTab() {
  <AdminStatCard
  key={p.label}
  label={p.label}
- value={`£${(p.value ?? 0).toFixed(2)}`}
+ value={`{formatGBP((p.value ?? 0))}`}
  valueColor={p.color}
  subtitle={`${p.orders ?? 0} order${(p.orders ?? 0) !== 1 ? 's' : ''}`}
  />
@@ -157,7 +158,7 @@ export function GrossRevenueTab() {
  series={[{ dataKey: 'total', color: 'hsl(262 100% 71%)', name: 'Gross Revenue' }]}
  height={300}
  yFormatter={(v) => `£${v}`}
- tooltipFormatter={(v) => [`£${Number(v).toFixed(2)}`, 'Gross Revenue']}
+ tooltipFormatter={(v) => [`{formatGBP(Number(v))}`, 'Gross Revenue']}
  />
  )}
  </div>
@@ -165,10 +166,10 @@ export function GrossRevenueTab() {
 
  {stats && (
  <div className="flex flex-col gap-4">
- <AdminStatCard label="30-Day Total" value={`£${stats.total30d.toFixed(2)}`} valueColor="primary" />
- <AdminStatCard label="Daily Average" value={`£${stats.avg.toFixed(2)}`} subtitle={`${stats.totalOrders30d} orders`} />
- <AdminStatCard label="Avg Order Value" value={`£${stats.avgOrderValue.toFixed(2)}`} valueColor="blue" />
- <AdminStatCard label="Best Day (30d)" value={`£${stats.bestDay.toFixed(2)}`} valueColor="green" />
+ <AdminStatCard label="30-Day Total" value={`{formatGBP(stats.total30d)}`} valueColor="primary" />
+ <AdminStatCard label="Daily Average" value={`{formatGBP(stats.avg)}`} subtitle={`${stats.totalOrders30d} orders`} />
+ <AdminStatCard label="Avg Order Value" value={`{formatGBP(stats.avgOrderValue)}`} valueColor="blue" />
+ <AdminStatCard label="Best Day (30d)" value={`{formatGBP(stats.bestDay)}`} valueColor="green" />
  </div>
  )}
  </div>

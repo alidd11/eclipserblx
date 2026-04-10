@@ -7,6 +7,7 @@ import { SellerLayout } from '@/components/seller/SellerLayout';
 import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerTaxFeeSummary() {
   const isInsideHub = useIsInsideHub();
@@ -64,10 +65,10 @@ export default function SellerTaxFeeSummary() {
   const effectiveRate = summary.totalGross > 0 ? ((summary.totalFees / summary.totalGross) * 100).toFixed(1) : '0';
 
   const cards = [
-    { label: 'Gross Revenue', value: `£${summary.totalGross.toFixed(2)}`, icon: DollarSign, color: 'text-primary' },
-    { label: 'Platform Commission', value: `£${summary.totalPlatformFee.toFixed(2)}`, icon: Percent, color: 'text-orange-500' },
-    { label: 'Payment Processing', value: `£${summary.totalStripeFee.toFixed(2)}`, icon: Receipt, color: 'text-yellow-500' },
-    { label: 'Net Earnings', value: `£${summary.totalNet.toFixed(2)}`, icon: TrendingDown, color: 'text-green-500' },
+    { label: 'Gross Revenue', value: `{formatGBP(summary.totalGross)}`, icon: DollarSign, color: 'text-primary' },
+    { label: 'Platform Commission', value: `{formatGBP(summary.totalPlatformFee)}`, icon: Percent, color: 'text-orange-500' },
+    { label: 'Payment Processing', value: `{formatGBP(summary.totalStripeFee)}`, icon: Receipt, color: 'text-yellow-500' },
+    { label: 'Net Earnings', value: `{formatGBP(summary.totalNet)}`, icon: TrendingDown, color: 'text-green-500' },
   ];
 
   return (
@@ -102,8 +103,8 @@ export default function SellerTaxFeeSummary() {
             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(Number(effectiveRate), 100)}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span>Commission: £{summary.totalPlatformFee.toFixed(2)}</span>
-            <span>Processing: £{summary.totalStripeFee.toFixed(2)}</span>
+            <span>Commission: {formatGBP(summary.totalPlatformFee)}</span>
+            <span>Processing: {formatGBP(summary.totalStripeFee)}</span>
           </div>
         </div>
       </div>
@@ -124,7 +125,7 @@ export default function SellerTaxFeeSummary() {
                 ]}
                 height={288}
                 yFormatter={(v) => `£${v}`}
-                tooltipFormatter={(v) => [`£${v.toFixed(2)}`, '']}
+                tooltipFormatter={(v) => [`{formatGBP(v)}`, '']}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">

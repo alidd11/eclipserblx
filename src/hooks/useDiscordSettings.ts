@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -157,9 +158,8 @@ export function useDiscordSettings() {
   }, []);
 
   const handleCopy = useCallback((text: string, field: string) => {
-    navigator.clipboard.writeText(text);
+    copyToClipboard(text);
     setCopiedField(field);
-    toast.success('Copied');
     setTimeout(() => setCopiedField(null), 2000);
   }, []);
 

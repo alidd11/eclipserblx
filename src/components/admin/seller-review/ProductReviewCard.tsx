@@ -5,6 +5,7 @@ import { Check, X, Eye, Package, Trash2, AlertTriangle, ShieldAlert, Lock, FileC
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { formatGBP } from '@/lib/formatters';
 
 interface ModerationFlags {
   nsfw_flags?: string[];
@@ -100,11 +101,11 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Price</span>
-          <span className="font-medium">£{product.price?.toFixed(2)}</span>
+          <span className="font-medium">{formatGBP(product.price?)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Seller Price</span>
-          <span className="font-medium">£{product.seller_price?.toFixed(2)}</span>
+          <span className="font-medium">{formatGBP(product.seller_price?)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Category</span>

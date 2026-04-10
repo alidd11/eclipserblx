@@ -13,15 +13,14 @@
  SelectContent,
  SelectItem,
  SelectTrigger,
- SelectValue,
- } from '@/components/ui/select';
+ SelectValue } from '@/components/ui/select';
  import { supabase } from '@/integrations/supabase/client';
  import { useAuth } from '@/hooks/useAuth';
  import { 
  Search, Ticket, MessageSquare, Clock, User, ChevronRight,
  AlertCircle, CheckCircle, Filter
  } from 'lucide-react';
- import { formatDistanceToNow } from '@/lib/dateUtils';
+ import {} formatRelative } from '@/lib/dateUtils';
  import { toast } from 'sonner';
  import { cn } from '@/lib/utils';
  
@@ -44,8 +43,7 @@
  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
  awaiting_customer: { label: 'Awaiting Customer', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
  resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
- closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' },
- };
+ closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
  
  const categoryLabels: Record<string, string> = {
  order_issue: 'Order Issue',
@@ -53,8 +51,7 @@
  technical: 'Technical',
  billing: 'Billing',
  refund: 'Refund',
- other: 'Other',
- };
+ other: 'Other' };
  
  export default function CustomerTickets() {
  const { user } = useAuth();
@@ -113,8 +110,7 @@
  const { data, error, count } = await query;
  if (error) throw error;
  return { tickets: data as SupportTicket[], totalCount: count || 0 };
- },
- });
+ } });
 
  const tickets = ticketsData?.tickets;
  const totalCount = ticketsData?.totalCount || 0;
@@ -140,8 +136,7 @@
  });
  return map;
  },
- enabled: !!tickets?.length,
- });
+ enabled: !!tickets?.length });
  
  // Claim ticket
  const claimTicket = useMutation({
@@ -150,8 +145,7 @@
  .from('support_tickets')
  .update({
  assigned_to: user?.id,
- status: 'in_progress',
- })
+ status: 'in_progress' })
  .eq('id', ticketId);
  
  if (error) throw error;
@@ -162,8 +156,7 @@
  },
  onError: () => {
  toast.error('Failed to claim ticket');
- },
- });
+ } });
  
  // Filter tickets by search
  const filteredTickets = tickets?.filter(ticket => {
@@ -308,7 +301,7 @@
  <span>{profile?.display_name || ticket.customer_email}</span>
  {categoryLabel && <><span>\u00B7</span><span>{categoryLabel}</span></>}
  <span>\u00B7</span>
- <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
+ <span>{formatRelative(ticket.created_at)}</span>
  </div>
  </div>
 

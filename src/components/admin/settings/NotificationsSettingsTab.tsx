@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
 import {
@@ -323,7 +324,7 @@ export function NotificationsSettingsTab() {
  <Label className="text-xs">{label}</Label>
  <div className="flex gap-2">
  <code className="flex-1 text-xs bg-background p-2 rounded border break-all">{value}</code>
- <Button size="sm" variant="ghost" onClick={() => { navigator.clipboard.writeText(value); toast.success('Copied!'); }}>
+ <Button size="sm" variant="ghost" onClick={() => copyToClipboard(value)}>
  <Copy className="h-4 w-4" />
  </Button>
  </div>

@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { GlobalGuardLayout, GlobalGuardHeader } from '@/components/global-guard/GlobalGuardLayout';
 import { useGlobalGuardData } from '@/hooks/useGlobalGuardData';
 import { Badge } from '@/components/ui/badge';
@@ -95,7 +95,7 @@ export default function GlobalGuardHistory() {
  )}
  </div>
  <div className="text-xs text-muted-foreground whitespace-nowrap">
- {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
+ {formatRelative(log.created_at)}
  </div>
  </div>
  ))}

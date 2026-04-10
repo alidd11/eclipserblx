@@ -178,7 +178,7 @@ function CompetitiveEarningsCalculator() {
   const eclipseAdvantage = eclipseEarnings - competitorEarnings;
   const eclipseWins = eclipseAdvantage >= 0;
 
-  const formatGBP = (v: number) => `£${v.toFixed(2)}`;
+  const formatGBP = (v: number) => `{formatGBP(v)}`;
 
   return (
     <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">

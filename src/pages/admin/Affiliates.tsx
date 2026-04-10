@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAffiliateSettings } from '@/hooks/useAffiliateSettings';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
+import { formatGBP } from '@/lib/formatters';
 
 export default function AdminAffiliates() {
  const isInsideHub = useIsInsideHub();
@@ -216,7 +217,7 @@ export default function AdminAffiliates() {
  },
  });
 
- const formatAmount = (pence: number) => `£${(pence / 100).toFixed(2)}`;
+ const formatAmount = (pence: number) => `{formatGBP((pence / 100))}`;
 
  const getCommissionStatusBadge = (status: string) => {
  const configs: Record<string, { color: string; icon: React.ElementType }> = {
@@ -536,7 +537,7 @@ export default function AdminAffiliates() {
  </div>
  <div className="p-4 rounded-lg bg-muted/50">
  <p className="text-sm text-muted-foreground">Minimum Payout</p>
- <p className="text-2xl font-bold">£{affiliateSettings.minimumPayout.toFixed(2)}</p>
+ <p className="text-2xl font-bold">{formatGBP(affiliateSettings.minimumPayout)}</p>
  <p className="text-xs text-muted-foreground mt-1">Via Stripe or PayPal</p>
  </div>
  <div className="p-4 rounded-lg bg-muted/50">

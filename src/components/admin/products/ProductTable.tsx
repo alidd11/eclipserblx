@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Trash2, Clock } from 'lucide-react';
 import {
+import { formatGBP } from '@/lib/formatters';
   Table,
   TableBody,
   TableCell,
@@ -110,7 +111,7 @@ export function ProductTable({
                   </div>
                 </TableCell>
                 <TableCell>{product.categories?.name || '—'}</TableCell>
-                <TableCell>£{product.price.toFixed(2)}</TableCell>
+                <TableCell>{formatGBP(product.price)}</TableCell>
                 <TableCell>
                   <div className="flex gap-2 flex-wrap">
                     {isScheduledForFuture(product.release_at) ? (

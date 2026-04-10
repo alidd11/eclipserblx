@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Eye, EyeOff, Copy, Clock } from 'lucide-react';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format} formatRelative } from '@/lib/dateUtils';
 import { WebhookDeliveryLogs } from '@/components/seller/WebhookDeliveryLogs';
 
 const AVAILABLE_EVENTS = [
@@ -46,16 +46,14 @@ export default function SellerWebhooks() {
       if (error) throw error;
       return data;
     },
-    enabled: !!storeId,
-  });
+    enabled: !!storeId });
 
   const createMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from('seller_webhooks').insert({
         store_id: storeId!,
         url,
-        events: selectedEvents,
-      });
+        events: selectedEvents });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -65,8 +63,7 @@ export default function SellerWebhooks() {
       setUrl('');
       setSelectedEvents([]);
     },
-    onError: () => toast.error('Failed to create webhook'),
-  });
+    onError: () => toast.error('Failed to create webhook') });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
@@ -76,8 +73,7 @@ export default function SellerWebhooks() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['seller-webhooks'] }),
-  });
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['seller-webhooks'] }) });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -87,8 +83,7 @@ export default function SellerWebhooks() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-webhooks'] });
       toast.success('Webhook deleted');
-    },
-  });
+    } });
 
   const toggleSecret = (id: string) => {
     setRevealedSecrets(prev => {
@@ -233,7 +228,7 @@ export default function SellerWebhooks() {
                       {wh.last_triggered_at ? (
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(wh.last_triggered_at), { addSuffix: true })}
+                          {formatRelative(wh.last_triggered_at)}
                           {wh.last_status_code && (
                             <Badge variant={wh.last_status_code < 300 ? 'outline' : 'destructive'} className="text-[10px] ml-1">
                               {wh.last_status_code}

@@ -8,6 +8,7 @@ import { StripeProvider } from './StripeProvider';
 import { PaymentRequestButton } from './PaymentRequestButton';
 import { SavedCardButton } from './SavedCardButton';
 import { CreditPaymentButton } from './CreditPaymentButton';
+import { formatGBP } from '@/lib/formatters';
 
 interface CartItem {
   id: string;
@@ -98,7 +99,7 @@ export function PaymentMethodDisplay({
             disabled={isProcessing}
           >
             <CreditCard className="h-5 w-5 mr-2" />
-            {isProcessing ? 'Processing...' : `Pay £${total.toFixed(2)}`}
+            {isProcessing ? 'Processing...' : `Pay {formatGBP(total)}`}
           </Button>
           <TrustBadge />
         </div>
@@ -204,7 +205,7 @@ export function PaymentMethodDisplay({
                 ? 'Add new card or PayPal'
                 : walletAvailable 
                   ? 'Card or PayPal' 
-                  : `Pay £${total.toFixed(2)}`
+                  : `Pay {formatGBP(total)}`
             }
           </Button>
         </div>

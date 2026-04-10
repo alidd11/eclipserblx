@@ -4,7 +4,7 @@ import { Sparkles, ChevronRight, Clock, BadgeCheck, Shield } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
@@ -50,8 +50,7 @@ export function NewArrivalsCard() {
       if (error) throw error;
       const filtered = (data || []).filter(p => p.stores?.is_active === true);
       return filtered.slice(0, 5) as unknown as NewProduct[];
-    },
-  });
+    } });
 
   return (
     <div className="border border-border rounded-xl overflow-hidden">
@@ -122,7 +121,7 @@ export function NewArrivalsCard() {
                   )}
                   <span className="flex items-center gap-0.5">
                     <Clock className="h-3 w-3" />
-                    {formatDistanceToNow(new Date(product.created_at), { addSuffix: true })}
+                    {formatRelative(product.created_at)}
                   </span>
                 </div>
               </div>

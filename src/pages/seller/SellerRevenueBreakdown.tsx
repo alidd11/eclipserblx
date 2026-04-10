@@ -9,6 +9,7 @@ import { RevolutAreaChart, RevolutBarChart } from '@/components/ui/revolut-chart
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays } from '@/lib/dateUtils';
+import { formatGBP } from '@/lib/formatters';
 
 export default function SellerRevenueBreakdown() {
   const isInsideHub = useIsInsideHub();
@@ -92,10 +93,10 @@ export default function SellerRevenueBreakdown() {
         {/* Inline Stats */}
         <div className="flex items-center gap-4 text-sm flex-wrap">
           <span className="text-muted-foreground">
-            Net: <span className="font-semibold text-foreground">£{totalRevenue.toFixed(2)}</span>
+            Net: <span className="font-semibold text-foreground">{formatGBP(totalRevenue)}</span>
           </span>
           <span className="text-muted-foreground">
-            Avg order: <span className="font-semibold text-foreground">£{avgOrderValue.toFixed(2)}</span>
+            Avg order: <span className="font-semibold text-foreground">{formatGBP(avgOrderValue)}</span>
           </span>
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{transactions.length}</span> sales
@@ -123,7 +124,7 @@ export default function SellerRevenueBreakdown() {
             series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
             height={256}
             yFormatter={(v) => `£${v}`}
-            tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+            tooltipFormatter={(v) => [`{formatGBP(v)}`, 'Revenue']}
           />
         </div>
       </div>
@@ -139,7 +140,7 @@ export default function SellerRevenueBreakdown() {
               height={256}
               layout="vertical"
               yFormatter={(v) => `£${v}`}
-              tooltipFormatter={(v) => [`£${v.toFixed(2)}`, 'Revenue']}
+              tooltipFormatter={(v) => [`{formatGBP(v)}`, 'Revenue']}
             />
           </div>
         </div>

@@ -14,12 +14,10 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  SelectValue } from '@/components/ui/select';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { TicketContextSidebar } from '@/components/admin/tickets/TicketContextSidebar';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,9 +25,8 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowLeft, Send, User, Headphones, Eye,
   Paperclip, X, Loader2, MessageSquare,
-  Zap, AlertTriangle, UserCheck, AlarmClock, Users,
-} from 'lucide-react';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+  Zap, AlertTriangle, UserCheck, AlarmClock, Users } from 'lucide-react';
+import { format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useCannedResponses } from '@/components/tickets/useCannedResponses';
@@ -68,8 +65,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   awaiting_customer: { label: 'Awaiting Customer', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' },
-};
+  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
 
 const categoryLabels: Record<string, string> = {
   order_issue: 'Order Issue',
@@ -77,8 +73,7 @@ const categoryLabels: Record<string, string> = {
   technical: 'Technical',
   billing: 'Billing',
   refund: 'Refund',
-  other: 'Other',
-};
+  other: 'Other' };
 
 // Canned responses are now loaded from DB via useCannedResponses hook
 
@@ -110,8 +105,7 @@ export default function CustomerTicketDetail() {
       if (error) throw error;
       return data as SupportTicket;
     },
-    enabled: !!ticketId,
-  });
+    enabled: !!ticketId });
 
   // ── Messages ──────────────────────────────────────────────────────────────
   const { data: messages, isLoading: loadingMessages } = useQuery({
@@ -125,8 +119,7 @@ export default function CustomerTicketDetail() {
       if (error) throw error;
       return data as TicketMessage[];
     },
-    enabled: !!ticketId,
-  });
+    enabled: !!ticketId });
 
   // ── Customer profile ──────────────────────────────────────────────────────
   const { data: customerProfile } = useQuery({
@@ -141,8 +134,7 @@ export default function CustomerTicketDetail() {
       if (error) return null;
       return data;
     },
-    enabled: !!ticket?.user_id,
-  });
+    enabled: !!ticket?.user_id });
 
   // ── Customer order history ────────────────────────────────────────────────
   const { data: customerOrders } = useQuery({
@@ -158,8 +150,7 @@ export default function CustomerTicketDetail() {
       if (error) return [];
       return data;
     },
-    enabled: !!ticket?.user_id,
-  });
+    enabled: !!ticket?.user_id });
 
   // ── Customer past tickets ─────────────────────────────────────────────────
   const { data: pastTickets } = useQuery({
@@ -176,8 +167,7 @@ export default function CustomerTicketDetail() {
       if (error) return [];
       return data;
     },
-    enabled: !!ticket?.user_id && !!ticketId,
-  });
+    enabled: !!ticket?.user_id && !!ticketId });
 
   // ── Assigned staff profile ────────────────────────────────────────────────
   const { data: assignedProfile } = useQuery({
@@ -192,8 +182,7 @@ export default function CustomerTicketDetail() {
       if (error) return null;
       return data;
     },
-    enabled: !!ticket?.assigned_to,
-  });
+    enabled: !!ticket?.assigned_to });
 
   // ── Agent collision detection ─────────────────────────────────────────────
   const myProfile = useQuery({
@@ -202,8 +191,7 @@ export default function CustomerTicketDetail() {
       const { data } = await supabase.from('profiles').select('display_name').eq('user_id', user!.id).single();
       return data?.display_name || 'Staff';
     },
-    enabled: !!user?.id,
-  });
+    enabled: !!user?.id });
   const viewingAgents = useAgentCollision(ticketId, myProfile.data || undefined);
 
   // ── Snooze ticket ─────────────────────────────────────────────────────────
@@ -220,8 +208,7 @@ export default function CustomerTicketDetail() {
       toast.success('Ticket snoozed');
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
     },
-    onError: () => toast.error('Failed to snooze ticket'),
-  });
+    onError: () => toast.error('Failed to snooze ticket') });
 
   useEffect(() => {
     if (!ticketId) return;
@@ -280,8 +267,7 @@ export default function CustomerTicketDetail() {
           sender_type: 'staff',
           message: message.trim() || (attachmentUrl ? '\uD83D\uDCCE Attachment' : ''),
           is_internal_note: isInternal,
-          attachment_url: attachmentUrl,
-        });
+          attachment_url: attachmentUrl });
       if (error) throw error;
 
       const newStatus = isInternal ? ticket?.status : 'awaiting_customer';
@@ -300,10 +286,7 @@ export default function CustomerTicketDetail() {
               ticketNumber: ticket.ticket_number || '',
               subject: ticket.subject || 'Your support ticket',
               staffMessage: message.trim().substring(0, 500),
-              ticketUrl: `https://roleplay-hub-shop.lovable.app/support/tickets/${ticketId}`,
-            },
-          },
-        }).catch(() => {}); // fire-and-forget
+              ticketUrl: `https://roleplay-hub-shop.lovable.app/support/tickets/${ticketId}` } } }).catch(() => {}); // fire-and-forget
       }
     },
     onSuccess: () => {
@@ -314,8 +297,7 @@ export default function CustomerTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
       toast.success(isInternalNote ? 'Internal note added' : 'Reply sent');
     },
-    onError: () => toast.error('Failed to send message'),
-  });
+    onError: () => toast.error('Failed to send message') });
 
   // ── Update status ─────────────────────────────────────────────────────────
   const updateStatus = useMutation({
@@ -330,8 +312,7 @@ export default function CustomerTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
       toast.success('Status updated');
     },
-    onError: () => toast.error('Failed to update status'),
-  });
+    onError: () => toast.error('Failed to update status') });
 
   // ── Update priority ───────────────────────────────────────────────────────
   const updatePriority = useMutation({
@@ -346,8 +327,7 @@ export default function CustomerTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
       toast.success('Priority updated');
     },
-    onError: () => toast.error('Failed to update priority'),
-  });
+    onError: () => toast.error('Failed to update priority') });
 
   // ── Claim ticket ──────────────────────────────────────────────────────────
   const claimTicket = useMutation({
@@ -362,8 +342,7 @@ export default function CustomerTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['admin-ticket', ticketId] });
       toast.success('Ticket claimed');
     },
-    onError: () => toast.error('Failed to claim ticket'),
-  });
+    onError: () => toast.error('Failed to claim ticket') });
 
   const handleSend = () => {
     if (!newMessage.trim() && !attachmentFile) return;
@@ -523,8 +502,7 @@ export default function CustomerTicketDetail() {
                 className="flex-1 min-h-0 overflow-y-auto overscroll-contain touch-pan-y"
                 style={{
                   WebkitOverflowScrolling: 'touch',
-                  scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 10rem)',
-                }}
+                  scrollPaddingBottom: 'calc(var(--chat-safe-bottom, env(safe-area-inset-bottom)) + 10rem)' }}
               >
                 <div className="p-3 sm:p-4 space-y-5">
                   {loadingMessages ? (

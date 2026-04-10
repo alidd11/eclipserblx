@@ -12,7 +12,7 @@ import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Send, Clock, User, Headphones, Paperclip, X, Loader2 } from 'lucide-react';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+import { format } formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -44,8 +44,7 @@ const statusConfig: Record<string, { label: string; color: string }> = {
   in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   awaiting_customer: { label: 'Awaiting Reply', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
   resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' },
-};
+  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
 
 const ATTACHMENT_BUCKET = 'support-ticket-attachments';
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -72,8 +71,7 @@ export default function SupportTicketDetail() {
       if (error) throw error;
       return data as SupportTicket;
     },
-    enabled: !!ticketId,
-  });
+    enabled: !!ticketId });
 
   // Fetch messages
   const { data: messages, isLoading: loadingMessages } = useQuery({
@@ -88,8 +86,7 @@ export default function SupportTicketDetail() {
       if (error) throw error;
       return data as TicketMessage[];
     },
-    enabled: !!ticketId,
-  });
+    enabled: !!ticketId });
 
   // Fetch staff profiles
   const { data: staffProfiles } = useQuery({
@@ -106,8 +103,7 @@ export default function SupportTicketDetail() {
       data.forEach(p => { map[p.user_id] = { display_name: p.display_name, avatar_url: p.avatar_url }; });
       return map;
     },
-    enabled: !!messages?.length,
-  });
+    enabled: !!messages?.length });
 
   // Realtime subscription
   useEffect(() => {
@@ -151,8 +147,7 @@ export default function SupportTicketDetail() {
           sender_type: 'customer',
           message: newMessage.trim() || (attachmentUrl ? '📎 Attachment' : ''),
           is_internal_note: false,
-          attachment_url: attachmentUrl,
-        });
+          attachment_url: attachmentUrl });
       if (error) throw error;
 
       await supabase
@@ -168,8 +163,7 @@ export default function SupportTicketDetail() {
     },
     onError: () => {
       toast.error('Failed to send message');
-    },
-  });
+    } });
 
   const handleSend = () => {
     if (!newMessage.trim() && !attachmentFile) return;
@@ -236,7 +230,7 @@ export default function SupportTicketDetail() {
             <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+              {formatRelative(ticket.created_at)}
             </span>
           </div>
         </div>

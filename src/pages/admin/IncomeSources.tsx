@@ -21,6 +21,7 @@ import { showSuccessNotification } from '@/lib/nativeNotification';
 import { cn } from '@/lib/utils';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
+import { formatGBP } from '@/lib/formatters';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
@@ -250,9 +251,9 @@ export default function AdminIncomeSources() {
       const storeName = (c as any).stores?.name ?? 'Unknown Store';
       txns.push({
         id: `comm-${c.id}`, source: 'commission',
-        description: `Commission on £${(c.gross_amount ?? 0).toFixed(2)} sale · ${storeName}`,
+        description: `Commission on {formatGBP((c.gross_amount ?? 0))} sale · ${storeName}`,
         amount: platformFee, currency: '£', status: c.status ?? 'completed', date: c.created_at,
-        metadata: `${storeName} · Seller earned £${(c.net_amount ?? 0).toFixed(2)} · Stripe fee £${(c.stripe_fee ?? 0).toFixed(2)}`,
+        metadata: `${storeName} · Seller earned {formatGBP((c.net_amount ?? 0))} · Stripe fee {formatGBP((c.stripe_fee ?? 0))}`,
       });
     });
 
@@ -416,11 +417,11 @@ export default function AdminIncomeSources() {
                 {isLoading ? (
                   <Skeleton className="h-9 w-32 mt-1" />
                 ) : (
-                  <p className="text-3xl font-bold font-display">£{grandTotal.toFixed(2)}</p>
+                  <p className="text-3xl font-bold font-display">{formatGBP(grandTotal)}</p>
                 )}
                 {!isLoading && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {filteredTransactions.length} transactions · £{(grandTotal / periodDays).toFixed(2)}/day avg
+                    {filteredTransactions.length} transactions · {formatGBP((grandTotal / periodDays))}/day avg
                   </p>
                 )}
               </div>
@@ -469,17 +470,17 @@ export default function AdminIncomeSources() {
                     <Skeleton className="h-6 w-20 mt-2" />
                   ) : (
                     <>
-                      <p className="text-xl font-bold mt-1">£{data.total.toFixed(2)}</p>
+                      <p className="text-xl font-bold mt-1">{formatGBP(data.total)}</p>
                       <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
                         <span>{data.count} txns</span>
                         <span>·</span>
-                        <span>Avg £{avgTxn.toFixed(2)}</span>
+                        <span>Avg {formatGBP(avgTxn)}</span>
                         <span>·</span>
                         <span>{sharePercent.toFixed(0)}% share</span>
                       </div>
                       {data.maxTxn > 0 && (
                         <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                          Largest: £{data.maxTxn.toFixed(2)}
+                          Largest: {formatGBP(data.maxTxn)}
                         </p>
                       )}
                       {/* Sparkline */}
@@ -534,7 +535,7 @@ export default function AdminIncomeSources() {
                     series={areaSeries}
                     height={320}
                     yFormatter={(v) => `£${v}`}
-                    tooltipFormatter={(v) => [`£${Number(v).toFixed(2)}`, 'Revenue']}
+                    tooltipFormatter={(v) => [`{formatGBP(Number(v))}`, 'Revenue']}
                   />
                 )}
               </div>

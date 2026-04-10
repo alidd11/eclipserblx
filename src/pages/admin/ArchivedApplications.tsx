@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 
 interface ArchivedApplication {
  id: string;
@@ -47,8 +47,7 @@ export default function AdminArchivedApplications() {
  
  if (error) throw error;
  return { applications: data as ArchivedApplication[], totalCount: count || 0 };
- },
- });
+ } });
 
  const applications = applicationsData?.applications;
  const totalCount = applicationsData?.totalCount || 0;
@@ -78,8 +77,7 @@ export default function AdminArchivedApplications() {
  const stats = {
  total: applications?.length || 0,
  accepted: applications?.filter(a => a.status === 'accepted').length || 0,
- rejected: applications?.filter(a => a.status === 'rejected').length || 0,
- };
+ rejected: applications?.filter(a => a.status === 'rejected').length || 0 };
 
  return (
  <AdminLayout requiredPermissions={['review_applications']}>
@@ -157,7 +155,7 @@ export default function AdminArchivedApplications() {
  <p className="text-sm text-muted-foreground">{app.position}</p>
  <div className="flex items-center justify-between pt-2">
  <span className="text-xs text-muted-foreground">
- {app.reviewed_at && formatDistanceToNow(new Date(app.reviewed_at), { addSuffix: true })}
+ {app.reviewed_at && formatRelative(app.reviewed_at)}
  </span>
  <Button variant="outline" size="sm" onClick={() => setSelectedApplication(app)}>
  <Eye className="h-4 w-4 mr-1" /> View
@@ -191,7 +189,7 @@ export default function AdminArchivedApplications() {
  <TableCell>{app.position}</TableCell>
  <TableCell>{getStatusBadge(app.status)}</TableCell>
  <TableCell>
- {app.reviewed_at && formatDistanceToNow(new Date(app.reviewed_at), { addSuffix: true })}
+ {app.reviewed_at && formatRelative(app.reviewed_at)}
  </TableCell>
  <TableCell>
  <Button variant="ghost" size="sm" onClick={() => setSelectedApplication(app)}>

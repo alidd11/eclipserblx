@@ -1,7 +1,7 @@
  import { Link } from 'react-router-dom';
  import { Badge } from '@/components/ui/badge';
  import { ChevronRight, Clock, MessageSquare, Tag } from 'lucide-react';
- import { formatDistanceToNow } from '@/lib/dateUtils';
+ import {} formatRelative } from '@/lib/dateUtils';
  import { cn } from '@/lib/utils';
  
  interface TicketCardProps {
@@ -22,8 +22,7 @@
  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
  awaiting_customer: { label: 'Awaiting Reply', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
  resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
- closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' },
- };
+ closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
  
  const categoryLabels: Record<string, string> = {
  order_issue: 'Order Issue',
@@ -31,8 +30,7 @@
  technical: 'Technical',
  billing: 'Billing',
  refund: 'Refund',
- other: 'Other',
- };
+ other: 'Other' };
  
  export function TicketCard({ ticket }: TicketCardProps) {
  const status = statusConfig[ticket.status] || statusConfig.open;
@@ -74,7 +72,7 @@
  )}
  <span className="flex items-center gap-1">
  <Clock className="h-3 w-3" />
- {formatDistanceToNow(new Date(ticket.updated_at), { addSuffix: true })}
+ {formatRelative(ticket.updated_at)}
  </span>
  </div>
  </div>

@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -16,9 +17,8 @@ export function DnsRecordRow({ type, name, value, note, proxied }: DnsRecordRowP
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    navigator.clipboard.writeText(value);
+    copyToClipboard(value);
     setCopied(true);
-    toast.success('Copied!');
     setTimeout(() => setCopied(false), 2000);
   };
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { useQuery } from '@tanstack/react-query';
 import { Copy, Check, Users, Gift, Share2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -95,10 +96,9 @@ export function ReferralCard() {
     ? `${window.location.origin}/auth?ref=${referralCode}` 
     : '';
 
-  const copyToClipboard = async (text: string, type: 'code' | 'link') => {
-    await navigator.clipboard.writeText(text);
+  const handleCopy = async (text: string, type: 'code' | 'link') => {
+    await copyToClipboard(text, `Referral ${type} copied!`);
     setCopied(true);
-    showSuccessNotification('Copied!', `Referral ${type} copied to clipboard`);
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -111,10 +111,10 @@ export function ReferralCard() {
           url: referralLink,
         });
       } catch {
-        copyToClipboard(referralLink, 'link');
+        handleCopy(referralLink, 'link');
       }
     } else {
-      copyToClipboard(referralLink, 'link');
+      handleCopy(referralLink, 'link');
     }
   };
 
@@ -163,7 +163,7 @@ export function ReferralCard() {
             <Button
               variant="outline"
               size="icon" aria-label="Confirm"
-              onClick={() => copyToClipboard(referralCode, 'code')}
+              onClick={() => handleCopy(referralCode, 'code')}
             >
               {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
             </Button>

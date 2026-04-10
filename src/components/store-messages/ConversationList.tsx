@@ -1,5 +1,5 @@
 import { Store, Loader2 } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import type { StoreConversation } from '@/hooks/useStoreMessages';
 
 interface ConversationListProps {
@@ -40,7 +40,7 @@ export function ConversationList({ conversations, isLoading, onSelect }: Convers
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-medium truncate">{conv.store?.name || 'Store'}</p>
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}
+                    {formatRelative(conv.last_message_at)}
                   </span>
                 </div>
                 {conv.subject && (

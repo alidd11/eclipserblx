@@ -22,6 +22,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import { DisputeEvidenceUpload } from './DisputeEvidenceUpload';
+import { formatGBP } from '@/lib/formatters';
 
 interface DisputeDialogProps {
   open: boolean;
@@ -135,7 +136,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
       // Auto-create a support ticket
       try {
         const ticketSubject = `Dispute: ${selectedItem.product_name || 'Order item'} (${orderDisplayId})`;
-        const ticketMessage = `Reason: ${reasonLabel}\n\n${description.trim()}\n\n---\nOrder: ${orderDisplayId}\nProduct: ${selectedItem.product_name}\nAmount: £${itemPrice.toFixed(2)}`;
+        const ticketMessage = `Reason: ${reasonLabel}\n\n${description.trim()}\n\n---\nOrder: ${orderDisplayId}\nProduct: ${selectedItem.product_name}\nAmount: {formatGBP(itemPrice)}`;
 
         const { data: ticket, error: ticketError } = await supabase
           .from('support_tickets')
@@ -239,7 +240,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
                 <SelectContent>
                   {orderItems.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.product_name} — £{Number(item.price).toFixed(2)}
+                      {item.product_name} — {formatGBP(Number(item.price))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -251,7 +252,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
             <div className="rounded-lg border bg-muted/30 p-3 text-sm">
               <span className="text-muted-foreground">Product: </span>
               <span className="font-medium">{orderItems[0].product_name}</span>
-              <span className="text-muted-foreground"> — £{Number(orderItems[0].price).toFixed(2)}</span>
+              <span className="text-muted-foreground"> — {formatGBP(Number(orderItems[0].price))}</span>
             </div>
           )}
 

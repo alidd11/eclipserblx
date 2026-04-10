@@ -110,7 +110,7 @@
                        "font-semibold shrink-0",
                        payment.status === 'completed' ? "text-green-500" : "text-foreground"
                      )}>
-                       £{payment.amount.toFixed(2)}
+                       {formatGBP(payment.amount)}
                      </div>
                    </div>
                  );

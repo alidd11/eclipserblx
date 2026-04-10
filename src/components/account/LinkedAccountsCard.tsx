@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 
 import { openExternalUrl } from '@/lib/externalBrowser';
 import { 
@@ -280,13 +281,9 @@ export function LinkedAccountsCard({
   };
 
   const copyRedirectUri = async () => {
-    try {
-      await navigator.clipboard.writeText(getRedirectUri());
-      setCopiedRedirect(true);
-      setTimeout(() => setCopiedRedirect(false), 1500);
-    } catch {
-      toast.error("Could not copy the redirect URI");
-    }
+    await copyToClipboard(getRedirectUri(), 'Redirect URI copied!');
+    setCopiedRedirect(true);
+    setTimeout(() => setCopiedRedirect(false), 1500);
   };
 
   if (isProcessingOAuth || isProcessingRobloxOAuth) {

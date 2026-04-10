@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { RichMessageContent } from './RichMessageContent';
 import { useChatScroll } from './useChatScroll';
 import { useThreadMessages } from './useThreadMessages';
@@ -28,8 +28,7 @@ export function ThreadPanel({
   userRoles,
   getRoleBadgeStyle,
   currentUserId,
-  onClose,
-}: ThreadPanelProps) {
+  onClose }: ThreadPanelProps) {
   const [reply, setReply] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,7 +79,7 @@ export function ThreadPanel({
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-medium">{getDisplayName(parentMessage.user_id)}</span>
               <span className="text-[10px] text-muted-foreground">
-                {formatDistanceToNow(new Date(parentMessage.created_at), { addSuffix: true })}
+                {formatRelative(parentMessage.created_at)}
               </span>
             </div>
             <div className="text-sm">
@@ -124,7 +123,7 @@ export function ThreadPanel({
                       </Badge>
                     )}
                     <span className="text-[10px] text-muted-foreground">
-                      {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                      {formatRelative(msg.created_at)}
                     </span>
                   </div>
                   <div className={cn(

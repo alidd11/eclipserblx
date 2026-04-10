@@ -19,6 +19,7 @@ import { RevolutAreaChart, RevolutLineChart } from '@/components/ui/revolut-char
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { IncomeErrorState } from './IncomeErrorState';
 import { cn } from '@/lib/utils';
+import { formatGBP } from '@/lib/formatters';
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
 
@@ -335,26 +336,26 @@ export function RevenueDashboard() {
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
  <KPICard
  label="Gross Volume"
- value={`£${metrics.periodGross.toFixed(2)}`}
+ value={`{formatGBP(metrics.periodGross)}`}
  trend={metrics.grossTrend !== 0 ? { value: metrics.grossTrend, label: 'vs prev' } : undefined}
  subtitle={`${metrics.periodOrders} orders`}
  isLoading={isLoading}
  />
  <KPICard
  label="Stripe Balance"
- value={`£${metrics.stripeAvailable.toFixed(2)}`}
- subtitle={`£${metrics.stripePending.toFixed(2)} pending`}
+ value={`{formatGBP(metrics.stripeAvailable)}`}
+ subtitle={`{formatGBP(metrics.stripePending)} pending`}
  isLoading={isLoading}
  />
  <KPICard
  label="Commission"
- value={`£${metrics.periodCommission.toFixed(2)}`}
- subtitle={`£${metrics.totalCommission.toFixed(2)} all time`}
+ value={`{formatGBP(metrics.periodCommission)}`}
+ subtitle={`{formatGBP(metrics.totalCommission)} all time`}
  isLoading={isLoading}
  />
  <KPICard
  label="Seller Pro MRR"
- value={`£${metrics.mrr.toFixed(2)}`}
+ value={`{formatGBP(metrics.mrr)}`}
  subtitle={`${metrics.activeSubs} Pro sellers`}
  isLoading={isLoading}
  />
@@ -371,10 +372,10 @@ export function RevenueDashboard() {
  <Badge variant="default" className="bg-emerald-600 ml-auto text-[10px]">Live</Badge>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
- <KPICard label="Available" value={`£${metrics.stripeAvailable.toFixed(2)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
- <KPICard label="Pending" value={`£${metrics.stripePending.toFixed(2)}`} subtitle="In transit" isLoading={stripeLoading} />
- <KPICard label="30d Fees" value={`£${metrics.stripeFees.toFixed(2)}`} subtitle={`${stripeBalance?.summary?.avgFeePercent ?? '0'}% avg rate`} isLoading={stripeLoading} />
- <KPICard label="30d Refunds" value={`£${(stripeBalance?.summary?.last30Days?.refunds ?? 0).toFixed(2)}`} subtitle={`${stripeBalance?.summary?.last30Days?.refundCount ?? 0} refunds`} isLoading={stripeLoading} />
+ <KPICard label="Available" value={`{formatGBP(metrics.stripeAvailable)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
+ <KPICard label="Pending" value={`{formatGBP(metrics.stripePending)}`} subtitle="In transit" isLoading={stripeLoading} />
+ <KPICard label="30d Fees" value={`{formatGBP(metrics.stripeFees)}`} subtitle={`${stripeBalance?.summary?.avgFeePercent ?? '0'}% avg rate`} isLoading={stripeLoading} />
+ <KPICard label="30d Refunds" value={`{formatGBP((stripeBalance?.summary?.last30Days?.refunds ?? 0))}`} subtitle={`${stripeBalance?.summary?.last30Days?.refundCount ?? 0} refunds`} isLoading={stripeLoading} />
  </div>
  </div>
  </div>
@@ -388,10 +389,10 @@ export function RevenueDashboard() {
  </div>
 
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
- <KPICard label="All-Time Gross" value={`£${metrics.allTimeGross.toFixed(2)}`} isLoading={isLoading} />
- <KPICard label="Ad Revenue" value={`£${metrics.totalAdRevenue.toFixed(2)}`} isLoading={isLoading} />
- <KPICard label="Credits" value={`£${metrics.totalCredits.toFixed(2)}`} isLoading={isLoading} />
- <KPICard label="Robux (est.)" value={`£${metrics.totalRobuxGBP.toFixed(2)}`} isLoading={isLoading} />
+ <KPICard label="All-Time Gross" value={`{formatGBP(metrics.allTimeGross)}`} isLoading={isLoading} />
+ <KPICard label="Ad Revenue" value={`{formatGBP(metrics.totalAdRevenue)}`} isLoading={isLoading} />
+ <KPICard label="Credits" value={`{formatGBP(metrics.totalCredits)}`} isLoading={isLoading} />
+ <KPICard label="Robux (est.)" value={`{formatGBP(metrics.totalRobuxGBP)}`} isLoading={isLoading} />
  </div>
  </div>
  </div>
@@ -460,15 +461,15 @@ export function RevenueDashboard() {
  <div className="space-y-0.5">
  <div className="flex justify-between gap-3">
  <span className="text-muted-foreground">Gross</span>
- <span>£{(Number(d.gross) || 0).toFixed(2)}</span>
+ <span>{formatGBP((Number(d.gross) || 0))}</span>
  </div>
  <div className="flex justify-between gap-3">
  <span className="text-muted-foreground">Fees</span>
- <span className="text-destructive">-£{(Number(d.fees) || 0).toFixed(2)}</span>
+ <span className="text-destructive">{"-" + formatGBP((Number(d.fees) || 0))}</span>
  </div>
  <div className="flex justify-between gap-3 border-t pt-1">
  <span className="font-medium">Net</span>
- <span className="text-emerald-500 font-medium">£{(Number(d.net) || 0).toFixed(2)}</span>
+ <span className="text-emerald-500 font-medium">{formatGBP((Number(d.net) || 0))}</span>
  </div>
  </div>
  </div>

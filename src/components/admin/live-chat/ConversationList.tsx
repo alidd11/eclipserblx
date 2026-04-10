@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { Conversation, ISSUE_CATEGORY_LABELS, ISSUE_CATEGORY_COLORS } from './ChatConstants';
 
 interface ConversationListProps {
@@ -15,8 +15,7 @@ export function ConversationList({
   conversations,
   selectedConversation,
   isLoading,
-  onSelect,
-}: ConversationListProps) {
+  onSelect }: ConversationListProps) {
   const activeConversations = conversations.filter(c => c.status !== 'closed');
 
   return (
@@ -64,7 +63,7 @@ export function ConversationList({
                 )}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Circle className={cn('h-2 w-2 fill-current', conv.status !== 'closed' ? 'text-green-500' : 'text-muted-foreground')} />
-                  <span>{formatDistanceToNow(new Date(conv.updated_at), { addSuffix: true })}</span>
+                  <span>{formatRelative(conv.updated_at)}</span>
                 </div>
               </button>
             ))}

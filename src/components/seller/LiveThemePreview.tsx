@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, ShoppingCart, Star } from 'lucide-react';
+import { formatGBP } from '@/lib/formatters';
 
 interface LiveThemePreviewProps {
  theme: string;
@@ -127,7 +128,7 @@ export function LiveThemePreview({
  <span className="text-[9px] text-muted-foreground" style={{ fontFamily: bodyFont }}>4.8</span>
  </div>
  <p className="text-[10px] font-bold" style={{ color: accentColor }}>
- £{(4.99 * i).toFixed(2)}
+ {formatGBP((4.99 * i))}
  </p>
  </div>
  </div>

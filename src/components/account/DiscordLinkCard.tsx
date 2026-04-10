@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { supabase } from "@/integrations/supabase/client";
 import { Link2, Unlink, Sparkles, Loader2, Copy, Check } from "lucide-react";
 import { openExternalUrl } from "@/lib/externalBrowser";
@@ -46,13 +47,9 @@ export const DiscordLinkCard = ({
 
  const copyRedirectUri = async () => {
  const redirectUri = getRedirectUri();
- try {
- await navigator.clipboard.writeText(redirectUri);
+ await copyToClipboard(redirectUri, 'Redirect URI copied!');
  setCopiedRedirect(true);
  setTimeout(() => setCopiedRedirect(false), 1500);
- } catch {
- toast.error("Copy failed", { description: "Could not copy the redirect URI. Please copy it manually." });
- }
  };
 
  // Handle OAuth callback when component mounts

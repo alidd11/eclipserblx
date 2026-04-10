@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ShoppingCart } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
@@ -28,8 +28,7 @@ export function RecentOrdersTable() {
       return data || [];
     },
     enabled: !!store?.id,
-    staleTime: 2 * 60 * 1000,
-  });
+    staleTime: 2 * 60 * 1000 });
 
   const statusVariant = (s: string) => {
     if (s === 'completed') return 'default' as const;
@@ -81,7 +80,7 @@ export function RecentOrdersTable() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground text-right whitespace-nowrap">
-                        {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                        {formatRelative(order.created_at)}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -96,7 +95,7 @@ export function RecentOrdersTable() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{order.description || 'Sale'}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                      {formatRelative(order.created_at)}
                     </p>
                   </div>
                   <div className="text-right shrink-0">

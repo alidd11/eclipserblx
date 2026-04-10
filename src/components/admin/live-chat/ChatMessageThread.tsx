@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { Send, Paperclip, Loader2, MessageSquare, ArrowLeft, RefreshCw, AlertCircle, Upload, Copy, ShoppingBag, ChevronUp, ChevronDown } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { format } from '@/lib/dateUtils';
 import { hapticTap } from '@/lib/haptics';
 import { CodeVerificationMessage } from '@/components/chat/CodeVerificationMessage';
 import { Conversation, Message, SecureData, CANNED_RESPONSES, ISSUE_CATEGORY_LABELS, ISSUE_CATEGORY_COLORS } from './ChatConstants';
+import { formatGBP } from '@/lib/formatters';
 
 interface ChatMessageThreadProps {
   selectedConversation: Conversation;
@@ -129,10 +131,10 @@ export function ChatMessageThread({
                     className="h-5 w-5 shrink-0"
                     onClick={() => {
                       const customerId = customerProfiles[selectedConversation.user_id!]?.customer_id;
-                      if (customerId) {
-                        navigator.clipboard.writeText(customerId);
+                       if (customerId) {
+                        copyToClipboard(customerId, 'Customer ID copied!');
                         hapticTap();
-                      }
+                       }
                     }}
                   >
                     <Copy className="h-3 w-3" />
@@ -187,7 +189,7 @@ export function ChatMessageThread({
                 customerOrders.map((order) => (
                   <div key={order.id} className="bg-muted/50 rounded-md p-2 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">£{order.total.toFixed(2)}</span>
+                      <span className="text-xs font-medium">{formatGBP(order.total)}</span>
                       <Badge variant="outline" className="text-[10px]">{order.status}</Badge>
                     </div>
                     <div className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), 'dd MMM yyyy')}</div>

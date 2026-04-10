@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, Clock, ArrowRight, Wallet } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
@@ -25,16 +25,14 @@ export function PayoutTimeline() {
  return (data as any[]) || [];
  },
  enabled: !!store?.id,
- staleTime: 5 * 60 * 1000,
- });
+ staleTime: 5 * 60 * 1000 });
 
  const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
  completed: { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
  pending: { icon: Clock, color: 'text-yellow-500', label: 'Pending' },
  processing: { icon: ArrowRight, color: 'text-blue-500', label: 'Processing' },
  failed: { icon: Wallet, color: 'text-red-500', label: 'Failed' },
- awaiting_funds: { icon: Clock, color: 'text-orange-500', label: 'Awaiting Funds' },
- };
+ awaiting_funds: { icon: Clock, color: 'text-orange-500', label: 'Awaiting Funds' } };
 
  return (
  <div className="border border-border rounded-xl overflow-hidden">
@@ -68,7 +66,7 @@ export function PayoutTimeline() {
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground mt-0.5">
- {formatDistanceToNow(new Date(payout.created_at), { addSuffix: true })}
+ {formatRelative(payout.created_at)}
  </p>
  </div>
  </div>

@@ -45,6 +45,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { ORDER_STATUSES } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
+import { formatGBP } from '@/lib/formatters';
 
 const ORDERS_PER_PAGE = 20;
 
@@ -250,7 +251,7 @@ export default function AdminOrders() {
  {getStatusBadge(order.status)}
  </div>
  <p className="text-xs text-muted-foreground font-mono">{getCustomerId(order)}</p>
- <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()} · £{order.total.toFixed(2)}</p>
+ <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString()} · {formatGBP(order.total)}</p>
  </div>
  <Eye className="h-4 w-4 text-muted-foreground shrink-0 ml-2" />
  </button>
@@ -297,7 +298,7 @@ export default function AdminOrders() {
  </TableCell>
  <TableCell className="font-mono">{getCustomerId(order)}</TableCell>
  <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
- <TableCell>£{order.total.toFixed(2)}</TableCell>
+ <TableCell>{formatGBP(order.total)}</TableCell>
  <TableCell>{getStatusBadge(order.status)}</TableCell>
  <TableCell className="text-right">
  <Button variant="ghost" size="icon" aria-label="View" onClick={() => setSelectedOrder(order)}>
@@ -352,7 +353,7 @@ export default function AdminOrders() {
  </div>
  <div>
  <p className="text-muted-foreground">Total</p>
- <p className="font-bold text-lg">£{selectedOrder.total.toFixed(2)}</p>
+ <p className="font-bold text-lg">{formatGBP(selectedOrder.total)}</p>
  </div>
  </div>
 
@@ -367,7 +368,7 @@ export default function AdminOrders() {
  <span className="text-xs text-muted-foreground">{item.products.stores.name}</span>
  )}
  </div>
- <span className="font-medium shrink-0 ml-2">£{item.price.toFixed(2)}</span>
+ <span className="font-medium shrink-0 ml-2">{formatGBP(item.price)}</span>
  </div>
  ))}
  </div>

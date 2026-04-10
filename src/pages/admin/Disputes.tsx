@@ -6,22 +6,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
   AlertTriangle, Search, Eye, Loader2, Shield, AlertCircle,
-  ChevronLeft, ChevronRight,
-} from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+  ChevronLeft, ChevronRight } from 'lucide-react';
+import {} formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import type { EnrichedDispute, DisputeTicket } from './disputes/disputeTypes';
 import { statusConfig, getDeadlineInfo, getEscrowBadge, getDeadlineBadge, PAGE_SIZE } from './disputes/disputeHelpers';
 import { DisputeDetailDialog } from './disputes/DisputeDetailDialog';
+import { formatGBP } from '@/lib/formatters';
 
 export default function Disputes() {
   const isInsideHub = useIsInsideHub();
@@ -84,19 +82,16 @@ export default function Disputes() {
           customer: profileMap[r.customer_id] || null,
           store: storeMap[r.store_id] || null,
           escrow: escrowMap[r.order_id] || null,
-          linkedTicket: linkedTicket || null,
-        };
+          linkedTicket: linkedTicket || null };
       });
-    },
-  });
+    } });
 
   const updateDispute = useMutation({
     mutationFn: async ({ id, status, response, customerId }: { id: string; status: string; response: string; customerId?: string }) => {
       const updateData: Record<string, unknown> = {
         status,
         admin_response: response || null,
-        updated_at: new Date().toISOString(),
-      };
+        updated_at: new Date().toISOString() };
       if (status === 'resolved' || status === 'approved' || status === 'denied') {
         updateData.admin_resolved_at = new Date().toISOString();
         updateData.admin_resolved_by = (await supabase.auth.getUser()).data.user?.id;
@@ -111,8 +106,7 @@ export default function Disputes() {
           type: 'order_update',
           title: `Dispute ${status.charAt(0).toUpperCase() + status.slice(1)}`,
           message: `Your dispute has been ${statusText}.`,
-          link: '/account/orders',
-        });
+          link: '/account/orders' });
 
         try {
           await supabase.functions.invoke('send-push-notification', {
@@ -123,10 +117,7 @@ export default function Disputes() {
                 body: `Your dispute has been ${statusText}.`,
                 tag: `dispute-admin-${id}`,
                 url: '/account/orders',
-                requireInteraction: status === 'approved',
-              },
-            },
-          });
+                requireInteraction: status === 'approved' } } });
         } catch (_) { /* best effort */ }
       }
     },
@@ -137,8 +128,7 @@ export default function Disputes() {
       setAdminResponse('');
       setNewStatus('');
     },
-    onError: () => toast.error('Failed to update dispute'),
-  });
+    onError: () => toast.error('Failed to update dispute') });
 
   const filtered = disputes?.filter((d: EnrichedDispute) => {
     if (!search) return true;
@@ -165,8 +155,7 @@ export default function Disputes() {
     overdue: disputes?.filter((d: EnrichedDispute) => {
       if (d.status !== 'pending') return false;
       return getDeadlineInfo(d.created_at).isOverdue;
-    }).length ?? 0,
-  };
+    }).length ?? 0 };
 
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
@@ -306,7 +295,7 @@ export default function Disputes() {
                             </TableCell>
                             <TableCell className="text-sm">{d.store?.name || '—'}</TableCell>
                             <TableCell className="text-sm max-w-[180px] truncate text-muted-foreground">{d.reason}</TableCell>
-                            <TableCell className="text-right font-medium tabular-nums">£{Number(d.amount).toFixed(2)}</TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">{formatGBP(Number(d.amount))}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className={cn(statusCfg.color, 'gap-1')}>
                                 <StatusIcon className="h-3 w-3" />
@@ -316,7 +305,7 @@ export default function Disputes() {
                             <TableCell>{getDeadlineBadge(d)}</TableCell>
                             <TableCell>{getEscrowBadge(d)}</TableCell>
                             <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                              {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
+                              {formatRelative(d.created_at)}
                             </TableCell>
                             <TableCell className="text-right">
                               <Button variant="ghost" size="icon" aria-label="View" onClick={(e) => { e.stopPropagation(); setSelectedDispute(d); setNewStatus(d.status); setAdminResponse(d.admin_response || ''); }}>

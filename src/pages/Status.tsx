@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format} formatRelative } from '@/lib/dateUtils';
 
 interface Incident {
  id: string;
@@ -84,21 +84,18 @@ const statusConfig = {
  bg: 'bg-muted/50', 
  border: 'border-border',
  icon: <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
- },
-};
+ } };
 
 const incidentStatusConfig = {
  investigating: { label: 'Investigating', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/30' },
  identified: { label: 'Identified', color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/30' },
  monitoring: { label: 'Monitoring', color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' },
- resolved: { label: 'Resolved', color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30' },
-};
+ resolved: { label: 'Resolved', color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30' } };
 
 const severityConfig = {
  minor: { label: 'Minor', color: 'text-yellow-500' },
  major: { label: 'Major', color: 'text-orange-500' },
- critical: { label: 'Critical', color: 'text-red-500' },
-};
+ critical: { label: 'Critical', color: 'text-red-500' } };
 
 export default function Status() {
  usePageMeta({ title: 'System Status', description: 'Check the current status of Eclipse services including payments, authentication, database and CDN.', canonicalPath: '/status' });
@@ -119,8 +116,7 @@ export default function Status() {
  
  if (error) throw error;
  return data as Incident[];
- },
- });
+ } });
 
  const toggleIncident = (id: string) => {
  setExpandedIncidents(prev => {
@@ -410,7 +406,7 @@ export default function Status() {
  </Badge>
  </div>
  <p className="text-sm text-muted-foreground">
- Started {formatDistanceToNow(new Date(incident.started_at), { addSuffix: true })}
+ Started {formatRelative(incident.started_at)}
  </p>
  {incident.affected_services && incident.affected_services.length > 0 && (
  <div className="flex gap-1 flex-wrap mt-2">

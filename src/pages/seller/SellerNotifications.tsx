@@ -12,7 +12,7 @@ import {
   ShoppingCart, RotateCcw, Heart, Package, Zap, Megaphone, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 const NOTIFICATION_ICONS: Record<string, any> = {
@@ -23,8 +23,7 @@ const NOTIFICATION_ICONS: Record<string, any> = {
   product_rejected: Package,
   flash_sale_ended: Zap,
   announcement_expired: Megaphone,
-  payout_completed: DollarSign,
-};
+  payout_completed: DollarSign };
 
 const NOTIFICATION_COLORS: Record<string, string> = {
   new_order: 'text-green-500',
@@ -33,8 +32,7 @@ const NOTIFICATION_COLORS: Record<string, string> = {
   product_approved: 'text-green-500',
   product_rejected: 'text-destructive',
   flash_sale_ended: 'text-yellow-500',
-  payout_completed: 'text-blue-500',
-};
+  payout_completed: 'text-blue-500' };
 
 export default function SellerNotifications() {
   const { user } = useAuth();
@@ -54,8 +52,7 @@ export default function SellerNotifications() {
       if (error) throw error;
       return (data || []) as any[];
     },
-    enabled: !!user?.id,
-  });
+    enabled: !!user?.id });
 
   // Subscribe to realtime notifications
   useEffect(() => {
@@ -66,8 +63,7 @@ export default function SellerNotifications() {
         event: 'INSERT',
         schema: 'public',
         table: 'seller_notifications',
-        filter: `user_id=eq.${user.id}`,
-      }, () => {
+        filter: `user_id=eq.${user.id}` }, () => {
         queryClient.invalidateQueries({ queryKey: ['seller-notifications', user.id] });
         queryClient.invalidateQueries({ queryKey: ['seller-unread-count', user.id] });
       })
@@ -86,8 +82,7 @@ export default function SellerNotifications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['seller-unread-count'] });
-    },
-  });
+    } });
 
   const markAllRead = useMutation({
     mutationFn: async () => {
@@ -103,8 +98,7 @@ export default function SellerNotifications() {
       queryClient.invalidateQueries({ queryKey: ['seller-notifications'] });
       queryClient.invalidateQueries({ queryKey: ['seller-unread-count'] });
       toast.success('All notifications marked as read');
-    },
-  });
+    } });
 
   const clearAll = useMutation({
     mutationFn: async () => {
@@ -119,8 +113,7 @@ export default function SellerNotifications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-notifications'] });
       toast.success('Read notifications cleared');
-    },
-  });
+    } });
 
   const handleClick = (notification: { id: string; read_at: string | null; action_url: string | null }) => {
     if (!notification.read_at) {
@@ -193,7 +186,7 @@ export default function SellerNotifications() {
                         <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
                       )}
                       <p className="text-xs text-muted-foreground/60 mt-1">
-                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                        {formatRelative(n.created_at)}
                       </p>
                     </div>
                     {isUnread && (

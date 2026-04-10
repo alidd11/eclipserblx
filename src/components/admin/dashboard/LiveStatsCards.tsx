@@ -4,6 +4,7 @@ import { ShoppingCart, DollarSign, Ticket, Users, TrendingUp, TrendingDown } fro
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { startOfDay, subDays, startOfWeek } from '@/lib/dateUtils';
+import { formatGBP } from '@/lib/formatters';
 
 interface StatItem {
  label: string;
@@ -95,7 +96,7 @@ export function LiveStatsCards() {
  },
  {
  label: 'Revenue Today',
- value: `£${(data?.revenueToday ?? 0).toFixed(2)}`,
+ value: `{formatGBP((data?.revenueToday ?? 0))}`,
  icon: DollarSign,
  trend: { value: calcTrend(data?.revenueToday ?? 0, data?.revenueYesterday ?? 0), label: 'vs yesterday' },
  color: 'text-green-500',

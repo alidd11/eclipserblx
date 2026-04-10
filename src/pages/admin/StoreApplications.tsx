@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { ApplicationDetailDialog } from '@/components/admin/store-applications/ApplicationDetailDialog';
 
 interface VerificationResults {
@@ -63,8 +63,7 @@ export default function StoreApplications() {
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data as StoreApplication[];
-    },
-  });
+    } });
 
   const approveApplication = useMutation({
     mutationFn: async (application: StoreApplication) => {
@@ -78,8 +77,7 @@ export default function StoreApplications() {
 
       const { data: store, error: storeError } = await supabase.from('stores').insert({
         owner_id: application.user_id, name: application.store_name, slug, description: application.store_description,
-        discord_url: application.discord_server_invite, status: 'approved', is_active: true, reviewed_by: user?.id, reviewed_at: new Date().toISOString(),
-      } as any).select().single();
+        discord_url: application.discord_server_invite, status: 'approved', is_active: true, reviewed_by: user?.id, reviewed_at: new Date().toISOString() } as any).select().single();
       if (storeError) throw storeError;
 
       const { error: balanceError } = await supabase.from('seller_balances').insert({ user_id: application.user_id, store_id: store.id } as any);
@@ -89,15 +87,13 @@ export default function StoreApplications() {
 
       try {
         await supabase.functions.invoke('send-seller-application-status', {
-          body: { seller_name: application.profiles?.display_name || 'Seller', seller_email: application.profiles?.email, store_name: application.store_name, status: 'approved' },
-        });
+          body: { seller_name: application.profiles?.display_name || 'Seller', seller_email: application.profiles?.email, store_name: application.store_name, status: 'approved' } });
       } catch (e) { console.error('Failed to send approval email:', e); }
 
       return store;
     },
     onSuccess: () => { toast.success('Application Approved', { description: 'Store has been created successfully.' }); queryClient.invalidateQueries({ queryKey: ['admin-store-applications'] }); setSelectedApplication(null); },
-    onError: (error) => { toast.error('Error', { description: error.message }); },
-  });
+    onError: (error) => { toast.error('Error', { description: error.message }); } });
 
   const rejectApplication = useMutation({
     mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
@@ -107,14 +103,12 @@ export default function StoreApplications() {
       if (app?.profiles?.email) {
         try {
           await supabase.functions.invoke('send-seller-application-status', {
-            body: { seller_name: app.profiles?.display_name || 'Seller', seller_email: app.profiles.email, store_name: app.store_name, status: 'rejected', rejection_reason: reason },
-          });
+            body: { seller_name: app.profiles?.display_name || 'Seller', seller_email: app.profiles.email, store_name: app.store_name, status: 'rejected', rejection_reason: reason } });
         } catch (e) { console.error('Failed to send rejection email:', e); }
       }
     },
     onSuccess: () => { toast.success('Application Rejected'); queryClient.invalidateQueries({ queryKey: ['admin-store-applications'] }); setSelectedApplication(null); },
-    onError: (error) => { toast.error('Error', { description: error.message }); },
-  });
+    onError: (error) => { toast.error('Error', { description: error.message }); } });
 
   const pendingApps = applications?.filter(a => a.status === 'pending') || [];
   const approvedApps = applications?.filter(a => a.status === 'approved') || [];
@@ -165,7 +159,7 @@ export default function StoreApplications() {
             {score.total > 0 && (
               <span className={`flex items-center gap-1 ${score.passed === score.total ? 'text-green-500' : 'text-yellow-500'}`}><Shield className="h-3 w-3" />{score.passed}/{score.total}</span>
             )}
-            <span>{formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}</span>
+            <span>{formatRelative(app.created_at)}</span>
           </div>
         </div>
       </div>

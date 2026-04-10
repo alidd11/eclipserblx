@@ -9,6 +9,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { DomainStatusTimeline } from './DomainStatusTimeline';
 import { DomainHealthDisplay } from './DomainHealthDisplay';
 import { DnsRecordRow } from './DnsRecordRow';
@@ -55,10 +56,7 @@ export function CustomDomainCard({
   const lastHealthCheck = d.last_health_check;
   const isPending = d.status === 'pending' || d.status === 'verifying' || d.status === 'failed';
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Copied!');
-  };
+  const handleCopy = (text: string) => copyToClipboard(text);
 
   return (
     <div className="border border-border rounded-xl overflow-hidden">
@@ -159,8 +157,7 @@ export function CustomDomainCard({
                         `CNAME  www.${d.domain}  →  stores.eclipserblx.com  (DNS-only)`,
                         `TXT    _eclipsestore-verify.${d.domain}  →  ${d.verification_token ?? '...'}`,
                       ].join('\n');
-                      navigator.clipboard.writeText(records);
-                      toast.success('All DNS records copied!');
+                      copyToClipboard(records, 'All DNS records copied!');
                     }}
                   >
                     <Copy className="w-3.5 h-3.5 mr-1.5" />

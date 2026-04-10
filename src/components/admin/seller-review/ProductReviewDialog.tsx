@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Package, AlertTriangle, ShieldAlert, ImageMinus } from 'lucide-react';
 import { getStatusBadge } from './ProductReviewCard';
+import { formatGBP } from '@/lib/formatters';
 
 interface ProductReviewDialogProps {
   selectedProduct: any;
@@ -79,11 +80,11 @@ export function ProductReviewDialog({
             </div>
             <div>
               <span className="text-muted-foreground">Price:</span>
-              <p className="font-medium">£{selectedProduct?.price?.toFixed(2)}</p>
+              <p className="font-medium">{formatGBP(selectedProduct?.price?)}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Seller Earnings:</span>
-              <p className="font-medium">£{selectedProduct?.seller_price?.toFixed(2)}</p>
+              <p className="font-medium">{formatGBP(selectedProduct?.seller_price?)}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Status:</span>
