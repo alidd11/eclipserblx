@@ -1,25 +1,19 @@
 
 
-## Plan: Switch Mobile Product Grid to 1 Column
+## Fix: Mobile Product Card Image Sizing
 
-### Change
-Update all product grids from `grid-cols-2` to `grid-cols-1` on mobile (below `sm` breakpoint), so each product card takes the full width. This gives larger, more visible images on phones.
+### Problem
+With the single-column mobile layout, the `aspect-[4/5]` ratio on full-width cards makes images absurdly tall — each card consumes nearly the entire screen, requiring excessive scrolling.
 
-### Files to update
+### Solution
+Switch the mobile aspect ratio to a landscape-friendly `aspect-[5/4]` (wider than tall) for single-column view, transitioning to `aspect-square` at `sm` and above where cards are in a multi-column grid. This keeps images prominent but compact, showing ~2 cards per screen on mobile.
+
+### Files to change
 
 | File | Change |
 |------|--------|
-| `src/components/ui/ProductCard.tsx` | No grid change needed (card is grid-agnostic) |
-| `src/components/landing/TrendingProducts.tsx` | `grid-cols-2` → `grid-cols-1` (keep `sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4`) |
-| `src/components/landing/NewThisWeek.tsx` | Same pattern for the horizontal scroll strip / grid |
-| `src/components/landing/RecentReleases.tsx` | Same grid update |
-| `src/components/landing/OnSaleProducts.tsx` | Same grid update |
-| `src/components/landing/FreeAssetsTeaser.tsx` | Same grid update |
-| `src/components/store/StoreProductGrid.tsx` | `grid-cols-2` → `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4` |
-| `src/pages/Products.tsx` | Same grid update |
-| `src/components/ui/ProductCardSkeleton.tsx` | Update skeleton grid if used standalone |
+| `src/components/ui/ProductCard.tsx` (line 138) | `aspect-[4/5] sm:aspect-square` → `aspect-[5/4] sm:aspect-square` |
+| `src/components/ui/ProductCardSkeleton.tsx` | Match the same ratio update |
 
-All grids become: `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4`
-
-Horizontal scroll strips on mobile (NewThisWeek, FreeAssetsTeaser) will keep their scroll behavior since they use `flex` on mobile, not grid.
+This gives a cinematic, wide image on mobile that showcases the product without dominating the viewport.
 
