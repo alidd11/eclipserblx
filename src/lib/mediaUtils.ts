@@ -57,11 +57,11 @@ export function isStaticImageUrl(url: string | null | undefined): boolean {
  * Gets the first static image URL from a media array (skips videos).
  * Returns an optimized URL with long-cache headers via the image proxy.
  */
-export function getFirstImageUrl(media: string[] | null | undefined): string | null {
+export function getFirstImageUrl(media: string[] | null | undefined, width?: number): string | null {
   const validMedia = getValidMediaUrls(media);
   const firstImage = validMedia.find((item) => !isVideoUrl(item));
   if (!firstImage) return null;
-  return optimizeImageUrl(firstImage);
+  return optimizeImageUrl(firstImage, width);
 }
 
 /**
@@ -77,12 +77,12 @@ export function sortMediaVideosFirst(media: string[] | null | undefined): string
 /**
  * Gets the first media item prioritizing video, or first valid media if no video.
  */
-export function getFirstMediaPrioritizeVideo(media: string[] | null | undefined): string | null {
+export function getFirstMediaPrioritizeVideo(media: string[] | null | undefined, width?: number): string | null {
   const validMedia = getValidMediaUrls(media);
   if (validMedia.length === 0) return null;
 
   const firstVideo = validMedia.find(isVideoUrl);
-  return firstVideo ?? optimizeImageUrl(validMedia[0]);
+  return firstVideo ?? optimizeImageUrl(validMedia[0], width);
 }
 
 /**
@@ -92,6 +92,7 @@ export function getFirstMediaPrioritizeVideo(media: string[] | null | undefined)
 export function getCardMediaChain(
   media: string[] | null | undefined,
   fallbackMedia?: string | null,
+  width?: number,
 ): string[] {
   const combined = [
     ...getValidMediaUrls(media),
@@ -99,7 +100,7 @@ export function getCardMediaChain(
   ];
 
   const unique = Array.from(new Set(combined));
-  const images = unique.filter((item) => !isVideoUrl(item)).map((url) => optimizeImageUrl(url));
+  const images = unique.filter((item) => !isVideoUrl(item)).map((url) => optimizeImageUrl(url, width));
   const videos = unique.filter(isVideoUrl);
 
   return [...images, ...videos];
