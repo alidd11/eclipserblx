@@ -14,15 +14,21 @@ const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || '';
  */
 export function optimizeImageUrl(
   url: string | null | undefined,
-  _width?: number,
+  width?: number,
   _height?: number,
   _resize?: 'cover' | 'contain' | 'fill',
+  quality?: number,
 ): string {
   if (!url) return '';
 
   // Route Supabase storage public URLs through the image proxy for long caching
   if (url.includes('.supabase.co/storage/v1/object/public/') && SUPABASE_URL && PROJECT_ID) {
-    return `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
+    let proxyUrl = `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
+    // Pass width for on-the-fly resizing (saves bandwidth significantly)
+    if (width) proxyUrl += `&w=${Math.round(width)}`;
+    // Pass quality (default 80 in proxy, allow override)
+    if (quality) proxyUrl += `&q=${quality}`;
+    return proxyUrl;
   }
 
   return url;
