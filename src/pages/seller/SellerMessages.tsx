@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useDevice } from '@/hooks/useDevice';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+import { formatDistanceToNow, format } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { hapticTap } from '@/lib/haptics';
@@ -430,7 +430,7 @@ export default function SellerMessages() {
                             )}
                           </div>
                           <span className="text-xs text-muted-foreground whitespace-nowrap">
-                            {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })}
+                            {formatRelative(conv.last_message_at)}
                           </span>
                         </div>
                         {conv.subject && (

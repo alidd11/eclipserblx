@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, CheckCircle } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
@@ -81,7 +81,7 @@ export function NotificationCenter() {
                       <div className="flex items-center justify-between gap-2">
                         <p className="font-medium text-sm truncate">{n.title}</p>
                         <span className="text-xs text-muted-foreground shrink-0">
-                          {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                          {formatRelative(n.created_at)}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground truncate mt-0.5">{n.message}</p>

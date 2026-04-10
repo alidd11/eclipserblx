@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 const TICKET_CATEGORIES = [
   { value: 'account_link_change', label: 'Account Link Change', icon: LinkIcon, description: 'Request to update Discord or Roblox account' },
@@ -523,7 +523,7 @@ export default function SellerSupport() {
                     {selectedTicket.subject}
                   </DialogTitle>
                   <DialogDescription>
-                    {getCategoryLabel(selectedTicket.category)} • Created {formatDistanceToNow(new Date(selectedTicket.created_at), { addSuffix: true })}
+                    {getCategoryLabel(selectedTicket.category)} • Created {formatRelative(selectedTicket.created_at)}
                   </DialogDescription>
                 </DialogHeader>
 
@@ -581,7 +581,7 @@ export default function SellerSupport() {
                               </div>
                             )}
                             <p className="text-xs text-muted-foreground mt-1">
-                              {formatDistanceToNow(new Date(msg.created_at), { addSuffix: true })}
+                              {formatRelative(msg.created_at)}
                             </p>
                           </div>
                         </div>
@@ -685,7 +685,7 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
           </div>
           <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
           <p className="text-xs text-muted-foreground">
-            {getCategoryLabel(ticket.category)} · {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+            {getCategoryLabel(ticket.category)} · {formatRelative(ticket.created_at)}
           </p>
         </div>
       </div>

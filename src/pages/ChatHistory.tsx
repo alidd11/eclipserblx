@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, MessageSquare, Clock, Download, FileText, Ticket, Send, Loader2 } from 'lucide-react';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+import { formatDistanceToNow, format } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { notifyTicketReply } from '@/lib/pushNotifications';
@@ -652,7 +652,7 @@ export default function ChatHistory() {
  </p>
  <div className="flex items-center gap-2 text-xs text-muted-foreground">
  <Clock className="h-3 w-3" />
- {formatDistanceToNow(new Date(conv.updated_at), { addSuffix: true })}
+ {formatRelative(conv.updated_at)}
  </div>
  </div>
  </div>
@@ -695,7 +695,7 @@ export default function ChatHistory() {
  <p className="font-medium">{ticket.subject}</p>
  <div className="flex items-center gap-2 text-xs text-muted-foreground">
  <Clock className="h-3 w-3" />
- {formatDistanceToNow(new Date(ticket.updated_at), { addSuffix: true })}
+ {formatRelative(ticket.updated_at)}
  {ticket.priority && (
  <>
  <span>•</span>

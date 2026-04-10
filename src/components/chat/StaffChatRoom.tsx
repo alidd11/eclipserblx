@@ -16,7 +16,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useDropZone } from '@/hooks/useDropZone';
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
 import type { ChatRoomConfig, ChatMember, ChatMessage } from './chatHelpers';
@@ -437,7 +437,7 @@ export function StaffChatRoom({
                             <Pin className="h-3 w-3 text-amber-500 rotate-45" />
                           )}
                           <span className="text-[10px] sm:text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                            {formatRelative(message.created_at)}
                           </span>
                         </div>
                       )}

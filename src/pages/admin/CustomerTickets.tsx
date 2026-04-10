@@ -21,7 +21,7 @@
  Search, Ticket, MessageSquare, Clock, User, ChevronRight,
  AlertCircle, CheckCircle, Filter
  } from 'lucide-react';
- import { formatDistanceToNow } from '@/lib/dateUtils';
+ import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
  import { toast } from 'sonner';
  import { cn } from '@/lib/utils';
  
@@ -308,7 +308,7 @@
  <span>{profile?.display_name || ticket.customer_email}</span>
  {categoryLabel && <><span>\u00B7</span><span>{categoryLabel}</span></>}
  <span>\u00B7</span>
- <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
+ <span>{formatRelative(ticket.created_at)}</span>
  </div>
  </div>
 

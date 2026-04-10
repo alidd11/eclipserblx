@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow, isPast, isFuture } from '@/lib/dateUtils';
+import { format, formatDistanceToNow, isPast, isFuture } formatRelative } from '@/lib/dateUtils';
 import { Calendar, Clock, Percent, Plus, Trash2, Megaphone, Timer } from 'lucide-react';
 
 export default function SellerCampaigns() {
@@ -201,7 +201,7 @@ export default function SellerCampaigns() {
                           {isLive && (
                             <span className="flex items-center gap-1 text-primary">
                               <Timer className="h-3 w-3" />
-                              Ends {formatDistanceToNow(new Date(campaign.ends_at), { addSuffix: true })}
+                              Ends {formatRelative(campaign.ends_at)}
                             </span>
                           )}
                         </div>

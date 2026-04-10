@@ -7,7 +7,7 @@ import {
 import {
   Clock, User, Mail, ShoppingBag, ChevronDown, UserCheck, History,
 } from 'lucide-react';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+import { formatDistanceToNow, format } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface CustomerProfile {
@@ -163,7 +163,7 @@ export function TicketContextSidebar({
                     <div>
                       <span className="font-mono font-medium">{order.id.slice(0, 8)}</span>
                       <p className="text-muted-foreground mt-0.5">
-                        {formatDistanceToNow(new Date(order.created_at), { addSuffix: true })}
+                        {formatRelative(order.created_at)}
                       </p>
                     </div>
                     <div className="text-right">
@@ -209,7 +209,7 @@ export function TicketContextSidebar({
                       <Badge className={cn('text-[10px] px-1.5 h-4', statusConfig[pt.status]?.color || '')}>{statusConfig[pt.status]?.label || pt.status}</Badge>
                     </div>
                     <p className="truncate mt-1">{pt.subject}</p>
-                    <p className="text-muted-foreground mt-0.5">{formatDistanceToNow(new Date(pt.created_at), { addSuffix: true })}</p>
+                    <p className="text-muted-foreground mt-0.5">{formatRelative(pt.created_at)}</p>
                   </div>
                 ))
               )}
@@ -233,7 +233,7 @@ export function TicketContextSidebar({
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Last updated</span>
-            <span>{formatDistanceToNow(new Date(ticket.updated_at), { addSuffix: true })}</span>
+            <span>{formatRelative(ticket.updated_at)}</span>
           </div>
           {categoryLabel && (
             <div className="flex justify-between">

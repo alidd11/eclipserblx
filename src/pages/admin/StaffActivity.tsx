@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface StaffActivityRecord {
@@ -328,7 +328,7 @@ export default function StaffActivityPage() {
  <Clock className="h-3 w-3" />
  <span>{format(new Date(activity.created_at), 'MMM d, yyyy h:mm a')}</span>
  <span className="text-muted-foreground/50">
- ({formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })})
+ ({formatRelative(activity.created_at)})
  </span>
  </div>
  </div>

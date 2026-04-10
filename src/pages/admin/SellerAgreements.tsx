@@ -266,13 +266,13 @@ export default function SellerAgreements() {
  )}
  {store.agreement_signed_at && (
  <p className="text-xs text-muted-foreground mt-1">
- {formatDistanceToNow(new Date(store.agreement_signed_at), { addSuffix: true })}
+ {formatRelative(store.agreement_signed_at)}
  </p>
  )}
  </TableCell>
  <TableCell>
  <span className="text-sm text-muted-foreground">
- {formatDistanceToNow(new Date(store.created_at), { addSuffix: true })}
+ {formatRelative(store.created_at)}
  </span>
  </TableCell>
  <TableCell className="text-right">

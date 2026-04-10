@@ -25,7 +25,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Rss, Plus, Trash2, Loader2, RefreshCw, Clock, ExternalLink, Gamepad2, Settings } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 interface GameNewsFeed {
  id: string;
@@ -297,7 +297,7 @@ export default function GameNewsFeeds() {
  <p className="text-xs text-muted-foreground line-clamp-2">{preset.description}</p>
  {isAdded && existingFeed && existingFeed.last_checked_at && (
  <p className="text-xs text-muted-foreground mt-0.5">
- Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}
+ Checked {formatRelative(existingFeed.last_checked_at)}
  </p>
  )}
  </div>
@@ -404,7 +404,7 @@ export default function GameNewsFeeds() {
  <p className="text-xs text-muted-foreground line-clamp-2">{preset.description}</p>
  {isAdded && existingFeed && existingFeed.last_checked_at && (
  <p className="text-xs text-muted-foreground mt-0.5">
- Checked {formatDistanceToNow(new Date(existingFeed.last_checked_at), { addSuffix: true })}
+ Checked {formatRelative(existingFeed.last_checked_at)}
  </p>
  )}
  </div>
@@ -640,7 +640,7 @@ export default function GameNewsFeeds() {
  <p className="text-xs text-muted-foreground pl-5">
  Channel: {feed.discord_channel_id}
  {feed.last_checked_at && (
- <> · Checked {formatDistanceToNow(new Date(feed.last_checked_at), { addSuffix: true })}</>
+ <> · Checked {formatRelative(feed.last_checked_at)}</>
  )}
  </p>
  </div>

@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import {
   AlertTriangle, Clock, Check, X, ShieldAlert, Shield, Loader2,
@@ -170,7 +170,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
                     <div className="ml-2">
                       <p className="text-sm font-medium">{event.label}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(event.time), 'dd MMM yyyy, h:mm a')} · {formatDistanceToNow(new Date(event.time), { addSuffix: true })}
+                        {format(new Date(event.time), 'dd MMM yyyy, h:mm a')} · {formatRelative(event.time)}
                       </p>
                     </div>
                   </div>

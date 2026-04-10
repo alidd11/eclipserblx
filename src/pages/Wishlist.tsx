@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Heart, Trash2, Store, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
@@ -144,7 +144,7 @@ export default function Wishlist() {
 
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-[11px] text-muted-foreground">
-                            Saved {formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}
+                            Saved {formatRelative(item.created_at)}
                           </span>
                           
                           <div className="flex items-center gap-1.5">

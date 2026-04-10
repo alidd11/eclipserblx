@@ -15,7 +15,7 @@ import {
   AlertTriangle, Search, Eye, Loader2, Shield, AlertCircle,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
@@ -317,7 +317,7 @@ export default function Disputes() {
                             <TableCell>{getDeadlineBadge(d)}</TableCell>
                             <TableCell>{getEscrowBadge(d)}</TableCell>
                             <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
-                              {formatDistanceToNow(new Date(d.created_at), { addSuffix: true })}
+                              {formatRelative(d.created_at)}
                             </TableCell>
                             <TableCell className="text-right">
                               <Button variant="ghost" size="icon" aria-label="View" onClick={(e) => { e.stopPropagation(); setSelectedDispute(d); setNewStatus(d.status); setAdminResponse(d.admin_response || ''); }}>

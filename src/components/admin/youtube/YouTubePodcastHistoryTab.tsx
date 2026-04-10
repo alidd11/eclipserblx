@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, Youtube, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 export function YouTubePodcastHistoryTab() {
  const { data: podcasts, isLoading, refetch } = useQuery({
@@ -59,7 +59,7 @@ export function YouTubePodcastHistoryTab() {
  <Badge variant="outline">{p.privacy_status}</Badge>
  </div>
  <p className="text-xs text-muted-foreground mt-1">
- {formatDistanceToNow(new Date(p.created_at), { addSuffix: true })}
+ {formatRelative(p.created_at)}
  {p.category && ` \u00B7 ${p.category}`}
  </p>
  {p.error_message && (

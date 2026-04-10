@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShoppingCart, UserPlus, MessageCircle, Package, Star, Activity } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatGBP } from '@/lib/formatters';
@@ -154,7 +154,7 @@ export function ActivityFeed() {
  <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
  </div>
  <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
- {formatDistanceToNow(new Date(item.time), { addSuffix: true })}
+ {formatRelative(item.time)}
  </span>
  </div>
  ))}

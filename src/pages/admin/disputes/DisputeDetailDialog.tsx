@@ -15,7 +15,7 @@ import {
   Snowflake, User, Store, Banknote, MessageSquare, ExternalLink, Timer,
   Loader2, FileImage, Calendar,
 } from 'lucide-react';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -81,7 +81,7 @@ export function DisputeDetailDialog({
                   <Calendar className="h-3 w-3" /> Filed
                 </div>
                 <p className="text-sm font-medium">{format(new Date(dispute.created_at), 'dd MMM yyyy')}</p>
-                <p className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(dispute.created_at), { addSuffix: true })}</p>
+                <p className="text-xs text-muted-foreground">{formatRelative(dispute.created_at)}</p>
               </div>
             </div>
 
@@ -126,7 +126,7 @@ export function DisputeDetailDialog({
                             ? 'Escrow Frozen — Funds locked until resolution'
                             : dispute.escrow.escrow_released_at
                             ? 'Escrow Released — Funds paid to seller'
-                            : `Escrow Hold — Releases ${formatDistanceToNow(new Date(dispute.escrow.escrow_hold_until!), { addSuffix: true })}`
+                            : `Escrow Hold — Releases ${formatRelative(dispute.escrow.escrow_hold_until!)}`
                           }
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -176,7 +176,7 @@ export function DisputeDetailDialog({
                     <div className="ml-2">
                       <p className="text-sm font-medium">{event.label}</p>
                       <p className="text-xs text-muted-foreground">
-                        {format(new Date(event.time), 'dd MMM yyyy, h:mm a')} · {formatDistanceToNow(new Date(event.time), { addSuffix: true })}
+                        {format(new Date(event.time), 'dd MMM yyyy, h:mm a')} · {formatRelative(event.time)}
                       </p>
                     </div>
                   </div>
@@ -210,7 +210,7 @@ export function DisputeDetailDialog({
                   <Store className="h-3.5 w-3.5" /> Seller Response
                   {dispute.seller_responded_at && (
                     <span className="text-xs text-muted-foreground font-normal">
-                      — {formatDistanceToNow(new Date(dispute.seller_responded_at), { addSuffix: true })}
+                      — {formatRelative(dispute.seller_responded_at)}
                     </span>
                   )}
                 </p>
@@ -234,7 +234,7 @@ export function DisputeDetailDialog({
                   <p className="text-sm text-muted-foreground">{dispute.escalation_reason}</p>
                   {dispute.escalated_at && (
                     <p className="text-xs text-muted-foreground/60 mt-1">
-                      Escalated {formatDistanceToNow(new Date(dispute.escalated_at), { addSuffix: true })}
+                      Escalated {formatRelative(dispute.escalated_at)}
                     </p>
                   )}
                 </div>
@@ -247,7 +247,7 @@ export function DisputeDetailDialog({
                 <p className="text-sm font-medium mb-1.5 flex items-center gap-1.5">
                   <Shield className="h-3.5 w-3.5" /> Previous Admin Decision
                   <span className="text-xs text-muted-foreground font-normal">
-                    — {formatDistanceToNow(new Date(dispute.admin_resolved_at), { addSuffix: true })}
+                    — {formatRelative(dispute.admin_resolved_at)}
                   </span>
                 </p>
                 <div className="rounded-lg border bg-primary/5 p-3 text-sm text-muted-foreground leading-relaxed">

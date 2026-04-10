@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { Search, MoreVertical, Ban, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -132,7 +132,7 @@ export function BanListTable({ bans, isLoading, onRevoke, onDelete }: BanListTab
                   </TableCell>
                   <TableCell>{getStatusBadge(ban)}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {formatDistanceToNow(new Date(ban.created_at), { addSuffix: true })}
+                    {formatRelative(ban.created_at)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

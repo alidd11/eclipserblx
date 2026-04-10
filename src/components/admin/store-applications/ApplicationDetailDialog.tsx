@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { useState } from 'react';
 import { formatGBP } from '@/lib/formatters';
 
@@ -81,7 +81,7 @@ export function ApplicationDetailDialog({ application, onClose, onApprove, onRej
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               {getStatusBadge(application.status)}
-              <span className="text-sm text-muted-foreground">Submitted {formatDistanceToNow(new Date(application.created_at), { addSuffix: true })}</span>
+              <span className="text-sm text-muted-foreground">Submitted {formatRelative(application.created_at)}</span>
             </div>
 
             {application.verification_results && <VerificationResultsCard results={application.verification_results} />}

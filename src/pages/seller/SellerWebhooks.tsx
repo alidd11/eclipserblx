@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Eye, EyeOff, Copy, Clock } from 'lucide-react';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { WebhookDeliveryLogs } from '@/components/seller/WebhookDeliveryLogs';
 
 const AVAILABLE_EVENTS = [
@@ -233,7 +233,7 @@ export default function SellerWebhooks() {
                       {wh.last_triggered_at ? (
                         <span className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {formatDistanceToNow(new Date(wh.last_triggered_at), { addSuffix: true })}
+                          {formatRelative(wh.last_triggered_at)}
                           {wh.last_status_code && (
                             <Badge variant={wh.last_status_code < 300 ? 'outline' : 'destructive'} className="text-[10px] ml-1">
                               {wh.last_status_code}

@@ -9,7 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { ApplicationDetailDialog } from '@/components/admin/store-applications/ApplicationDetailDialog';
 
 interface VerificationResults {
@@ -165,7 +165,7 @@ export default function StoreApplications() {
             {score.total > 0 && (
               <span className={`flex items-center gap-1 ${score.passed === score.total ? 'text-green-500' : 'text-yellow-500'}`}><Shield className="h-3 w-3" />{score.passed}/{score.total}</span>
             )}
-            <span>{formatDistanceToNow(new Date(app.created_at), { addSuffix: true })}</span>
+            <span>{formatRelative(app.created_at)}</span>
           </div>
         </div>
       </div>

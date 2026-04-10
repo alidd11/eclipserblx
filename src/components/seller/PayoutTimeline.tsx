@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { DollarSign, CheckCircle, Clock, ArrowRight, Wallet } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
@@ -68,7 +68,7 @@ export function PayoutTimeline() {
  </Badge>
  </div>
  <p className="text-xs text-muted-foreground mt-0.5">
- {formatDistanceToNow(new Date(payout.created_at), { addSuffix: true })}
+ {formatRelative(payout.created_at)}
  </p>
  </div>
  </div>

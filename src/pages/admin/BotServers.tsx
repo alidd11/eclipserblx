@@ -12,7 +12,7 @@ import {
   Bot, Calendar, User, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 interface BotInstallation {
   id: string;
@@ -204,7 +204,7 @@ export default function BotServers() {
                     {install.activated_at && (
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Calendar className="h-3.5 w-3.5" />
-                        <span>{formatDistanceToNow(new Date(install.activated_at), { addSuffix: true })}</span>
+                        <span>{formatRelative(install.activated_at)}</span>
                       </div>
                     )}
                   </div>

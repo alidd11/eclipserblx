@@ -3,7 +3,7 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
 interface StaffPerf {
@@ -136,7 +136,7 @@ export default function AdminStaffPerformance() {
                         {m.duty_hours_30d.toFixed(1)}h
                       </td>
                       <td className="p-3 text-right text-muted-foreground text-xs">
-                        {formatDistanceToNow(new Date(m.last_active_at), { addSuffix: true })}
+                        {formatRelative(m.last_active_at)}
                       </td>
                     </tr>
                   ))

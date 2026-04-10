@@ -22,7 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 interface Incident {
  id: string;
@@ -410,7 +410,7 @@ export default function Status() {
  </Badge>
  </div>
  <p className="text-sm text-muted-foreground">
- Started {formatDistanceToNow(new Date(incident.started_at), { addSuffix: true })}
+ Started {formatRelative(incident.started_at)}
  </p>
  {incident.affected_services && incident.affected_services.length > 0 && (
  <div className="flex gap-1 flex-wrap mt-2">

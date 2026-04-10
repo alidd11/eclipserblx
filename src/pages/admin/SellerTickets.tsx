@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { SellerTicketDrawer } from '@/components/admin/seller-tickets/SellerTicketDrawer';
 
@@ -191,7 +191,7 @@ export default function SellerTickets() {
                       <span>{ticket.profiles?.display_name || 'Unknown'}</span>
                       {ticket.stores && (<><span>·</span><span>{ticket.stores.name}</span></>)}
                       <span>·</span>
-                      <span>{formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}</span>
+                      <span>{formatRelative(ticket.created_at)}</span>
                       <span>·</span>
                       <span className={cn('font-medium', slaColor)}>SLA: {Math.floor(slaHours)}h</span>
                     </div>

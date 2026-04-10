@@ -13,7 +13,7 @@ import {
  Package, Store, Star, Upload, Clock, AlertTriangle,
  ShieldAlert, ExternalLink, ArrowRight
 } from 'lucide-react';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 type QueueTab = 'all' | 'products' | 'stores' | 'reviews' | 'submissions';
 
@@ -302,7 +302,7 @@ export default function ModerationQueue() {
  <p className="text-xs text-muted-foreground mt-0.5">{item.subtitle}</p>
  <div className="flex items-center gap-1 mt-1.5 text-xs text-muted-foreground">
  <Clock className="h-3 w-3" />
- {formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}
+ {formatRelative(item.createdAt)}
  </div>
  </div>
  <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />

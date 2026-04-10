@@ -18,7 +18,7 @@ import {
   Loader2, ChevronDown, ChevronUp, MoreVertical, EyeOff, CheckCircle, Ban,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } from '@/lib/dateUtils';
+import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_EXTENSIONS = ['.lua', '.rbxm', '.rbxl', '.rbxmx', '.rbxlx', '.zip', '.rar', '.txt', '.json', '.png', '.jpg', '.jpeg', '.gif', '.mp3', '.ogg', '.wav'];
@@ -391,7 +391,7 @@ export default function SellerLeakReports() {
                         </p>
                       )}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{formatDistanceToNow(new Date(result.created_at), { addSuffix: true })}</span>
+                        <span>{formatRelative(result.created_at)}</span>
                         <a
                           href={result.source_url}
                           target="_blank"

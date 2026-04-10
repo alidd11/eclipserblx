@@ -12,7 +12,7 @@ import {
   ShoppingCart, RotateCcw, Heart, Package, Zap, Megaphone, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { formatDistanceToNow } from '@/lib/dateUtils';
+import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 const NOTIFICATION_ICONS: Record<string, any> = {
@@ -193,7 +193,7 @@ export default function SellerNotifications() {
                         <p className="text-sm text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
                       )}
                       <p className="text-xs text-muted-foreground/60 mt-1">
-                        {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                        {formatRelative(n.created_at)}
                       </p>
                     </div>
                     {isUnread && (

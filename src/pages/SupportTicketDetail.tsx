@@ -12,7 +12,7 @@ import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Send, Clock, User, Headphones, Paperclip, X, Loader2 } from 'lucide-react';
-import { formatDistanceToNow, format } from '@/lib/dateUtils';
+import { formatDistanceToNow, format } formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -236,7 +236,7 @@ export default function SupportTicketDetail() {
             <Badge className={cn('text-xs', status.color)}>{status.label}</Badge>
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Clock className="h-3 w-3" />
-              {formatDistanceToNow(new Date(ticket.created_at), { addSuffix: true })}
+              {formatRelative(ticket.created_at)}
             </span>
           </div>
         </div>
