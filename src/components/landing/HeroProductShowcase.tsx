@@ -24,7 +24,7 @@ interface HeroProduct {
 
 function CompactProductCard({ product, index }: { product: HeroProduct; index: number }) {
   const { formatPrice } = useCurrency();
-  const displayMedia = getFirstMediaPrioritizeVideo(product.images);
+  const displayMedia = getFirstMediaPrioritizeVideo(product.images, 128);
   const isVideo = isVideoUrl(displayMedia);
 
   return (
