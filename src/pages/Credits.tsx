@@ -42,7 +42,7 @@ export default function Credits() {
 
   useEffect(() => {
     if (wasSuccess && purchasedAmount) {
-      toast.success(`Successfully added £${parseFloat(purchasedAmount).toFixed(2)} to your wallet!`);
+      toast.success(`Successfully added {formatGBP(parseFloat(purchasedAmount))} to your wallet!`);
       fetchBalance();
       navigate('/credits', { replace: true });
     } else if (wasCanceled) {

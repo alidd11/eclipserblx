@@ -633,7 +633,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
             <NavRow icon={Download} label="My Purchases" to="/purchases" />
             <NavRow icon={ShoppingBag} label="Order History" to="/purchases" badge={orders?.length || undefined} />
             <NavRow icon={Heart} label="Wishlist" to="/wishlist" />
-            <NavRow icon={CreditCard} label="Wallet & Credits" to="/credits" badge={walletData?.balance ? `£${Number(walletData.balance).toFixed(2)}` : undefined} />
+            <NavRow icon={CreditCard} label="Wallet & Credits" to="/credits" badge={walletData?.balance ? `{formatGBP(Number(walletData.balance))}` : undefined} />
           </div>
         </div>
 

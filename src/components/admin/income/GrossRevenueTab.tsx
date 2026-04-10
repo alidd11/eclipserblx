@@ -158,7 +158,7 @@ export function GrossRevenueTab() {
  series={[{ dataKey: 'total', color: 'hsl(262 100% 71%)', name: 'Gross Revenue' }]}
  height={300}
  yFormatter={(v) => `£${v}`}
- tooltipFormatter={(v) => [`£${Number(v).toFixed(2)}`, 'Gross Revenue']}
+ tooltipFormatter={(v) => [`{formatGBP(Number(v))}`, 'Gross Revenue']}
  />
  )}
  </div>
