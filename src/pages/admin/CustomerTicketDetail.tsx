@@ -20,17 +20,15 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import {
-  Collapsible, CollapsibleContent, CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { TicketContextSidebar } from '@/components/admin/tickets/TicketContextSidebar';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import {
-  ArrowLeft, Send, Clock, User, Headphones, Eye, Mail,
-  Paperclip, X, Loader2, MessageSquare, ShoppingBag, ChevronDown,
-  Zap, AlertTriangle, UserCheck, History, AlarmClock, Users,
+  ArrowLeft, Send, User, Headphones, Eye,
+  Paperclip, X, Loader2, MessageSquare,
+  Zap, AlertTriangle, UserCheck, AlarmClock, Users,
 } from 'lucide-react';
 import { formatDistanceToNow, format } from '@/lib/dateUtils';
 import { toast } from 'sonner';
