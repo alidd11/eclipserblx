@@ -112,15 +112,7 @@ export default function AdminGiftCredits() {
  return (
  <AdminLayout requiredPermissions={["manage_users"]}>
  <div className="container py-6 max-w-4xl space-y-6">
- <div className="flex items-center gap-4">
- <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
- <Gift className="h-6 w-6 text-primary" />
- </div>
- <div>
- <h1 className="text-2xl font-bold">Gift Credits</h1>
- <p className="text-muted-foreground">Award store credits to customers</p>
- </div>
- </div>
+  <AdminPageHeader title="Gift Credits" description="Award store credits to customers" />
 
  <div className="grid gap-6 md:grid-cols-2">
  {/* User Selection */}

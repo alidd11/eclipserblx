@@ -13,10 +13,7 @@ export default function AdminPromotions() {
   return (
     <AdminLayout requiredPermissions={['manage_discounts']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Promotions</h1>
-          <p className="text-sm text-muted-foreground">Manage discount codes and special offers</p>
-        </div>
+        <AdminPageHeader title="Promotions" description="Manage discount codes and special offers" />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {/* Mobile dropdown */}

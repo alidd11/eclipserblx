@@ -65,20 +65,16 @@ export default function AdminApplications() {
     <AdminLayout requiredPermissions={['view_applications']}>
       <div className="space-y-5">
         {/* Header */}
-        <div className="border border-border rounded-xl overflow-hidden">
-          <div className="px-4 py-3 border-b border-border bg-muted/30">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div>
-                <h1 className="text-2xl font-display font-bold">Job Applications</h1>
-                <p className="text-sm text-muted-foreground mt-0.5">Review and manage job applications</p>
-              </div>
-              <Button onClick={() => setShowMassMessage(true)} variant="outline" className="gap-2 w-full sm:w-auto">
-                <Megaphone className="h-4 w-4" />
-                Mass Message
-              </Button>
-            </div>
-          </div>
-        </div>
+        <AdminPageHeader
+          title="Job Applications"
+          description="Review and manage job applications"
+          actions={
+            <Button onClick={() => setShowMassMessage(true)} variant="outline" className="gap-2 h-12">
+              <Megaphone className="h-4 w-4" />
+              Mass Message
+            </Button>
+          }
+        />
 
         <ApplicationStats {...stats} />
 

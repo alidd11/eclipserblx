@@ -164,11 +164,10 @@
    return (
      <AdminLayout requiredPermissions={['manage_developer_submissions']}>
        <div className="space-y-6">
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-           <div>
-             <h1 className="text-2xl font-bold">Developer Submissions</h1>
-             <p className="text-muted-foreground">Manage internal product submissions</p>
-           </div>
+          <AdminPageHeader
+            title="Developer Submissions"
+            description="Manage internal product submissions"
+            actions={
            
            <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
              <DialogTrigger asChild>
