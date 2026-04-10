@@ -42,26 +42,21 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
         .eq('id', data[0].store_id)
         .maybeSingle();
 
-      if (error) throw error;
-      if (!data || data.length === 0) return null;
-
-      const promo = data[0];
-      const s = promo.stores as any;
-      if (!s || s.status !== 'approved' || !s.is_active || s.is_testing) return null;
+      if (!storeData || storeData.status !== 'approved' || !storeData.is_active || storeData.is_testing) return null;
 
       return {
-        id: s.id,
-        name: s.name,
-        slug: s.slug,
-        description: s.description,
-        logo_url: s.logo_url,
-        banner_url: s.banner_url,
-        accent_color: s.accent_color,
-        is_verified: s.is_verified,
-        is_trusted: s.is_trusted,
-        follower_count: s.follower_count,
+        id: storeData.id,
+        name: storeData.name,
+        slug: storeData.slug,
+        description: storeData.description,
+        logo_url: storeData.logo_url,
+        banner_url: storeData.banner_url,
+        accent_color: storeData.accent_color,
+        is_verified: storeData.is_verified,
+        is_trusted: storeData.is_trusted,
+        follower_count: storeData.follower_count,
         isPromoted: true,
-        promotionId: promo.id,
+        promotionId: data[0].id,
       } as TopStore & { promotionId: string };
     },
   });
