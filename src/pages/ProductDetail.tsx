@@ -11,6 +11,7 @@ import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
+import { DescriptionSection } from '@/components/product/DescriptionSection';
 import { useCart, CartItem } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -301,7 +302,7 @@ export default function ProductDetail() {
  {/* Images */}
  <div className="space-y-3 min-w-0">
  <div 
- className="aspect-[4/3] lg:aspect-auto lg:max-h-[500px] rounded-xl overflow-hidden select-none relative bg-foreground/20 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
+ className="aspect-[16/10] lg:aspect-auto lg:max-h-[500px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
  onContextMenu={(e) => e.preventDefault()}
  onClick={() => {
  const currentImg = images[selectedImage];
@@ -356,15 +357,15 @@ export default function ProductDetail() {
  
  {/* Pagination dots */}
  {images.length > 1 && (
- <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
+ <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
  {images.map((_, i) => (
  <div
  key={i}
  className={cn(
- "w-2 h-2 rounded-full transition-all duration-200",
+ "h-1.5 rounded-full transition-all duration-200",
  selectedImage === i 
  ? "bg-primary w-4" 
- : "bg-background/50"
+ : "bg-background/40 w-1.5"
  )}
  />
  ))}
@@ -397,7 +398,7 @@ export default function ProductDetail() {
  )}
  
  {images.length > 1 && (
- <div className="flex gap-2 overflow-x-auto pb-2">
+ <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
  {images.map((img, i) => {
  const isVideo = isVideoUrl(img);
  return (
@@ -405,8 +406,8 @@ export default function ProductDetail() {
  key={i}
  onClick={() => setSelectedImage(i)}
  className={cn(
- "flex-shrink-0 w-20 aspect-video rounded-lg overflow-hidden border-2 transition-colors",
- selectedImage === i ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+ "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
+ selectedImage === i ? "border-primary ring-1 ring-primary/30" : "border-border/40 opacity-50 hover:opacity-90"
  )}
  >
  {img ? (
@@ -426,13 +427,6 @@ export default function ProductDetail() {
  
  {product.stores && (
  <StoreDetailsCard store={product.stores} className="w-full" />
- )}
- 
- {product.stores && (
- <StoreTrustSignals 
- accentColor={product.stores.accent_color || 'hsl(var(--primary))'}
- isVerified={product.stores.is_verified}
- />
  )}
  </div>
 
@@ -544,10 +538,7 @@ export default function ProductDetail() {
  </div>
 
 {(getTranslatedDescription(product.description) || product.description) && (
- <div 
- className="prose prose-invert prose-sm max-w-none text-muted-foreground [&>p]:leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0 [&>p:empty]:hidden [&>h2]:text-foreground [&>h2]:text-lg [&>h2]:font-semibold [&>h2]:mt-6 [&>h2]:mb-3 [&>h3]:text-foreground [&>h3]:text-base [&>h3]:font-medium [&>h3]:mt-5 [&>h3]:mb-2 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-4 [&>hr]:border-border [&>hr]:my-6 [&_li]:mb-1 [&_li:empty]:hidden [&_li_br]:hidden [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80 [&_a]:transition-colors"
- dangerouslySetInnerHTML={{ __html: sanitizeHtml(getTranslatedDescription(product.description) || product.description) }}
- />
+ <DescriptionSection html={sanitizeHtml(getTranslatedDescription(product.description) || product.description)} />
  )}
 
 
@@ -593,6 +584,18 @@ export default function ProductDetail() {
  <RobuxPayButton />
  )}
  </div>
+
+ {/* Trust signals near CTA */}
+ {product.stores && (
+ <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 flex-wrap">
+ <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Buyer Protection</span>
+ <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5" /> Instant Delivery</span>
+ {product.stores.is_verified && (
+ <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" /> Verified Seller</span>
+ )}
+ </div>
+ )}
+
  {/* Actions row */}
  <div className="flex items-center justify-between pt-3 border-t border-border/60">
  <SocialShareButtons
