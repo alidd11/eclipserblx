@@ -32,7 +32,7 @@ export default function AdminAffiliates() {
  queryFn: async () => {
  const [commissionsRes, payoutsRes, balancesRes] = await Promise.all([
  supabase.from('affiliate_commissions').select('commission_amount, status'),
- supabase.from('affiliate_payouts').select('amount, status'),
+ supabase.from('affiliate_payouts_safe' as any).select('amount, status'),
  supabase.from('affiliate_balances').select('available_balance, total_earned'),
  ]);
 
@@ -106,9 +106,9 @@ export default function AdminAffiliates() {
  const { data: payouts, isLoading: payoutsLoading } = useQuery({
  queryKey: ['admin-affiliate-payouts', payoutStatusFilter],
  queryFn: async () => {
- let query = supabase
- .from('affiliate_payouts')
- .select('*')
+  let query = supabase
+  .from('affiliate_payouts_safe' as any)
+  .select('*')
  .order('created_at', { ascending: false });
 
  if (payoutStatusFilter !== 'all') {
@@ -126,10 +126,10 @@ export default function AdminAffiliates() {
   .select('user_id, display_name, email, customer_id')
   .in('user_id', userIds);
 
-  const { data: paymentDetailsList } = await supabase
-  .from('user_payment_details')
-  .select('user_id, stripe_account_id')
-  .in('user_id', userIds);
+   const { data: paymentDetailsList } = await supabase
+   .from('user_payment_details_safe' as any)
+   .select('user_id, stripe_account_id')
+   .in('user_id', userIds);
 
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
   const paymentMap = new Map(paymentDetailsList?.map(pd => [pd.user_id, pd]) || []);
