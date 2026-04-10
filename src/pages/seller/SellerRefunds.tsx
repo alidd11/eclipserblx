@@ -184,7 +184,7 @@ export default function SellerRefunds() {
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-1">{r.reason}</p>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    {format(new Date(r.created_at), 'MMM d, yyyy')} · £{Number(r.amount).toFixed(2)}
+                    {format(new Date(r.created_at), 'MMM d, yyyy')} · {formatGBP(Number(r.amount))}
                   </p>
                 </div>
                 <MessageSquare className="h-4 w-4 text-muted-foreground ml-3 shrink-0" />
@@ -248,7 +248,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
       </div>
       <div>
         <span className="text-sm font-medium">Amount</span>
-        <p className="text-lg font-bold">£{Number(request.amount).toFixed(2)}</p>
+        <p className="text-lg font-bold">{formatGBP(Number(request.amount))}</p>
       </div>
       <div>
         <span className="text-sm font-medium">Reason</span>

@@ -317,7 +317,7 @@
                            <span className="text-muted-foreground">
                              {submission.category?.name || 'Uncategorized'}
                            </span>
-                           <span className="font-medium">£{submission.price.toFixed(2)}</span>
+                           <span className="font-medium">{formatGBP(submission.price)}</span>
                          </div>
                          <div className="text-xs text-muted-foreground">
                            Submitted {format(new Date(submission.created_at), 'MMM d, yyyy')}
@@ -373,7 +373,7 @@
                  </div>
                  <div>
                    <Label className="text-muted-foreground">Price</Label>
-                   <p className="text-sm mt-1">£{selectedSubmission?.price.toFixed(2)}</p>
+                   <p className="text-sm mt-1">{formatGBP(selectedSubmission?.price)}</p>
                  </div>
                </div>
                <div className="space-y-2">

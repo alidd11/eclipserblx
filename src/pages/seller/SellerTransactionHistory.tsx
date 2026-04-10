@@ -131,11 +131,11 @@ export default function SellerTransactionHistory() {
                       <Badge variant={t.type === 'sale' ? 'default' : 'secondary'} className="text-xs capitalize">{t.type}</Badge>
                     </TableCell>
                     <TableCell className="max-w-48 truncate text-sm">{t.description || '—'}</TableCell>
-                    <TableCell className="text-right text-sm">£{Number(t.gross_amount || t.amount || 0).toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-sm">{formatGBP(Number(t.gross_amount || t.amount || 0))}</TableCell>
                     <TableCell className="text-right text-sm text-muted-foreground">
-                      £{(Number(t.platform_fee || 0) + Number(t.stripe_fee || 0)).toFixed(2)}
+                      {formatGBP((Number(t.platform_fee || 0) + Number(t.stripe_fee || 0)))}
                     </TableCell>
-                    <TableCell className="text-right text-sm font-medium">£{Number(t.net_amount || t.amount || 0).toFixed(2)}</TableCell>
+                    <TableCell className="text-right text-sm font-medium">{formatGBP(Number(t.net_amount || t.amount || 0))}</TableCell>
                     <TableCell>
                       {t.refunded_at ? (
                         <Badge variant="destructive" className="text-xs">Refunded</Badge>

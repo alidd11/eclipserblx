@@ -99,7 +99,7 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
                     "font-semibold shrink-0 text-sm whitespace-nowrap",
                     getTransactionColor(tx.type)
                   )}>
-                    {tx.type === 'spend' ? '-' : '+'}£{Math.abs(tx.amount).toFixed(2)}
+                    {tx.type === 'spend' ? '-' : '+'}{formatGBP(Math.abs(tx.amount))}
                   </div>
                 </div>
               ))}

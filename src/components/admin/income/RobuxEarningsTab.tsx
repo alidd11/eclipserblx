@@ -158,7 +158,7 @@ export function RobuxEarningsTab() {
  {productsWithRobuxStatus?.configured.map(p => (
  <TableRow key={p.id}>
  <TableCell className="font-medium">{p.name}</TableCell>
- <TableCell className="text-center">£{p.price.toFixed(2)}</TableCell>
+ <TableCell className="text-center">{formatGBP(p.price)}</TableCell>
  <TableCell className="text-center text-purple-500 font-medium">R${p.robux_price?.toLocaleString() ?? '-'}</TableCell>
  <TableCell><span className="font-mono text-xs text-muted-foreground">{p.robux_product_id}</span></TableCell>
  <TableCell className="text-right">
@@ -169,7 +169,7 @@ export function RobuxEarningsTab() {
  {productsWithRobuxStatus?.notConfigured.map(p => (
  <TableRow key={p.id} className="opacity-60">
  <TableCell className="font-medium">{p.name}</TableCell>
- <TableCell className="text-center">£{p.price.toFixed(2)}</TableCell>
+ <TableCell className="text-center">{formatGBP(p.price)}</TableCell>
  <TableCell className="text-center text-muted-foreground">-</TableCell>
  <TableCell className="text-muted-foreground">-</TableCell>
  <TableCell className="text-right">

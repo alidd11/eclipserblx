@@ -106,7 +106,7 @@ export function AddCreditsCard({ onPurchase, isLoggedIn, onLoginRedirect, isPurc
           ) : (
             <>
               <Sparkles className="h-4 w-4 mr-2" />
-              Add £{parseFloat(customAmount || '0').toFixed(2)}
+              Add {formatGBP(parseFloat(customAmount || '0'))}
             </>
           )}
         </Button>

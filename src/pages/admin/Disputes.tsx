@@ -307,7 +307,7 @@ export default function Disputes() {
                             </TableCell>
                             <TableCell className="text-sm">{d.store?.name || '—'}</TableCell>
                             <TableCell className="text-sm max-w-[180px] truncate text-muted-foreground">{d.reason}</TableCell>
-                            <TableCell className="text-right font-medium tabular-nums">£{Number(d.amount).toFixed(2)}</TableCell>
+                            <TableCell className="text-right font-medium tabular-nums">{formatGBP(Number(d.amount))}</TableCell>
                             <TableCell>
                               <Badge variant="outline" className={cn(statusCfg.color, 'gap-1')}>
                                 <StatusIcon className="h-3 w-3" />

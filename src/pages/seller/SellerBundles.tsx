@@ -210,8 +210,8 @@ export default function SellerBundles() {
                       </div>
                       <p className="text-sm text-muted-foreground">
                         {bundle.product_ids?.length || 0} products · 
-                        <span className="line-through ml-1">£{Number(bundle.original_price).toFixed(2)}</span>
-                        <span className="text-green-600 font-medium ml-1">£{Number(bundle.bundle_price).toFixed(2)}</span>
+                        <span className="line-through ml-1">{formatGBP(Number(bundle.original_price))}</span>
+                        <span className="text-green-600 font-medium ml-1">{formatGBP(Number(bundle.bundle_price))}</span>
                       </p>
                       {bundle.max_purchases && (
                         <p className="text-xs text-muted-foreground">
@@ -275,7 +275,7 @@ export default function SellerBundles() {
                       className="rounded"
                     />
                     <span className="flex-1 text-sm">{p.name}</span>
-                    <span className="text-sm text-muted-foreground">£{(p.price || 0).toFixed(2)}</span>
+                    <span className="text-sm text-muted-foreground">{formatGBP((p.price || 0))}</span>
                   </label>
                 ))}
               </div>

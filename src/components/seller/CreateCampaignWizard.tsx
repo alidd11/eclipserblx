@@ -357,7 +357,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
  <Coins className="h-4 w-4 text-amber-500" />
  <span className="text-sm text-muted-foreground">Credit Balance</span>
- <span className="ml-auto font-bold">£{balance.toFixed(2)}</span>
+ <span className="ml-auto font-bold">{formatGBP(balance)}</span>
  {balance < 5 && (
  <Button variant="link" size="sm" className="h-auto p-0 text-xs" asChild>
  <Link to="/credits">Top up</Link>

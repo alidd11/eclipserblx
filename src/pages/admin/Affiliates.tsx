@@ -537,7 +537,7 @@ export default function AdminAffiliates() {
  </div>
  <div className="p-4 rounded-lg bg-muted/50">
  <p className="text-sm text-muted-foreground">Minimum Payout</p>
- <p className="text-2xl font-bold">£{affiliateSettings.minimumPayout.toFixed(2)}</p>
+ <p className="text-2xl font-bold">{formatGBP(affiliateSettings.minimumPayout)}</p>
  <p className="text-xs text-muted-foreground mt-1">Via Stripe or PayPal</p>
  </div>
  <div className="p-4 rounded-lg bg-muted/50">

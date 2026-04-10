@@ -93,10 +93,10 @@ export default function SellerRevenueBreakdown() {
         {/* Inline Stats */}
         <div className="flex items-center gap-4 text-sm flex-wrap">
           <span className="text-muted-foreground">
-            Net: <span className="font-semibold text-foreground">£{totalRevenue.toFixed(2)}</span>
+            Net: <span className="font-semibold text-foreground">{formatGBP(totalRevenue)}</span>
           </span>
           <span className="text-muted-foreground">
-            Avg order: <span className="font-semibold text-foreground">£{avgOrderValue.toFixed(2)}</span>
+            Avg order: <span className="font-semibold text-foreground">{formatGBP(avgOrderValue)}</span>
           </span>
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{transactions.length}</span> sales

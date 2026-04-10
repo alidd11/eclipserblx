@@ -151,7 +151,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
             {/* Amount */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Dispute Amount</span>
-              <span className="font-bold">£{Number(dispute.amount).toFixed(2)}</span>
+              <span className="font-bold">{formatGBP(Number(dispute.amount))}</span>
             </div>
 
             <Separator />

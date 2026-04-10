@@ -313,7 +313,7 @@ export default function SellerPayouts() {
  </div>
  <div className="p-4 p-3 pt-0 md:p-6 md:pt-0">
  <div className="text-lg md:text-2xl font-bold">
- £{pendingTotal.toFixed(2)}
+ {formatGBP(pendingTotal)}
  </div>
  </div>
  </div>
@@ -392,7 +392,7 @@ export default function SellerPayouts() {
  </div>
  </TableCell>
  <TableCell>{payout.stores?.name}</TableCell>
- <TableCell className="font-medium">£{payout.amount?.toFixed(2)}</TableCell>
+ <TableCell className="font-medium">{formatGBP(payout.amount?)}</TableCell>
  <TableCell>
  {getPayoutMethodBadge(payout)}
  </TableCell>
@@ -469,7 +469,7 @@ export default function SellerPayouts() {
  <p className="font-medium truncate">{payout.profiles?.display_name}</p>
  <p className="text-xs text-muted-foreground truncate">{payout.stores?.name}</p>
  </div>
- <span className="text-lg font-bold flex-shrink-0">£{payout.amount?.toFixed(2)}</span>
+ <span className="text-lg font-bold flex-shrink-0">{formatGBP(payout.amount?)}</span>
  </div>
  <div className="flex flex-wrap gap-1.5">
  {getStatusBadge(payout.status, payout)}
@@ -540,7 +540,7 @@ export default function SellerPayouts() {
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Amount:</span>
- <span className="font-medium text-lg">£{selectedPayout?.amount?.toFixed(2)}</span>
+ <span className="font-medium text-lg">{formatGBP(selectedPayout?.amount?)}</span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Payout Method:</span>

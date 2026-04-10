@@ -461,15 +461,15 @@ export function RevenueDashboard() {
  <div className="space-y-0.5">
  <div className="flex justify-between gap-3">
  <span className="text-muted-foreground">Gross</span>
- <span>£{(Number(d.gross) || 0).toFixed(2)}</span>
+ <span>{formatGBP((Number(d.gross) || 0))}</span>
  </div>
  <div className="flex justify-between gap-3">
  <span className="text-muted-foreground">Fees</span>
- <span className="text-destructive">-£{(Number(d.fees) || 0).toFixed(2)}</span>
+ <span className="text-destructive">{"-" + formatGBP((Number(d.fees) || 0))}</span>
  </div>
  <div className="flex justify-between gap-3 border-t pt-1">
  <span className="font-medium">Net</span>
- <span className="text-emerald-500 font-medium">£{(Number(d.net) || 0).toFixed(2)}</span>
+ <span className="text-emerald-500 font-medium">{formatGBP((Number(d.net) || 0))}</span>
  </div>
  </div>
  </div>

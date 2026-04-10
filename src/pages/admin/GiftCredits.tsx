@@ -273,7 +273,7 @@ export default function AdminGiftCredits() {
  ) : (
  <>
  <Check className="h-4 w-4 mr-2" />
- Gift £{parseFloat(amount || '0').toFixed(2)} Credit
+ Gift {formatGBP(parseFloat(amount || '0'))} Credit
  </>
  )}
  </Button>

@@ -74,7 +74,7 @@ export function DisputeDetailDialog({
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">
                   <Banknote className="h-3 w-3" /> Amount
                 </div>
-                <p className="text-sm font-bold">£{Number(dispute.amount).toFixed(2)}</p>
+                <p className="text-sm font-bold">{formatGBP(Number(dispute.amount))}</p>
               </div>
               <div className="rounded-lg border bg-muted/30 p-3">
                 <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1">

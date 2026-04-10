@@ -150,7 +150,7 @@ export default function ManualPayouts() {
               <div className="border border-border rounded-xl overflow-hidden bg-card">
                 <div className="p-4 p-3 text-center">
                   <DollarSign className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                  <div className="text-xl md:text-2xl font-bold">£{totalPending.toFixed(2)}</div>
+                  <div className="text-xl md:text-2xl font-bold">{formatGBP(totalPending)}</div>
                   <p className="text-xs md:text-sm text-muted-foreground">Pending Amount</p>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export default function ManualPayouts() {
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <div className="text-2xl font-bold">£{request.amount.toFixed(2)}</div>
+                            <div className="text-2xl font-bold">{formatGBP(request.amount)}</div>
                             <Badge variant="outline" className={statusConfig.pending.color}>
                               {statusConfig.pending.label}
                             </Badge>
@@ -336,7 +336,7 @@ export default function ManualPayouts() {
                           </div>
                           <div className="flex items-center gap-4">
                             <div className="text-right">
-                              <div className="text-2xl font-bold">£{request.amount.toFixed(2)}</div>
+                              <div className="text-2xl font-bold">{formatGBP(request.amount)}</div>
                               <Badge variant="outline" className={config.color}>
                                 <StatusIcon className="h-3 w-3 mr-1" />
                                 {config.label}

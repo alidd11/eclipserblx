@@ -189,7 +189,7 @@ export function ChatMessageThread({
                 customerOrders.map((order) => (
                   <div key={order.id} className="bg-muted/50 rounded-md p-2 space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium">£{order.total.toFixed(2)}</span>
+                      <span className="text-xs font-medium">{formatGBP(order.total)}</span>
                       <Badge variant="outline" className="text-[10px]">{order.status}</Badge>
                     </div>
                     <div className="text-[10px] text-muted-foreground">{format(new Date(order.created_at), 'dd MMM yyyy')}</div>

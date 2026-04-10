@@ -103,8 +103,8 @@ export default function SellerTaxFeeSummary() {
             <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(Number(effectiveRate), 100)}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span>Commission: £{summary.totalPlatformFee.toFixed(2)}</span>
-            <span>Processing: £{summary.totalStripeFee.toFixed(2)}</span>
+            <span>Commission: {formatGBP(summary.totalPlatformFee)}</span>
+            <span>Processing: {formatGBP(summary.totalStripeFee)}</span>
           </div>
         </div>
       </div>

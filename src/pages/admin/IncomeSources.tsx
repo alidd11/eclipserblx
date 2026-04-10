@@ -417,11 +417,11 @@ export default function AdminIncomeSources() {
                 {isLoading ? (
                   <Skeleton className="h-9 w-32 mt-1" />
                 ) : (
-                  <p className="text-3xl font-bold font-display">£{grandTotal.toFixed(2)}</p>
+                  <p className="text-3xl font-bold font-display">{formatGBP(grandTotal)}</p>
                 )}
                 {!isLoading && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    {filteredTransactions.length} transactions · £{(grandTotal / periodDays).toFixed(2)}/day avg
+                    {filteredTransactions.length} transactions · {formatGBP((grandTotal / periodDays))}/day avg
                   </p>
                 )}
               </div>
@@ -470,17 +470,17 @@ export default function AdminIncomeSources() {
                     <Skeleton className="h-6 w-20 mt-2" />
                   ) : (
                     <>
-                      <p className="text-xl font-bold mt-1">£{data.total.toFixed(2)}</p>
+                      <p className="text-xl font-bold mt-1">{formatGBP(data.total)}</p>
                       <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
                         <span>{data.count} txns</span>
                         <span>·</span>
-                        <span>Avg £{avgTxn.toFixed(2)}</span>
+                        <span>Avg {formatGBP(avgTxn)}</span>
                         <span>·</span>
                         <span>{sharePercent.toFixed(0)}% share</span>
                       </div>
                       {data.maxTxn > 0 && (
                         <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                          Largest: £{data.maxTxn.toFixed(2)}
+                          Largest: {formatGBP(data.maxTxn)}
                         </p>
                       )}
                       {/* Sparkline */}

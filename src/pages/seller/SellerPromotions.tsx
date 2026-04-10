@@ -215,7 +215,7 @@ export default function SellerPromotions() {
                     <Coins className="h-5 w-5 text-amber-500" />
                   </div>
                   <div>
-                    <p className="text-lg font-bold">£{balance.toFixed(2)}</p>
+                    <p className="text-lg font-bold">{formatGBP(balance)}</p>
                     <p className="text-xs text-muted-foreground">Available Credits</p>
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export default function SellerPromotions() {
                           </p>
                         </div>
                         <span className="text-sm font-semibold text-destructive">
-                          -£{Math.abs(Number(tx.amount)).toFixed(2)}
+                          {"-" + formatGBP(Math.abs(Number(tx.amount)))}
                         </span>
                       </div>
                     ))}

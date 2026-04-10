@@ -141,7 +141,7 @@ export default function DeveloperPaymentDetail() {
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
  <div className="flex items-center justify-between flex-wrap gap-3">
- <h3 className="font-semibold text-sm text-xl">£{payment.amount.toFixed(2)}</h3>
+ <h3 className="font-semibold text-sm text-xl">{formatGBP(payment.amount)}</h3>
  <Badge className={config?.color}>
  <StatusIcon className="h-3 w-3 mr-1" />
  {config?.label}
@@ -238,7 +238,7 @@ export default function DeveloperPaymentDetail() {
  <DialogHeader>
  <DialogTitle>Mark Payment as Completed</DialogTitle>
  <DialogDescription>
- Recording payment of £{payment.amount.toFixed(2)} to{' '}
+ Recording payment of {formatGBP(payment.amount)} to{' '}
  {payment.developer?.display_name || payment.developer?.username}
  </DialogDescription>
  </DialogHeader>

@@ -541,7 +541,7 @@ export default function SellerSettingsPayments() {
                 <div className="p-4 bg-muted/50 rounded-lg">
                   <p className="text-sm text-muted-foreground">Total Revenue</p>
                   <p className="text-2xl font-bold">
-                    £{((store?.total_revenue || 0) / 100).toFixed(2)}
+                    {formatGBP(((store?.total_revenue || 0) / 100))}
                   </p>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg">

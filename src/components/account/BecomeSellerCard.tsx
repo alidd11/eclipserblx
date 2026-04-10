@@ -109,7 +109,7 @@ export function BecomeSellerCard() {
               <p className="text-xs text-muted-foreground">Sales</p>
             </div>
             <div>
-              <p className="text-2xl font-bold">£{store.total_revenue.toFixed(2)}</p>
+              <p className="text-2xl font-bold">{formatGBP(store.total_revenue)}</p>
               <p className="text-xs text-muted-foreground">Revenue</p>
             </div>
           </div>

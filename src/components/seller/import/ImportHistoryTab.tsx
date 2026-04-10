@@ -82,7 +82,7 @@ export function ImportHistoryTab() {
  {item.source_price != null && item.source_price > 0 && (
  <>
  <span>•</span>
- <span>£{item.source_price.toFixed(2)}</span>
+ <span>{formatGBP(item.source_price)}</span>
  </>
  )}
  </div>

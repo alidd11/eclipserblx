@@ -246,7 +246,7 @@ export default function SellerProPage() {
                 <p className="text-sm font-semibold">Eclipse Pro</p>
               </div>
               <p className="text-xs font-semibold text-primary">
-                £{billingPeriod === 'monthly' ? prices.monthly : (prices.annual / 12).toFixed(2)}/mo
+                {formatGBP(billingPeriod === 'monthly' ? prices.monthly : (prices.annual / 12))}/mo
               </p>
               <Badge variant="secondary" className="text-[9px] px-1.5 py-0 mt-1">RECOMMENDED</Badge>
             </div>

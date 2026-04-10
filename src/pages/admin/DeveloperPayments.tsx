@@ -324,7 +324,7 @@ export default function DeveloperPayments() {
                 <Wallet className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
               <div className="p-4 p-3 pt-0">
-                <div className="text-lg font-bold truncate">£{stats.totalOwed.toFixed(2)}</div>
+                <div className="text-lg font-bold truncate">{formatGBP(stats.totalOwed)}</div>
               </div>
             </div>
             <div className="border border-border rounded-xl overflow-hidden flex-1 min-w-0">
@@ -342,7 +342,7 @@ export default function DeveloperPayments() {
                 <Banknote className="h-4 w-4 text-muted-foreground shrink-0" />
               </div>
               <div className="p-4 p-3 pt-0">
-                <div className="text-lg font-bold truncate">£{stats.paidThisMonth.toFixed(2)}</div>
+                <div className="text-lg font-bold truncate">{formatGBP(stats.paidThisMonth)}</div>
               </div>
             </div>
            </div>
@@ -413,7 +413,7 @@ export default function DeveloperPayments() {
                                 <p className="text-xs text-muted-foreground">{payment.developer.staff_id}</p>
                               )}
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm">
-                                <span className="font-bold text-base">£{payment.amount.toFixed(2)}</span>
+                                <span className="font-bold text-base">{formatGBP(payment.amount)}</span>
                                 <span className="text-muted-foreground capitalize">{payment.payment_type}</span>
                                 {payment.due_date && (
                                   <span className="text-muted-foreground">
@@ -439,7 +439,7 @@ export default function DeveloperPayments() {
              <DialogHeader>
                <DialogTitle>Mark Payment as Completed</DialogTitle>
                <DialogDescription>
-                 Recording payment of £{selectedPayment?.amount.toFixed(2)} to{' '}
+                 Recording payment of {formatGBP(selectedPayment?.amount)} to{' '}
                  {selectedPayment?.developer?.display_name || selectedPayment?.developer?.username}
                </DialogDescription>
              </DialogHeader>

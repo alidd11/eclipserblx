@@ -111,7 +111,7 @@ export function ProductTable({
                   </div>
                 </TableCell>
                 <TableCell>{product.categories?.name || '—'}</TableCell>
-                <TableCell>£{product.price.toFixed(2)}</TableCell>
+                <TableCell>{formatGBP(product.price)}</TableCell>
                 <TableCell>
                   <div className="flex gap-2 flex-wrap">
                     {isScheduledForFuture(product.release_at) ? (

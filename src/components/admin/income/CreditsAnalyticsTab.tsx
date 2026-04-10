@@ -202,7 +202,7 @@ export function CreditsAnalyticsTab() {
  <Skeleton className="h-9 w-24" />
  ) : (
  <p className="text-3xl font-bold text-emerald-500">
- £{(balancesSummary?.totalActiveBalance ?? 0).toFixed(2)}
+ {formatGBP((balancesSummary?.totalActiveBalance ?? 0))}
  </p>
  )}
  <p className="text-xs text-muted-foreground mt-1">Credits held by users</p>
@@ -219,7 +219,7 @@ export function CreditsAnalyticsTab() {
  <Skeleton className="h-9 w-24" />
  ) : (
  <p className="text-3xl font-bold text-blue-500">
- £{(balancesSummary?.totalPurchased ?? 0).toFixed(2)}
+ {formatGBP((balancesSummary?.totalPurchased ?? 0))}
  </p>
  )}
  <p className="text-xs text-muted-foreground mt-1">All-time credit purchases</p>
@@ -236,7 +236,7 @@ export function CreditsAnalyticsTab() {
  <Skeleton className="h-9 w-24" />
  ) : (
  <p className="text-3xl font-bold text-purple-500">
- £{(balancesSummary?.totalGifted ?? 0).toFixed(2)}
+ {formatGBP((balancesSummary?.totalGifted ?? 0))}
  </p>
  )}
  <p className="text-xs text-muted-foreground mt-1">
@@ -255,7 +255,7 @@ export function CreditsAnalyticsTab() {
  <Skeleton className="h-9 w-24" />
  ) : (
  <p className="text-3xl font-bold text-red-500">
- £{(balancesSummary?.totalSpent ?? 0).toFixed(2)}
+ {formatGBP((balancesSummary?.totalSpent ?? 0))}
  </p>
  )}
  <p className="text-xs text-muted-foreground mt-1">Credits used on purchases</p>
@@ -304,21 +304,21 @@ export function CreditsAnalyticsTab() {
  <div className="flex justify-between">
  <span className="text-muted-foreground">Purchased</span>
  <span className="font-medium text-blue-500">
- +£{(data?.purchaseAmount ?? 0).toFixed(2)}
+ {"+" + formatGBP((data?.purchaseAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.purchaseCount ?? 0})</span>
  </span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Gifted/Bonus</span>
  <span className="font-medium text-purple-500">
- +£{(data?.giftAmount ?? 0).toFixed(2)}
+ {"+" + formatGBP((data?.giftAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.giftCount ?? 0})</span>
  </span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Spent</span>
  <span className="font-medium text-red-500">
- -£{(data?.spendAmount ?? 0).toFixed(2)}
+ {"-" + formatGBP((data?.spendAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.spendCount ?? 0})</span>
  </span>
  </div>
@@ -326,7 +326,7 @@ export function CreditsAnalyticsTab() {
  <div className="flex justify-between">
  <span className="text-muted-foreground">Refunds</span>
  <span className="font-medium text-orange-500">
- +£{(data?.refundAmount ?? 0).toFixed(2)}
+ {"+" + formatGBP((data?.refundAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.refundCount})</span>
  </span>
  </div>
@@ -414,7 +414,7 @@ export function CreditsAnalyticsTab() {
  </Badge>
  </TableCell>
  <TableCell className={tx.type === 'spend' ? 'text-red-500' : 'text-green-500'}>
- {tx.type === 'spend' ? '-' : '+'}£{Math.abs(Number(tx.amount)).toFixed(2)}
+ {tx.type === 'spend' ? '-' : '+'}{formatGBP(Math.abs(Number(tx.amount)))}
  </TableCell>
  <TableCell className="text-muted-foreground max-w-[200px] truncate">
  {tx.description || '-'}

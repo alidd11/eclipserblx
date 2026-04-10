@@ -128,21 +128,21 @@ export function StripeBalanceTab() {
  <>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Gross</span>
- <span className="font-medium">£{(data?.gross ?? 0).toFixed(2)}</span>
+ <span className="font-medium">{formatGBP((data?.gross ?? 0))}</span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Fees</span>
- <span className="font-medium text-destructive">-£{(data?.fees ?? 0).toFixed(2)}</span>
+ <span className="font-medium text-destructive">{"-" + formatGBP((data?.fees ?? 0))}</span>
  </div>
  {(data?.refunds ?? 0) > 0 && (
  <div className="flex justify-between">
  <span className="text-muted-foreground">Refunds ({data?.refundCount})</span>
- <span className="font-medium text-orange-500">-£{(data?.refunds ?? 0).toFixed(2)}</span>
+ <span className="font-medium text-orange-500">{"-" + formatGBP((data?.refunds ?? 0))}</span>
  </div>
  )}
  <div className="flex justify-between border-t pt-2">
  <span className="font-medium">Net</span>
- <span className="font-bold text-green-600">£{(data?.net ?? 0).toFixed(2)}</span>
+ <span className="font-bold text-green-600">{formatGBP((data?.net ?? 0))}</span>
  </div>
  </>
  )}
@@ -179,15 +179,15 @@ export function StripeBalanceTab() {
  <div className="space-y-1 text-sm">
  <div className="flex justify-between gap-4">
  <span className="text-muted-foreground">Gross:</span>
- <span>£{(Number(data.gross) || 0).toFixed(2)}</span>
+ <span>{formatGBP((Number(data.gross) || 0))}</span>
  </div>
  <div className="flex justify-between gap-4">
  <span className="text-muted-foreground">Fees:</span>
- <span className="text-destructive">-£{(Number(data.fees) || 0).toFixed(2)}</span>
+ <span className="text-destructive">{"-" + formatGBP((Number(data.fees) || 0))}</span>
  </div>
  <div className="flex justify-between gap-4 border-t pt-1">
  <span className="font-medium">Net:</span>
- <span className="text-green-600 font-medium">£{(Number(data.net) || 0).toFixed(2)}</span>
+ <span className="text-green-600 font-medium">{formatGBP((Number(data.net) || 0))}</span>
  </div>
  <div className="flex justify-between gap-4 text-xs text-muted-foreground">
  <span>Transactions:</span>

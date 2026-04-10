@@ -310,7 +310,7 @@ export default function SellerProductsAll() {
 
                     {/* Price */}
                     <span className="text-sm font-medium">
-                      £{product.price?.toFixed(2)}
+                      {formatGBP(product.price?)}
                     </span>
 
                     {/* Status */}
@@ -446,8 +446,8 @@ export default function SellerProductsAll() {
               )}
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div><span className="text-muted-foreground">Store:</span><p className="font-medium">{viewProduct?.stores?.name}</p></div>
-                <div><span className="text-muted-foreground">Price:</span><p className="font-medium">£{viewProduct?.price?.toFixed(2)}</p></div>
-                <div><span className="text-muted-foreground">Seller Price:</span><p className="font-medium">£{viewProduct?.seller_price?.toFixed(2)}</p></div>
+                <div><span className="text-muted-foreground">Price:</span><p className="font-medium">{formatGBP(viewProduct?.price?)}</p></div>
+                <div><span className="text-muted-foreground">Seller Price:</span><p className="font-medium">{formatGBP(viewProduct?.seller_price?)}</p></div>
                 <div><span className="text-muted-foreground">Category:</span><p className="font-medium">{viewProduct?.categories?.name || "Uncategorized"}</p></div>
                 <div><span className="text-muted-foreground">Status:</span><div>{getStatusBadge(viewProduct?.moderation_status || "pending")}</div></div>
                 <div><span className="text-muted-foreground">Created:</span><p className="font-medium">{viewProduct?.created_at ? new Date(viewProduct.created_at).toLocaleDateString() : "—"}</p></div>

@@ -240,15 +240,15 @@ export function AffiliateCard() {
     {/* Balance Overview */}
     <div className="grid grid-cols-3 gap-3">
      <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
-      <p className="text-2xl font-bold text-primary">£{availableBalance.toFixed(2)}</p>
+      <p className="text-2xl font-bold text-primary">{formatGBP(availableBalance)}</p>
       <p className="text-xs text-muted-foreground">Available</p>
      </div>
      <div className="text-center p-3 rounded-lg bg-muted/50">
-      <p className="text-2xl font-bold">£{totalEarned.toFixed(2)}</p>
+      <p className="text-2xl font-bold">{formatGBP(totalEarned)}</p>
       <p className="text-xs text-muted-foreground">Total Earned</p>
      </div>
      <div className="text-center p-3 rounded-lg bg-muted/50">
-      <p className="text-2xl font-bold">£{totalPaid.toFixed(2)}</p>
+      <p className="text-2xl font-bold">{formatGBP(totalPaid)}</p>
       <p className="text-xs text-muted-foreground">Paid Out</p>
      </div>
     </div>
@@ -336,7 +336,7 @@ export function AffiliateCard() {
         >
          <div>
           <p className="text-sm font-medium">
-           £{(commission.commission_amount / 100).toFixed(2)}
+           {formatGBP((commission.commission_amount / 100))}
           </p>
           <p className="text-xs text-muted-foreground">
            {format(new Date(commission.created_at), 'dd MMM yyyy')}
@@ -367,7 +367,7 @@ export function AffiliateCard() {
         >
          <div>
           <p className="text-sm font-medium flex items-center gap-2">
-           £{(payout.amount / 100).toFixed(2)}
+           {formatGBP((payout.amount / 100))}
            {payout.payout_method && (
             <Badge variant="outline" className="text-xs capitalize">
              {payout.payout_method}

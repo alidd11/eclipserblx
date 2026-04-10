@@ -98,14 +98,14 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
  ({includedServers} servers included)
  </span>
  </div>
- <span className="font-semibold">£{basePrice.toFixed(2)}/mo</span>
+ <span className="font-semibold">{formatGBP(basePrice)}/mo</span>
  </div>
  
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
  <span className="font-medium">Additional Servers</span>
  <span className="text-xs text-muted-foreground">
- (£{additionalPrice.toFixed(2)} each)
+ ({formatGBP(additionalPrice)} each)
  </span>
  </div>
  <div className="flex items-center gap-2">
@@ -135,7 +135,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
  <span className="font-semibold">Total</span>
  <span className="text-xs text-muted-foreground ml-2">({totalServers} servers)</span>
  </div>
- <span className="text-lg font-bold text-blue-400">£{totalPrice.toFixed(2)}/mo</span>
+ <span className="text-lg font-bold text-blue-400">{formatGBP(totalPrice)}/mo</span>
  </div>
  </div>
  

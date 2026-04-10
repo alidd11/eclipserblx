@@ -240,7 +240,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
                 <SelectContent>
                   {orderItems.map((item) => (
                     <SelectItem key={item.id} value={item.id}>
-                      {item.product_name} — £{Number(item.price).toFixed(2)}
+                      {item.product_name} — {formatGBP(Number(item.price))}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -252,7 +252,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
             <div className="rounded-lg border bg-muted/30 p-3 text-sm">
               <span className="text-muted-foreground">Product: </span>
               <span className="font-medium">{orderItems[0].product_name}</span>
-              <span className="text-muted-foreground"> — £{Number(orderItems[0].price).toFixed(2)}</span>
+              <span className="text-muted-foreground"> — {formatGBP(Number(orderItems[0].price))}</span>
             </div>
           )}
 
