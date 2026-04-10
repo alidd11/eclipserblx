@@ -1,7 +1,5 @@
 import { useMemo, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +23,8 @@ import {
  SelectValue,
 } from '@/components/ui/select';
 import { usePublicStore } from '@/hooks/usePublicStore';
+import { usePublicReviews } from '@/hooks/usePublicReviews';
+import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
 
 export default function StoreReviewsPage() {
@@ -35,65 +35,10 @@ export default function StoreReviewsPage() {
  // Fetch store details via centralised hook
  const { store, isLoading: storeLoading, notFound } = usePublicStore(storeSlug);
 
- // Fetch all reviews for the store's products
- const { data: reviews, isLoading: reviewsLoading } = useQuery({
- queryKey: ['store-reviews', store?.id],
- queryFn: async () => {
- if (!store?.id) return [];
-
- // First get all product IDs for this store
- const { data: products } = await supabase
- .from('products')
- .select('id, name, slug, images, product_number')
- .eq('store_id', store.id);
-
- if (!products || products.length === 0) return [];
-
- const productIds = products.map(p => p.id);
-
- // Then get all reviews for these products
- const { data: reviewsData, error } = await supabase
- .from('reviews')
- .select(`
- id,
- rating,
- content,
- created_at,
- is_verified_purchase,
- user_id,
- product_id
- `)
- .in('product_id', productIds)
- .eq('is_approved', true)
- .order('created_at', { ascending: false })
- .limit(200);
-
- if (error) throw error;
- if (!reviewsData || reviewsData.length === 0) return [];
-
- // Get unique user IDs and fetch profiles
- const userIds = [...new Set(reviewsData.map(r => r.user_id))];
- const { data: profiles } = await supabase
- .from('profiles')
- .select('user_id, display_name, avatar_url')
- .in('user_id', userIds);
-
- const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
- const productMap = new Map(products.map(p => [p.id, p]));
-
- return reviewsData.map(review => ({
- id: review.id,
- rating: review.rating,
- content: review.content,
- created_at: review.created_at,
- is_verified_purchase: review.is_verified_purchase,
- user_id: review.user_id,
- product_id: review.product_id,
- profile: profileMap.get(review.user_id),
- product: productMap.get(review.product_id),
- }));
- },
- enabled: !!store?.id,
+ // Fetch all reviews via centralised hook
+ const { reviews, isLoading: reviewsLoading } = usePublicReviews({
+ type: 'store',
+ storeId: store?.id,
  });
 
  const totalReviews = reviews?.length || 0;
@@ -138,7 +83,7 @@ export default function StoreReviewsPage() {
  return acc;
  }, {} as Record<number, number>) || {};
 
- const accentColor = store?.accent_color || '#8b5cf6';
+ const { accentColor } = useStoreTheme(store);
 
  if (storeLoading) {
  return (

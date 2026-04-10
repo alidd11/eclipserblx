@@ -10,6 +10,7 @@ import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
+import { ProductNotFound } from '@/components/product/ProductNotFound';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
 import { DescriptionSection } from '@/components/product/DescriptionSection';
 import { useCart, CartItem } from '@/hooks/useCart';
@@ -194,17 +195,7 @@ export default function ProductDetail() {
  }
 
  if (!product) {
- return (
- <MainLayout>
- <div className="container py-16 text-center space-y-4">
- <h1 className="text-3xl font-display font-bold">Product Not Found</h1>
- <p className="text-muted-foreground">The product you're looking for doesn't exist.</p>
- <Button asChild>
- <Link to="/products">Browse Products</Link>
- </Button>
- </div>
- </MainLayout>
- );
+ return <ProductNotFound />;
  }
 
  const inCart = isInCart(product.id);

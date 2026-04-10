@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
@@ -7,6 +7,7 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePublicProduct } from '@/hooks/usePublicProduct';
+import { usePublicReviews } from '@/hooks/usePublicReviews';
 
 export function useProductDetailData(productNumber: string | undefined) {
   const queryClient = useQueryClient();
@@ -84,47 +85,11 @@ export function useProductDetailData(productNumber: string | undefined) {
     enabled: !!product?.id && !!user?.id,
   });
 
-  const { data: productReviews } = useQuery({
-    queryKey: ['product-reviews', product?.id],
-    queryFn: async () => {
-      if (!product?.id) return [];
-      const { data: reviews, error } = await supabase
-        .from('reviews')
-        .select('*, is_verified_purchase')
-        .eq('product_id', product.id)
-        .eq('is_approved', true)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        console.error('Error fetching reviews:', error);
-        return [];
-      }
-      if (!reviews || reviews.length === 0) return [];
-
-      const userIds = [...new Set(reviews.map(r => r.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('user_id, display_name, avatar_url')
-        .in('user_id', userIds);
-
-      const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-      return reviews.map(review => ({
-        ...review,
-        profile: profileMap.get(review.user_id) || null,
-      }));
-    },
-    enabled: !!product?.id,
+  // Centralised review fetching
+  const { reviews: productReviews, averageRating, reviewCount } = usePublicReviews({
+    type: 'product',
+    productId: product?.id,
   });
-
-  const { averageRating, reviewCount } = useMemo(() => {
-    if (!productReviews || productReviews.length === 0) {
-      return { averageRating: null, reviewCount: 0 };
-    }
-    const ratings = productReviews.map(r => r.rating).filter(r => typeof r === 'number');
-    const avg = ratings.length > 0 ? ratings.reduce((a, b) => a + b, 0) / ratings.length : null;
-    return { averageRating: avg, reviewCount: productReviews.length };
-  }, [productReviews]);
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['product', productNumber] });
