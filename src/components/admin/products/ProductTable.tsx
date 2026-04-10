@@ -3,8 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Trash2, Clock } from 'lucide-react';
-import {
 import { formatGBP } from '@/lib/formatters';
+import {
   Table,
   TableBody,
   TableCell,
