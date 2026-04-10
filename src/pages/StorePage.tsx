@@ -16,7 +16,8 @@ import { StoreBestSellers } from '@/components/store/StoreBestSellers';
 import { StoreProductGrid } from '@/components/store/StoreProductGrid';
 import { useSellerAnalytics } from '@/hooks/useSellerAnalytics';
 import { useAuth } from '@/hooks/useAuth';
-import { PUBLIC_STORE_COLUMNS } from '@/lib/storeColumns';
+import { usePublicStore } from '@/hooks/usePublicStore';
+import { StoreNotFound } from '@/components/store/StoreNotFound';
 import { 
   Store as StoreIcon, 
   CheckCircle, 
@@ -32,8 +33,6 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { StoreSchema, BreadcrumbSchema } from '@/components/seo/StructuredData';
 
-const CURRENT_TOS_VERSION = "1.0";
-
 export default function StorePage() {
   const { storeSlug } = useParams<{ storeSlug: string }>();
   usePageTracking({ pagePath: `/store/${storeSlug}` });
@@ -44,32 +43,8 @@ export default function StorePage() {
   const activeTab = searchParams.get('tab');
   const [bioExpanded, setBioExpanded] = useState(false);
 
-  // Fetch store details
-  const { data: store, isLoading: storeLoading, error } = useQuery({
-    queryKey: ['public-store', storeSlug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stores')
-        .select(PUBLIC_STORE_COLUMNS)
-        .eq('slug', storeSlug)
-        .eq('is_active', true)
-        .eq('status', 'approved')
-        .single();
-
-      if (error) throw error;
-
-      const { data: agreement } = await supabase
-        .from('seller_agreements')
-        .select('id')
-        .eq('store_id', data.id)
-        .eq('agreement_version', CURRENT_TOS_VERSION)
-        .maybeSingle();
-
-      if (!agreement) throw new Error('Store agreement not signed');
-      return data;
-    },
-    enabled: !!storeSlug,
-  });
+  // Fetch store details via centralised hook
+  const { store, isLoading: storeLoading, error } = usePublicStore(storeSlug);
 
   const { trackProductView } = useSellerAnalytics(store?.id);
   const isStoreOwner = user?.id === store?.owner_id;
