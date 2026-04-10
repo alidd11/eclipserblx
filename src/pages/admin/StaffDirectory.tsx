@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { format } from '@/lib/dateUtils';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { Navigate, Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 // Note: Roles are now dynamic, fetched from custom_roles table
 
