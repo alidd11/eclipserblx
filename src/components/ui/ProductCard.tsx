@@ -142,7 +142,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 ref={videoRef}
                 src={currentMedia!}
                 onError={handleMediaError}
-                className="w-full h-full object-contain transition-transform duration-500"
+                className="w-full h-full object-cover transition-transform duration-500"
               />
             ) : (
               <img
@@ -158,7 +158,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   const img = e.currentTarget;
                   if (img.naturalWidth === 0) handleMediaError();
                 }}
-                className="w-full h-full object-contain transition-transform duration-500"
+                className="w-full h-full object-cover transition-transform duration-500"
               />
             )
           ) : (
