@@ -65,9 +65,9 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
   const { data: fallbackStores, isLoading } = useQuery({
     queryKey: ['top-stores-featured'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stores')
-        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count')
+      const { data, error } = await (supabase
+        .from('stores_public' as any)
+        .select('id, name, slug, description, logo_url, banner_url, accent_color, is_verified, is_trusted, follower_count') as any)
         .eq('status', 'approved')
         .eq('is_active', true)
         .eq('is_testing', false)
