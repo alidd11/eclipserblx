@@ -302,7 +302,7 @@ export default function ProductDetail() {
  {/* Images */}
  <div className="space-y-3 min-w-0">
  <div 
- className="aspect-[16/10] lg:aspect-auto lg:max-h-[500px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
+ className="aspect-[16/10] lg:aspect-[16/9] lg:max-h-[480px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
  onContextMenu={(e) => e.preventDefault()}
  onClick={() => {
  const currentImg = images[selectedImage];
@@ -425,13 +425,16 @@ export default function ProductDetail() {
  </div>
  )}
  
+ {/* Store card - mobile only, desktop shows in right column */}
+ <div className="lg:hidden">
  {product.stores && (
  <StoreDetailsCard store={product.stores} className="w-full" />
  )}
  </div>
+ </div>
 
  {/* Details */}
- <div className="space-y-4">
+ <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
  <div className="rounded-xl border-border/50 bg-card overflow-hidden relative">
  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
  <div className="p-4 pt-5 space-y-4">
@@ -624,9 +627,17 @@ export default function ProductDetail() {
  </div>
  </div>
  </div>
+ {/* Store card - desktop only */}
+ <div className="hidden lg:block">
+ {product.stores && (
+ <StoreDetailsCard store={product.stores} className="w-full" />
+ )}
+ </div>
  </div>
 
- {/* Reviews Section */}
+ </div>
+
+ {/* Reviews Section - full width */}
  <ProductReviewsSection
  ref={reviewSectionRef as React.RefObject<HTMLElement>}
  productId={product.id}
@@ -636,7 +647,6 @@ export default function ProductDetail() {
  hasPurchased={!!hasPurchased}
  existingReview={!!existingReview}
  />
- </div>
 
  <RelatedProductsSection products={relatedProducts || []} />
  <FrequentlyBoughtTogether productId={product.id} categoryId={product.category_id} storeId={product.store_id} />
