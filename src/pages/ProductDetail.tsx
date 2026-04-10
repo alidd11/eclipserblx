@@ -11,6 +11,7 @@ import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
+import { DescriptionSection } from '@/components/product/DescriptionSection';
 import { useCart, CartItem } from '@/hooks/useCart';
 import { cn } from '@/lib/utils';
 import { sanitizeHtml } from '@/lib/sanitize';
@@ -583,6 +584,18 @@ export default function ProductDetail() {
  <RobuxPayButton />
  )}
  </div>
+
+ {/* Trust signals near CTA */}
+ {product.stores && (
+ <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 flex-wrap">
+ <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Buyer Protection</span>
+ <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5" /> Instant Delivery</span>
+ {product.stores.is_verified && (
+ <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" /> Verified Seller</span>
+ )}
+ </div>
+ )}
+
  {/* Actions row */}
  <div className="flex items-center justify-between pt-3 border-t border-border/60">
  <SocialShareButtons
