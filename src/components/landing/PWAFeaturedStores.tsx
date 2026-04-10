@@ -43,24 +43,20 @@ function usePromotedSpotlightStore() {
         .eq('id', data[0].store_id)
         .maybeSingle();
 
-      if (error) throw error;
-      if (!data || data.length === 0) return null;
-
-      const s = data[0].stores as any;
-      if (!s || s.status !== 'approved' || !s.is_active || s.is_testing) return null;
+      if (!storeData || storeData.status !== 'approved' || !storeData.is_active || storeData.is_testing) return null;
 
       return {
-        id: s.id,
-        name: s.name,
-        slug: s.slug,
-        description: s.description,
-        logo_url: s.logo_url,
-        banner_url: s.banner_url,
-        accent_color: s.accent_color,
-        is_verified: s.is_verified,
-        follower_count: s.follower_count,
-        average_rating: s.average_rating,
-        product_count: s.product_count,
+        id: storeData.id,
+        name: storeData.name,
+        slug: storeData.slug,
+        description: storeData.description,
+        logo_url: storeData.logo_url,
+        banner_url: storeData.banner_url,
+        accent_color: storeData.accent_color,
+        is_verified: storeData.is_verified,
+        follower_count: storeData.follower_count,
+        average_rating: storeData.average_rating,
+        product_count: storeData.product_count,
         isPromoted: true,
       } as FeaturedStore;
     },
