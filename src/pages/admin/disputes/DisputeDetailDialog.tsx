@@ -12,7 +12,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, Clock, ShieldAlert, Shield,
   Snowflake, User, Store, Banknote, MessageSquare, ExternalLink, Timer,
   Loader2, FileImage, Calendar } from 'lucide-react';
-import { format} formatRelative } from '@/lib/dateUtils';
+import { format,  formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';

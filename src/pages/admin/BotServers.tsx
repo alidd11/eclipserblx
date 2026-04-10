@@ -12,7 +12,7 @@ import {
   Bot, Calendar, User, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format} formatRelative } from '@/lib/dateUtils';
+import { format,  formatRelative } from '@/lib/dateUtils';
 
 interface BotInstallation {
   id: string;

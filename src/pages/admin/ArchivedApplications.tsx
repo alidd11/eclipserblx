@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import {} formatRelative } from '@/lib/dateUtils';
+import {,  formatRelative } from '@/lib/dateUtils';
 
 interface ArchivedApplication {
  id: string;
