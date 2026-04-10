@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Package, ShoppingCart, Users, Download, TrendingUp, BarChart3, Eye, UserPlus, UserCheck, Monitor, Smartphone, Tablet, Globe, Clock, ArrowRight, Store, Link2, MousePointerClick, FileDown, MapPin } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { format } from '@/lib/dateUtils';
