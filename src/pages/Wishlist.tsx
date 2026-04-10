@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Heart, Trash2, Store, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import {,  formatRelative } from '@/lib/dateUtils';
+import { formatRelative } from '@/lib/dateUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageMeta } from '@/hooks/usePageMeta';
 

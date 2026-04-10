@@ -16,7 +16,7 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useDropZone } from '@/hooks/useDropZone';
 import { markChatAsRead } from '@/hooks/useChatNotifications';
 import { cn } from '@/lib/utils';
-import {,  formatRelative } from '@/lib/dateUtils';
+import { formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 
 import type { ChatRoomConfig, ChatMember, ChatMessage } from './chatHelpers';

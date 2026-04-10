@@ -350,7 +350,7 @@ export function EmbeddedPaymentModal({
   const getDescription = () => {
     switch (paymentType) {
       case 'checkout': return 'Enter your payment details to complete your order.';
-      case 'credits': return `Add {formatGBP(amount?)} to your account balance.`;
+      case 'credits': return `Add {formatGBP(amount ?? 0)} to your account balance.`;
       case 'subscription': return `Start subscription ${tier} (${billingPeriod}).`;
       case 'ad_pings': return 'Purchase additional pings for your advertisements.';
       default: return 'Complete your payment securely.';

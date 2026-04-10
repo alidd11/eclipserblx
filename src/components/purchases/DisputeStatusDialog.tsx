@@ -10,7 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { format,  formatRelative } from '@/lib/dateUtils';
+import { format, formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import {
   AlertTriangle, Clock, Check, X, ShieldAlert, Shield, Loader2,

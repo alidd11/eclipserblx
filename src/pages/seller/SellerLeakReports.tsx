@@ -17,7 +17,7 @@ import {
   Hash, User, Fingerprint, CalendarDays, File as FileIcon,
   Loader2, ChevronDown, ChevronUp, MoreVertical, EyeOff, CheckCircle, Ban } from 'lucide-react';
 import { toast } from 'sonner';
-import { format,  formatRelative } from '@/lib/dateUtils';
+import { format, formatRelative } from '@/lib/dateUtils';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_EXTENSIONS = ['.lua', '.rbxm', '.rbxl', '.rbxmx', '.rbxlx', '.zip', '.rar', '.txt', '.json', '.png', '.jpg', '.jpeg', '.gif', '.mp3', '.ogg', '.wav'];

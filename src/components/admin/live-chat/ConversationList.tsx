@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {,  formatRelative } from '@/lib/dateUtils';
+import { formatRelative } from '@/lib/dateUtils';
 import { Conversation, ISSUE_CATEGORY_LABELS, ISSUE_CATEGORY_COLORS } from './ChatConstants';
 
 interface ConversationListProps {

@@ -101,11 +101,11 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
       <div className="p-4 space-y-3">
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Price</span>
-          <span className="font-medium">{formatGBP(product.price?)}</span>
+          <span className="font-medium">{formatGBP(product.price ?? 0)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Seller Price</span>
-          <span className="font-medium">{formatGBP(product.seller_price?)}</span>
+          <span className="font-medium">{formatGBP(product.seller_price ?? 0)}</span>
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Category</span>
