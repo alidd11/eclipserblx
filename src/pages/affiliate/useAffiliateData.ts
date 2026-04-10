@@ -102,7 +102,7 @@ export function useAffiliateData() {
     queryKey: ['user-payment-details', user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await supabase.from('user_payment_details_safe' as any).select('*').eq('user_id', user.id).maybeSingle();
+      const { data, error } = await supabase.from('user_payment_details_safe' as any).select('*').eq('user_id', user.id).maybeSingle() as { data: any; error: any };
       if (error) throw error;
       return data;
     },

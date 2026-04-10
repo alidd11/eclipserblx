@@ -73,9 +73,9 @@ export function AffiliateCard() {
      .from('user_payment_details_safe' as any)
      .select('preferred_payout_method, stripe_account_id')
      .eq('user_id', user.id)
-     .maybeSingle();
-   if (error) throw error;
-   return data;
+     .maybeSingle() as { data: { preferred_payout_method: string | null; stripe_account_id: string | null } | null; error: any };
+    if (error) throw error;
+    return data;
   },
   enabled: !!user?.id,
  });
