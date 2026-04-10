@@ -23,7 +23,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Rss, Plus, Trash2, Loader2, RefreshCw, Clock, ExternalLink, Gamepad2, Settings } from 'lucide-react';
-import {} formatRelative } from '@/lib/dateUtils';
+import {,  formatRelative } from '@/lib/dateUtils';
 
 interface GameNewsFeed {
  id: string;

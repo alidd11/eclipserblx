@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, MessageSquare, Clock, Download, FileText, Ticket, Send, Loader2 } from 'lucide-react';
-import { format } formatRelative } from '@/lib/dateUtils';
+import { format ,  formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { notifyTicketReply } from '@/lib/pushNotifications';

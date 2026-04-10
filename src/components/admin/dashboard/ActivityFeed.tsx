@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ShoppingCart, UserPlus, MessageCircle, Package, Star, Activity } from 'lucide-react';
-import {} formatRelative } from '@/lib/dateUtils';
+import {,  formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatGBP } from '@/lib/formatters';

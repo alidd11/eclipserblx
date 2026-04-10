@@ -12,7 +12,7 @@ import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, Send, Clock, User, Headphones, Paperclip, X, Loader2 } from 'lucide-react';
-import { format } formatRelative } from '@/lib/dateUtils';
+import { format, formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 

@@ -1,5 +1,5 @@
 import { Store, Loader2 } from 'lucide-react';
-import {} formatRelative } from '@/lib/dateUtils';
+import {,  formatRelative } from '@/lib/dateUtils';
 import type { StoreConversation } from '@/hooks/useStoreMessages';
 
 interface ConversationListProps {

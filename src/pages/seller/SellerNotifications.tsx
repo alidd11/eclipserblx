@@ -12,7 +12,7 @@ import {
   ShoppingCart, RotateCcw, Heart, Package, Zap, Megaphone, DollarSign
 } from 'lucide-react';
 import { toast } from 'sonner';
-import {} formatRelative } from '@/lib/dateUtils';
+import {,  formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 const NOTIFICATION_ICONS: Record<string, any> = {
