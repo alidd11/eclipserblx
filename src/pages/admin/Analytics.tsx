@@ -38,28 +38,28 @@ export default function AdminAnalytics() {
  return (
  <AdminLayout requiredPermissions={['view_analytics']}>
  <div className="space-y-6">
- <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
- <div>
- <h1 className="text-2xl font-display font-bold">Analytics</h1>
- <p className="text-sm text-muted-foreground mt-1">Comprehensive platform metrics and insights</p>
- </div>
- <div className="flex items-center gap-2">
- <div className="flex items-center bg-muted rounded-lg p-0.5">
- {(['7d', '14d', '30d'] as const).map(r => (
- <Button key={r} variant={range === r ? 'default' : 'ghost'} size="sm" onClick={() => setRange(r)} className="text-xs h-7 px-3">
- {r}
- </Button>
- ))}
- </div>
- <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
- const exportData = activeTab === 'page-visits' ? recentVisits : activeTab === 'referrals' ? recentReferrals : downloadTrend;
- if (exportData?.length) exportToCSV(exportData as any[], `analytics-${activeTab}-${range}`);
- }}>
- <FileDown className="h-3.5 w-3.5 mr-1" />
- Export
- </Button>
- </div>
- </div>
+  <AdminPageHeader
+    title="Analytics"
+    description="Comprehensive platform metrics and insights"
+    actions={
+      <div className="flex items-center gap-2">
+        <div className="flex items-center bg-muted rounded-lg p-0.5">
+          {(['7d', '14d', '30d'] as const).map(r => (
+            <Button key={r} variant={range === r ? 'default' : 'ghost'} size="sm" onClick={() => setRange(r)} className="text-xs h-7 px-3">
+              {r}
+            </Button>
+          ))}
+        </div>
+        <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
+          const exportData = activeTab === 'page-visits' ? recentVisits : activeTab === 'referrals' ? recentReferrals : downloadTrend;
+          if (exportData?.length) exportToCSV(exportData as any[], `analytics-${activeTab}-${range}`);
+        }}>
+          <FileDown className="h-3.5 w-3.5 mr-1" />
+          Export
+        </Button>
+      </div>
+    }
+  />
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  <div className="sm:hidden">
