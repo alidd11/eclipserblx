@@ -7,6 +7,7 @@ import { Crown, Clock, Users, Heart, Link2, Copy, Check, Info } from 'lucide-rea
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 
 export type EarlyAccessStrategy = 'timed' | 'followers' | 'repeat_buyers' | 'private_link';
 

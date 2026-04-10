@@ -9,6 +9,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { DomainStatusTimeline } from './DomainStatusTimeline';
 import { DomainHealthDisplay } from './DomainHealthDisplay';
 import { DnsRecordRow } from './DnsRecordRow';

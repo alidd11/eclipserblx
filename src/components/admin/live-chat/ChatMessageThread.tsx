@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { Send, Paperclip, Loader2, MessageSquare, ArrowLeft, RefreshCw, AlertCircle, Upload, Copy, ShoppingBag, ChevronUp, ChevronDown } from 'lucide-react';
 import { AttachmentDisplay } from '@/components/chat/AttachmentDisplay';
 import { Button } from '@/components/ui/button';

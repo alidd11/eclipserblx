@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { CheckCircle, Copy, ExternalLink, Plus, Users, Share2, Eye } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 
 function getTimeBasedGreeting(): string {
   const hour = new Date().getHours();

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { supabase } from "@/integrations/supabase/client";
 import { Link2, Unlink, Sparkles, Loader2, Copy, Check } from "lucide-react";
 import { openExternalUrl } from "@/lib/externalBrowser";

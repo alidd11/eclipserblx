@@ -1,5 +1,6 @@
 import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 

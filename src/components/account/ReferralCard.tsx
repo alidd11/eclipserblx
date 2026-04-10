@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { copyToClipboard } from '@/lib/copyToClipboard';
 import { useQuery } from '@tanstack/react-query';
 import { Copy, Check, Users, Gift, Share2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
