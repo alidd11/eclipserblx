@@ -10,6 +10,7 @@ import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
+import { ProductNotFound } from '@/components/product/ProductNotFound';
 import { ReportIPViolationDialog } from '@/components/product/ReportIPViolationDialog';
 import { DescriptionSection } from '@/components/product/DescriptionSection';
 import { useCart, CartItem } from '@/hooks/useCart';
