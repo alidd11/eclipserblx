@@ -9,7 +9,7 @@ import { DashboardKPIs } from '@/components/admin/dashboard/DashboardKPIs';
 export default function AdminDashboard() {
   return (
     <AdminLayout>
-      <div className="space-y-5">
+      <div className="space-y-4">
         <HeroBanner />
         <DashboardKPIs />
         <SystemAlerts />

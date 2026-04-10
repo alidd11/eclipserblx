@@ -204,7 +204,7 @@ export default function AdminOrders() {
 
  return (
  <AdminLayout requiredPermissions={['view_orders']}>
-  <div className="space-y-6">
+  <div className="space-y-4">
   <AdminPageHeader title="Orders" description="Manage customer orders" />
 
  <div className="flex flex-col sm:flex-row gap-4">

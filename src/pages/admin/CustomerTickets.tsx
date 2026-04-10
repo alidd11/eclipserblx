@@ -183,14 +183,14 @@
  
  return (
  <AdminLayout>
- <div className="space-y-6">
+ <div className="space-y-4">
  {/* Header */}
  <AdminPageHeader title="Customer Support Tickets" description="Manage and respond to customer support requests" />
  
  {/* Stats */}
  <div className="grid grid-cols-3 gap-3">
  <div className="border border-border rounded-xl overflow-hidden">
- <div className="p-4 p-4">
+  <div className="p-4">
  <div className="flex items-center gap-3">
  <div className="h-10 w-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
  <AlertCircle className="h-5 w-5 text-yellow-500" />

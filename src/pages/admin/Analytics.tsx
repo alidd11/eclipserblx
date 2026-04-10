@@ -37,7 +37,7 @@ export default function AdminAnalytics() {
 
  return (
  <AdminLayout requiredPermissions={['view_analytics']}>
- <div className="space-y-6">
+ <div className="space-y-4">
   <AdminPageHeader
     title="Analytics"
     description="Comprehensive platform metrics and insights"
@@ -85,9 +85,9 @@ export default function AdminAnalytics() {
 
  {/* ============ OVERVIEW TAB ============ */}
  <TabsContent value="overview" className="space-y-4">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
- <h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-5 w-5" />Overview</h3>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30">
+ <h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Overview</h3>
  </div>
  <div className="p-4">
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -116,8 +116,8 @@ export default function AdminAnalytics() {
  </div>
 
  {/* Conversion Funnel */}
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3"><h3 className="font-semibold text-sm flex items-center gap-2"><ArrowRight className="h-5 w-5" />Conversion Funnel</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><ArrowRight className="h-4 w-4" />Conversion Funnel</h3></div>
  <div className="p-4">
  {(() => {
  const visits = pageVisitStats?.total ?? 0;
@@ -156,49 +156,49 @@ export default function AdminAnalytics() {
  </div>
 
  {/* Quick Stats Row */}
- <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Eye className="h-4 w-4" />Page Visits</h3></div>
+ <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Eye className="h-4 w-4" />Page Visits</h3></div>
  <div className="p-4">
- <p className="text-3xl font-bold">{pageVisitStats?.total ?? 0}</p>
+ <p className="text-2xl font-bold">{pageVisitStats?.total ?? 0}</p>
  <p className="text-xs text-muted-foreground mt-1">{pageVisitStats?.newVisitors ?? 0} new · {pageVisitStats?.returningVisitors ?? 0} returning</p>
  </div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Store className="h-4 w-4" />Seller Events</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Store className="h-4 w-4" />Seller Events</h3></div>
  <div className="p-4">
- <p className="text-3xl font-bold">{sellerAnalyticsStats?.total ?? 0}</p>
+ <p className="text-2xl font-bold">{sellerAnalyticsStats?.total ?? 0}</p>
  <p className="text-xs text-muted-foreground mt-1">{sellerAnalyticsStats?.storeViews ?? 0} store views · {sellerAnalyticsStats?.productViews ?? 0} product views</p>
  </div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Link2 className="h-4 w-4" />Referral Clicks</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Link2 className="h-4 w-4" />Referral Clicks</h3></div>
  <div className="p-4">
- <p className="text-3xl font-bold">{referralStats?.totalClicks ?? 0}</p>
+ <p className="text-2xl font-bold">{referralStats?.totalClicks ?? 0}</p>
  <p className="text-xs text-muted-foreground mt-1">{referralStats?.uniqueReferrers ?? 0} referrers · {referralStats?.conversions ?? 0} conversions</p>
  </div>
  </div>
  </div>
 
  {/* Charts */}
- <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-5 w-5" />Downloads (Last {rangeLabel})</h3></div>
+ <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Downloads (Last {rangeLabel})</h3></div>
  <div className="p-4"><RevolutAreaChart data={downloadTrend || []} xKey="date" series={[{ dataKey: 'downloads', color: 'hsl(262 100% 71%)', name: 'Downloads', gradientId: 'dlGrad' }]} height={250} /></div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><ShoppingCart className="h-5 w-5" />Orders (Last {rangeLabel})</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><ShoppingCart className="h-4 w-4" />Orders (Last {rangeLabel})</h3></div>
  <div className="p-4"><RevolutAreaChart data={orderTrend || []} xKey="date" series={[{ dataKey: 'orders', color: 'hsl(220 95% 59%)', name: 'Orders', gradientId: 'ordGrad' }]} height={250} /></div>
  </div>
  </div>
 
- <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Users className="h-5 w-5" />New Users (Last {rangeLabel})</h3></div>
+ <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Users className="h-4 w-4" />New Users (Last {rangeLabel})</h3></div>
  <div className="p-4"><RevolutAreaChart data={userTrend || []} xKey="date" series={[{ dataKey: 'users', color: 'hsl(240 90% 65%)', name: 'Users', gradientId: 'usrGrad' }]} height={250} /></div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><BarChart3 className="h-5 w-5" />Products by Category</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" />Products by Category</h3></div>
  <div className="p-4">
  {categoryStats?.length === 0 ? <p className="text-muted-foreground text-center py-8">No products yet</p> : (
  <RevolutDonutChart data={categoryStats || []} height={320} showLabels={false} showLegend innerRadius={50} outerRadius={85} />
@@ -208,8 +208,8 @@ export default function AdminAnalytics() {
  </div>
 
  {/* Top Downloaded Products */}
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Download className="h-5 w-5" />Top Downloaded Products</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Download className="h-4 w-4" />Top Downloaded Products</h3></div>
  <div className="p-4">
  {productDownloads?.length === 0 ? <p className="text-muted-foreground text-center py-8">No downloads yet</p> : (
  <div className="space-y-3">
@@ -229,8 +229,8 @@ export default function AdminAnalytics() {
 
  {/* ============ PAGE VISITS TAB ============ */}
  <TabsContent value="page-visits" className="space-y-4">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3"><h3 className="font-semibold text-sm flex items-center gap-2"><Eye className="h-5 w-5" />Visitor Overview</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Eye className="h-4 w-4" />Visitor Overview</h3></div>
  <div className="p-4">
  <div className="grid grid-cols-3 gap-3">
  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
@@ -249,8 +249,8 @@ export default function AdminAnalytics() {
  </div>
  </div>
 
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-5 w-5" />Visitor Trend (Last {rangeLabel})</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Visitor Trend (Last {rangeLabel})</h3></div>
  <div className="p-4">
  <RevolutAreaChart data={visitTrend || []} xKey="date" series={[
  { dataKey: 'new', color: 'hsl(262 100% 71%)', name: 'New' },
@@ -259,9 +259,9 @@ export default function AdminAnalytics() {
  </div>
  </div>
 
- <div className="grid gap-4 grid-cols-1 lg:grid-cols-3">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Globe className="h-4 w-4" />By Page</h3></div>
+ <div className="grid gap-3 grid-cols-1 lg:grid-cols-3">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Globe className="h-4 w-4" />By Page</h3></div>
  <div className="p-4">
  {pageVisitsByPage?.length === 0 ? <p className="text-muted-foreground text-center py-4 text-sm">No visits yet</p> : (
  <div className="space-y-2">
@@ -275,16 +275,16 @@ export default function AdminAnalytics() {
  )}
  </div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Monitor className="h-4 w-4" />By Device</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Monitor className="h-4 w-4" />By Device</h3></div>
  <div className="p-4">
  {deviceStats?.length === 0 ? <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p> : (
  <RevolutDonutChart data={deviceStats || []} height={150} innerRadius={30} outerRadius={50} showLegend={false} showLabels />
  )}
  </div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Globe className="h-4 w-4" />By Browser</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Globe className="h-4 w-4" />By Browser</h3></div>
  <div className="p-4">
  {browserStats?.length === 0 ? <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p> : (
  <RevolutDonutChart data={browserStats || []} height={150} innerRadius={30} outerRadius={50} showLegend={false} showLabels />
@@ -294,8 +294,8 @@ export default function AdminAnalytics() {
  </div>
 
  {/* Country Breakdown */}
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><MapPin className="h-4 w-4" />By Country</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><MapPin className="h-4 w-4" />By Country</h3></div>
  <div className="p-4">
  {!countryStats || countryStats.length === 0 ? <p className="text-muted-foreground text-center py-4 text-sm">No country data yet</p> : (
  <div className="space-y-2">
@@ -319,9 +319,9 @@ export default function AdminAnalytics() {
  </div>
 
  {/* Recent Visit Logs */}
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Clock className="h-5 w-5" />Recent Visit Logs</h3></div>
- <div className="p-4 p-0 sm:p-6">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Clock className="h-4 w-4" />Recent Visit Logs</h3></div>
+ <div className="p-0 sm:p-4">
  <div className="overflow-x-auto">
  <div className="max-h-[400px] overflow-y-auto">
  <Table>
@@ -359,8 +359,8 @@ export default function AdminAnalytics() {
 
  {/* ============ SELLER ANALYTICS TAB ============ */}
  <TabsContent value="seller-analytics" className="space-y-4">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3"><h3 className="font-semibold text-sm flex items-center gap-2"><Store className="h-5 w-5" />Seller Analytics Overview</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Store className="h-4 w-4" />Seller Analytics Overview</h3></div>
  <div className="p-4">
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
@@ -383,8 +383,8 @@ export default function AdminAnalytics() {
  </div>
  </div>
 
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-5 w-5" />Seller Activity (Last {rangeLabel})</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Seller Activity (Last {rangeLabel})</h3></div>
  <div className="p-4">
  <RevolutAreaChart data={sellerAnalyticsTrend || []} xKey="date" series={[
  { dataKey: 'storeViews', color: 'hsl(262 100% 71%)', name: 'Store Views' },
@@ -393,19 +393,19 @@ export default function AdminAnalytics() {
  </div>
  </div>
 
- <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><BarChart3 className="h-4 w-4" />By Event Type</h3></div>
+ <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" />By Event Type</h3></div>
  <div className="p-4">{sellerEventTypes?.length === 0 ? <p className="text-muted-foreground text-center py-4 text-sm">No events yet</p> : <RevolutDonutChart data={sellerEventTypes || []} height={200} showLabels />}</div>
  </div>
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2 text-sm"><Monitor className="h-4 w-4" />By Device</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Monitor className="h-4 w-4" />By Device</h3></div>
  <div className="p-4">{sellerDeviceStats?.length === 0 ? <p className="text-muted-foreground text-center py-4 text-sm">No data yet</p> : <RevolutDonutChart data={sellerDeviceStats || []} height={200} showLabels />}</div>
  </div>
  </div>
 
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Store className="h-5 w-5" />Top Stores by Views</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Store className="h-4 w-4" />Top Stores by Views</h3></div>
  <div className="p-4">
  {topStores?.length === 0 ? <p className="text-muted-foreground text-center py-8">No store activity yet</p> : (
  <div className="space-y-3">
@@ -427,8 +427,8 @@ export default function AdminAnalytics() {
 
  {/* ============ REFERRALS TAB ============ */}
  <TabsContent value="referrals" className="space-y-4">
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3"><h3 className="font-semibold text-sm flex items-center gap-2"><Link2 className="h-5 w-5" />Referral Analytics Overview</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Link2 className="h-4 w-4" />Referral Analytics Overview</h3></div>
  <div className="p-4">
  <div className="grid grid-cols-3 gap-3">
  <div className="flex flex-col items-center gap-2 p-4 rounded-lg bg-muted/50 text-center">
@@ -447,13 +447,13 @@ export default function AdminAnalytics() {
  </div>
  </div>
 
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-5 w-5" />Referral Clicks (Last {rangeLabel})</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Referral Clicks (Last {rangeLabel})</h3></div>
  <div className="p-4"><RevolutAreaChart data={referralTrend || []} xKey="date" series={[{ dataKey: 'clicks', color: 'hsl(262 100% 71%)', name: 'Clicks' }]} height={250} /></div>
  </div>
 
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Users className="h-5 w-5" />Top Referrers</h3></div>
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Users className="h-4 w-4" />Top Referrers</h3></div>
  <div className="p-4">
  {topReferrers?.length === 0 ? <p className="text-muted-foreground text-center py-8">No referral activity yet</p> : (
  <div className="space-y-3">
@@ -475,9 +475,9 @@ export default function AdminAnalytics() {
  </div>
  </div>
 
- <div className="bg-card border-border">
- <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Clock className="h-5 w-5" />Recent Referral Clicks</h3></div>
- <div className="p-4 p-0 sm:p-6">
+ <div className="border border-border rounded-xl overflow-hidden">
+ <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Clock className="h-4 w-4" />Recent Referral Clicks</h3></div>
+ <div className="p-0 sm:p-4">
  <div className="overflow-x-auto">
  <div className="max-h-[400px] overflow-y-auto">
  <Table>

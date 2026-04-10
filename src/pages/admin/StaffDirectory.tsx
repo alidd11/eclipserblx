@@ -212,7 +212,7 @@ export default function StaffDirectory() {
  }
  return (
  <AdminLayout requiredPermissions={['view_staff_directory']}>
-  <div className="space-y-6">
+  <div className="space-y-4">
   <AdminPageHeader
     title="Staff Directory"
     description="View all staff members and their IDs"
