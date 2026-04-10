@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -202,17 +203,12 @@ export default function StaffDirectory() {
  }
  return (
  <AdminLayout requiredPermissions={['view_staff_directory']}>
- <div className="space-y-6">
- {/* Header */}
- <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <div>
- <h1 className="text-2xl font-display font-bold">Staff Directory</h1>
- <p className="text-sm text-muted-foreground">View all staff members and their IDs</p>
- </div>
- <Badge variant="outline" className="w-fit">
- {staffMembers.length} Staff Members
- </Badge>
- </div>
+  <div className="space-y-6">
+  <AdminPageHeader
+    title="Staff Directory"
+    description="View all staff members and their IDs"
+    actions={<Badge variant="outline">{staffMembers.length} Staff Members</Badge>}
+  />
 
  <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  {/* Dropdown for all devices */}

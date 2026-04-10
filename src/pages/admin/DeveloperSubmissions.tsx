@@ -1,6 +1,7 @@
  import { useState } from 'react';
  import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
  import { AdminLayout } from '@/components/admin/AdminLayout';
+ import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
  import { supabase } from '@/integrations/supabase/client';
  import { Button } from '@/components/ui/button';
  import { Badge } from '@/components/ui/badge';
@@ -163,81 +164,80 @@
    return (
      <AdminLayout requiredPermissions={['manage_developer_submissions']}>
        <div className="space-y-6">
-         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-           <div>
-             <h1 className="text-2xl font-bold">Developer Submissions</h1>
-             <p className="text-muted-foreground">Manage internal product submissions</p>
-           </div>
-           
-           <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
-             <DialogTrigger asChild>
-               <Button>
-                 <Plus className="h-4 w-4 mr-2" />
-                 Submit Product
-               </Button>
-             </DialogTrigger>
-             <DialogContent>
-               <DialogHeader>
-                 <DialogTitle>Submit New Product</DialogTitle>
-                 <DialogDescription>Submit a product for admin review</DialogDescription>
-               </DialogHeader>
-               <div className="space-y-4">
-                 <div className="space-y-2">
-                   <Label>Product Name</Label>
-                   <Input
-                     value={newSubmission.product_name}
-                     onChange={(e) => setNewSubmission(p => ({ ...p, product_name: e.target.value }))}
-                     placeholder="Enter product name"
-                   />
-                 </div>
-                 <div className="space-y-2">
-                   <Label>Description</Label>
-                   <Textarea
-                     value={newSubmission.product_description}
-                     onChange={(e) => setNewSubmission(p => ({ ...p, product_description: e.target.value }))}
-                     placeholder="Describe the product"
-                   />
-                 </div>
-                 <div className="space-y-2">
-                   <Label>Category</Label>
-                   <Select
-                     value={newSubmission.category_id}
-                     onValueChange={(v) => setNewSubmission(p => ({ ...p, category_id: v }))}
-                   >
-                     <SelectTrigger>
-                       <SelectValue placeholder="Select category" />
-                     </SelectTrigger>
-                     <SelectContent>
-                       {categories?.map((cat) => (
-                         <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                       ))}
-                     </SelectContent>
-                   </Select>
-                 </div>
-                 <div className="space-y-2">
-                   <Label>Price (GBP)</Label>
-                   <Input
-                     type="number"
-                     step="0.01"
-                     min="0"
-                     value={newSubmission.price}
-                     onChange={(e) => setNewSubmission(p => ({ ...p, price: e.target.value }))}
-                     placeholder="0.00"
-                   />
-                 </div>
-               </div>
-               <DialogFooter>
-                 <Button variant="outline" onClick={() => setIsSubmitOpen(false)}>Cancel</Button>
-                 <Button
-                   onClick={() => createSubmission.mutate(newSubmission)}
-                   disabled={!newSubmission.product_name || createSubmission.isPending}
-                 >
-                   Submit for Review
-                 </Button>
-               </DialogFooter>
-             </DialogContent>
-           </Dialog>
-         </div>
+          <AdminPageHeader
+            title="Developer Submissions"
+            description="Manage internal product submissions"
+            actions={
+              <Dialog open={isSubmitOpen} onOpenChange={setIsSubmitOpen}>
+                <DialogTrigger asChild>
+                  <Button className="h-12">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Submit Product
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Submit New Product</DialogTitle>
+                    <DialogDescription>Submit a product for admin review</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Product Name</Label>
+                      <Input
+                        value={newSubmission.product_name}
+                        onChange={(e) => setNewSubmission(p => ({ ...p, product_name: e.target.value }))}
+                        placeholder="Enter product name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={newSubmission.product_description}
+                        onChange={(e) => setNewSubmission(p => ({ ...p, product_description: e.target.value }))}
+                        placeholder="Describe the product"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Category</Label>
+                      <Select
+                        value={newSubmission.category_id}
+                        onValueChange={(v) => setNewSubmission(p => ({ ...p, category_id: v }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories?.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Price (GBP)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={newSubmission.price}
+                        onChange={(e) => setNewSubmission(p => ({ ...p, price: e.target.value }))}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsSubmitOpen(false)}>Cancel</Button>
+                    <Button
+                      onClick={() => createSubmission.mutate(newSubmission)}
+                      disabled={!newSubmission.product_name || createSubmission.isPending}
+                    >
+                      Submit for Review
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            }
+          />
  
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="hidden sm:inline-flex">

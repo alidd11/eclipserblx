@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, ShieldAlert, Clock, Package, MessageCircle, FileText } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Clock, Package, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -104,11 +104,9 @@ export function SystemAlerts() {
 
       return items;
     },
-    refetchInterval: 5 * 60_000, // 5 minutes (reduced from 1 min)
+    refetchInterval: 5 * 60_000,
     staleTime: 2 * 60_000,
   });
-
-  if (isLoading || !alerts?.length) return null;
 
   const severityStyles = {
     critical: 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10',
@@ -128,6 +126,23 @@ export function SystemAlerts() {
     info: 'text-primary',
   };
 
+  // "All clear" state instead of hiding entirely
+  if (isLoading) return null;
+
+  if (!alerts?.length) {
+    return (
+      <div className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <h3 className="font-semibold text-sm">System Status</h3>
+        </div>
+        <div className="p-4">
+          <p className="text-sm text-muted-foreground">All clear — no items need attention right now.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
@@ -145,7 +160,12 @@ export function SystemAlerts() {
                 'flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
                 severityStyles[alert.severity]
               )}>
-                <alert.icon className={cn('h-4 w-4 shrink-0', severityIconColor[alert.severity])} />
+                <div className="relative">
+                  <alert.icon className={cn('h-4 w-4 shrink-0', severityIconColor[alert.severity])} />
+                  {alert.severity === 'critical' && (
+                    <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                  )}
+                </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{alert.label}</p>
                 </div>

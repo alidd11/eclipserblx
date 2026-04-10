@@ -1,6 +1,7 @@
 import { Search, Shield, Ban, Trash2, Eye, ChevronLeft, ChevronRight, Users, IdCard } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -34,12 +35,7 @@ export default function AdminUsers() {
   return (
     <AdminLayout requiredPermissions={['view_users']}>
       <div className="space-y-6 min-h-0">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-display font-bold">User Management</h1>
-            <p className="text-muted-foreground">Manage customers, staff, and roles</p>
-          </div>
-        </div>
+        <AdminPageHeader title="User Management" description="Manage customers, staff, and roles" />
 
         {/* View Toggle - Mobile: Select, Desktop: Tabs */}
         <div className="sm:hidden">

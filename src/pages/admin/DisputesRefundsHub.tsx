@@ -1,6 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { RotateCcw, AlertTriangle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminHubProvider } from '@/components/admin/AdminHubContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -23,10 +24,7 @@ export default function DisputesRefundsHub() {
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
       <div className="space-y-6 w-full">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Refunds & Disputes</h1>
-          <p className="text-sm text-muted-foreground mt-1">Track refunded orders, commission reversals, and customer disputes</p>
-        </div>
+        <AdminPageHeader title="Refunds & Disputes" description="Track refunded orders, commission reversals, and customer disputes" />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="hidden sm:grid w-full max-w-md grid-cols-2">

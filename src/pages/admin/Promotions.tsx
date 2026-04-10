@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tags, Gift } from 'lucide-react';
@@ -12,10 +13,7 @@ export default function AdminPromotions() {
   return (
     <AdminLayout requiredPermissions={['manage_discounts']}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-display font-bold">Promotions</h1>
-          <p className="text-sm text-muted-foreground">Manage discount codes and special offers</p>
-        </div>
+        <AdminPageHeader title="Promotions" description="Manage discount codes and special offers" />
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           {/* Mobile dropdown */}

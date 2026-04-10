@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminEmptyState } from '@/components/admin/AdminEmptyState';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -439,17 +441,12 @@ export default function AdminCategories() {
 
  return (
  <AdminLayout requiredPermissions={['manage_products']}>
- <div className="space-y-6">
- <div className="flex items-center justify-between">
- <div>
- <h1 className="text-2xl font-bold">Categories</h1>
- <p className="text-muted-foreground">Manage product categories</p>
- </div>
- <Button onClick={openCreate}>
- <Plus className="h-4 w-4 mr-2" />
- Add Category
- </Button>
- </div>
+  <div className="space-y-6">
+  <AdminPageHeader
+    title="Categories"
+    description="Manage product categories"
+    actions={<Button onClick={openCreate} className="h-12"><Plus className="h-4 w-4 mr-2" />Add Category</Button>}
+  />
 
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
@@ -459,10 +456,12 @@ export default function AdminCategories() {
  <div className="p-4">
  {isLoading ? (
  <div className="text-center py-8 text-muted-foreground">Loading...</div>
- ) : categories.length === 0 ? (
- <div className="text-center py-8 text-muted-foreground">
- No categories yet. Click "Add Category" to create one.
- </div>
+  ) : categories.length === 0 ? (
+  <AdminEmptyState
+    title="No categories yet"
+    description="Create your first category to organize products."
+    action={{ label: 'Add Category', onClick: openCreate }}
+  />
  ) : (
  <DndContext
  sensors={sensors}

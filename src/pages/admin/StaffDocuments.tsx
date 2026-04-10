@@ -1,5 +1,6 @@
 import { FileText, Users, Printer, FolderOpen, BookOpen, ClipboardList } from "lucide-react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Badge } from "@/components/ui/badge";
 
 interface StaffDocument {
@@ -43,13 +44,7 @@ export default function StaffDocuments() {
   return (
     <AdminLayout requiredPermissions={['manage_staff']}>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold">Staff Documents</h1>
-          <p className="text-muted-foreground">
-            Internal resources, training materials, and policy documents for staff
-          </p>
-        </div>
+        <AdminPageHeader title="Staff Documents" description="Internal resources, training materials, and policy documents for staff" />
 
         {/* Documents Grid */}
         {staffDocuments.length > 0 ? (

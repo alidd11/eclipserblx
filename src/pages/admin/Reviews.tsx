@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -384,13 +385,8 @@ export default function AdminReviews() {
 
  return (
  <AdminLayout requiredPermissions={['view_reviews']}>
- <div className="space-y-6">
- <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
- <div>
- <h1 className="text-2xl font-display font-bold">Reviews</h1>
- <p className="text-sm text-muted-foreground">Manage customer and external reviews</p>
- </div>
- </div>
+  <div className="space-y-6">
+  <AdminPageHeader title="Reviews" description="Manage customer and external reviews" />
 
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="p-4">

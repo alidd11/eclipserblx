@@ -3,6 +3,7 @@ import { sanitizeSearch } from '@/lib/searchUtils';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Loader2, Gift, Search, UserPlus, Wallet, Check } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -111,15 +112,7 @@ export default function AdminGiftCredits() {
  return (
  <AdminLayout requiredPermissions={["manage_users"]}>
  <div className="container py-6 max-w-4xl space-y-6">
- <div className="flex items-center gap-4">
- <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
- <Gift className="h-6 w-6 text-primary" />
- </div>
- <div>
- <h1 className="text-2xl font-bold">Gift Credits</h1>
- <p className="text-muted-foreground">Award store credits to customers</p>
- </div>
- </div>
+  <AdminPageHeader title="Gift Credits" description="Award store credits to customers" />
 
  <div className="grid gap-6 md:grid-cols-2">
  {/* User Selection */}

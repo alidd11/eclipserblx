@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -104,46 +105,44 @@ export default function InternalNotes() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">
-              <FileText className="h-6 w-6" /> Internal Notes
-            </h1>
-            <p className="text-muted-foreground text-sm">Shared notes, proof, and evidence for the team.</p>
-          </div>
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm"><Plus className="h-4 w-4 mr-1" /> New Note</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader><DialogTitle>Create Note</DialogTitle></DialogHeader>
-              <div className="space-y-4">
-                <div>
-                  <Label>Title</Label>
-                  <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Note title..." />
+        <AdminPageHeader
+          title="Internal Notes"
+          description="Shared notes, proof, and evidence for the team."
+          actions={
+            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+              <DialogTrigger asChild>
+                <Button className="h-12"><Plus className="h-4 w-4 mr-1" /> New Note</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg">
+                <DialogHeader><DialogTitle>Create Note</DialogTitle></DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label>Title</Label>
+                    <Input value={newTitle} onChange={(e) => setNewTitle(e.target.value)} placeholder="Note title..." />
+                  </div>
+                  <div>
+                    <Label>Category</Label>
+                    <Select value={newCategory} onValueChange={setNewCategory}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CATEGORIES.map((c) => (
+                          <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label>Content</Label>
+                    <Textarea value={newContent} onChange={(e) => setNewContent(e.target.value)} placeholder="Write your note..." rows={6} />
+                  </div>
+                  <Button onClick={() => createNote.mutate()} disabled={!newTitle.trim() || !newContent.trim() || createNote.isPending} className="w-full h-12">
+                    {createNote.isPending ? 'Creating...' : 'Create Note'}
+                  </Button>
                 </div>
-                <div>
-                  <Label>Category</Label>
-                  <Select value={newCategory} onValueChange={setNewCategory}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((c) => (
-                        <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Content</Label>
-                  <Textarea value={newContent} onChange={(e) => setNewContent(e.target.value)} placeholder="Write your note..." rows={6} />
-                </div>
-                <Button onClick={() => createNote.mutate()} disabled={!newTitle.trim() || !newContent.trim() || createNote.isPending} className="w-full">
-                  {createNote.isPending ? 'Creating...' : 'Create Note'}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+              </DialogContent>
+            </Dialog>
+          }
+        />
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
