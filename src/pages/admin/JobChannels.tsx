@@ -220,7 +220,7 @@ export default function JobChannels() {
 
  return (
  <AdminLayout requiredPermissions={['view_job_channels']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-4">
  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

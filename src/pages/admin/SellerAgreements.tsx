@@ -100,7 +100,7 @@ export default function SellerAgreements() {
 
  return (
  <AdminLayout requiredPermissions={['view_seller_stores']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  {/* Header */}
  <div>
  <h1 className="text-2xl font-bold">Seller Agreements</h1>

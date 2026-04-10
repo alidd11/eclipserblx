@@ -326,7 +326,7 @@ export default function AdminProducts() {
 
   return (
     <AdminLayout requiredPermissions={['view_products']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <AdminPageHeader
           title="Products"
           description="Manage your product catalog"

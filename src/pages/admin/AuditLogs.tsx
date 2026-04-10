@@ -392,7 +392,7 @@ export default function AdminAuditLogs() {
 
   return (
     <AdminLayout requiredPermissions={['view_audit_logs']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <AdminPageHeader title="Audit Logs" description="Track all moderation and administrative actions" />
 
         <div className="space-y-4">

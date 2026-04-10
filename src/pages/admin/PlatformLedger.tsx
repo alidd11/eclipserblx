@@ -124,7 +124,7 @@ export default function PlatformLedger() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h1 className="text-2xl font-display font-bold flex items-center gap-2">
             <BookOpen className="h-6 w-6" />

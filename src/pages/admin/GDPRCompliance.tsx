@@ -294,7 +294,7 @@ export default function GDPRCompliance() {
 
  return (
  <AdminLayout>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-display font-bold">GDPR & Tax Compliance Registry</h1>
  <p className="text-sm text-muted-foreground">

@@ -39,7 +39,7 @@ export default function AdminSettings() {
         </div>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           {/* Desktop tabs */}
           <div className="hidden sm:block">
             <TabsList className={`grid w-full max-w-xl ${visibleTabs.length === 4 ? 'grid-cols-4' : 'grid-cols-3'}`}>

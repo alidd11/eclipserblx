@@ -220,7 +220,7 @@ export default function AdminRefunds() {
 
   return (
     <AdminLayout requiredPermissions={['manage_orders']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {!isInsideHub && (
           <>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -357,7 +357,7 @@ export default function AdminRefunds() {
             </DialogHeader>
 
             {selectedOrder && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {/* Order Info */}
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>

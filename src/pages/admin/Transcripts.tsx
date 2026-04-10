@@ -276,7 +276,7 @@ export default function Transcripts() {
 
   return (
     <AdminLayout requiredPermissions={['view_live_chat']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold">Transcripts</h1>

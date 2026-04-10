@@ -237,7 +237,7 @@ export default function RolePermissions() {
 
  return (
  <AdminLayout requiredPermissions={['manage_permissions']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-display font-bold tracking-tight">Role Permissions</h1>
  <p className="text-muted-foreground">

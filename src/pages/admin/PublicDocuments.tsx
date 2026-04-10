@@ -44,7 +44,7 @@ const getCategoryColor = (category: string) => {
 export default function PublicDocuments() {
   return (
     <AdminLayout requiredPermissions={['manage_seller_stores']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
         <div>
           <h1 className="text-2xl font-bold">Public Documents</h1>

@@ -188,7 +188,7 @@ export default function SellerProductsAll() {
 
   return (
     <AdminLayout requiredPermissions={['view_seller_stores']}>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div>
           <h1 className="text-3xl font-bold">All Seller Products</h1>
           <p className="text-muted-foreground">View and manage all seller products across the marketplace</p>

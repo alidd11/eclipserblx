@@ -204,7 +204,7 @@ export default function RobloxSettings() {
 
  return (
  <AdminLayout requiredPermissions={['manage_settings']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  {/* Header */}
  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
  <div>
@@ -226,7 +226,7 @@ export default function RobloxSettings() {
  </Button>
  </div>
 
- <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+ <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
  {/* Mobile dropdown */}
  <div className="sm:hidden">
  <Select value={activeTab} onValueChange={setActiveTab}>
@@ -283,7 +283,7 @@ export default function RobloxSettings() {
  </TabsList>
 
  {/* General Tab */}
- <TabsContent value="general" className="space-y-6">
+ <TabsContent value="general" className="space-y-4">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
  <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -552,7 +552,7 @@ export default function RobloxSettings() {
  </TabsContent>
 
  {/* Discounts Tab */}
- <TabsContent value="discounts" className="space-y-6">
+ <TabsContent value="discounts" className="space-y-4">
  {/* Group Discount */}
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
@@ -695,7 +695,7 @@ export default function RobloxSettings() {
  </TabsContent>
 
  {/* Verification Tab */}
- <TabsContent value="verification" className="space-y-6">
+ <TabsContent value="verification" className="space-y-4">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
  <h3 className="font-semibold text-sm flex items-center gap-2">
@@ -793,7 +793,7 @@ export default function RobloxSettings() {
  </TabsContent>
 
  {/* Transactions Tab */}
- <TabsContent value="transactions" className="space-y-6">
+ <TabsContent value="transactions" className="space-y-4">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
  <h3 className="font-semibold text-sm flex items-center gap-2">

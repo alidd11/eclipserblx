@@ -11,7 +11,7 @@ export default function YouTubePodcasts() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <AdminPageHeader
           title="YouTube Podcasts"
           description="Upload and manage podcast episodes"

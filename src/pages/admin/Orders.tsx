@@ -336,7 +336,7 @@ export default function AdminOrders() {
  </DialogHeader>
 
  {selectedOrder && (
- <div className="space-y-6">
+ <div className="space-y-4">
  <div className="grid grid-cols-2 gap-4 text-sm">
  <div>
  <p className="text-muted-foreground">Customer ID</p>

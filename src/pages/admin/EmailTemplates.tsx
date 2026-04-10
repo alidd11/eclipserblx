@@ -349,7 +349,7 @@ export default function EmailTemplates() {
 
  return (
  <AdminLayout requiredPermissions={['manage_settings']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-display font-bold">Email Templates</h1>
  <p className="text-sm text-muted-foreground">Preview all email templates with sample data</p>

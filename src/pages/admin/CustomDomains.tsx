@@ -144,7 +144,7 @@ export default function AdminCustomDomains() {
 
  return (
  <AdminLayout>
- <div className="space-y-6">
+ <div className="space-y-4">
  {/* Stats */}
  <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-4 md:overflow-visible">
  <div className="border border-border rounded-xl overflow-hidden min-w-[160px] flex-shrink-0 md:min-w-0">

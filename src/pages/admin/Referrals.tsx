@@ -134,7 +134,7 @@ export default function AdminReferrals() {
 
  return (
  <AdminLayout requiredPermissions={['view_referrals']}>
- <div className="space-y-6">
+ <div className="space-y-4">
  {!isInsideHub && (
  <>
  <div>
