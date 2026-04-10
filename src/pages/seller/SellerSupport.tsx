@@ -16,7 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { toast } from 'sonner';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 
 const TICKET_CATEGORIES = [
   { value: 'account_link_change', label: 'Account Link Change', icon: LinkIcon, description: 'Request to update Discord or Roblox account' },
@@ -104,8 +104,7 @@ export default function SellerSupport() {
       if (error) throw error;
       return data as Ticket[];
     },
-    enabled: !!user?.id,
-  });
+    enabled: !!user?.id });
 
   // Fetch messages for selected ticket
   const { data: messages } = useQuery({
@@ -122,8 +121,7 @@ export default function SellerSupport() {
       if (error) throw error;
       return data as TicketMessage[];
     },
-    enabled: !!selectedTicket?.id,
-  });
+    enabled: !!selectedTicket?.id });
 
   // Create ticket mutation
   const createTicket = useMutation({
@@ -136,8 +134,7 @@ export default function SellerSupport() {
         store_id: store?.id || null,
         category,
         subject,
-        description,
-      };
+        description };
       
       if (category === 'account_link_change') {
         ticketData.link_change_type = linkChangeType;
@@ -162,9 +159,7 @@ export default function SellerSupport() {
           category,
           customer_name: store?.name || 'Unknown Seller',
           ticket_id: ticket?.id,
-          type: 'seller',
-        },
-      }).catch(err => console.error('Failed to send seller ticket notification:', err));
+          type: 'seller' } }).catch(err => console.error('Failed to send seller ticket notification:', err));
     },
     onSuccess: () => {
       toast.success('Ticket Created', { description: 'Your support ticket has been submitted.' });
@@ -174,8 +169,7 @@ export default function SellerSupport() {
     },
     onError: (error) => {
       toast.error('Error', { description: error.message });
-    },
-  });
+    } });
 
   // Send message mutation
   const sendMessage = useMutation({
@@ -205,8 +199,7 @@ export default function SellerSupport() {
           user_id: user.id,
           message: newMessage,
           is_admin: false,
-          attachment_url: attachmentUrl,
-        });
+          attachment_url: attachmentUrl });
       
       if (error) throw error;
     },
@@ -217,8 +210,7 @@ export default function SellerSupport() {
     },
     onError: (error) => {
       toast.error('Error', { description: error.message });
-    },
-  });
+    } });
 
   const resetForm = () => {
     setCategory('');

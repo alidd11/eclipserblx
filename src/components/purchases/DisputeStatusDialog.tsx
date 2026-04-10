@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,12 +10,11 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import { format} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import {
   AlertTriangle, Clock, Check, X, ShieldAlert, Shield, Loader2,
-  ArrowUpRight, Store, FileImage,
-} from 'lucide-react';
+  ArrowUpRight, Store, FileImage } from 'lucide-react';
 import { DisputeEvidenceUpload } from './DisputeEvidenceUpload';
 import { formatGBP } from '@/lib/formatters';
 
@@ -31,8 +29,7 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.E
   denied: { label: 'Denied by Seller', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: X },
   approved: { label: 'Approved', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', icon: Check },
   escalated: { label: 'Escalated to Eclipse', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: ShieldAlert },
-  resolved: { label: 'Resolved', color: 'bg-primary/10 text-primary border-primary/20', icon: Shield },
-};
+  resolved: { label: 'Resolved', color: 'bg-primary/10 text-primary border-primary/20', icon: Shield } };
 
 export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeStatusDialogProps) {
   const { user } = useAuth();
@@ -51,8 +48,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
       if (error) throw error;
       return data;
     },
-    enabled: open && !!disputeId,
-  });
+    enabled: open && !!disputeId });
 
   // Fetch evidence files
   const { data: evidence } = useQuery({
@@ -66,16 +62,14 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
       if (error) throw error;
       return data || [];
     },
-    enabled: open && !!disputeId,
-  });
+    enabled: open && !!disputeId });
 
   const escalateMutation = useMutation({
     mutationFn: async () => {
       if (!escalationReason.trim()) throw new Error('Please provide a reason');
       const { error } = await supabase.rpc('escalate_dispute', {
         p_dispute_id: disputeId,
-        p_reason: escalationReason.trim(),
-      });
+        p_reason: escalationReason.trim() });
       if (error) throw error;
 
       // Send Discord notification
@@ -86,9 +80,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
           category: 'Dispute',
           customer_name: user?.user_metadata?.display_name || user?.email || 'Unknown',
           type: 'customer',
-          is_escalation: true,
-        },
-      }).catch(err => console.error('Notification failed:', err));
+          is_escalation: true } }).catch(err => console.error('Notification failed:', err));
     },
     onSuccess: () => {
       toast.success('Dispute escalated to Eclipse for review');
@@ -97,8 +89,7 @@ export function DisputeStatusDialog({ open, onOpenChange, disputeId }: DisputeSt
       queryClient.invalidateQueries({ queryKey: ['dispute-status', disputeId] });
       queryClient.invalidateQueries({ queryKey: ['user-disputes'] });
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to escalate'),
-  });
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Failed to escalate') });
 
   // Build timeline
   const timeline: { label: string; time: string; icon: React.ElementType; color: string }[] = [];

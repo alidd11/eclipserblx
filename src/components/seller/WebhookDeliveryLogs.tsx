@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface DeliveryLog {
@@ -38,8 +38,7 @@ export function WebhookDeliveryLogs({ webhookId }: WebhookDeliveryLogsProps) {
       if (error) throw error;
       return (data || []) as unknown as DeliveryLog[];
     },
-    enabled: expanded,
-  });
+    enabled: expanded });
 
   return (
     <div className="border-t border-border">

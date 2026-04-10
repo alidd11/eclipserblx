@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { SellerTicketDrawer } from '@/components/admin/seller-tickets/SellerTicketDrawer';
 
@@ -82,8 +82,7 @@ export default function SellerTickets() {
 
       const profilesMap = new Map(profilesData.map(p => [p.user_id, p]));
       return ticketsData.map(t => ({ ...t, profiles: profilesMap.get(t.user_id) || null })) as Ticket[];
-    },
-  });
+    } });
 
   const getStatusBadge = (status: string) => {
     const configs: Record<string, { label: string; className: string }> = {
@@ -91,8 +90,7 @@ export default function SellerTickets() {
       in_progress: { label: 'In Progress', className: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
       awaiting_seller: { label: 'Awaiting Seller', className: 'bg-orange-500/10 text-orange-500 border-orange-500/30' },
       resolved: { label: 'Resolved', className: 'bg-green-500/10 text-green-500 border-green-500/30' },
-      closed: { label: 'Closed', className: '' },
-    };
+      closed: { label: 'Closed', className: '' } };
     const c = configs[status];
     if (!c) return null;
     return <Badge variant="outline" className={c.className}>{c.label}</Badge>;

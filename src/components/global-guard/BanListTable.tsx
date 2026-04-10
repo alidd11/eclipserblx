@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { Search, MoreVertical, Ban, CheckCircle, Clock, Trash2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,14 +11,12 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+  TableRow } from '@/components/ui/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { GlobalBan } from '@/types/global-guard';
 
 interface BanListTableProps {

@@ -1,4 +1,4 @@
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { GlobalGuardLayout, GlobalGuardHeader } from '@/components/global-guard/GlobalGuardLayout';
 import { useGlobalGuardData } from '@/hooks/useGlobalGuardData';
 import { Badge } from '@/components/ui/badge';

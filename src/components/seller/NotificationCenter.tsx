@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, CheckCircle } from 'lucide-react';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
@@ -15,8 +15,7 @@ const TYPE_STYLES: Record<string, string> = {
   payout: 'text-green-500 bg-green-500/10',
   refund_request: 'text-destructive bg-destructive/10',
   moderation: 'text-orange-500 bg-orange-500/10',
-  leak_detected: 'text-red-500 bg-red-500/10',
-};
+  leak_detected: 'text-red-500 bg-red-500/10' };
 
 export function NotificationCenter() {
   const { user } = useAuth();
@@ -35,8 +34,7 @@ export function NotificationCenter() {
       return data || [];
     },
     enabled: !!user?.id,
-    staleTime: 60 * 1000,
-  });
+    staleTime: 60 * 1000 });
 
   const unreadCount = notifications?.filter(n => !n.read_at).length || 0;
 

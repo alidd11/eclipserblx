@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow, isPast, isFuture } formatRelative } from '@/lib/dateUtils';
+import { format, isPast, isFuture } formatRelative } from '@/lib/dateUtils';
 import { Calendar, Clock, Percent, Plus, Trash2, Megaphone, Timer } from 'lucide-react';
 
 export default function SellerCampaigns() {
@@ -24,8 +24,7 @@ export default function SellerCampaigns() {
     discount_percent: 10,
     starts_at: '',
     ends_at: '',
-    apply_to_all: true,
-  });
+    apply_to_all: true });
 
   const { data: campaigns, isLoading } = useQuery({
     queryKey: ['seller-campaigns', store?.id],
@@ -38,8 +37,7 @@ export default function SellerCampaigns() {
         .order('created_at', { ascending: false });
       return data || [];
     },
-    enabled: !!store?.id,
-  });
+    enabled: !!store?.id });
 
   const createMutation = useMutation({
     mutationFn: async () => {
@@ -50,8 +48,7 @@ export default function SellerCampaigns() {
         discount_percent: newCampaign.discount_percent,
         starts_at: new Date(newCampaign.starts_at).toISOString(),
         ends_at: new Date(newCampaign.ends_at).toISOString(),
-        apply_to_all: newCampaign.apply_to_all,
-      });
+        apply_to_all: newCampaign.apply_to_all });
       if (error) throw error;
     },
     onSuccess: () => {
@@ -60,8 +57,7 @@ export default function SellerCampaigns() {
       setShowCreate(false);
       setNewCampaign({ name: '', discount_percent: 10, starts_at: '', ends_at: '', apply_to_all: true });
     },
-    onError: (e) => toast.error(e.message),
-  });
+    onError: (e) => toast.error(e.message) });
 
   const toggleMutation = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
@@ -71,8 +67,7 @@ export default function SellerCampaigns() {
         .eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['seller-campaigns'] }),
-  });
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['seller-campaigns'] }) });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -82,8 +77,7 @@ export default function SellerCampaigns() {
     onSuccess: () => {
       toast.success('Campaign deleted');
       queryClient.invalidateQueries({ queryKey: ['seller-campaigns'] });
-    },
-  });
+    } });
 
   const getCampaignStatus = (campaign: { is_active: boolean; starts_at: string; ends_at: string }) => {
     if (!campaign.is_active) return { label: 'Paused', variant: 'secondary' as const };

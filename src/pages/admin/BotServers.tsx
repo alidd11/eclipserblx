@@ -12,7 +12,7 @@ import {
   Bot, Calendar, User, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import { format} formatRelative } from '@/lib/dateUtils';
 
 interface BotInstallation {
   id: string;
@@ -78,8 +78,7 @@ export default function BotServers() {
         ...install,
         profile: install.user_id ? profileMap[install.user_id] : null
       })) as BotInstallation[];
-    },
-  });
+    } });
 
   // Stats
   const totalServers = installations.length;

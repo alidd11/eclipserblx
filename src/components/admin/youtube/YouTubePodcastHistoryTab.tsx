@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { ExternalLink, Youtube, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 
 export function YouTubePodcastHistoryTab() {
  const { data: podcasts, isLoading, refetch } = useQuery({
@@ -16,14 +16,12 @@ export function YouTubePodcastHistoryTab() {
  .order('created_at', { ascending: false });
  if (error) throw error;
  return data;
- },
- });
+ } });
 
  const retryUpload = async (id: string) => {
  toast.info('Retrying upload...');
  const { error } = await supabase.functions.invoke('upload-youtube-podcast', {
- body: { podcastId: id },
- });
+ body: { podcastId: id } });
  if (error) toast.error('Retry failed: ' + error.message);
  else { toast.success('Upload retried'); refetch(); }
  };

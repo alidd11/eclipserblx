@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ShoppingCart } from 'lucide-react';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
@@ -28,8 +28,7 @@ export function RecentOrdersTable() {
       return data || [];
     },
     enabled: !!store?.id,
-    staleTime: 2 * 60 * 1000,
-  });
+    staleTime: 2 * 60 * 1000 });
 
   const statusVariant = (s: string) => {
     if (s === 'completed') return 'default' as const;

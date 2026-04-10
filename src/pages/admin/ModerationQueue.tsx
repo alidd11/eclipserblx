@@ -13,7 +13,7 @@ import {
  Package, Store, Star, Upload, Clock, AlertTriangle,
  ShieldAlert, ExternalLink, ArrowRight
 } from 'lucide-react';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 
 type QueueTab = 'all' | 'products' | 'stores' | 'reviews' | 'submissions';
 
@@ -47,8 +47,7 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000,
- });
+ staleTime: 30_000 });
 
  const { data: pendingStoreApps = [], isLoading: loadingStores } = useQuery({
  queryKey: ['mod-queue-stores'],
@@ -62,8 +61,7 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000,
- });
+ staleTime: 30_000 });
 
  const { data: pendingReviews = [], isLoading: loadingReviews } = useQuery({
  queryKey: ['mod-queue-reviews'],
@@ -77,8 +75,7 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000,
- });
+ staleTime: 30_000 });
 
  const { data: pendingSubmissions = [], isLoading: loadingSubmissions } = useQuery({
  queryKey: ['mod-queue-submissions'],
@@ -92,8 +89,7 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000,
- });
+ staleTime: 30_000 });
 
  const isLoading = loadingProducts || loadingStores || loadingReviews || loadingSubmissions;
 
@@ -112,8 +108,7 @@ export default function ModerationQueue() {
  severity: hasModerationFlags ? 'critical' : 'warning',
  createdAt: p.created_at,
  href: '/admin/seller-product-review',
- flagged: hasModerationFlags,
- });
+ flagged: hasModerationFlags });
  });
 
  pendingStoreApps.forEach(a => {
@@ -125,8 +120,7 @@ export default function ModerationQueue() {
  status: 'Pending Approval',
  severity: 'warning',
  createdAt: a.created_at,
- href: '/admin/store-applications',
- });
+ href: '/admin/store-applications' });
  });
 
  pendingReviews.forEach(r => {
@@ -138,8 +132,7 @@ export default function ModerationQueue() {
  status: 'Awaiting Approval',
  severity: 'info',
  createdAt: r.created_at,
- href: '/admin/reviews',
- });
+ href: '/admin/reviews' });
  });
 
  pendingSubmissions.forEach(s => {
@@ -151,8 +144,7 @@ export default function ModerationQueue() {
  status: 'Pending Review',
  severity: 'warning',
  createdAt: s.created_at,
- href: '/admin/developer-submissions',
- });
+ href: '/admin/developer-submissions' });
  });
 
  // Sort: critical first, then by date (oldest first)
@@ -181,15 +173,13 @@ export default function ModerationQueue() {
  products: allItems.filter(i => i.type === 'product').length,
  stores: allItems.filter(i => i.type === 'store').length,
  reviews: allItems.filter(i => i.type === 'review').length,
- submissions: allItems.filter(i => i.type === 'submission').length,
- };
+ submissions: allItems.filter(i => i.type === 'submission').length };
 
  const typeConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
  product: { icon: Package, color: 'text-blue-500', label: 'Product' },
  store: { icon: Store, color: 'text-emerald-500', label: 'Store App' },
  review: { icon: Star, color: 'text-amber-500', label: 'Review' },
- submission: { icon: Upload, color: 'text-purple-500', label: 'Submission' },
- };
+ submission: { icon: Upload, color: 'text-purple-500', label: 'Submission' } };
 
  const severityBadge = (severity: string) => {
  if (severity === 'critical') return <Badge variant="destructive" className="text-xs">Flagged</Badge>;

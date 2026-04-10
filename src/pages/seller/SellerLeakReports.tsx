@@ -15,10 +15,9 @@ import {
   Shield, Upload, AlertTriangle, CheckCircle2, Clock, XCircle,
   FileSearch, Radar, ExternalLink, X, Crown, FileWarning,
   Hash, User, Fingerprint, CalendarDays, File as FileIcon,
-  Loader2, ChevronDown, ChevronUp, MoreVertical, EyeOff, CheckCircle, Ban,
-} from 'lucide-react';
+  Loader2, ChevronDown, ChevronUp, MoreVertical, EyeOff, CheckCircle, Ban } from 'lucide-react';
 import { toast } from 'sonner';
-import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import { format} formatRelative } from '@/lib/dateUtils';
 
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
 const ALLOWED_EXTENSIONS = ['.lua', '.rbxm', '.rbxl', '.rbxmx', '.rbxlx', '.zip', '.rar', '.txt', '.json', '.png', '.jpg', '.jpeg', '.gif', '.mp3', '.ogg', '.wav'];
@@ -70,8 +69,7 @@ export default function SellerLeakReports() {
         .order('name');
       return data || [];
     },
-    enabled: !!store?.id,
-  });
+    enabled: !!store?.id });
 
   const { data: reports, refetch } = useQuery({
     queryKey: ['leak-reports', store?.id],
@@ -84,8 +82,7 @@ export default function SellerLeakReports() {
         .order('created_at', { ascending: false });
       return (data || []) as any[];
     },
-    enabled: !!store?.id,
-  });
+    enabled: !!store?.id });
 
   const [statusFilter, setStatusFilter] = useState<string>('active');
 
@@ -106,8 +103,7 @@ export default function SellerLeakReports() {
       const { data } = await query;
       return (data || []) as any[];
     },
-    enabled: !!store?.id && isPro,
-  });
+    enabled: !!store?.id && isPro });
 
   const toggleScan = useMutation({
     mutationFn: async (enabled: boolean) => {
@@ -122,8 +118,7 @@ export default function SellerLeakReports() {
       toast.success(enabled ? 'Auto-scan enabled' : 'Auto-scan disabled');
       queryClient.invalidateQueries({ queryKey: ['seller-status'] });
     },
-    onError: () => toast.error('Failed to update auto-scan setting'),
-  });
+    onError: () => toast.error('Failed to update auto-scan setting') });
 
   const updateResultStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -138,13 +133,11 @@ export default function SellerLeakReports() {
         ignored: 'Marked as ignored',
         resolved: 'Marked as resolved',
         false_positive: 'Marked as false positive',
-        active: 'Restored to active',
-      };
+        active: 'Restored to active' };
       toast.success(labels[status] || 'Status updated');
       queryClient.invalidateQueries({ queryKey: ['leak-scan-results'] });
     },
-    onError: () => toast.error('Failed to update status'),
-  });
+    onError: () => toast.error('Failed to update status') });
 
   // --- File validation & handling ---
 
@@ -226,8 +219,7 @@ export default function SellerLeakReports() {
           {
             method: 'POST',
             headers: { Authorization: `Bearer ${session.access_token}` },
-            body: formData,
-          }
+            body: formData }
         );
 
         const result = await res.json();
@@ -269,8 +261,7 @@ export default function SellerLeakReports() {
   const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
     pending: { icon: Clock, color: 'text-warning', label: 'Pending' },
     confirmed: { icon: CheckCircle2, color: 'text-destructive', label: 'Confirmed Leak' },
-    dismissed: { icon: XCircle, color: 'text-muted-foreground', label: 'Dismissed' },
-  };
+    dismissed: { icon: XCircle, color: 'text-muted-foreground', label: 'Dismissed' } };
 
   return (
     <SellerLayout>

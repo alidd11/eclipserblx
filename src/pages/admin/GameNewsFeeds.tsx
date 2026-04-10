@@ -11,8 +11,7 @@ import {
  SelectContent,
  SelectItem,
  SelectTrigger,
- SelectValue,
-} from '@/components/ui/select';
+ SelectValue } from '@/components/ui/select';
 import {
  Dialog,
  DialogContent,
@@ -20,12 +19,11 @@ import {
  DialogFooter,
  DialogHeader,
  DialogTitle,
- DialogTrigger,
-} from '@/components/ui/dialog';
+ DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Rss, Plus, Trash2, Loader2, RefreshCw, Clock, ExternalLink, Gamepad2, Settings } from 'lucide-react';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 
 interface GameNewsFeed {
  id: string;
@@ -53,8 +51,7 @@ const POPULAR_GAMES = [
  feed_type: 'rss',
  description: 'Roblox DevForum — Studio betas, API updates, engine changelogs',
  icon_url: 'https://devforum-uploads.s3.dualstack.us-east-2.amazonaws.com/uploads/optimized/4X/3/4/e/34e3a04d95f8ed0e8f94a95f0e62c5be8a5c4c2c_2_180x180.png',
- embed_color: 0x00BB00,
- },
+ embed_color: 0x00BB00 },
 ];
 
 // Free Game Alert presets
@@ -74,8 +71,7 @@ export default function GameNewsFeeds() {
  feed_type: 'rss',
  discord_channel_id: '',
  ping_role_id: '',
- check_interval_minutes: 10,
- });
+ check_interval_minutes: 10 });
 
  const { data: feeds, isLoading } = useQuery({
  queryKey: ['game-news-feeds'],
@@ -86,8 +82,7 @@ export default function GameNewsFeeds() {
  .order('created_at', { ascending: false });
  if (error) throw error;
  return data as GameNewsFeed[];
- },
- });
+ } });
 
  // Initialize per-feed ping role inputs from DB
  useEffect(() => {
@@ -129,8 +124,7 @@ export default function GameNewsFeeds() {
  check_interval_minutes: feed.check_interval_minutes,
  icon_url: feed.icon_url || null,
  embed_color: feed.embed_color || null,
- free_only: feed.free_only ?? false,
- } as any);
+ free_only: feed.free_only ?? false } as any);
  if (error) throw error;
  },
  onSuccess: () => {
@@ -146,8 +140,7 @@ export default function GameNewsFeeds() {
  onError: (err: Error) => {
  console.error('[GameNewsFeeds] Add feed error:', err);
  toast.error(err?.message || 'Failed to add feed');
- },
- });
+ } });
 
  const toggleMutation = useMutation({
  mutationFn: async ({ id, enabled }: { id: string; enabled: boolean }) => {
@@ -160,8 +153,7 @@ export default function GameNewsFeeds() {
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
  },
- onError: (err: Error) => toast.error(err.message),
- });
+ onError: (err: Error) => toast.error(err.message) });
 
  const deleteMutation = useMutation({
  mutationFn: async (id: string) => {
@@ -172,8 +164,7 @@ export default function GameNewsFeeds() {
  queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
  toast.success('Feed removed');
  },
- onError: (err: Error) => toast.error(err.message),
- });
+ onError: (err: Error) => toast.error(err.message) });
 
  const pollMutation = useMutation({
  mutationFn: async () => {
@@ -185,8 +176,7 @@ export default function GameNewsFeeds() {
  queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
  toast.success(`Poll complete — ${data?.posted ?? 0} new articles posted`);
  },
- onError: (err: Error) => toast.error(err.message),
- });
+ onError: (err: Error) => toast.error(err.message) });
 
  const updateFeedPingRoleMutation = useMutation({
  mutationFn: async ({ id, roleId }: { id: string; roleId: string }) => {
@@ -200,8 +190,7 @@ export default function GameNewsFeeds() {
  queryClient.invalidateQueries({ queryKey: ['game-news-feeds'] });
  toast.success('Ping role updated');
  },
- onError: (err: Error) => toast.error(err.message),
- });
+ onError: (err: Error) => toast.error(err.message) });
 
  const isFreeGamePreset = (preset: typeof POPULAR_GAMES[0]) =>
  FREE_GAME_FEEDS.some(f => f.feed_url === preset.feed_url);
@@ -220,8 +209,7 @@ export default function GameNewsFeeds() {
  discord_channel_id: isFreeGamePreset(preset) ? FREE_GAMES_CHANNEL_ID : DEFAULT_CHANNEL_ID,
  ping_role_id: isFreeGamePreset(preset) ? FREE_GAMES_PING_ROLE_ID : '',
  check_interval_minutes: 10,
- free_only: isFreeGamePreset(preset),
- });
+ free_only: isFreeGamePreset(preset) });
  }
  };
 
@@ -236,8 +224,7 @@ export default function GameNewsFeeds() {
  check_interval_minutes: 10,
  icon_url: (selectedPreset as any).icon_url || null,
  embed_color: (selectedPreset as any).embed_color || null,
- free_only: isFreeGamePreset(selectedPreset),
- });
+ free_only: isFreeGamePreset(selectedPreset) });
  };
 
  return (

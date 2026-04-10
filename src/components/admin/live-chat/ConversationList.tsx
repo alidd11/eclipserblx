@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { Conversation, ISSUE_CATEGORY_LABELS, ISSUE_CATEGORY_COLORS } from './ChatConstants';
 
 interface ConversationListProps {
@@ -15,8 +15,7 @@ export function ConversationList({
   conversations,
   selectedConversation,
   isLoading,
-  onSelect,
-}: ConversationListProps) {
+  onSelect }: ConversationListProps) {
   const activeConversations = conversations.filter(c => c.status !== 'closed');
 
   return (

@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { supabase } from '@/integrations/supabase/client';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 
 interface ArchivedApplication {
  id: string;
@@ -47,8 +47,7 @@ export default function AdminArchivedApplications() {
  
  if (error) throw error;
  return { applications: data as ArchivedApplication[], totalCount: count || 0 };
- },
- });
+ } });
 
  const applications = applicationsData?.applications;
  const totalCount = applicationsData?.totalCount || 0;
@@ -78,8 +77,7 @@ export default function AdminArchivedApplications() {
  const stats = {
  total: applications?.length || 0,
  accepted: applications?.filter(a => a.status === 'accepted').length || 0,
- rejected: applications?.filter(a => a.status === 'rejected').length || 0,
- };
+ rejected: applications?.filter(a => a.status === 'rejected').length || 0 };
 
  return (
  <AdminLayout requiredPermissions={['review_applications']}>

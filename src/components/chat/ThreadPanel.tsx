@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import {} formatRelative } from '@/lib/dateUtils';
 import { RichMessageContent } from './RichMessageContent';
 import { useChatScroll } from './useChatScroll';
 import { useThreadMessages } from './useThreadMessages';
@@ -28,8 +28,7 @@ export function ThreadPanel({
   userRoles,
   getRoleBadgeStyle,
   currentUserId,
-  onClose,
-}: ThreadPanelProps) {
+  onClose }: ThreadPanelProps) {
   const [reply, setReply] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

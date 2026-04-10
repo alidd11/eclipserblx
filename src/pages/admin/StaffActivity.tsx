@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+import { format} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 
 interface StaffActivityRecord {
@@ -32,8 +32,7 @@ const ACTIVITY_ICONS: Record<string, any> = {
  chat_claimed: MessageCircle,
  chat_completed: MessageCircle,
  ticket_claimed: Ticket,
- ticket_completed: Ticket,
-};
+ ticket_completed: Ticket };
 
 const ACTIVITY_COLORS: Record<string, string> = {
  login: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -41,8 +40,7 @@ const ACTIVITY_COLORS: Record<string, string> = {
  chat_claimed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
  chat_completed: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
  ticket_claimed: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
- ticket_completed: 'bg-teal-500/20 text-teal-400 border-teal-500/30',
-};
+ ticket_completed: 'bg-teal-500/20 text-teal-400 border-teal-500/30' };
 
 const ACTIVITY_LABELS: Record<string, string> = {
  login: 'Logged In',
@@ -50,8 +48,7 @@ const ACTIVITY_LABELS: Record<string, string> = {
  chat_claimed: 'Claimed Chat',
  chat_completed: 'Completed Chat',
  ticket_claimed: 'Claimed Ticket',
- ticket_completed: 'Completed Ticket',
-};
+ ticket_completed: 'Completed Ticket' };
 
 export default function StaffActivityPage() {
  const [searchParams, setSearchParams] = useSearchParams();
@@ -75,8 +72,7 @@ export default function StaffActivityPage() {
  .select('user_id')
  .eq('role', 'admin');
  return data?.map(r => r.user_id) ?? [];
- },
- });
+ } });
 
  // Fetch staff activity with profiles (excluding admins)
  const { data: activities, isLoading, refetch } = useQuery({
@@ -112,11 +108,9 @@ export default function StaffActivityPage() {
 
  return filteredData.map(activity => ({
  ...activity,
- profile: profileMap.get(activity.user_id),
- })) as StaffActivityRecord[];
+ profile: profileMap.get(activity.user_id) })) as StaffActivityRecord[];
  },
- enabled: adminUserIds.length > 0 || adminUserIds !== undefined,
- });
+ enabled: adminUserIds.length > 0 || adminUserIds !== undefined });
 
  // Fetch staff list for filter (excluding admins)
  const { data: staffList } = useQuery({
@@ -140,8 +134,7 @@ export default function StaffActivityPage() {
 
  return profiles ?? [];
  },
- enabled: adminUserIds.length > 0 || adminUserIds !== undefined,
- });
+ enabled: adminUserIds.length > 0 || adminUserIds !== undefined });
 
  // Stats for today
  const { data: todayStats } = useQuery({
@@ -162,8 +155,7 @@ export default function StaffActivityPage() {
  chats_claimed: 0,
  chats_completed: 0,
  tickets_claimed: 0,
- tickets_completed: 0,
- };
+ tickets_completed: 0 };
 
  (data ?? []).forEach(a => {
  if (a.activity_type === 'login') counts.logins++;
@@ -174,8 +166,7 @@ export default function StaffActivityPage() {
  });
 
  return counts;
- },
- });
+ } });
 
  // Real-time subscription
  useEffect(() => {
@@ -186,8 +177,7 @@ export default function StaffActivityPage() {
  {
  event: 'INSERT',
  schema: 'public',
- table: 'staff_activity',
- },
+ table: 'staff_activity' },
  () => {
  refetch();
  }

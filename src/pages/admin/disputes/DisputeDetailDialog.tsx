@@ -5,17 +5,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
-  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
-} from '@/components/ui/dialog';
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   AlertTriangle, CheckCircle, XCircle, Clock, ShieldAlert, Shield,
   Snowflake, User, Store, Banknote, MessageSquare, ExternalLink, Timer,
-  Loader2, FileImage, Calendar,
-} from 'lucide-react';
-import { format, formatDistanceToNow } formatRelative } from '@/lib/dateUtils';
+  Loader2, FileImage, Calendar } from 'lucide-react';
+import { format} formatRelative } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -37,8 +34,7 @@ interface Props {
 
 export function DisputeDetailDialog({
   dispute, onClose, adminResponse, onAdminResponseChange,
-  newStatus, onNewStatusChange, onUpdate, isUpdating,
-}: Props) {
+  newStatus, onNewStatusChange, onUpdate, isUpdating }: Props) {
   if (!dispute) return null;
 
   return (
@@ -324,8 +320,7 @@ function DisputeEvidenceSection({ disputeId }: { disputeId: string }) {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!disputeId,
-  });
+    enabled: !!disputeId });
 
   if (isLoading || !evidence || evidence.length === 0) return null;
 

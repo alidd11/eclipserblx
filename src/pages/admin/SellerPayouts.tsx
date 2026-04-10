@@ -13,24 +13,21 @@ import {
  DialogContent,
  DialogHeader,
  DialogTitle,
- DialogFooter,
-} from "@/components/ui/dialog";
+ DialogFooter } from "@/components/ui/dialog";
 import {
  Select,
  SelectContent,
  SelectItem,
  SelectTrigger,
- SelectValue,
-} from "@/components/ui/select";
+ SelectValue } from "@/components/ui/select";
 import {
  Table,
  TableBody,
  TableCell,
  TableHead,
  TableHeader,
- TableRow,
-} from "@/components/ui/table";
-import { format, formatDistanceToNow } from "date-fns";
+ TableRow } from "@/components/ui/table";
+import { format} from "date-fns";
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { formatGBP } from '@/lib/formatters';
 
@@ -112,8 +109,7 @@ export default function SellerPayouts() {
  throw error;
  }
  return data;
- },
- });
+ } });
 
  const processMutation = useMutation({
  mutationFn: async ({ payoutId, status, notes }: { payoutId: string; status: string; notes: string }) => {
@@ -127,8 +123,7 @@ export default function SellerPayouts() {
  status,
  notes,
  processed_at: new Date().toISOString(),
- processed_by: user?.id,
- })
+ processed_by: user?.id })
  .eq("id", payoutId);
 
  if (error) throw error;
@@ -146,8 +141,7 @@ export default function SellerPayouts() {
  .from("seller_balances")
  .update({
  available_balance: Math.max(0, (currentBalance.available_balance || 0) - payout.amount),
- total_paid: (currentBalance.total_paid || 0) + payout.amount,
- })
+ total_paid: (currentBalance.total_paid || 0) + payout.amount })
  .eq("user_id", payout.seller_id);
  }
  }
@@ -164,8 +158,7 @@ export default function SellerPayouts() {
  await supabase
  .from("seller_balances")
  .update({
- available_balance: (currentBalance.available_balance || 0) + payout.amount,
- })
+ available_balance: (currentBalance.available_balance || 0) + payout.amount })
  .eq("user_id", payout.seller_id);
  }
  }
@@ -179,15 +172,13 @@ export default function SellerPayouts() {
  onError: (error: Error) => {
  console.error("[SellerPayouts] Process error:", error);
  toast.error(error?.message || "Failed to process payout");
- },
- });
+ } });
 
  // Wise payout mutation for bank transfers
  const wisePayoutMutation = useMutation({
  mutationFn: async ({ payoutId }: { payoutId: string }) => {
  const { data, error } = await supabase.functions.invoke("wise-payout", {
- body: { action: "process-seller-payout", payoutId },
- });
+ body: { action: "process-seller-payout", payoutId } });
 
  if (error) throw error;
  if (!data.success && !data.awaiting_funds) throw new Error(data.error || "Failed to process Wise payout");
@@ -207,8 +198,7 @@ export default function SellerPayouts() {
  },
  onError: (error: Error) => {
  toast.error(error.message || "Failed to process Wise payout");
- },
- });
+ } });
 
  const getStatusBadge = (status: string, payout?: SellerPayout) => {
  const autoTag = payout?.auto_processed ? (
@@ -602,8 +592,7 @@ export default function SellerPayouts() {
  onClick={() => processMutation.mutate({
  payoutId: selectedPayout.id,
  status: "rejected",
- notes,
- })}
+ notes })}
  >
  {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
  Reject
@@ -629,8 +618,7 @@ export default function SellerPayouts() {
  onClick={() => processMutation.mutate({
  payoutId: selectedPayout.id,
  status: "completed",
- notes,
- })}
+ notes })}
  >
  {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
  Mark as Paid
