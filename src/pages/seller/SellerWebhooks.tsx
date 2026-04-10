@@ -38,9 +38,9 @@ export default function SellerWebhooks() {
   const { data: webhooks, isLoading } = useQuery({
     queryKey: ['seller-webhooks', storeId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('seller_webhooks')
-        .select('*')
+      const { data, error } = await (supabase
+        .from('seller_webhooks_safe' as any)
+        .select('*') as any)
         .eq('store_id', storeId!)
         .order('created_at', { ascending: false });
       if (error) throw error;

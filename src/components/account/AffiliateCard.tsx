@@ -69,13 +69,13 @@ export function AffiliateCard() {
   queryKey: ['user-payment-details', user?.id],
   queryFn: async () => {
    if (!user?.id) return null;
-   const { data, error } = await supabase
-    .from('user_payment_details')
-    .select('preferred_payout_method, stripe_account_id')
-    .eq('user_id', user.id)
-    .maybeSingle();
-   if (error) throw error;
-   return data;
+    const { data, error } = await supabase
+     .from('user_payment_details_safe' as any)
+     .select('preferred_payout_method, stripe_account_id')
+     .eq('user_id', user.id)
+     .maybeSingle() as { data: { preferred_payout_method: string | null; stripe_account_id: string | null } | null; error: any };
+    if (error) throw error;
+    return data;
   },
   enabled: !!user?.id,
  });

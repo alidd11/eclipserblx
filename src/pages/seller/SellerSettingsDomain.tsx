@@ -62,9 +62,9 @@ export default function SellerSettingsDomain() {
     queryKey: ['cf-creds', store?.id],
     queryFn: async () => {
       if (!store) return null;
-      const { data } = await supabase
-        .from('store_credentials')
-        .select('cloudflare_api_token, cloudflare_zone_id')
+      const { data } = await (supabase
+        .from('store_credentials_safe' as any)
+        .select('cloudflare_api_token, cloudflare_zone_id') as any)
         .eq('store_id', store.id)
         .single();
       return data;

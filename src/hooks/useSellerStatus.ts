@@ -218,14 +218,14 @@ export function useSellerStatus() {
 
       // Fetch credentials and payment details in parallel
       const [{ data: credentialsData }, { data: paymentData }] = await Promise.all([
-        supabase
-          .from('store_credentials')
-          .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id, product_drops_role_id, early_product_drops_role_id')
+        (supabase
+          .from('store_credentials_safe' as any)
+          .select('discord_webhook_url, review_discord_webhook_url, discord_bot_token, discord_guild_id, discord_role_id, product_drops_role_id, early_product_drops_role_id') as any)
           .eq('store_id', storeData.id)
           .maybeSingle(),
-        supabase
-          .from('store_payment_details')
-          .select('stripe_account_id, paypal_email, payout_method, payouts_enabled, bank_name, bank_account_holder, bank_account_number, bank_routing_number, bank_swift_bic, bank_country')
+        (supabase
+          .from('store_payment_details_safe' as any)
+          .select('stripe_account_id, paypal_email, payout_method, payouts_enabled, bank_name, bank_account_holder, bank_account_number, bank_routing_number, bank_swift_bic, bank_country') as any)
           .eq('store_id', storeData.id)
           .maybeSingle(),
       ]);

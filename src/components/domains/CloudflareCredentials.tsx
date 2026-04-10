@@ -29,9 +29,9 @@ export function CloudflareCredentials({ storeId }: CloudflareCredentialsProps) {
   const { data: creds, isLoading } = useQuery({
     queryKey: ['cf-creds', storeId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from('store_credentials')
-        .select('cloudflare_api_token, cloudflare_zone_id')
+      const { data } = await (supabase
+        .from('store_credentials_safe' as any)
+        .select('cloudflare_api_token, cloudflare_zone_id') as any)
         .eq('store_id', storeId)
         .single();
       return data;

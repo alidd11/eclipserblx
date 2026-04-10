@@ -30,11 +30,11 @@ export default function AdminAffiliates() {
  const { data: stats } = useQuery({
  queryKey: ['admin-affiliate-stats'],
  queryFn: async () => {
- const [commissionsRes, payoutsRes, balancesRes] = await Promise.all([
- supabase.from('affiliate_commissions').select('commission_amount, status'),
- supabase.from('affiliate_payouts').select('amount, status'),
- supabase.from('affiliate_balances').select('available_balance, total_earned'),
- ]);
+  const [commissionsRes, payoutsRes, balancesRes] = await Promise.all([
+  supabase.from('affiliate_commissions').select('commission_amount, status'),
+  supabase.from('affiliate_payouts').select('amount, status'),
+  supabase.from('affiliate_balances').select('available_balance, total_earned'),
+  ]) as any;
 
  const commissions = commissionsRes.data || [];
  const payouts = payoutsRes.data || [];
@@ -106,30 +106,30 @@ export default function AdminAffiliates() {
  const { data: payouts, isLoading: payoutsLoading } = useQuery({
  queryKey: ['admin-affiliate-payouts', payoutStatusFilter],
  queryFn: async () => {
- let query = supabase
- .from('affiliate_payouts')
- .select('*')
- .order('created_at', { ascending: false });
+  let query = (supabase
+  .from('affiliate_payouts_safe' as any)
+  .select('*') as any)
+  .order('created_at', { ascending: false });
 
- if (payoutStatusFilter !== 'all') {
- query = query.eq('status', payoutStatusFilter);
- }
+  if (payoutStatusFilter !== 'all') {
+  query = query.eq('status', payoutStatusFilter);
+  }
 
- const { data, error } = await query;
+  const { data, error } = await query;
  if (error) throw error;
 
  // Get user profiles
- const userIds = [...new Set(data.map(p => p.user_id))];
+ const userIds = [...new Set((data as any[]).map((p: any) => p.user_id))] as string[];
 
   const { data: profiles } = await supabase
   .from('profiles')
   .select('user_id, display_name, email, customer_id')
   .in('user_id', userIds);
 
-  const { data: paymentDetailsList } = await supabase
-  .from('user_payment_details')
-  .select('user_id, stripe_account_id')
-  .in('user_id', userIds);
+   const { data: paymentDetailsList } = await (supabase
+   .from('user_payment_details_safe' as any)
+   .select('user_id, stripe_account_id') as any)
+   .in('user_id', userIds);
 
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
   const paymentMap = new Map(paymentDetailsList?.map(pd => [pd.user_id, pd]) || []);
