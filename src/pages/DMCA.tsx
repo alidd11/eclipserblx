@@ -2,11 +2,17 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 const SITE_NAME = 'Eclipse';
 const CONTACT_EMAIL = 'legal@eclipserblx.com';
 
 export default function DMCA() {
+ usePageMeta({
+  title: 'DMCA & IP Policy',
+  description: 'Eclipse respects intellectual property rights. Read our DMCA takedown procedure and report copyright violations directly from any product page.',
+  canonicalPath: '/dmca',
+ });
  return (
  <MainLayout>
  <div className="container py-8 max-w-4xl">

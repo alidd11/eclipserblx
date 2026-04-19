@@ -10,9 +10,11 @@ import { useBadges } from '@/hooks/useBadges';
 import { useCurrency } from '@/hooks/useCurrency';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function OrderSuccess() {
   usePageTracking({ pagePath: '/order-success' });
+  usePageMeta({ title: 'Order Confirmed', description: 'Thank you for your purchase on Eclipse — your order is being processed and downloads will be available shortly.' });
   const { checkBadges } = useBadges();
   const { formatPrice } = useCurrency();
   const [searchParams] = useSearchParams();

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { LoginSignupForm } from '@/components/auth/LoginSignupForm';

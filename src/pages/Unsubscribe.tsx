@@ -3,8 +3,10 @@ import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { MailX, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function Unsubscribe() {
+  usePageMeta({ title: 'Unsubscribe', description: 'Manage your Eclipse email subscription preferences.', canonicalPath: '/unsubscribe' });
   const [params] = useSearchParams();
   const token = params.get('token');
   const [status, setStatus] = useState<'loading' | 'valid' | 'invalid' | 'done' | 'error'>('loading');

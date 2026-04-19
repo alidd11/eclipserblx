@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { TicketCard } from '@/components/support/TicketCard';
 import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
 import { Plus, Ticket, MessageSquare, Clock, CheckCircle } from 'lucide-react';

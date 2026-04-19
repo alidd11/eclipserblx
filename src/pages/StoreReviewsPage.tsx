@@ -26,6 +26,7 @@ import { usePublicStore } from '@/hooks/usePublicStore';
 import { usePublicReviews } from '@/hooks/usePublicReviews';
 import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function StoreReviewsPage() {
  const { storeSlug } = useParams<{ storeSlug: string }>();
@@ -34,6 +35,13 @@ export default function StoreReviewsPage() {
 
  // Fetch store details via centralised hook
  const { store, isLoading: storeLoading, notFound } = usePublicStore(storeSlug);
+
+ usePageMeta({
+   title: store ? `${store.name} Reviews` : 'Store Reviews',
+   description: store ? `Read verified buyer reviews of ${store.name} on Eclipse — see ratings, customer feedback and trust signals.` : undefined,
+   canonicalPath: storeSlug ? `/store/${storeSlug}/reviews` : undefined,
+   ogImage: store?.logo_url || undefined,
+ });
 
  // Fetch all reviews via centralised hook
  const { reviews, isLoading: reviewsLoading } = usePublicReviews({
