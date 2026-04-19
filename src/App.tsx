@@ -4,6 +4,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+// React Query Devtools — dev only, lazy-loaded so it never ships to production
+const ReactQueryDevtools = import.meta.env.DEV
+  ? lazy(() => import("@tanstack/react-query-devtools").then(m => ({ default: m.ReactQueryDevtools })))
+  : null;
 import { AuthProvider } from "@/hooks/useAuth";
 import { DeviceProvider } from "@/hooks/useDevice";
 import { ActiveStoreProvider } from "@/contexts/ActiveStoreContext";
@@ -144,6 +148,11 @@ function App() {
             </DeviceProvider>
           </CurrencyProvider>
         </CookieConsentProvider>
+        {ReactQueryDevtools && (
+          <Suspense fallback={null}>
+            <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
+          </Suspense>
+        )}
       </QueryClientProvider>
     </ConnectionErrorBoundary>
   );
