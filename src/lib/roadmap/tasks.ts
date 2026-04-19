@@ -100,9 +100,9 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
     tasks: [
       { key: 'mkt.products_public_view', title: 'products_public RLS view', description: 'Anonymous shoppers query a redacted view, not the raw table', probe: 'db:rowExists:products_public', seed: 'done' },
       { key: 'mkt.stores_public_view', title: 'stores_public RLS view', description: 'Storefronts isolated from internal store columns', probe: 'db:rowExists:stores_public', seed: 'done' },
-      { key: 'mkt.category_hierarchy', title: 'Roblox-style category hierarchy', description: '15 top-level + Lua-script subcategories', probe: 'fileExists:src/pages/Browse', seed: 'done', notes: 'See mem://features/marketplace/roblox-style-category-hierarchy-v1' },
+      { key: 'mkt.category_hierarchy', title: 'Roblox-style category hierarchy', description: '15 top-level + Lua-script subcategories', probe: 'fileExists:src/pages/Categories.tsx', seed: 'done', notes: 'See mem://features/marketplace/roblox-style-category-hierarchy-v1' },
       { key: 'mkt.scheduled_releases', title: 'Scheduled product releases', description: 'release_at + notify-scheduled-release function', probe: 'fileExists:supabase/functions/notify-scheduled-release/index.ts', seed: 'done', notes: 'See mem://features/marketplace/scheduled-releases-v3-automation' },
-      { key: 'mkt.early_access', title: 'Seller early-access strategies', description: 'Multi-strategy early product launches', probe: 'fileExists:src/pages/seller', seed: 'done', notes: 'See mem://features/seller/enterprise-early-access-strategies' },
+      { key: 'mkt.early_access', title: 'Seller early-access strategies', description: 'Multi-strategy early product launches', probe: 'fileExists:src/pages/seller/SellerCampaigns.tsx', seed: 'done', notes: 'See mem://features/seller/enterprise-early-access-strategies' },
       { key: 'mkt.download_fulfillment', title: 'Download asset fulfillment', description: 'download-asset edge function + signed URLs', probe: 'fileExists:supabase/functions/download-asset/index.ts', seed: 'done' },
       { key: 'mkt.notify_new_product', title: 'New-product notifications', description: 'notify-new-product (Discord + email)', probe: 'fileExists:supabase/functions/notify-new-product/index.ts', seed: 'done' },
       { key: 'mkt.product_approval', title: 'Product approval workflow', description: 'notify-product-approved + admin gating', probe: 'fileExists:supabase/functions/notify-product-approved/index.ts', seed: 'done' },
@@ -110,7 +110,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'mkt.reviews', title: 'Product reviews + reminders', description: 'reviews table + process-review-reminders cron', probe: 'db:rowExists:reviews', seed: 'done' },
       { key: 'mkt.seller_agreements', title: 'Seller agreement gating', description: 'Storefronts hidden until seller_agreements row exists', probe: 'db:rowExists:seller_agreements', seed: 'done', notes: 'See mem://features/seller-dashboard/seller-agreements-v1' },
       { key: 'mkt.store_team', title: 'Store team permissions', description: '15+ granular store-level permissions', probe: 'db:rowExists:store_team_permissions', seed: 'done', notes: 'See mem://auth/access-control/store-team-permissions-v1' },
-      { key: 'mkt.custom_pages', title: 'Store custom pages', description: 'Published pages discoverable in storefront sidebar', probe: 'fileExists:src/components/store', seed: 'done' },
+      { key: 'mkt.custom_pages', title: 'Store custom pages', description: 'Published pages discoverable in storefront sidebar', probe: 'fileExists:src/components/storefront', seed: 'done' },
     ],
   },
   {
@@ -168,7 +168,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'rel.route_announcer', title: 'Accessible route announcements', description: 'Screen readers announce navigation', probe: 'fileExists:src/components/RouteAnnouncer.tsx', seed: 'done' },
       { key: 'rel.cookie_consent', title: 'Cookie consent banner', description: 'GDPR-compliant consent + analytics gating', probe: 'fileExists:src/components/cookies/CookieConsentBanner.tsx', seed: 'done' },
       { key: 'rel.notifications', title: 'Notification center', description: 'Unified /messages with state-driven filtering', probe: 'db:rowExists:notifications', seed: 'done', notes: 'See mem://features/notifications/unified-center-v1' },
-      { key: 'rel.incidents_status_page', title: '/status incident page', description: 'Public status page reads incidents + incident_updates', probe: 'fileExists:src/pages/Status', seed: 'done' },
+      { key: 'rel.incidents_status_page', title: '/status incident page', description: 'Public status page reads incidents + incident_updates', probe: 'fileExists:src/pages/Status.tsx', seed: 'done' },
       { key: 'rel.eslint_cleanup', title: 'ESLint error cleanup sprint', description: '~984 errors backlog requires dedicated pass', seed: 'blocked', notes: 'Tracked separately — too risky to fix in batch automation.' },
       { key: 'rel.playwright_e2e', title: 'Playwright E2E suite', description: 'Critical-path browser tests', seed: 'todo', notes: 'Not yet scaffolded.' },
     ],
@@ -184,7 +184,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'sup.modmail_reminders', title: 'Modmail response reminders', description: 'modmail-response-reminder pings idle staff', probe: 'fileExists:supabase/functions/modmail-response-reminder/index.ts', seed: 'done' },
       { key: 'sup.ai_chat', title: 'AI chat support', description: 'ai-chat-support handles tier-1 queries', probe: 'fileExists:supabase/functions/ai-chat-support/index.ts', seed: 'done' },
       { key: 'sup.canned_responses', title: 'Agent canned responses', description: 'canned_responses table powers macros', probe: 'db:rowExists:canned_responses', seed: 'done' },
-      { key: 'sup.unified_chat_hub', title: 'Internal staff chat hub', description: 'Single Internal Messages page', probe: 'fileExists:src/pages/admin/Messages', seed: 'done', notes: 'See mem://features/support/unified-chat-architecture-v2-unified-hub' },
+      { key: 'sup.unified_chat_hub', title: 'Internal staff chat hub', description: 'Single Internal Messages page', probe: 'fileExists:src/pages/admin/InternalMessages.tsx', seed: 'done', notes: 'See mem://features/support/unified-chat-architecture-v2-unified-hub' },
     ],
   },
   {
@@ -207,7 +207,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
     title: 'Phase 9 — Careers & Growth',
     subtitle: 'Job listings, applicant portal, affiliate, ads, custom domains',
     tasks: [
-      { key: 'crs.careers_portal', title: 'Careers portal + applicant token portal', description: 'High-density /careers + token-based applicant portal', probe: 'fileExists:src/pages/Careers', seed: 'done', notes: 'See mem://features/careers/enterprise-portal-architecture-v1' },
+      { key: 'crs.careers_portal', title: 'Careers portal + applicant token portal', description: 'High-density /careers + token-based applicant portal', probe: 'fileExists:src/pages/Jobs.tsx', seed: 'done', notes: 'See mem://features/careers/enterprise-portal-architecture-v1' },
       { key: 'crs.applications_table', title: 'job_applications table', description: 'Applicant data with RLS', probe: 'db:rowExists:job_applications', seed: 'done' },
       { key: 'crs.affiliate_program', title: 'Affiliate program', description: 'affiliate_balances + payouts via Stripe Connect', probe: 'db:rowExists:affiliate_balances', seed: 'done' },
       { key: 'crs.affiliate_connect', title: 'Affiliate Stripe Connect', description: 'create-affiliate-connect-account + status check', probe: 'fileExists:supabase/functions/create-affiliate-connect-account/index.ts', seed: 'done' },
