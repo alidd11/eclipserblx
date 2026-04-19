@@ -104,21 +104,15 @@ export function TrendingProducts() {
 }
 
 /** Masonry-specific card with variable aspect ratio */
-function MasonryProductCard({ 
-  product, 
-  store, 
-  category, 
-  isTall, 
-  rank 
-}: { 
-  product: any; 
-  store: any; 
-  category: any; 
-  isTall: boolean; 
+const MasonryProductCard = forwardRef<HTMLDivElement, {
+  product: any;
+  store: any;
+  category: any;
+  isTall: boolean;
   rank: number;
-}) {
+}>(function MasonryProductCard({ product, store, category, isTall, rank }, ref) {
   return (
-    <div className="relative">
+    <div ref={ref} className="relative">
       {/* Rank badge */}
       <div className="absolute top-2 left-2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-sm">
         <span className="text-[10px] font-bold text-foreground">
@@ -145,4 +139,5 @@ function MasonryProductCard({
       />
     </div>
   );
-}
+});
+
