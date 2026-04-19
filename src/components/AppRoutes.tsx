@@ -94,6 +94,7 @@ const AdminLiveChat = lazyWithRetry(() => import("@/pages/admin/LiveChat"));
 const AdminApplications = lazyWithRetry(() => import("@/pages/admin/Applications"));
 const AdminReviews = lazyWithRetry(() => import("@/pages/admin/Reviews"));
 const AdminAuditLogs = lazyWithRetry(() => import("@/pages/admin/AuditLogs"));
+const AdminRoadmap = lazyWithRetry(() => import("@/pages/admin/Roadmap"));
 const AdminIncidents = lazyWithRetry(() => import("@/pages/admin/Incidents"));
 const AdminChangelogManager = lazyWithRetry(() => import("@/pages/admin/ChangelogManager"));
 const AdminHelp = lazyWithRetry(() => import("@/pages/admin/Help"));
@@ -477,6 +478,7 @@ export function AppRoutes() {
         <Route path="/admin/applications" element={<AdminApplications />} />
         <Route path="/admin/reviews" element={<AdminReviews />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+        <Route path="/admin/roadmap" element={<AdminRoadmap />} />
         <Route path="/admin/incidents" element={<AdminIncidents />} />
         <Route path="/admin/changelog" element={<AdminChangelogManager />} />
         <Route path="/admin/rate-limits" element={<AdminRateLimitDashboard />} />
