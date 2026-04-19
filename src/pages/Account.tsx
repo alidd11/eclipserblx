@@ -16,6 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useBadges } from '@/hooks/useBadges';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
 import { supabase } from '@/integrations/supabase/client';
@@ -210,6 +211,7 @@ function UserIdsCollapsible({ userId, customerId }: { userId: string; customerId
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
+  usePageMeta({ title: 'My Account', description: 'Manage your Eclipse account, orders, downloads, payment methods and notification preferences.', canonicalPath: '/account' });
   const { user, session, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { usePageTracking } from '@/hooks/usePageTracking';
+import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 import { AuthLayout } from '@/components/auth/AuthLayout';
 import { LoginSignupForm } from '@/components/auth/LoginSignupForm';
@@ -15,6 +16,7 @@ type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'reset-verify' | 'veri
 
 const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   usePageTracking({ pagePath: '/auth' });
+  usePageMeta({ title: 'Sign In', description: 'Sign in or create an Eclipse account to buy Roblox assets, manage downloads and access seller tools.', canonicalPath: '/auth' });
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<AuthMode>('login');

@@ -7,10 +7,18 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { usePublicStore } from '@/hooks/usePublicStore';
 import { useStoreTheme } from '@/hooks/useStoreTheme';
 import { StoreNotFound } from '@/components/store/StoreNotFound';
+import { usePageMeta } from '@/hooks/usePageMeta';
 
 export default function StoreAbout() {
   const { storeSlug: slug } = useParams<{ storeSlug: string }>();
   const { store, isLoading, notFound } = usePublicStore(slug);
+
+  usePageMeta({
+    title: store ? `About ${store.name}` : 'About Store',
+    description: store?.bio || `Learn more about ${store?.name || 'this store'} on Eclipse — a verified Roblox asset creator.`,
+    canonicalPath: slug ? `/store/${slug}/about` : undefined,
+    ogImage: store?.logo_url || undefined,
+  });
 
   if (isLoading) {
     return (
