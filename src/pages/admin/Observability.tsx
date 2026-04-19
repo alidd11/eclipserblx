@@ -1,10 +1,10 @@
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { PlatformRoadmap } from '@/components/admin/PlatformRoadmap';
+import { ObservabilityDashboard } from '@/components/admin/ObservabilityDashboard';
 
-export default function Roadmap() {
+export default function Observability() {
   return (
     <AdminLayout requiredPermissions={['view_audit_logs']}>
-      <PlatformRoadmap />
+      <ObservabilityDashboard />
     </AdminLayout>
   );
 }
