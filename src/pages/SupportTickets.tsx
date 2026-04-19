@@ -24,6 +24,7 @@ import { Plus, Ticket, MessageSquare, Clock, CheckCircle } from 'lucide-react';
  
  export default function SupportTickets() {
    const { user } = useAuth();
+   usePageMeta({ title: 'Support Tickets', description: 'View and manage your Eclipse support tickets — get help from our team within 24 hours.', canonicalPath: '/support' });
    const [createDialogOpen, setCreateDialogOpen] = useState(false);
  
    const { data: tickets, isLoading, refetch } = useQuery({

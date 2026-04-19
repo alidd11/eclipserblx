@@ -211,6 +211,7 @@ function UserIdsCollapsible({ userId, customerId }: { userId: string; customerId
 
 const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   usePageTracking({ pagePath: '/account' });
+  usePageMeta({ title: 'My Account', description: 'Manage your Eclipse account, orders, downloads, payment methods and notification preferences.', canonicalPath: '/account' });
   const { user, session, signOut, loading: authLoading } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
   const { badges, userBadges } = useBadges();
