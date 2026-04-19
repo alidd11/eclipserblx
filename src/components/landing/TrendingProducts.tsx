@@ -8,7 +8,7 @@ import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { usePreloadImages } from '@/hooks/usePreloadImages';
-import { useMemo } from 'react';
+import { useMemo, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 export function TrendingProducts() {
