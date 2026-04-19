@@ -5560,6 +5560,30 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_roadmap_status: {
+        Row: {
+          note: string | null
+          status: string
+          task_key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          note?: string | null
+          status: string
+          task_key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          note?: string | null
+          status?: string
+          task_key?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       price_alerts: {
         Row: {
           created_at: string
@@ -6507,6 +6531,45 @@ export type Database = {
           created_at?: string
           id?: string
           identifier?: string
+        }
+        Relationships: []
+      }
+      reconciliation_findings: {
+        Row: {
+          affected_count: number
+          check_name: string
+          created_at: string
+          details: string | null
+          id: string
+          resolved: boolean
+          resolved_at: string | null
+          resolved_by: string | null
+          sample_ids: Json
+          severity: string
+        }
+        Insert: {
+          affected_count?: number
+          check_name: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sample_ids?: Json
+          severity: string
+        }
+        Update: {
+          affected_count?: number
+          check_name?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          resolved_by?: string | null
+          sample_ids?: Json
+          severity?: string
         }
         Relationships: []
       }
@@ -10257,6 +10320,39 @@ export type Database = {
         }
         Relationships: []
       }
+      synthetic_runs: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          failed_step: string | null
+          id: string
+          probe_name: string
+          steps: Json
+          success: boolean
+          total_latency_ms: number
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          failed_step?: string | null
+          id?: string
+          probe_name: string
+          steps?: Json
+          success: boolean
+          total_latency_ms: number
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          failed_step?: string | null
+          id?: string
+          probe_name?: string
+          steps?: Json
+          success?: boolean
+          total_latency_ms?: number
+        }
+        Relationships: []
+      }
       takedown_requests: {
         Row: {
           accuracy_statement: boolean
@@ -12235,6 +12331,13 @@ export type Database = {
         }[]
       }
       get_next_download_time: { Args: { _user_id: string }; Returns: string }
+      get_open_findings_summary: {
+        Args: never
+        Returns: {
+          count: number
+          severity: string
+        }[]
+      }
       get_push_subscription_total: { Args: never; Returns: number }
       get_reset_code_attempts: {
         Args: { p_email: string }
@@ -12252,6 +12355,19 @@ export type Database = {
           product_count: number
           required_days: number
           required_products: number
+        }[]
+      }
+      get_synthetic_health: {
+        Args: { _hours?: number }
+        Returns: {
+          avg_latency_ms: number
+          last_run_at: string
+          last_run_success: boolean
+          p95_latency_ms: number
+          probe_name: string
+          success_rate: number
+          successful_runs: number
+          total_runs: number
         }[]
       }
       get_user_email: { Args: { _user_id: string }; Returns: string }
@@ -12401,6 +12517,7 @@ export type Database = {
         Returns: undefined
       }
       revert_expired_custom_rates: { Args: never; Returns: undefined }
+      run_nightly_reconciliation: { Args: never; Returns: Json }
       search_products_ranked: {
         Args: {
           category_filter?: string
