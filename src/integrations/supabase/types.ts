@@ -6922,6 +6922,51 @@ export type Database = {
           },
         ]
       }
+      roadmap_items: {
+        Row: {
+          completed_at: string | null
+          completion_notes: string | null
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          pillar: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+          verification_probe: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          pillar: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+          verification_probe?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          pillar?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          verification_probe?: string | null
+        }
+        Relationships: []
+      }
       robux_transactions: {
         Row: {
           created_at: string
