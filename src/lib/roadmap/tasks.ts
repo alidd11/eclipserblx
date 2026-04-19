@@ -215,7 +215,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'crs.ads_checkout_fn', title: 'create-advertisement-checkout', description: 'Stripe checkout for ad subscriptions', probe: 'fileExists:supabase/functions/create-advertisement-checkout/index.ts', seed: 'done' },
       { key: 'crs.ad_scheduler', title: 'Scheduled ad processor', description: 'process-scheduled-ads cron', probe: 'fileExists:supabase/functions/process-scheduled-ads/index.ts', seed: 'done' },
       { key: 'crs.seller_webhooks', title: 'Pro seller webhooks', description: 'seller_webhooks + fire-seller-webhook', probe: 'db:rowExists:seller_webhooks', seed: 'done', notes: 'See mem://features/seller-dashboard/webhooks-and-integrations-v1' },
-      { key: 'crs.custom_domains', title: 'Custom domain management', description: 'Pro-gated custom domain suite', probe: 'fileExists:src/pages/seller/settings', seed: 'done', notes: 'See mem://features/stores/custom-domain-management-v6-pro-gated' },
+      { key: 'crs.custom_domains', title: 'Custom domain management', description: 'Pro-gated custom domain suite', probe: 'fileExists:src/pages/seller/SellerSettingsDomain.tsx', seed: 'done', notes: 'See mem://features/stores/custom-domain-management-v6-pro-gated' },
       { key: 'crs.domain_subscription_fn', title: 'domain-subscription edge function', description: 'Manages custom-domain billing', probe: 'fileExists:supabase/functions/domain-subscription/index.ts', seed: 'done' },
     ],
   },
