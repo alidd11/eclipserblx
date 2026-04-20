@@ -110,7 +110,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'mkt.reviews', title: 'Product reviews + reminders', description: 'reviews table + process-review-reminders cron', probe: 'db:rowExists:reviews', seed: 'done' },
       { key: 'mkt.seller_agreements', title: 'Seller agreement gating', description: 'Storefronts hidden until seller_agreements row exists', probe: 'db:rowExists:seller_agreements', seed: 'done', notes: 'See mem://features/seller-dashboard/seller-agreements-v1' },
       { key: 'mkt.store_team', title: 'Store team permissions', description: '15+ granular store-level permissions', probe: 'db:rowExists:store_team_permissions', seed: 'done', notes: 'See mem://auth/access-control/store-team-permissions-v1' },
-      { key: 'mkt.custom_pages', title: 'Store custom pages', description: 'Published pages discoverable in storefront sidebar', probe: 'fileExists:src/components/storefront', seed: 'done' },
+      { key: 'mkt.custom_pages', title: 'Store custom pages', description: 'Published pages discoverable in storefront sidebar', probe: 'fileExists:src/components/store', seed: 'done' },
     ],
   },
   {
