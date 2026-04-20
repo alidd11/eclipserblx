@@ -64,7 +64,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'sec.asset_protection', title: 'Anti-leak crawler', description: 'auto-detect-leaks scans piracy sites for product names', probe: 'fileExists:supabase/functions/auto-detect-leaks/index.ts', seed: 'done', notes: 'See mem://features/seller-dashboard/asset-protection-and-leak-detection-v1' },
       { key: 'sec.nsfw_guard', title: 'NSFW image moderation', description: 'check-nsfw edge function on uploads', probe: 'fileExists:supabase/functions/check-nsfw/index.ts', seed: 'done' },
       { key: 'sec.lua_scanner', title: 'Lua script malware scan', description: 'analyze-lua-script + batch-scan-products', probe: 'fileExists:supabase/functions/analyze-lua-script/index.ts', seed: 'done' },
-      { key: 'sec.rate_limits', title: 'Rate limiting dashboard', description: 'Admin can review/adjust rate limits', probe: 'fileExists:src/pages/admin/RateLimitDashboard', seed: 'todo' },
+      { key: 'sec.rate_limits', title: 'Rate limiting dashboard', description: 'Admin can review/adjust rate limits', probe: 'fileExists:src/pages/admin/RateLimitDashboard.tsx', seed: 'done' },
       { key: 'sec.legal_review', title: 'External legal sign-off (TOS/Privacy)', description: 'Solicitor-reviewed legal pack', seed: 'blocked', notes: 'Requires external counsel — out of scope for the AI.' },
     ],
   },
