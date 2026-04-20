@@ -118,8 +118,8 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
     title: 'Phase 3 — Observability & SRE',
     subtitle: 'Synthetic probes, reconciliation, incidents',
     tasks: [
-      { key: 'obs.synthetic_runs_table', title: 'synthetic_runs table provisioned', description: 'Stores per-run latency + step trace', probe: 'db:rowExists:synthetic_runs', seed: 'in_progress', progress: 50, notes: 'Schema created — first probe run will populate it.' },
-      { key: 'obs.reconciliation_table', title: 'reconciliation_findings table provisioned', description: 'Drift findings + severity', probe: 'db:rowExists:reconciliation_findings', seed: 'in_progress', progress: 50 },
+      { key: 'obs.synthetic_runs_table', title: 'synthetic_runs table provisioned', description: 'Stores per-run latency + step trace', probe: 'db:rowExists:synthetic_runs', seed: 'done', notes: 'Verified — synthetic-order-probe writes per-run latency traces.' },
+      { key: 'obs.reconciliation_table', title: 'reconciliation_findings table provisioned', description: 'Drift findings + severity', probe: 'db:rowExists:reconciliation_findings', seed: 'done' },
       { key: 'obs.synthetic_health_rpc', title: 'get_synthetic_health RPC', description: 'Aggregates p95/avg/success rate per probe', probe: 'db:functionExists:get_synthetic_health', seed: 'done' },
       { key: 'obs.findings_summary_rpc', title: 'get_open_findings_summary RPC', description: 'Counts open findings by severity', probe: 'db:functionExists:get_open_findings_summary', seed: 'done' },
       { key: 'obs.nightly_recon_rpc', title: 'run_nightly_reconciliation routine', description: 'Eclipse-tailored data-drift checks', probe: 'db:functionExists:run_nightly_reconciliation', seed: 'done' },
