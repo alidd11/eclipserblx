@@ -230,8 +230,8 @@ export function useAdminUsers() {
   };
 
   const { customerProfiles, staffProfiles } = useMemo(() => {
-    const customers: Record<string, unknown>[] = [];
-    const staff: Record<string, unknown>[] = [];
+    const customers: any[] = [];
+    const staff: any[] = [];
     profiles?.forEach(profile => {
       const roles = getUserRoles(profile.user_id);
       const hasStaffRole = roles.some(r => !nonStaffRoles.includes(r.role));
@@ -250,7 +250,7 @@ export function useAdminUsers() {
   const searchFilteredProfiles = useMemo(() => {
     if (!search.trim()) return filteredProfiles;
     const query = search.toLowerCase();
-    return filteredProfiles.filter(profile =>
+    return filteredProfiles.filter((profile: any) =>
       (profile.customer_id as string)?.toLowerCase().includes(query) ||
       (profile.display_name as string)?.toLowerCase().includes(query) ||
       (profile.username as string)?.toLowerCase().includes(query)

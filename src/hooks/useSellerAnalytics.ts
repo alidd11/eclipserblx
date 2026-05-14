@@ -42,7 +42,7 @@ const getVisitorCountry = (): Promise<string | null> => {
       if (country) safeStorage.setItem('eclipse_visitor_country', country);
       return country;
     })
-    .catch(() => null);
+    .catch((): null => null);
   
   return countryPromise;
 };
