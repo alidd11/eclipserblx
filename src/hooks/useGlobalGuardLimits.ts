@@ -13,7 +13,8 @@ export function useGlobalGuardLimits() {
   const query = useQuery({
     queryKey: ['global-guard-limits'],
     queryFn: async (): Promise<GlobalGuardLimits> => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user ?? null;
       if (!user) {
         return {
           maxServers: 2,
