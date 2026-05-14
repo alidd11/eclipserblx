@@ -98,7 +98,7 @@ export function ReviewsShowcase() {
             .from('profiles')
             .select('user_id, display_name')
             .in('user_id', userIds)
-        : { data: [] };
+        : { data: [] as Array<{ user_id: string; display_name: string }> };
 
       const profileMap = new Map<string, { user_id: string; display_name: string | null }>(
         profiles?.map(p => [p.user_id, p] as [string, { user_id: string; display_name: string | null }]) || []

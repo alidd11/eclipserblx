@@ -22,7 +22,7 @@ export function TwitterMentions({ xTheme }: { xTheme: XTheme }) {
   const tweets = data?.data || [];
   const users = data?.includes?.users || [];
 
-  const getUser = (authorId: string) => users.find((u) => u.id === authorId);
+  const getUser = (authorId: string) => users.find((u: any) => u.id === authorId);
 
   const handleReply = (tweetId: string) => {
     if (!replyText.trim()) return;
@@ -74,7 +74,7 @@ export function TwitterMentions({ xTheme }: { xTheme: XTheme }) {
         </div>
       ) : (
         <div className={`divide-y ${xTheme.border.replace('border-', 'divide-')}`}>
-          {tweets.map((tweet) => {
+          {tweets.map((tweet: any) => {
             const author = getUser(tweet.author_id);
             return (
               <article key={tweet.id} className={`px-4 py-3 ${xTheme.hover} transition-colors`}>

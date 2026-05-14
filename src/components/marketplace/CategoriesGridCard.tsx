@@ -37,7 +37,7 @@ export function CategoriesGridCard() {
           
           return {
             ...category,
-            icon: null,
+            icon: null as string | null,
             product_count: count || 0,
           };
         })

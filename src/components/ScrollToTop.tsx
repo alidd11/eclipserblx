@@ -11,7 +11,7 @@ import { useLocation, useNavigationType } from 'react-router-dom';
 
 const scrollPositions = new Map<string, number>();
 
-export function ScrollToTop() {
+export function ScrollToTop(): null {
   const { pathname, key } = useLocation();
   const navigationType = useNavigationType();
   const prevKeyRef = useRef(key);

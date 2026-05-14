@@ -1,117 +1,106 @@
-# Wave 6 — Strict TypeScript Engagement
+# Wave 6 — Phases B → D (revised against post-A baseline)
 
-## Baseline (measured, not estimated)
+## Current measured baseline (after Phase A)
 
-A temporary `tsconfig.strict.json` extending `tsconfig.app.json` with `strict: true`, `noImplicitAny: true`, `strictNullChecks: true` produces **294 errors across 115 files**.
+| Flag combo | Errors |
+|------------|--------|
+| Full `strict: true` | **253** (down from 294) |
+| `noImplicitAny` only | 78 (across 22 files) |
+| `strictNullChecks` only | 210 (across 78 files) |
 
-### Error code breakdown
+Error code mix (full strict): TS2345 ×83, TS2322 ×58, TS7006 ×39, TS2769 ×29, TS18047 ×29, TS18048 ×7, TS2538 ×5, TS2339 ×2, TS18049 ×1.
 
-| Code | Count | Meaning | Typical fix |
-|------|-------|---------|-------------|
-| TS2345 | 83 | Argument not assignable (mostly `string \| null` → `string`) | `?? ''` / guard / narrow |
-| TS2322 | 58 | Type assignment mismatch (null/undefined into non-nullable) | Make field optional or coalesce |
-| TS7006 | 39 | Implicit `any` parameter | Add explicit type |
-| TS18046 | 31 | `unknown` in catch blocks | `err instanceof Error ? err.message : String(err)` |
-| TS2769 | 29 | No overload matches (Date/format helpers given `null`) | Guard before call |
-| TS18047 | 29 | Value possibly `null` | `?.` chain or guard |
-| TS2339 | 12 | Property doesn't exist | Fix type definition or narrow |
-| TS18048 | 7 | Possibly `undefined` | Guard / coalesce |
-| TS2538 | 5 | Type `null` cannot be used as index | Guard before lookup |
-| TS18049 | 1 | Possibly `null` callable | Guard |
+## Revised Phase B — `noImplicitAny` (1 turn, ~78 errors)
 
-### File hot-spots (top 15)
+Originally this was bundled into Phase A; pulling it out cleanly because it cascades into TS7010/7018 (no return-type) and TS7031 (binding-element any).
 
-```text
-18  src/pages/admin/SellerPayouts.tsx
-15  src/pages/admin/Affiliates.tsx
-14  src/pages/admin/Users.tsx
-13  src/pages/admin/SellerStoreDetail.tsx
-12  src/pages/StoreAbout.tsx
-10  src/pages/Featured.tsx
- 8  src/pages/admin/CustomerTicketDetail.tsx
- 8  src/hooks/useBackgroundPush.ts
- 7  src/pages/StoreReviewsPage.tsx
- 7  src/components/product/FrequentlyBoughtTogether.tsx
- 6  src/pages/admin/staff-profile/useStaffProfileData.ts
- 6  src/pages/admin/Categories.tsx
- 6  src/pages/SearchResults.tsx
- 5  src/components/admin/discord-settings/ConfigurationTab.tsx
- 4× ~12 files with 4 errors each
-```
-Long tail: ~85 files at 1–3 errors.
+**Files (top 8 = 51 of 78 errors):**
+- `src/pages/admin/Affiliates.tsx` (15) — `reduce` accumulator types missing
+- `src/pages/admin/Users.tsx` (11)
+- `src/components/seo/StructuredData.tsx` (7)
+- `src/hooks/useSubscription.ts` (6)
+- `src/pages/bot/BotCommunity.tsx` (4)
+- `src/pages/bot/BotAnalytics.tsx` (3)
+- `src/pages/bot/BotModeration.tsx`, `BotAutoMod.tsx`, `admin/InternalNotes.tsx`, `BotDashboard.tsx`, `admin/twitter/TwitterMentions.tsx` (2 each)
+- Long tail: 11 files at 1 error each.
 
-## Strategy
+**Fix patterns:**
+- Array/reduce callbacks: explicit element type from the source array (`(sum: number, c: typeof items[number]) => …`).
+- Event handlers: `(e: React.ChangeEvent<HTMLInputElement>) =>` etc.
+- Function return types where TS7010 fires: add explicit return annotation, no inference change.
 
-Flip strictness incrementally — never in one commit. Land a phase, run `tsc + vitest`, ship, repeat.
+**Gate:** flip `noImplicitAny: true` in `tsconfig.app.json`. `tsc + vitest` clean.
 
-### Phase A — Foundations (1 turn, low risk)
+## Revised Phase C — `strictNullChecks` burn-down (3 turns, ~210 errors across 78 files)
 
-Goal: the easy wins that don't change runtime behaviour.
+### C1 — Shared null-safety primitives first (1 turn, ~30 errors removed downstream)
 
-1. Enable **only** `useUnknownInCatchVariables: true` (it's part of `strict` already; isolate it). Fix all 31 TS18046 catch blocks with one helper:
-   ```ts
-   // src/lib/errors.ts (new, ~10 lines)
-   export const errMsg = (e: unknown) =>
-     e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
-   ```
-   Replace `err.message` / `e.message` with `errMsg(e)`.
-2. Enable `noImplicitAny: true`. Fix 39 TS7006 — explicit annotation on event handlers, map callbacks, and a few prop destructures. Most are `(e) =>`, `(item) =>` in array callbacks where the inferred element type already exists once `noImplicitAny` is on.
+Tighten leaf modules so admin/page fixes don't repeat the same coalescing:
 
-**End-of-phase gate:** `tsc -p tsconfig.app.json --noEmit` clean with those two flags on. Do **not** enable `strictNullChecks` yet.
+- `src/lib/formatters.ts` — confirm/extend `formatGBP`, `formatRelative`, `formatDate` to accept `string | number | Date | null | undefined` returning `'—'` on nullish.
+- `src/lib/mediaUtils.ts` — narrow guards for nullable image arrays.
+- `src/hooks/useAnalyticsData.ts` (6) — leaf hook.
+- `src/hooks/useBackgroundPush.ts`, `useBiometricAuth.ts` — verify Phase A null fixes hold under strictNullChecks.
+- `src/components/seller/ProductHealthDonut.tsx` (4) — small chart helper used by multiple seller pages.
 
-### Phase B — Null-safety primitives (2 turns)
+### C2 — Admin pages (1 turn, ~70 errors)
 
-Goal: clean the null/undefined plumbing in shared layers before page code.
+Order = blast radius low → medium:
 
-1. Tighten generated-adjacent helper types where pages routinely pass nullable Supabase columns into formatters:
-   - `src/lib/formatters.ts` — `formatGBP`, `formatRelative`, `formatDate` accept `string | number | Date | null | undefined` and return `'—'` for nullish (already done in some, audit + finish).
-   - `src/utils/optimizeImageUrl.ts` — already handles `null | undefined`. Verify call sites.
-2. Add narrow guards to `src/lib/mediaUtils.ts` re: image array filtering.
-3. Fix `src/hooks/useBackgroundPush.ts` (8 errors) and `src/hooks/useBiometricAuth.ts` (3) — these are leaf hooks consumed everywhere; fixing them removes downstream noise.
+| File | Errors |
+|------|--------|
+| `admin/SellerPayouts.tsx` | 18 |
+| `admin/SellerStoreDetail.tsx` | 13 |
+| `admin/CustomerTicketDetail.tsx` | 8 |
+| `admin/Categories.tsx` | 6 |
+| `admin/staff-profile/useStaffProfileData.ts` | 6 |
+| `admin/disputes/DisputeDetailDialog.tsx` | 3 |
+| `admin/Referrals.tsx`, `Disputes.tsx`, `BotCodes.tsx` | 3 each |
+| Tail: ~12 admin files at 1–2 each | ~12 |
 
-**Gate:** error count drops by ~40 without `strictNullChecks` flipped.
+### C3 — Marketplace + storefront + long tail (1 turn, ~110 errors)
 
-### Phase C — Flip `strictNullChecks` and burn down (3–4 turns)
+| File | Errors |
+|------|--------|
+| `pages/StoreAbout.tsx` | 12 |
+| `pages/Featured.tsx` | 10 |
+| `pages/StoreReviewsPage.tsx` | 7 |
+| `components/product/FrequentlyBoughtTogether.tsx` | 7 |
+| `pages/SearchResults.tsx` | 6 |
+| `pages/seller/SellerCustomerInsights.tsx` | 4 |
+| `pages/SupportTicketDetail.tsx` | 4 |
+| `components/search/SearchCommandPalette.tsx` | 4 |
+| `pages/ProductDetail.tsx` | 3 |
+| Tail: ~50 files at 1–2 each | ~63 |
 
-Order chosen to minimise blast radius (low-traffic admin pages first, marketplace last):
+**Dominant fix patterns (applied uniformly):**
+- `value ?? ''` for non-nullable string defaults
+- `value ? new Date(value) : null` before `format()` / date helpers
+- Optional chaining for joined Supabase rows (`row.profiles?.username ?? 'Unknown'`)
+- Early `if (!x) return null` to narrow nullable out at the top of components rather than thread through callees
 
-| Turn | Files | Errors to clear |
-|------|-------|-----------------|
-| C1 | `admin/SellerPayouts.tsx`, `admin/Affiliates.tsx`, `admin/Users.tsx`, `admin/SellerStoreDetail.tsx` | 60 |
-| C2 | `admin/CustomerTicketDetail.tsx`, `admin/Categories.tsx`, `admin/staff-profile/useStaffProfileData.ts`, `admin/discord-settings/ConfigurationTab.tsx`, all admin files at 2–3 errors | ~50 |
-| C3 | `pages/StoreAbout.tsx`, `pages/StoreReviewsPage.tsx`, `pages/Featured.tsx`, `pages/SearchResults.tsx`, `pages/ProductDetail.tsx`, `components/product/FrequentlyBoughtTogether.tsx` | ~50 |
-| C4 | Long tail — 85 files at 1–3 errors, mechanical | ~50 |
+## Phase D — Lock it in (1 turn)
 
-Dominant fix patterns (apply consistently; do **not** invent ad-hoc shapes):
+1. Flip `tsconfig.app.json`: enable `strict: true`. Drop the standalone `useUnknownInCatchVariables` line (now subsumed). Keep `noUnusedLocals: false`, `noUnusedParameters: false`.
+2. Mirror in root `tsconfig.json` so the editor and CLI agree.
+3. Update `.lovable/plan.md` summary noting Wave 6 complete.
 
-- `value ?? ''` for string defaults
-- `value ? new Date(value) : null` before `format()` calls
-- Optional chaining for chained DB joins (`row.profiles?.username ?? 'Unknown'`)
-- Narrow `null` out at the top of a function with an early return rather than threading nullable through callees
+## Out of scope (re-confirmed)
 
-### Phase D — Lock it in (1 turn)
+- `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch` — separate dead-code engagement.
+- `src/integrations/supabase/types.ts` — auto-generated, never edited.
+- New CI workflow — would be new implementation per prior directive.
 
-1. Flip `tsconfig.app.json`: `strict: true`, drop `strictNullChecks: false`, keep `noUnusedLocals: false` / `noUnusedParameters: false` (out of scope — not part of strict).
-2. Mirror in root `tsconfig.json` so editors agree.
-3. Add a **non-blocking** strict-check note to `.lovable/plan.md` (no CI workflow — that would be new implementation per your prior directive).
+## Risk controls (per turn)
 
-## Out of scope (explicit)
-
-- `noUnusedLocals`, `noUnusedParameters` — large dead-code purge, separate engagement.
-- `noImplicitReturns`, `noFallthroughCasesInSwitch` — separate.
-- Edits to `src/integrations/supabase/types.ts` — auto-generated, never touched.
-- Refactoring `any` casts in 3rd-party shim files (`portalBotFiles.ts` data, etc).
-
-## Risks
-
-- Phase C touches admin pages used by staff. Each turn ends with `tsc + vitest run` and a smoke-check of the affected route in preview before moving on.
-- A few TS2769 errors in `PaymentRequestButton.tsx` are Stripe SDK overload mismatches — may require `as` cast, flagged in Phase C3.
-- No runtime behaviour should change. Any fix that needs a logic change (not just a guard) gets called out in the turn note rather than silently inlined.
+- After every turn: `tsc --noEmit`, `vitest run`, smoke-check affected route in preview.
+- Stripe SDK overload (TS2769 in `PaymentRequestButton.tsx`) — flagged for a single `as` cast, called out in the C-turn note rather than buried.
+- No runtime behaviour changes. Any guard that would change a code path gets called out per file.
 
 ## Estimated total
 
-**7 turns** (A:1, B:2, C:3–4, D:1). Reversible at every gate — each phase commits independently.
+**5 remaining turns** (B:1, C:3, D:1).
 
-## Approval
+## Execution mode
 
-Reply with the phase you want started (default: Phase A) or "all phases" to proceed end-to-end without intermediate confirmation.
+User selected "all phases" — proceed end-to-end through B → D without intermediate confirmation. Each turn ends with the tsc + vitest gate; if either breaks, stop and report rather than continuing.

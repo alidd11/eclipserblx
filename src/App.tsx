@@ -93,7 +93,7 @@ function PageLoader() {
 }
 
 /** Invisible component that triggers predictive data preloading after auth */
-function PredictivePreloader() {
+function PredictivePreloader(): null {
   usePredictivePreload();
   return null;
 }

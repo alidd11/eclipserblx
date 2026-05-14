@@ -70,7 +70,7 @@ export function usePWALastRoute() {
  * IMPORTANT: Also sanitizes volatile query params on ANY route on first boot,
  * not just '/'. This prevents the admin PWA from getting stuck on ?__chunk= URLs.
  */
-export function PWARouteRestorer() {
+export function PWARouteRestorer(): null {
   const location = useLocation();
   const navigate = useNavigate();
   const hasAttemptedRestore = useRef(false);

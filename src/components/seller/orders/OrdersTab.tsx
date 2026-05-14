@@ -306,7 +306,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  <div>
  <h4 className="font-medium mb-2">Items in this order</h4>
  <div className="space-y-2">
- {(selectedOrder.order_items || []).map((item) => (
+ {(selectedOrder.order_items || []).map((item: any) => (
  <div key={item.id} className="flex justify-between items-center p-2 rounded-md bg-muted/50">
  <div>
  <span className="text-sm">{item.product_name}</span>

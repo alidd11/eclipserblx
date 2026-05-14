@@ -49,7 +49,7 @@ export function OrganizationSchema({
   url = 'https://eclipserblx.com',
   logo = 'https://eclipserblx.com/pwa-512x512.png',
   description = 'Premium UK Roleplay Assets marketplace for Roblox. The best alternative platform for buying and selling Roblox scripts, vehicles, maps, and game assets with lower fees and GBP payments.',
-}: OrganizationSchemaProps) {
+}: OrganizationSchemaProps): null {
   useEffect(() => {
     const script = injectJsonLd('organization-schema', {
       '@context': 'https://schema.org',
@@ -103,7 +103,7 @@ export function ProductSchema({
   slug,
   brand,
   category,
-}: ProductSchemaProps) {
+}: ProductSchemaProps): null {
   useEffect(() => {
     const schema: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -163,7 +163,7 @@ export function ProductSchema({
 }
 
 // Breadcrumb schema for navigation
-export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
+export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }): null {
   useEffect(() => {
     const script = injectJsonLd('breadcrumb-schema', {
       '@context': 'https://schema.org',
@@ -183,7 +183,7 @@ export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
 }
 
 // Website search schema — tells Google about the search box
-export function WebsiteSearchSchema() {
+export function WebsiteSearchSchema(): null {
   useEffect(() => {
     const script = injectJsonLd('website-schema', {
       '@context': 'https://schema.org',
@@ -212,7 +212,7 @@ export function WebsiteSearchSchema() {
  * SiteNavigationElement schema — encourages Google to show sitelinks
  * by declaring the site's main navigation sections.
  */
-export function SiteNavigationSchema() {
+export function SiteNavigationSchema(): null {
   useEffect(() => {
     const navItems = [
       { name: 'Roblox Assets', url: 'https://eclipserblx.com/products' },
@@ -242,7 +242,7 @@ export function SiteNavigationSchema() {
 }
 
 // FAQ schema for FAQ pages
-export function FAQSchema({ faqs }: { faqs: { question: string; answer: string }[] }) {
+export function FAQSchema({ faqs }: { faqs: { question: string; answer: string }[] }): null {
   useEffect(() => {
     const script = injectJsonLd('faq-schema', {
       '@context': 'https://schema.org',
@@ -273,7 +273,7 @@ interface StoreSchemaProps {
   reviewCount?: number;
 }
 
-export function StoreSchema({ name, description, url, image, rating, reviewCount }: StoreSchemaProps) {
+export function StoreSchema({ name, description, url, image, rating, reviewCount }: StoreSchemaProps): null {
   useEffect(() => {
     const schema: Record<string, unknown> = {
       '@context': 'https://schema.org',

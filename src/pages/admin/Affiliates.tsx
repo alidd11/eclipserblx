@@ -31,30 +31,30 @@ export default function AdminAffiliates() {
  const { data: stats } = useQuery({
  queryKey: ['admin-affiliate-stats'],
  queryFn: async () => {
-  const [commissionsRes, payoutsRes, balancesRes] = await Promise.all([
-  supabase.from('affiliate_commissions').select('commission_amount, status'),
-  supabase.from('affiliate_payouts').select('amount, status'),
-  supabase.from('affiliate_balances').select('available_balance, total_earned'),
-  ]) as any;
+   const [commissionsRes, payoutsRes, balancesRes] = await Promise.all([
+   supabase.from('affiliate_commissions').select('commission_amount, status'),
+   supabase.from('affiliate_payouts').select('amount, status'),
+   supabase.from('affiliate_balances').select('available_balance, total_earned'),
+   ]) as any;
 
- const commissions = commissionsRes.data || [];
- const payouts = payoutsRes.data || [];
- const balances = balancesRes.data || [];
+  const commissions = (commissionsRes.data || []) as Array<{ commission_amount: number; status: string }>;
+  const payouts = (payoutsRes.data || []) as Array<{ amount: number; status: string }>;
+  const balances = (balancesRes.data || []) as Array<{ available_balance: number; total_earned: number }>;
 
- const totalCommissions = commissions.reduce((sum, c) => sum + c.commission_amount, 0);
- const pendingCommissions = commissions.filter(c => c.status === 'pending').reduce((sum, c) => sum + c.commission_amount, 0);
- const pendingPayouts = payouts.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0);
- const totalPaidOut = payouts.filter(p => p.status === 'completed').reduce((sum, p) => sum + p.amount, 0);
- const totalAffiliates = balances.length;
+  const totalCommissions = commissions.reduce((sum: number, c) => sum + c.commission_amount, 0);
+  const pendingCommissions = commissions.filter(c => c.status === 'pending').reduce((sum: number, c) => sum + c.commission_amount, 0);
+  const pendingPayouts = payouts.filter(p => p.status === 'pending').reduce((sum: number, p) => sum + p.amount, 0);
+  const totalPaidOut = payouts.filter(p => p.status === 'completed').reduce((sum: number, p) => sum + p.amount, 0);
+  const totalAffiliates = balances.length;
 
- return {
- totalCommissions,
- pendingCommissions,
- pendingPayouts,
- totalPaidOut,
- totalAffiliates,
- pendingPayoutCount: payouts.filter(p => p.status === 'pending').length,
- };
+  return {
+  totalCommissions,
+  pendingCommissions,
+  pendingPayouts,
+  totalPaidOut,
+  totalAffiliates,
+  pendingPayoutCount: payouts.filter(p => p.status === 'pending').length,
+  };
  },
  });
 
@@ -133,9 +133,9 @@ export default function AdminAffiliates() {
    .in('user_id', userIds);
 
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-  const paymentMap = new Map(paymentDetailsList?.map(pd => [pd.user_id, pd]) || []);
+  const paymentMap = new Map((paymentDetailsList as Array<{ user_id: string; stripe_account_id: string }> | null)?.map((pd) => [pd.user_id, pd]) || []);
 
-  return data.map(p => ({
+  return (data as any[]).map((p: any) => ({
   ...p,
   user: profileMap.get(p.user_id),
   paymentDetails: paymentMap.get(p.user_id),
@@ -340,7 +340,7 @@ export default function AdminAffiliates() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {payouts.map((payout) => (
+ {(payouts as any[])?.map((payout: any) => (
  <TableRow key={payout.id}>
  <TableCell>
  <div>
