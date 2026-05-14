@@ -244,7 +244,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   // When rendered inside a hub page, skip layout chrome
   if (isInsideHub) {
-    return <>{children}</>;
+    return <AdminErrorBoundary resetKey={location.pathname}>{children}</AdminErrorBoundary>;
   }
 
   return (
