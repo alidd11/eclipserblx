@@ -1,106 +1,65 @@
-# Wave 6 — Phases B → D (revised against post-A baseline)
+## Goal
 
-## Current measured baseline (after Phase A)
+Eliminate the white-screen that staff hit when they sign in and land on `/admin`, and add observability so any future regression is **visible (a fallback UI + Sentry breadcrumb)** instead of a blank page.
 
-| Flag combo | Errors |
-|------------|--------|
-| Full `strict: true` | **253** (down from 294) |
-| `noImplicitAny` only | 78 (across 22 files) |
-| `strictNullChecks` only | 210 (across 78 files) |
+## Findings from investigation
 
-Error code mix (full strict): TS2345 ×83, TS2322 ×58, TS7006 ×39, TS2769 ×29, TS18047 ×29, TS18048 ×7, TS2538 ×5, TS2339 ×2, TS18049 ×1.
+I audited the full admin entry path: `/admin` → `<AdminDashboard>` → `<AdminLayout>` → `useAdminAuth` → `useAuth` (`AuthProvider`) → child widgets (`HeroBanner`, `DashboardKPIs`, `SystemAlerts`, `DutyClockWidget`, `QuickActionsGrid`, `AssignedTicketsWidget`) and the supporting hooks (`useStaffPresence`, `useUserPermissions`, `useAdminManifest`, `useSupportTicketNotifications`, `useSellerTicketNotifications`).
 
-## Revised Phase B — `noImplicitAny` (1 turn, ~78 errors)
+The auth-server logs show **repeated `403: invalid claim: missing sub claim` / `bad_jwt` on `GET /user`** from `roleplay-hub-shop.lovable.app`. That is the classic stale-cached-session shape that primarily hits **installed PWA** users (where the access token is persisted across deploys / project refs).
 
-Originally this was bundled into Phase A; pulling it out cleanly because it cascades into TS7010/7018 (no return-type) and TS7031 (binding-element any).
+Three concrete failure modes can produce a white screen on `/admin` after sign-in. Each is fixable independently and they are not mutually exclusive — staff have probably been hitting more than one.
 
-**Files (top 8 = 51 of 78 errors):**
-- `src/pages/admin/Affiliates.tsx` (15) — `reduce` accumulator types missing
-- `src/pages/admin/Users.tsx` (11)
-- `src/components/seo/StructuredData.tsx` (7)
-- `src/hooks/useSubscription.ts` (6)
-- `src/pages/bot/BotCommunity.tsx` (4)
-- `src/pages/bot/BotAnalytics.tsx` (3)
-- `src/pages/bot/BotModeration.tsx`, `BotAutoMod.tsx`, `admin/InternalNotes.tsx`, `BotDashboard.tsx`, `admin/twitter/TwitterMentions.tsx` (2 each)
-- Long tail: 11 files at 1 error each.
+### 1. No admin-scoped error boundary around dashboard children
 
-**Fix patterns:**
-- Array/reduce callbacks: explicit element type from the source array (`(sum: number, c: typeof items[number]) => …`).
-- Event handlers: `(e: React.ChangeEvent<HTMLInputElement>) =>` etc.
-- Function return types where TS7010 fires: add explicit return annotation, no inference change.
+`AdminLayout` renders `<PageTransition>{children}</PageTransition>` with no inner `ErrorBoundary`. The only safety net is the top-level `RouteErrorBoundary` in `AppRoutes`. If a render error escapes a widget after `AdminLayout` has already committed, the route-level boundary unmounts the entire admin shell. In the "chunk error during retry" path this can momentarily render nothing while `lazyWithRetry` re-resolves — visually a blank page.
 
-**Gate:** flip `noImplicitAny: true` in `tsconfig.app.json`. `tsc + vitest` clean.
+### 2. `useStaffPresence` re-subscribes on every render
 
-## Revised Phase C — `strictNullChecks` burn-down (3 turns, ~210 errors across 78 files)
+The presence `useEffect` depends on `getCurrentUserName`, a `useCallback` whose dependency `currentUserProfile` changes whenever the profile query refetches. Each change tears down and re-subscribes the realtime channel and triggers a `profiles.update({ last_seen })` write. On a slow network this can stall the first paint and, combined with React 18 StrictMode double-invoke, occasionally throws inside the cleanup path.
 
-### C1 — Shared null-safety primitives first (1 turn, ~30 errors removed downstream)
+### 3. Bounded but unhelpful auth-recovery state
 
-Tighten leaf modules so admin/page fixes don't repeat the same coalescing:
+`useAdminAuth.isGateLoading` keeps the spinner up while `isAuthRecovering` is true. With `bad_jwt` errors, `react-query` retries 3× at 1.5s each → up to ~7 s of spinner. If the user's `refresh_token` is also stale (which is what the 403s in auth-logs imply), the spinner eventually flips to the `Session Expired` screen — but only if the JWT-error detector fires. The current detector matches on `message`/`code`, but `supabase-js` returns the error nested under `details` for some PostgREST 401 paths, so the JWT branch doesn't always trigger and the spinner can hang past the deadline. From the user's perspective: spinner that fades into white when React 18 commits the empty branch.
 
-- `src/lib/formatters.ts` — confirm/extend `formatGBP`, `formatRelative`, `formatDate` to accept `string | number | Date | null | undefined` returning `'—'` on nullish.
-- `src/lib/mediaUtils.ts` — narrow guards for nullable image arrays.
-- `src/hooks/useAnalyticsData.ts` (6) — leaf hook.
-- `src/hooks/useBackgroundPush.ts`, `useBiometricAuth.ts` — verify Phase A null fixes hold under strictNullChecks.
-- `src/components/seller/ProductHealthDonut.tsx` (4) — small chart helper used by multiple seller pages.
+## Plan
 
-### C2 — Admin pages (1 turn, ~70 errors)
+### A. Make any future white-screen self-evident
 
-Order = blast radius low → medium:
+1. Wrap `<PageTransition>{children}</PageTransition>` inside `AdminLayout` with a new `<AdminErrorBoundary>` (lightweight class component, same shape as `RouteErrorBoundary`, branded "This admin page hit an error"). It must:
+   - log to `captureException` with route + user id breadcrumbs,
+   - offer **Retry**, **Reload**, **Sign out** actions,
+   - reset itself when the route key changes.
+2. Render a small "Loading admin dashboard…" caption under the existing `Loader2` so a stalled bootstrap is no longer indistinguishable from a blank page.
 
-| File | Errors |
-|------|--------|
-| `admin/SellerPayouts.tsx` | 18 |
-| `admin/SellerStoreDetail.tsx` | 13 |
-| `admin/CustomerTicketDetail.tsx` | 8 |
-| `admin/Categories.tsx` | 6 |
-| `admin/staff-profile/useStaffProfileData.ts` | 6 |
-| `admin/disputes/DisputeDetailDialog.tsx` | 3 |
-| `admin/Referrals.tsx`, `Disputes.tsx`, `BotCodes.tsx` | 3 each |
-| Tail: ~12 admin files at 1–2 each | ~12 |
+### B. Fix the auth-recovery hang
 
-### C3 — Marketplace + storefront + long tail (1 turn, ~110 errors)
+3. Tighten `isJwtError` in `useAdminAuth` and `useUserPermissions`: also check `error.status === 401/403`, `error.details`, and `error.hint`, and treat PostgREST `PGRST302` the same as `PGRST301`.
+4. Add a hard ceiling: if `loading` is still true 6 s after `useAdminAuth` mounts with a non-null `user.id`, force `isAuthExpired = true` so the `Session Expired` screen renders instead of an indefinite spinner.
+5. In `AuthProvider.validateAndAccept`, when the token is missing `sub` and refresh fails, surface a one-time toast **before** the local sign-out so staff know why they were bounced.
 
-| File | Errors |
-|------|--------|
-| `pages/StoreAbout.tsx` | 12 |
-| `pages/Featured.tsx` | 10 |
-| `pages/StoreReviewsPage.tsx` | 7 |
-| `components/product/FrequentlyBoughtTogether.tsx` | 7 |
-| `pages/SearchResults.tsx` | 6 |
-| `pages/seller/SellerCustomerInsights.tsx` | 4 |
-| `pages/SupportTicketDetail.tsx` | 4 |
-| `components/search/SearchCommandPalette.tsx` | 4 |
-| `pages/ProductDetail.tsx` | 3 |
-| Tail: ~50 files at 1–2 each | ~63 |
+### C. Stabilise the dashboard widgets
 
-**Dominant fix patterns (applied uniformly):**
-- `value ?? ''` for non-nullable string defaults
-- `value ? new Date(value) : null` before `format()` / date helpers
-- Optional chaining for joined Supabase rows (`row.profiles?.username ?? 'Unknown'`)
-- Early `if (!x) return null` to narrow nullable out at the top of components rather than thread through callees
+6. `useStaffPresence`: drop `getCurrentUserName` from the effect deps; resolve the display name lazily inside the `track()` call. Move the `last_seen` update into a `useInterval` outside the channel effect so the realtime channel is not torn down each minute.
+7. `HeroBanner` and `useStaffPresence` profile queries: switch `.single()` to `.maybeSingle()` so brand-new Google-signed-in staff (no `profiles` row yet) cannot throw PGRST116. Provide a sensible fallback ("Welcome").
+8. `DashboardKPIs`, `SystemAlerts`, `AssignedTicketsWidget`: wrap each `Promise.all` in a try/catch that returns the partial data already collected. One failed sub-query should degrade a card, never blank the page.
 
-## Phase D — Lock it in (1 turn)
+### D. PWA cache hygiene
 
-1. Flip `tsconfig.app.json`: enable `strict: true`. Drop the standalone `useUnknownInCatchVariables` line (now subsumed). Keep `noUnusedLocals: false`, `noUnusedParameters: false`.
-2. Mirror in root `tsconfig.json` so the editor and CLI agree.
-3. Update `.lovable/plan.md` summary noting Wave 6 complete.
+9. Add a one-shot "kill stale admin session" check on `/admin` mount: if `localStorage` contains a Supabase session whose access token JWT lacks `sub`, purge it and redirect to `/admin/login` with `?reason=session-expired`. This is the cause of the `bad_jwt` storms in auth-logs and only ever resolves itself today by the user manually clearing site data.
 
-## Out of scope (re-confirmed)
+### E. Verification
 
-- `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch` — separate dead-code engagement.
-- `src/integrations/supabase/types.ts` — auto-generated, never edited.
-- New CI workflow — would be new implementation per prior directive.
+10. Reproduce via the browser tool against the **published** site: sign in as a staff account, navigate to `/admin`, confirm dashboard renders.
+11. Simulate the bad-JWT case by injecting a tampered token into `localStorage` and reloading; confirm the new auto-purge → `/admin/login?reason=session-expired` flow works (no white screen, no stuck spinner).
+12. Confirm the new `AdminErrorBoundary` renders by temporarily throwing inside `HeroBanner` in a scratch branch; revert.
 
-## Risk controls (per turn)
+## Out of scope
 
-- After every turn: `tsc --noEmit`, `vitest run`, smoke-check affected route in preview.
-- Stripe SDK overload (TS2769 in `PaymentRequestButton.tsx`) — flagged for a single `as` cast, called out in the C-turn note rather than buried.
-- No runtime behaviour changes. Any guard that would change a code path gets called out per file.
+- No new admin features, no design changes (per project memory: FIX + OPTIMISATION only).
+- No changes to `src/integrations/supabase/client.ts`, `types.ts`, or `.env`.
+- No PWA manifest reshaping — only the auth-token purge described in step 9.
 
-## Estimated total
+## Expected outcome
 
-**5 remaining turns** (B:1, C:3, D:1).
-
-## Execution mode
-
-User selected "all phases" — proceed end-to-end through B → D without intermediate confirmation. Each turn ends with the tsc + vitest gate; if either breaks, stop and report rather than continuing.
+Staff who sign in and open `/admin` either see the dashboard or, in the worst case, see an actionable error/expired-session screen with **Retry** and **Sign In** buttons — never a blank white screen.

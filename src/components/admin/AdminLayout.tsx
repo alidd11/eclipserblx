@@ -21,6 +21,53 @@ import { AdminCommandSearch } from './AdminCommandSearch';
 import { useIsInsideHub } from './AdminHubContext';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { AdminErrorBoundary } from './AdminErrorBoundary';
+import { supabase } from '@/integrations/supabase/client';
+
+/** Decode a JWT payload without verifying signature */
+function decodeJwtPayloadSafe(token: string | undefined | null): Record<string, unknown> | null {
+  if (!token) return null;
+  try {
+    const part = token.split('.')[1];
+    if (!part) return null;
+    const norm = part.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = norm.padEnd(Math.ceil(norm.length / 4) * 4, '=');
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Purge a stale Supabase session from localStorage if its JWT lacks `sub`.
+ * This is the root cause of the "white screen / bad_jwt" loop seen in auth-logs:
+ * an installed PWA holds a token from a previous deploy that no longer validates.
+ */
+function purgeStaleAdminSessionOnce(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      let parsed: any;
+      try { parsed = JSON.parse(raw); } catch { continue; }
+      const access = parsed?.access_token ?? parsed?.currentSession?.access_token;
+      const payload = decodeJwtPayloadSafe(access);
+      if (payload && typeof payload.sub === 'string' && payload.sub.length > 0) return false;
+      // Stale: purge
+      localStorage.removeItem(key);
+      console.warn('[AdminLayout] Purged stale Supabase session (missing sub claim)');
+      // Best-effort sign-out as well
+      void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -111,11 +158,20 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   const isGateLoading = loading || (!!user?.id && permissionsRequired && permissionsLoading) || isAuthRecovering;
 
+  // One-shot stale-session purge: if the cached JWT lacks `sub`, clear it and bounce to /admin/login.
+  // This breaks the bad_jwt → white-screen loop for installed-PWA staff.
+  if (!loading && !user && typeof window !== 'undefined') {
+    if (purgeStaleAdminSessionOnce()) {
+      return <Navigate to="/admin/login?reason=session-expired" replace />;
+    }
+  }
+
   // Show loading spinner (bounded — will not hang forever)
   if (isGateLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background safe-area-page">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background safe-area-page">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-xs text-muted-foreground">Loading admin dashboard…</p>
       </div>
     );
   }
@@ -188,7 +244,7 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   // When rendered inside a hub page, skip layout chrome
   if (isInsideHub) {
-    return <>{children}</>;
+    return <AdminErrorBoundary resetKey={location.pathname}>{children}</AdminErrorBoundary>;
   }
 
   return (
@@ -266,7 +322,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         extra={<><AdminInstallPrompt /><AdminCommandSearch /></>}
       >
         <PageTransition className={isChatPage ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : undefined}>
-          {children}
+          <AdminErrorBoundary resetKey={location.pathname}>
+            {children}
+          </AdminErrorBoundary>
         </PageTransition>
       </LayoutShell>
     </TooltipProvider>

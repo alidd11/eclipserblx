@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,15 +11,23 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 }
 
 function isJwtError(error: unknown): boolean {
-  const msg = String((error as any)?.message ?? '').toLowerCase();
-  const code = String((error as any)?.code ?? '').toUpperCase();
+  const e = error as any;
+  const msg = String(e?.message ?? '').toLowerCase();
+  const details = String(e?.details ?? '').toLowerCase();
+  const hint = String(e?.hint ?? '').toLowerCase();
+  const code = String(e?.code ?? '').toUpperCase();
+  const status = Number(e?.status ?? e?.statusCode ?? 0);
+  const haystack = `${msg} ${details} ${hint}`;
   return (
-    msg.includes('jwt') ||
-    msg.includes('bad_jwt') ||
-    msg.includes('invalid claim') ||
-    msg.includes('missing sub claim') ||
-    msg.includes('403') ||
-    code === 'PGRST301'
+    haystack.includes('jwt') ||
+    haystack.includes('bad_jwt') ||
+    haystack.includes('invalid claim') ||
+    haystack.includes('missing sub claim') ||
+    haystack.includes('403') ||
+    status === 401 ||
+    status === 403 ||
+    code === 'PGRST301' ||
+    code === 'PGRST302'
   );
 }
 
@@ -84,14 +93,37 @@ export function useAdminAuth() {
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;
 
+  // Hard ceiling: if we're still waiting on roles 8 s after the user appeared,
+  // treat as expired so the UI can render the actionable Session Expired screen
+  // instead of an indefinite spinner / blank.
+  const [hardCeilingHit, setHardCeilingHit] = useState(false);
+  const ceilingStartRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!user?.id) {
+      ceilingStartRef.current = null;
+      setHardCeilingHit(false);
+      return;
+    }
+    if (roles !== undefined) {
+      ceilingStartRef.current = null;
+      setHardCeilingHit(false);
+      return;
+    }
+    if (ceilingStartRef.current === null) ceilingStartRef.current = Date.now();
+    const id = setTimeout(() => {
+      if (roles === undefined) setHardCeilingHit(true);
+    }, 8000);
+    return () => clearTimeout(id);
+  }, [user?.id, roles]);
+
   // Bounded recovery: only treat as recovering if we're still retrying (failureCount < 3)
   // Once retries are exhausted, this is a terminal auth error — don't keep loading forever
   const isJwtFailure = isError && isJwtError(rolesError);
-  const isAuthRecovering = isJwtFailure && failureCount < 3;
-  const isAuthExpired = isJwtFailure && failureCount >= 3;
+  const isAuthRecovering = isJwtFailure && failureCount < 3 && !hardCeilingHit;
+  const isAuthExpired = (isJwtFailure && failureCount >= 3) || hardCeilingHit;
 
   // Loading is true only during initial auth load or active recovery (bounded)
-  const loading = authLoading || (!!user?.id && rolesLoading && roles === undefined) || isAuthRecovering;
+  const loading = authLoading || (!!user?.id && rolesLoading && roles === undefined && !hardCeilingHit) || isAuthRecovering;
 
   return {
     user,
