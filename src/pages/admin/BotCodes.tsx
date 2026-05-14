@@ -80,7 +80,7 @@ export default function AdminBotCodes() {
  if (error) throw error;
  
  // Fetch customer profiles
- const userIds = data?.filter(c => c.user_id).map(c => c.user_id) || [];
+ const userIds = (data?.filter(c => c.user_id).map(c => c.user_id) || []) as string[];
  let customerMap: Record<string, { customer_id: string | null; display_name: string | null; email: string }> = {};
  
  if (userIds.length > 0) {
@@ -98,7 +98,7 @@ export default function AdminBotCodes() {
  }
  
  // Fetch processor profiles
- const processedByIds = data?.filter(c => c.processed_by).map(c => c.processed_by) || [];
+ const processedByIds = (data?.filter(c => c.processed_by).map(c => c.processed_by) || []) as string[];
  let processorMap: Record<string, { display_name: string | null; staff_id: string | null }> = {};
  
  if (processedByIds.length > 0) {

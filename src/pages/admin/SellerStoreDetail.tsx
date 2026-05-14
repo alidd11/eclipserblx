@@ -17,7 +17,7 @@ import { StoreControlsCard } from '@/components/admin/store-detail/StoreControls
 import { formatGBP } from '@/lib/formatters';
 
 export default function SellerStoreDetail() {
-  const { storeId } = useParams<{ storeId: string }>();
+  const { storeId = "" } = useParams<{ storeId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();

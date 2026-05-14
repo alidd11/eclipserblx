@@ -81,7 +81,7 @@ const ATTACHMENT_BUCKET = 'support-ticket-attachments';
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export default function CustomerTicketDetail() {
-  const { ticketId } = useParams();
+  const { ticketId = "" } = useParams<{ ticketId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();

@@ -57,7 +57,7 @@ export default function BotServers() {
       if (error) throw error;
 
       // Fetch profiles for installations with user_id
-      const userIds = data?.filter(i => i.user_id).map(i => i.user_id) || [];
+      const userIds = (data?.filter(i => i.user_id).map(i => i.user_id) || []) as string[];
       let profileMap: Record<string, { customer_id: string | null; display_name: string | null; email: string | null }> = {};
 
       if (userIds.length > 0) {

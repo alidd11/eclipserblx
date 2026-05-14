@@ -98,7 +98,7 @@ export default function SellerSupport() {
       const { data, error } = await supabase
         .from('seller_support_tickets')
         .select('*')
-        .eq('user_id', user?.id)
+        .eq('user_id', user?.id ?? '')
         .order('created_at', { ascending: false });
       
       if (error) throw error;

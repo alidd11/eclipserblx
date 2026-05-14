@@ -71,7 +71,7 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
       if (!reviewsData || reviewsData.length === 0) return [];
 
       const userIds = [...new Set(reviewsData.filter(r => !r.is_external).map(r => r.user_id))];
-      const reviewProductIds = [...new Set(reviewsData.map(r => r.product_id).filter(Boolean))];
+      const reviewProductIds = [...new Set(reviewsData.map(r => r.product_id).filter(Boolean))] as string[];
 
       const [profilesResult, productsResult] = await Promise.all([
         userIds.length > 0

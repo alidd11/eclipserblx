@@ -25,7 +25,7 @@ import { formatGBP } from '@/lib/formatters';
  };
  
 export default function DeveloperPaymentDetail() {
- const { id } = useParams<{ id: string }>();
+ const { id = "" } = useParams<{ id: string }>();
  const navigate = useNavigate();
  const queryClient = useQueryClient();
  const { user } = useAuth();
