@@ -152,7 +152,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 height={620}
                 loading={priority ? 'eager' : 'lazy'}
                 decoding={priority ? 'sync' : 'async'}
-                fetchPriority={priority ? 'high' : undefined}
+                {...(priority ? ({ fetchpriority: 'high' } as Record<string, string>) : {})}
                 onError={handleMediaError}
                 onLoad={(e) => {
                   const img = e.currentTarget;

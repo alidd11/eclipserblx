@@ -11,7 +11,7 @@ export function HeroBanner() {
           alt=""
           width={750}
           height={460}
-          fetchPriority="high"
+          {...({ fetchpriority: 'high' } as Record<string, string>)}
           loading="eager"
           decoding="sync"
           className="absolute inset-0 w-full h-full object-cover"
