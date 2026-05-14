@@ -214,7 +214,7 @@ export default function SellerRefunds() {
               request={selectedRequest}
               response={response}
               setResponse={setResponse}
-              respondMutation={respondMutation}
+              respondMutation={respondMutation as unknown as { mutate: (v: unknown) => void; isPending: boolean }}
               getStatusBadge={getStatusBadge}
             />
           )}
