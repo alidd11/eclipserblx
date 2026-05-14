@@ -48,8 +48,8 @@ interface StoreApplication {
 interface ApplicationDetailDialogProps {
   application: StoreApplication | null;
   onClose: () => void;
-  onApprove: (app: StoreApplication) => void;
-  onReject: (id: string, reason: string) => void;
+  onApprove?: (app: StoreApplication) => void;
+  onReject?: (id: string, reason: string) => void;
   isApproving: boolean;
   isRejecting: boolean;
 }
@@ -115,13 +115,18 @@ export function ApplicationDetailDialog({ application, onClose, onApprove, onRej
             </div>
           </div>
 
-          {application.status === 'pending' && (
+          {application.status === 'pending' && onApprove && onReject && (
             <DialogFooter className="gap-2 sm:gap-0">
               <Button variant="destructive" onClick={() => setShowRejectDialog(true)}><X className="h-4 w-4 mr-2" />Reject</Button>
               <Button onClick={() => onApprove(application)} disabled={isApproving}>
                 {isApproving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
                 Approve & Create Store
               </Button>
+            </DialogFooter>
+          )}
+          {application.status === 'pending' && (!onApprove || !onReject) && (
+            <DialogFooter>
+              <p className="text-xs text-muted-foreground">You don't have permission to review this application.</p>
             </DialogFooter>
           )}
         </DialogContent>
@@ -139,7 +144,7 @@ export function ApplicationDetailDialog({ application, onClose, onApprove, onRej
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowRejectDialog(false)}>Cancel</Button>
-            <Button variant="destructive" onClick={() => { onReject(application.id, rejectionReason); setShowRejectDialog(false); setRejectionReason(''); }} disabled={!rejectionReason.trim() || isRejecting}>
+            <Button variant="destructive" onClick={() => { onReject?.(application.id, rejectionReason); setShowRejectDialog(false); setRejectionReason(''); }} disabled={!rejectionReason.trim() || isRejecting}>
               {isRejecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <X className="h-4 w-4 mr-2" />}
               Reject Application
             </Button>
