@@ -238,15 +238,15 @@ export default function SellerPayouts() {
  return <Badge variant="default">Stripe</Badge>;
  };
 
- const getPayoutMethod = (payout: SellerPayout) => payout?.payout_method || payout?.stores?.payout_method;
- const isBankMethod = (method: string | undefined) => method === 'bank' || method === 'bank_transfer';
+  const getPayoutMethod = (payout: SellerPayout | null | undefined) => payout?.payout_method || payout?.stores?.payout_method;
+  const isBankMethod = (method: string | null | undefined) => method === 'bank' || method === 'bank_transfer';
 
- /** Safely access store_payment_details regardless of PostgREST returning object or array */
- const getPaymentDetails = (payout: SellerPayout) => {
- const spd = payout?.stores?.store_payment_details;
- if (!spd) return null;
- return Array.isArray(spd) ? spd[0] : spd;
- };
+  /** Safely access store_payment_details regardless of PostgREST returning object or array */
+  const getPaymentDetails = (payout: SellerPayout | null | undefined) => {
+  const spd = payout?.stores?.store_payment_details;
+  if (!spd) return null;
+  return Array.isArray(spd) ? spd[0] : spd;
+  };
 
  const getEstimatedArrival = (payout: SellerPayout) => {
  try {
