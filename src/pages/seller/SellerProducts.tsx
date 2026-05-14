@@ -184,7 +184,7 @@ export default function SellerProducts() {
   const isScheduledForFuture = (releaseAt: string | null) => releaseAt ? new Date(releaseAt) > new Date() : false;
 
   const openEdit = (product: NonNullable<typeof products>[number]) => {
-    if (isAdminManagedProduct(product)) { toast.info('This product is managed by Eclipse admins.'); return; }
+    if (isAdminManagedProduct(product as any)) { toast.info('This product is managed by Eclipse admins.'); return; }
     hapticTap();
     const hasSchedule = !!product.release_at && isScheduledForFuture(product.release_at);
     setForm({

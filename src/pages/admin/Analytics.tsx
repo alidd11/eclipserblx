@@ -491,7 +491,7 @@ export default function AdminAnalytics() {
  <TableBody>
  {recentReferrals?.map((referral) => (
  <TableRow key={referral.id}>
- <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(referral.created_at), 'MMM d, HH:mm')}</TableCell>
+ <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(referral.created_at!), 'MMM d, HH:mm')}</TableCell>
  <TableCell className="font-medium text-sm whitespace-nowrap font-mono">{referral.referral_code}</TableCell>
  <TableCell className="text-xs text-muted-foreground whitespace-nowrap max-w-[300px] truncate">{referral.user_agent || '-'}</TableCell>
  </TableRow>

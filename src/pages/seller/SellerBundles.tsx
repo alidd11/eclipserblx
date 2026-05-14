@@ -202,7 +202,7 @@ export default function SellerBundles() {
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{bundle.name}</span>
                         {!bundle.is_active && <Badge variant="secondary">Hidden</Badge>}
-                        {bundle.savings_percent > 0 && (
+                        {(bundle.savings_percent ?? 0) > 0 && (
                           <Badge variant="outline" className="text-green-600 border-green-600">
                             <Percent className="h-3 w-3 mr-1" />Save {bundle.savings_percent}%
                           </Badge>

@@ -373,7 +373,7 @@ export default function SellerPayouts() {
  </TableCell>
  </TableRow>
  ) : (
- payouts?.map((payout: SellerPayout) => (
+ (payouts as SellerPayout[] | undefined)?.map((payout: SellerPayout) => (
  <TableRow key={payout.id}>
  <TableCell>
  <div>
@@ -452,7 +452,7 @@ export default function SellerPayouts() {
  <div className="p-8 text-center text-muted-foreground">No payout requests found</div>
  ) : (
  <div className="divide-y divide-border">
- {payouts?.map((payout: SellerPayout) => (
+ {(payouts as SellerPayout[] | undefined)?.map((payout: SellerPayout) => (
  <div key={payout.id} className="p-4 space-y-2">
  <div className="flex items-start justify-between gap-2">
  <div className="min-w-0">

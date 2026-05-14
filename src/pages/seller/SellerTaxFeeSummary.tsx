@@ -45,7 +45,7 @@ export default function SellerTaxFeeSummary() {
   const monthlyData = useMemo(() => {
     const map = new Map<string, { month: string, gross: number, platformFee: number, stripeFee: number, net: number }>();
     transactions.forEach((t) => {
-      const d = new Date(t.created_at);
+      const d = new Date(t.created_at!);
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
       const label = d.toLocaleString('default', { month: 'short', year: '2-digit' });
       if (!map.has(key)) {

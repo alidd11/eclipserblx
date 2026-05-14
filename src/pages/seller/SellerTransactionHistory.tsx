@@ -57,7 +57,7 @@ export default function SellerTransactionHistory() {
   const exportCSV = () => {
     const headers = ['Date', 'Type', 'Description', 'Gross', 'Platform Fee', 'Stripe Fee', 'Net Amount', 'Status'];
     const rows = filtered.map((t) => [
-      format(new Date(t.created_at), 'yyyy-MM-dd HH:mm'),
+      format(new Date(t.created_at!), 'yyyy-MM-dd HH:mm'),
       t.type, t.description || '', 
       t.gross_amount || t.amount, t.platform_fee || 0, t.stripe_fee || 0, t.net_amount || t.amount,
       t.refunded_at ? 'Refunded' : t.status || 'completed'
@@ -126,7 +126,7 @@ export default function SellerTransactionHistory() {
                   <TableRow><TableCell colSpan={7}><InlineLoading compact message="No transactions found" /></TableCell></TableRow>
                 ) : filtered.map((t) => (
                   <TableRow key={t.id}>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(t.created_at), 'dd MMM yyyy HH:mm')}</TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{format(new Date(t.created_at!), 'dd MMM yyyy HH:mm')}</TableCell>
                     <TableCell>
                       <Badge variant={t.type === 'sale' ? 'default' : 'secondary'} className="text-xs capitalize">{t.type}</Badge>
                     </TableCell>

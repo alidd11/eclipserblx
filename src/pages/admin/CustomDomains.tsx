@@ -292,7 +292,7 @@ export default function AdminCustomDomains() {
  <TableCell><StatusBadge status={domain.status} /></TableCell>
  <TableCell><SslBadge status={domain.ssl_status} /></TableCell>
  <TableCell>
- <DomainHealthDisplay healthCheck={hc} domain={domain.domain} isCloudflare={domain.is_cloudflare_zone} compact />
+ <DomainHealthDisplay healthCheck={hc} domain={domain.domain} isCloudflare={domain.is_cloudflare_zone ?? undefined} compact />
  </TableCell>
  <TableCell>
  {domain.is_cloudflare_zone ? (
@@ -436,7 +436,7 @@ export default function AdminCustomDomains() {
  <DomainHealthDisplay
  healthCheck={hc}
  domain={domain.domain}
- isCloudflare={domain.is_cloudflare_zone}
+ isCloudflare={domain.is_cloudflare_zone ?? undefined}
  />
  </div>
  );

@@ -121,7 +121,7 @@ export default function SellerStoreDetail() {
 
   const unlockAccountsMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('profiles').update({ accounts_locked: false, accounts_lock_reset_by: user?.id, accounts_lock_reset_at: new Date().toISOString() }).eq('user_id', store?.owner_id);
+      const { error } = await supabase.from('profiles').update({ accounts_locked: false, accounts_lock_reset_by: user?.id, accounts_lock_reset_at: new Date().toISOString() }).eq('user_id', store?.owner_id ?? '');
       if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] }); toast.success('Account links unlocked.'); },
@@ -130,7 +130,7 @@ export default function SellerStoreDetail() {
 
   const lockAccountsMutation = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('profiles').update({ accounts_locked: true, accounts_locked_at: new Date().toISOString() }).eq('user_id', store?.owner_id);
+      const { error } = await supabase.from('profiles').update({ accounts_locked: true, accounts_locked_at: new Date().toISOString() }).eq('user_id', store?.owner_id ?? '');
       if (error) throw error;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['seller-store-detail', storeId] }); toast.success('Account links locked.'); },

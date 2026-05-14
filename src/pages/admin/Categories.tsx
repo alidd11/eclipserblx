@@ -490,9 +490,9 @@ export default function AdminCategories() {
  {categories.map(category => (
  <SortableRow
  key={category.id}
- category={category}
- onEdit={() => openEdit(category)}
- onDelete={() => openDelete(category)}
+ category={category as any}
+ onEdit={() => openEdit(category as any)}
+ onDelete={() => openDelete(category as any)}
  />
  ))}
  </SortableContext>
@@ -509,9 +509,9 @@ export default function AdminCategories() {
  {categories.map(category => (
  <SortableMobileCard
  key={category.id}
- category={category}
- onEdit={() => openEdit(category)}
- onDelete={() => openDelete(category)}
+ category={category as any}
+ onEdit={() => openEdit(category as any)}
+ onDelete={() => openDelete(category as any)}
  />
  ))}
  </SortableContext>

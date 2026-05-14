@@ -362,7 +362,7 @@ export default function SellerCustomSections() {
                         <Label>Content</Label>
                         {renderContentEditor(
                           section.section_type as SectionType,
-                          editForm.content,
+                          editForm.content as any,
                           (c) => setEditForm({ ...editForm, content: c })
                         )}
                       </div>

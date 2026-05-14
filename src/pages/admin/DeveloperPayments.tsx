@@ -439,7 +439,7 @@ export default function DeveloperPayments() {
              <DialogHeader>
                <DialogTitle>Mark Payment as Completed</DialogTitle>
                <DialogDescription>
-                 Recording payment of {formatGBP(selectedPayment?.amount)} to{' '}
+                 Recording payment of {formatGBP(selectedPayment?.amount ?? 0)} to{' '}
                  {selectedPayment?.developer?.display_name || selectedPayment?.developer?.username}
                </DialogDescription>
              </DialogHeader>

@@ -171,7 +171,7 @@ export default function AdminBotCodes() {
  const { error: chatError } = await supabase
  .from('admin_chat_messages')
  .insert({
- user_id: currentUser?.id,
+ user_id: currentUser?.id ?? '',
  message: adminMessage,
  });
  
