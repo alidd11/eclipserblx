@@ -7,7 +7,7 @@ interface CollectionSchemaProps {
   itemCount: number;
 }
 
-export function CollectionSchema({ name, description, url, itemCount }: CollectionSchemaProps) {
+export function CollectionSchema({ name, description, url, itemCount }: CollectionSchemaProps): null {
   useEffect(() => {
     const script = document.createElement('script');
     script.type = 'application/ld+json';

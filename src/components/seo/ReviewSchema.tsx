@@ -16,7 +16,7 @@ interface ReviewSchemaProps {
  * Injects individual Review JSON-LD snippets for a product's reviews.
  * Google can use these to show star ratings in search results.
  */
-export function ReviewSchema({ productName, reviews }: ReviewSchemaProps) {
+export function ReviewSchema({ productName, reviews }: ReviewSchemaProps): null {
   useEffect(() => {
     if (!reviews.length) return;
 

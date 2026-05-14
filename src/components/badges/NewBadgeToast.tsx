@@ -8,7 +8,7 @@ interface NewBadgeToastProps {
   onClear: () => void;
 }
 
-export function NewBadgeToast({ badges, onClear }: NewBadgeToastProps) {
+export function NewBadgeToast({ badges, onClear }: NewBadgeToastProps): null {
   useEffect(() => {
     if (badges.length === 0) return;
 
