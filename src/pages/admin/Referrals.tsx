@@ -52,7 +52,7 @@ export default function AdminReferrals() {
  const userIds = [...new Set([
  ...data.map(r => r.referrer_id),
  ...data.filter(r => r.referred_id).map(r => r.referred_id)
- ])];
+ ])] as string[];
  
  const { data: profiles } = await supabase
  .from('profiles')
@@ -95,7 +95,7 @@ export default function AdminReferrals() {
  if (error) throw error;
  
  // Fetch profiles and discount codes
- const userIds = [...new Set(data.map(r => r.user_id))];
+ const userIds = [...new Set(data.map(r => r.user_id))] as string[];
  const discountIds = [...new Set(data.filter(r => r.discount_code_id).map(r => r.discount_code_id))] as string[];
  
  const [profilesRes, discountsRes] = await Promise.all([
@@ -269,7 +269,7 @@ export default function AdminReferrals() {
  </TableCell>
  <TableCell>{getStatusBadge(referral.status)}</TableCell>
  <TableCell className="text-muted-foreground text-sm">
- {format(new Date(referral.created_at), 'MMM d, yyyy')}
+ {referral.created_at ? format(new Date(referral.created_at), 'MMM d, yyyy') : '—'}
  </TableCell>
  </TableRow>
  ))}
