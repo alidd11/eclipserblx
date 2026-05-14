@@ -21,6 +21,53 @@ import { AdminCommandSearch } from './AdminCommandSearch';
 import { useIsInsideHub } from './AdminHubContext';
 import { LayoutShell } from '@/components/layout/LayoutShell';
 import { EclipseLogo } from '@/components/ui/EclipseLogo';
+import { AdminErrorBoundary } from './AdminErrorBoundary';
+import { supabase } from '@/integrations/supabase/client';
+
+/** Decode a JWT payload without verifying signature */
+function decodeJwtPayloadSafe(token: string | undefined | null): Record<string, unknown> | null {
+  if (!token) return null;
+  try {
+    const part = token.split('.')[1];
+    if (!part) return null;
+    const norm = part.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = norm.padEnd(Math.ceil(norm.length / 4) * 4, '=');
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Purge a stale Supabase session from localStorage if its JWT lacks `sub`.
+ * This is the root cause of the "white screen / bad_jwt" loop seen in auth-logs:
+ * an installed PWA holds a token from a previous deploy that no longer validates.
+ */
+function purgeStaleAdminSessionOnce(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith('sb-') || !key.endsWith('-auth-token')) continue;
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      let parsed: any;
+      try { parsed = JSON.parse(raw); } catch { continue; }
+      const access = parsed?.access_token ?? parsed?.currentSession?.access_token;
+      const payload = decodeJwtPayloadSafe(access);
+      if (payload && typeof payload.sub === 'string' && payload.sub.length > 0) return false;
+      // Stale: purge
+      localStorage.removeItem(key);
+      console.warn('[AdminLayout] Purged stale Supabase session (missing sub claim)');
+      // Best-effort sign-out as well
+      void supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}
 
 interface AdminLayoutProps {
   children: ReactNode;
