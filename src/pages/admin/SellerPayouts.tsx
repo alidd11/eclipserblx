@@ -621,8 +621,9 @@ export default function SellerPayouts() {
  notes })}
  >
  {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
- Mark as Paid
+  Mark as Paid
  </Button>
+ )}
  </DialogFooter>
  </DialogContent>
  </Dialog>
