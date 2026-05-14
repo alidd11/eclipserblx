@@ -38,7 +38,7 @@ export function ActivityFeed() {
  ]);
 
  // Resolve customer_ids for order users
- const orderUserIds = recentOrders.data?.map(o => o.user_id).filter(Boolean) || [];
+ const orderUserIds = (recentOrders.data?.map(o => o.user_id).filter(Boolean) || []) as string[];
  let orderCustomerMap: Record<string, string> = {};
  if (orderUserIds.length > 0) {
  const { data: orderProfiles } = await supabase

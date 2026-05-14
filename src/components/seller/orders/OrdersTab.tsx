@@ -81,7 +81,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59');
 
  const { data: txData } = await query;
- const orderIds = [...new Set((txData || []).map(t => t.order_id).filter(Boolean))];
+ const orderIds = [...new Set((txData || []).map(t => t.order_id).filter(Boolean))] as string[];
 
  if (orderIds.length === 0) return { orders: [], totalCount: 0 };
 

@@ -96,7 +96,7 @@ export default function AdminReferrals() {
  
  // Fetch profiles and discount codes
  const userIds = [...new Set(data.map(r => r.user_id))];
- const discountIds = [...new Set(data.filter(r => r.discount_code_id).map(r => r.discount_code_id))];
+ const discountIds = [...new Set(data.filter(r => r.discount_code_id).map(r => r.discount_code_id))] as string[];
  
  const [profilesRes, discountsRes] = await Promise.all([
  supabase.from('profiles').select('user_id, display_name, email').in('user_id', userIds),

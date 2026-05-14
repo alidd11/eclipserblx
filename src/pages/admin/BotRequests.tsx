@@ -40,7 +40,7 @@ export default function AdminBotRequests() {
  if (error) throw error;
  
  // Fetch customer profiles
- const userIds = data?.filter(c => c.user_id).map(c => c.user_id) || [];
+ const userIds = (data?.filter(c => c.user_id).map(c => c.user_id) || []) as string[];
  let customerMap: Record<string, { customer_id: string | null; display_name: string | null; email: string }> = {};
  
  if (userIds.length > 0) {

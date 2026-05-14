@@ -97,7 +97,7 @@ export default function AdminOrders() {
  
  // If searching, filter by user's customer_id from profiles
  if (debouncedSearch && data) {
- const userIds = data.filter(o => o.user_id).map(o => o.user_id);
+ const userIds = data.filter(o => o.user_id).map(o => o.user_id) as string[];
  if (userIds.length > 0) {
  const { data: profiles } = await supabase
  .from('profiles')
@@ -122,7 +122,7 @@ export default function AdminOrders() {
  const totalPages = Math.ceil((totalCount || 0) / ORDERS_PER_PAGE);
  
  // Fetch customer IDs for orders
- const orderUserIds = orders?.filter(o => o.user_id).map(o => o.user_id) || [];
+ const orderUserIds = (orders?.filter(o => o.user_id).map(o => o.user_id) || []) as string[];
  const { data: customerProfiles } = useQuery({
  queryKey: ['order-customer-profiles', orderUserIds],
  queryFn: async () => {
