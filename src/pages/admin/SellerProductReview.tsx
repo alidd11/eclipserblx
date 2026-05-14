@@ -139,7 +139,7 @@ export default function SellerProducts() {
   });
 
   return (
-    <AdminLayout requiredPermissions={['view_seller_stores']}>
+    <AdminLayout requiredPermissions={['manage_products']}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
