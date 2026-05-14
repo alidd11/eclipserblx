@@ -16,6 +16,7 @@ interface StaffProfile {
 export function useStaffPresence() {
   const { user } = useAuth();
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const profileNameRef = useRef<string>('Staff Member');
 
   // Fetch current user profile for presence display name
   const { data: currentUserProfile } = useQuery({
@@ -26,63 +27,67 @@ export function useStaffPresence() {
         .from('profiles')
         .select('user_id, display_name, email')
         .eq('user_id', user.id)
-        .single();
-      
+        .maybeSingle();
+
       if (error) return null;
-      return data as StaffProfile;
+      return data as StaffProfile | null;
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5,
   });
 
-  const getCurrentUserName = useCallback(() => {
-    if (currentUserProfile?.display_name) return currentUserProfile.display_name;
-    return 'Staff Member';
-  }, [currentUserProfile]);
+  // Keep a ref of the latest name so the channel effect doesn't need to
+  // tear down/re-subscribe every time the profile query refetches.
+  useEffect(() => {
+    profileNameRef.current = currentUserProfile?.display_name || 'Staff Member';
+  }, [currentUserProfile?.display_name]);
 
-  // Initialize presence channel when user is logged in
+  const getCurrentUserName = useCallback(() => profileNameRef.current, []);
+
+  // Initialize presence channel ONCE per user (no display-name dependency)
   useEffect(() => {
     if (!user?.id) return;
 
-    // Create the presence channel with the same key used in StaffMessages
     const presenceChannel = supabase.channel('staff-chat-presence', {
       config: { presence: { key: user.id } },
     });
 
     presenceChannel
       .on('presence', { event: 'sync' }, () => {
-        // Sync event received - presence state updated
+        // Sync event — presence state updated
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          // Track user as online (not typing by default)
           await presenceChannel.track({
             typing: false,
             user_id: user.id,
-            name: getCurrentUserName(),
+            name: profileNameRef.current,
           });
         }
       });
 
     presenceChannelRef.current = presenceChannel;
 
-    // Update last_seen in database periodically
-    const updateLastSeen = async () => {
-      await supabase
-        .from('profiles')
-        .update({ last_seen: new Date().toISOString() })
-        .eq('user_id', user.id);
-    };
-    
-    updateLastSeen();
-    const interval = setInterval(updateLastSeen, 60000); // Update every minute
-
     return () => {
-      clearInterval(interval);
       supabase.removeChannel(presenceChannel);
       presenceChannelRef.current = null;
     };
-  }, [user?.id, getCurrentUserName]);
+  }, [user?.id]);
+
+  // Keep last_seen fresh on its own cadence — independent of channel lifecycle
+  useEffect(() => {
+    if (!user?.id) return;
+    const update = () => {
+      void supabase
+        .from('profiles')
+        .update({ last_seen: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .then(() => undefined, () => undefined);
+    };
+    update();
+    const interval = setInterval(update, 60_000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   return {
     presenceChannelRef,
