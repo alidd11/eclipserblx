@@ -168,7 +168,7 @@ export default function SellerProducts() {
 
   const deleteProduct = useMutation({
     mutationFn: async (productId: string) => {
-      const { error } = await supabase.from('products').delete().eq('id', productId).eq('store_id', store?.id);
+      const { error } = await supabase.from('products').delete().eq('id', productId).eq('store_id', store?.id ?? '');
       if (error) throw error;
     },
     onSuccess: () => { toast.success('Product deleted'); queryClient.invalidateQueries({ queryKey: ['seller-products'] }); setDeleteProductId(null); },

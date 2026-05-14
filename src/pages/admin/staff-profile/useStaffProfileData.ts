@@ -32,7 +32,7 @@ export function useStaffProfileData(userId: string | undefined) {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', userId!)
         .single();
       if (error) throw error;
       return data;
@@ -47,7 +47,7 @@ export function useStaffProfileData(userId: string | undefined) {
       const { data, error } = await supabase
         .from('user_roles')
         .select('role, created_at')
-        .eq('user_id', userId)
+        .eq('user_id', userId!)
         .order('created_at', { ascending: true });
       if (error) throw error;
       return data as { role: string; created_at: string }[];
@@ -62,7 +62,7 @@ export function useStaffProfileData(userId: string | undefined) {
       const { data, error } = await supabase
         .from('staff_id_logs')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', userId!)
         .order('assigned_at', { ascending: true })
         .limit(1)
         .single();
@@ -98,7 +98,7 @@ export function useStaffProfileData(userId: string | undefined) {
       const { count, error } = await supabase
         .from('staff_activity')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId);
+        .eq('user_id', userId!);
       if (error) throw error;
       return count || 0;
     },
@@ -112,7 +112,7 @@ export function useStaffProfileData(userId: string | undefined) {
       const { data, error } = await supabase
         .from('staff_notes')
         .select('*')
-        .eq('staff_user_id', userId)
+        .eq('staff_user_id', userId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
       if (!data || data.length === 0) return [];
@@ -276,7 +276,7 @@ export function useStaffProfileData(userId: string | undefined) {
     mutationFn: async ({ content, noteType }: { content: string; noteType: string }) => {
       const { error } = await supabase
         .from('staff_notes')
-        .insert({ staff_user_id: userId, author_id: user?.id, content, note_type: noteType });
+        .insert({ staff_user_id: userId!, author_id: user!.id, content, note_type: noteType });
       if (error) throw error;
     },
     onSuccess: () => {
