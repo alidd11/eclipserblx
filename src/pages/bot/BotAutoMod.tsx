@@ -177,7 +177,7 @@ export default function BotAutoMod() {
  <div className="p-8 text-center text-foreground/40">No auto-mod rules configured yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {rules.map((rule) => {
+ {rules.map((rule: any) => {
  const ruleType = RULE_TYPES.find(t => t.value === rule.rule_type);
  const Icon = ruleType?.icon || ShieldAlert;
  return (
@@ -210,7 +210,7 @@ export default function BotAutoMod() {
  </div>
  <div className="p-4 p-0">
  <div className="divide-y divide-white/5">
- {heatData.map((h) => (
+ {heatData.map((h: any) => (
  <div key={h.id} className="px-4 py-2 flex items-center justify-between">
  <span className="text-sm text-foreground/70">{h.user_discord_id}</span>
  <Badge className={`${h.heat_points >= 7 ? 'bg-red-500/20 text-red-400' : h.heat_points >= 4 ? 'bg-orange-500/20 text-orange-400' : 'bg-yellow-500/20 text-yellow-400'}`}>

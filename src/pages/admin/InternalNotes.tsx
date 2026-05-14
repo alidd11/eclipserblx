@@ -96,7 +96,7 @@ export default function InternalNotes() {
     },
   });
 
-  const filtered = notes.filter((n) =>
+  const filtered = notes.filter((n: any) =>
     !search ||
     n.title?.toLowerCase().includes(search.toLowerCase()) ||
     n.content?.toLowerCase().includes(search.toLowerCase())
@@ -168,7 +168,7 @@ export default function InternalNotes() {
           <div className="border border-border rounded-xl overflow-hidden"><div className="p-4 p-8 text-center text-muted-foreground">No notes yet. Create your first one!</div></div>
         ) : (
           <div className="space-y-3">
-            {filtered.map((note) => (
+            {filtered.map((note: any) => (
               <div key={note.id} className={note.is_pinned ? 'border-primary/30 bg-primary/5' : ''}>
                 <div className="p-4 p-4">
                   <div className="flex items-start justify-between gap-3">

@@ -188,7 +188,7 @@ export default function SellerWebhooks() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {webhooks.map((wh) => (
+                {webhooks.map((wh: any) => (
                   <React.Fragment key={wh.id}>
                   <TableRow className="group">
                     <TableCell className="font-mono text-xs max-w-[200px] truncate">

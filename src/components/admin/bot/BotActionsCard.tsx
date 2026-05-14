@@ -110,7 +110,7 @@ export function BotActionsCard() {
  <SelectValue placeholder="Select server" />
  </SelectTrigger>
  <SelectContent>
- {guilds.map((g) => (
+ {guilds.map((g: any) => (
  <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
  ))}
  </SelectContent>

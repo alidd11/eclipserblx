@@ -211,7 +211,7 @@ export default function BotCommunity() {
  <div className="p-6 text-center text-foreground/40 text-sm">No giveaways yet.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {giveaways.map((g) => (
+ {giveaways.map((g: any) => (
  <div key={g.id} className="px-4 py-3 flex items-center gap-3">
  <Gift className="h-4 w-4 text-[hsl(258,90%,66%)] shrink-0" />
  <div className="flex-1">
@@ -274,7 +274,7 @@ export default function BotCommunity() {
  <div className="p-6 text-center text-foreground/40 text-sm">No suggestions yet. Members use <code>/suggest</code>.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {suggestions.map((s) => (
+ {suggestions.map((s: any) => (
  <div key={s.id} className="px-4 py-3">
  <div className="flex items-center gap-2">
  <span className="text-sm text-foreground">{s.content}</span>
@@ -345,7 +345,7 @@ export default function BotCommunity() {
  <div className="p-6 text-center text-foreground/40 text-sm">No scheduled messages. Create one from the bot commands.</div>
  ) : (
  <div className="divide-y divide-white/5">
- {scheduledMsgs.map((m) => (
+ {scheduledMsgs.map((m: any) => (
  <div key={m.id} className="px-4 py-3">
  <p className="text-sm text-foreground truncate">{m.content || 'Embed message'}</p>
  <p className="text-xs text-foreground/40">Channel: {m.channel_id} · {m.repeat ? 'Repeating' : 'One-time'} · {m.enabled ? 'Active' : 'Disabled'}</p>
@@ -373,7 +373,7 @@ export default function BotCommunity() {
  </div>
  {autoRoles.length > 0 && (
  <div className="space-y-1">
- {autoRoles.map((r) => (
+ {autoRoles.map((r: any) => (
  <div key={r.id} className="flex items-center justify-between bg-background/5 rounded px-3 py-2">
  <span className="text-sm text-foreground">{r.role_name || r.role_id}</span>
  <Switch checked={r.enabled} onCheckedChange={() => upsertMutation.mutate({ table: 'bot_auto_roles', data: { ...r, enabled: !r.enabled } })} />
