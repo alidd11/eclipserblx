@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { toast } from 'sonner';
 import { formatRelative } from '@/lib/dateUtils';
 import { ApplicationDetailDialog } from '@/components/admin/store-applications/ApplicationDetailDialog';
