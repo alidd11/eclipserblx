@@ -1,59 +1,47 @@
+## Deep Audit — What I Checked
 
+I ran the full diagnostic suite against the codebase and live backend:
 
-# Centralise Store Data Access
+| Check | Result |
+|---|---|
+| TypeScript (`tsc --noEmit`) | ✅ Clean |
+| Vitest (91 tests) | ✅ All pass |
+| ESLint | 995 errors, **all pre-existing `any`** (per memory: strict 'any' floor, leave alone) |
+| Supabase linter | 307 issues, **all WARN-level**, all pre-existing categories (extension in public, public bucket listing, security definer execute) |
+| Auth logs | One 403 "missing sub claim" — **already handled** by `useAuth.tsx:115` auto-refresh |
+| Edge function logs | `image-proxy` spamming `BadResource: Bad resource ID` ⚠️ |
+| Console logs (preview) | Empty |
 
-## Problem
+## Actual Issues Worth Fixing
 
-Store data fetching is duplicated across 6+ pages, each with inconsistent query logic:
+Only two genuine, non-cosmetic problems surfaced. Everything else is either a pre-existing tolerated baseline or already mitigated.
 
-| Page | Checks `is_active` | Checks `status=approved` | Checks `seller_agreements` |
-|------|-------|--------|---------|
-| StorePage | Yes | Yes | Yes |
-| StoreAbout | Yes | No | No |
-| StoreReviewsPage | Yes | No | No |
-| StoreCustomPage | No | No | No |
-| StoreStandalonePage | Via hook | Via hook | Via hook |
-| ProductDetail (via store join) | No | No | No |
+### 1. `image-proxy` log spam — `BadResource: Bad resource ID`
 
-This inconsistency is why "Store Not Found" errors occur -- some pages miss critical filters, and changes to access rules require updating every page individually.
+**Symptom:** Every image request that the client aborts mid-flight (fast scroll, route change, image swap) logs an error stack. This is filling the edge function log with noise and makes real errors hard to spot.
 
-## Solution
+**Root cause:** We return `new Response(response.body, …)` — a streamed pass-through. When the downstream client closes the connection before Deno finishes piping, the underlying resource is freed but Deno still tries `respondWith` on it, throwing `BadResource`. The error is swallowed by the platform but emitted to logs.
 
-Create a single `usePublicStore(slug)` hook that all store-facing pages use.
+**Fix:** Buffer the upstream body into bytes (`arrayBuffer()`) before responding. Images are already small (≤a few MB after Supabase render-endpoint resize) and this kills the spam entirely. We also add an `AbortSignal` tied to `req.signal` so an aborted client cancels the upstream fetch instead of leaking it.
 
-### 1. Create `src/hooks/usePublicStore.ts`
+Same fix applied to the fallback branch.
 
-A centralised hook that:
-- Queries `stores` with `is_active = true` and `status = 'approved'`
-- Checks `seller_agreements` for a valid ToS signature
-- Uses a consistent React Query key (`['public-store', slug]`) so data is shared/cached across pages
-- Returns `{ store, isLoading, error, notFound }` 
-- Uses `PUBLIC_STORE_COLUMNS` by default, with an optional minimal mode for pages that need fewer columns
+### 2. `image-proxy` fallback drops cache vary
 
-### 2. Refactor all public store pages
+**Symptom:** When the Supabase render endpoint 404s and we fall through to the raw object URL, we forward `Content-Length` / `ETag` from upstream but skip `Vary: Accept` (it's only in `CACHE_HEADERS` which we *do* spread, so this is actually fine on re-read).
 
-Replace the inline queries in each page with `usePublicStore`:
+**Re-classified:** Not a bug. No action.
 
-- **StorePage.tsx** -- remove the 30-line inline query + agreement check, use the hook
-- **StoreAbout.tsx** -- replace inline query
-- **StoreReviewsPage.tsx** -- replace inline query (currently missing `status=approved` check)
-- **StoreCustomPage.tsx** -- replace inline store lookup (currently missing both `is_active` and `status` checks)
-- **ProductDetail.tsx** -- no change needed (store data comes via join on the product query)
+## What I Am NOT Touching
 
-### 3. Shared "Store Not Found" component
+- **307 Supabase linter warnings** — all pre-existing categories (public buckets need to be public for storefronts; `security_definer` functions are intentional per memory `[RLS User Access]` and `[View Security Isolation]`). Touching these would break working features.
+- **995 ESLint `any` errors** — memory `[Codebase Modularization Limit]` explicitly sets a strict 'any' floor. Bulk-typing them is a refactor, not a fix.
+- **Auth `bad_jwt` 403** — already handled. The browser sends one stale token after a long idle, `useAuth` detects "missing sub claim", refreshes, succeeds. Working as designed.
+- **`STRIPE_CONNECT_CLIENT_ID` / `SENTRY_DSN`** — confirmed last turn as accepted-blocked, no functional impact.
+- **No new features.** Per memory: FIX + OPTIMISATION only.
 
-Create a small `StoreNotFound` component used by all pages, replacing 5 different inline "not found" UIs with one consistent design.
+## Files Touched
 
-## Technical details
+- `supabase/functions/image-proxy/index.ts` — buffer body, propagate `req.signal` to upstream `fetch`, identical behaviour for the client.
 
-```text
-src/hooks/usePublicStore.ts        -- NEW: centralised hook
-src/components/store/StoreNotFound.tsx -- NEW: shared fallback UI
-src/pages/StorePage.tsx            -- refactor to use hook
-src/pages/StoreAbout.tsx           -- refactor to use hook  
-src/pages/StoreReviewsPage.tsx     -- refactor to use hook
-src/pages/StoreCustomPage.tsx      -- refactor to use hook
-```
-
-No database changes required -- the recent `seller_agreements` RLS migration already ensures anon users can read agreement records.
-
+That's the entire change set. ~15 lines edited in one file. Zero risk to product surface area.

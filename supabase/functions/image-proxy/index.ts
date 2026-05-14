@@ -73,42 +73,53 @@ Deno.serve(async (req) => {
       fetchUrl = renderUrl.toString()
     }
 
-    const response = await fetch(fetchUrl)
+    // Propagate client aborts upstream so we don't leak connections
+    const signal = req.signal
+
+    const response = await fetch(fetchUrl, { signal })
     if (!response.ok) {
       // Fallback: if render endpoint fails, try original URL
-      const fallback = await fetch(imageUrl)
+      const fallback = await fetch(imageUrl, { signal })
       if (!fallback.ok) {
+        // Drain body to avoid leaked resource warning
+        try { await fallback.arrayBuffer() } catch { /* ignore */ }
         return new Response(null, {
           status: fallback.status,
           headers: { ...corsHeaders, ...CACHE_HEADERS },
         })
       }
       const contentType = fallback.headers.get('Content-Type') || 'application/octet-stream'
-      return new Response(fallback.body, {
+      // Buffer body — streaming pass-through causes BadResource log spam on client abort
+      const buf = await fallback.arrayBuffer()
+      return new Response(buf, {
         status: 200,
         headers: {
           ...corsHeaders,
           ...CACHE_HEADERS,
           'Content-Type': contentType,
-          'Content-Length': fallback.headers.get('Content-Length') || '',
           'ETag': fallback.headers.get('ETag') || '',
         },
       })
     }
 
     const contentType = response.headers.get('Content-Type') || 'application/octet-stream'
+    // Buffer body — streaming pass-through causes BadResource log spam on client abort
+    const buf = await response.arrayBuffer()
 
-    return new Response(response.body, {
+    return new Response(buf, {
       status: 200,
       headers: {
         ...corsHeaders,
         ...CACHE_HEADERS,
         'Content-Type': contentType,
-        'Content-Length': response.headers.get('Content-Length') || '',
         'ETag': response.headers.get('ETag') || '',
       },
     })
   } catch (err) {
+    // Client-aborted requests are normal — don't surface as 502
+    if ((err as Error)?.name === 'AbortError') {
+      return new Response(null, { status: 499, headers: corsHeaders })
+    }
     return new Response(JSON.stringify({ error: 'Failed to fetch image' }), {
       status: 502,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
