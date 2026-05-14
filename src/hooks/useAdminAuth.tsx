@@ -93,14 +93,37 @@ export function useAdminAuth() {
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;
 
+  // Hard ceiling: if we're still waiting on roles 8 s after the user appeared,
+  // treat as expired so the UI can render the actionable Session Expired screen
+  // instead of an indefinite spinner / blank.
+  const [hardCeilingHit, setHardCeilingHit] = useState(false);
+  const ceilingStartRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!user?.id) {
+      ceilingStartRef.current = null;
+      setHardCeilingHit(false);
+      return;
+    }
+    if (roles !== undefined) {
+      ceilingStartRef.current = null;
+      setHardCeilingHit(false);
+      return;
+    }
+    if (ceilingStartRef.current === null) ceilingStartRef.current = Date.now();
+    const id = setTimeout(() => {
+      if (roles === undefined) setHardCeilingHit(true);
+    }, 8000);
+    return () => clearTimeout(id);
+  }, [user?.id, roles]);
+
   // Bounded recovery: only treat as recovering if we're still retrying (failureCount < 3)
   // Once retries are exhausted, this is a terminal auth error — don't keep loading forever
   const isJwtFailure = isError && isJwtError(rolesError);
-  const isAuthRecovering = isJwtFailure && failureCount < 3;
-  const isAuthExpired = isJwtFailure && failureCount >= 3;
+  const isAuthRecovering = isJwtFailure && failureCount < 3 && !hardCeilingHit;
+  const isAuthExpired = (isJwtFailure && failureCount >= 3) || hardCeilingHit;
 
   // Loading is true only during initial auth load or active recovery (bounded)
-  const loading = authLoading || (!!user?.id && rolesLoading && roles === undefined) || isAuthRecovering;
+  const loading = authLoading || (!!user?.id && rolesLoading && roles === undefined && !hardCeilingHit) || isAuthRecovering;
 
   return {
     user,
