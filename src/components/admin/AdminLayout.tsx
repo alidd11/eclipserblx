@@ -322,7 +322,9 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
         extra={<><AdminInstallPrompt /><AdminCommandSearch /></>}
       >
         <PageTransition className={isChatPage ? 'flex-1 flex flex-col min-h-0 overflow-hidden' : undefined}>
-          {children}
+          <AdminErrorBoundary resetKey={location.pathname}>
+            {children}
+          </AdminErrorBoundary>
         </PageTransition>
       </LayoutShell>
     </TooltipProvider>
