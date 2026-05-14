@@ -6,6 +6,7 @@ import { Plus, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, Edit3, C
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { PermissionGate } from '@/hooks/useUserPermissions';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
