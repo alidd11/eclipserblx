@@ -238,15 +238,15 @@ export default function SellerPayouts() {
  return <Badge variant="default">Stripe</Badge>;
  };
 
- const getPayoutMethod = (payout: SellerPayout) => payout?.payout_method || payout?.stores?.payout_method;
- const isBankMethod = (method: string | undefined) => method === 'bank' || method === 'bank_transfer';
+  const getPayoutMethod = (payout: SellerPayout | null | undefined) => payout?.payout_method || payout?.stores?.payout_method;
+  const isBankMethod = (method: string | null | undefined) => method === 'bank' || method === 'bank_transfer';
 
- /** Safely access store_payment_details regardless of PostgREST returning object or array */
- const getPaymentDetails = (payout: SellerPayout) => {
- const spd = payout?.stores?.store_payment_details;
- if (!spd) return null;
- return Array.isArray(spd) ? spd[0] : spd;
- };
+  /** Safely access store_payment_details regardless of PostgREST returning object or array */
+  const getPaymentDetails = (payout: SellerPayout | null | undefined) => {
+  const spd = payout?.stores?.store_payment_details;
+  if (!spd) return null;
+  return Array.isArray(spd) ? spd[0] : spd;
+  };
 
  const getEstimatedArrival = (payout: SellerPayout) => {
  try {
@@ -589,7 +589,7 @@ export default function SellerPayouts() {
  <Button
  variant="destructive"
  disabled={processMutation.isPending || wisePayoutMutation.isPending}
- onClick={() => processMutation.mutate({
+ onClick={() => selectedPayout && processMutation.mutate({
  payoutId: selectedPayout.id,
  status: "rejected",
  notes })}
@@ -602,7 +602,7 @@ export default function SellerPayouts() {
  <Button
  variant="default"
  disabled={wisePayoutMutation.isPending || processMutation.isPending}
- onClick={() => wisePayoutMutation.mutate({ payoutId: selectedPayout.id })}
+ onClick={() => selectedPayout && wisePayoutMutation.mutate({ payoutId: selectedPayout.id })}
  >
  {wisePayoutMutation.isPending ? (
  <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -615,13 +615,13 @@ export default function SellerPayouts() {
  <Button
  variant="default"
  disabled={processMutation.isPending}
- onClick={() => processMutation.mutate({
+ onClick={() => selectedPayout && processMutation.mutate({
  payoutId: selectedPayout.id,
  status: "completed",
  notes })}
  >
  {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
- Mark as Paid
+  Mark as Paid
  </Button>
  )}
  </DialogFooter>
