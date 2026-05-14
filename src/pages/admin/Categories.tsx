@@ -440,7 +440,7 @@ export default function AdminCategories() {
  };
 
  return (
- <AdminLayout requiredPermissions={['manage_products']}>
+ <AdminLayout requiredPermissions={['manage_categories', 'view_categories']}>
   <div className="space-y-4">
   <AdminPageHeader
     title="Categories"
