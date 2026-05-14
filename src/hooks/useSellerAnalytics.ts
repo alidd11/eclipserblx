@@ -36,8 +36,8 @@ const getVisitorCountry = (): Promise<string | null> => {
   }
 
   countryPromise = fetch('https://ipapi.co/json/')
-    .then(res => res.json())
-    .then(data => {
+    .then((res): Promise<{ country_name?: string | null }> => res.json())
+    .then((data) => {
       const country = data.country_name || null;
       if (country) safeStorage.setItem('eclipse_visitor_country', country);
       return country;

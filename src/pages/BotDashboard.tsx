@@ -97,17 +97,17 @@ export default function BotDashboard() {
  bot_type: 'purchased' as const,
  })),
  // Global Guard installations
- ...(globalGuardBots || []).map((gg) => ({
- id: `gg-${gg.id}`,
- product_name: 'Global Guard',
- guild_id: gg.guild_id,
- discord_guild_name: gg.guild_name,
- discord_guild_icon: null, // Global Guard doesn't store icons
- license_status: 'active',
- activated_at: gg.created_at,
- bot_product_id: null,
- bot_type: 'global_guard' as const,
- })),
+  ...(globalGuardBots || []).map((gg) => ({
+  id: `gg-${gg.id}`,
+  product_name: 'Global Guard',
+  guild_id: gg.guild_id,
+  discord_guild_name: gg.guild_name,
+  discord_guild_icon: null as string | null, // Global Guard doesn't store icons
+  license_status: 'active',
+  activated_at: gg.created_at,
+  bot_product_id: null as string | null,
+  bot_type: 'global_guard' as const,
+  })),
  ];
 
  const loadingInstallations = loadingPurchased || loadingGlobalGuard;

@@ -54,7 +54,7 @@ export const ReviewCard = memo(function ReviewCard() {
             .from('profiles')
             .select('user_id, display_name')
             .in('user_id', nonExternalUserIds)
-        : { data: [] };
+        : { data: [] as Array<{ user_id: string; display_name: string }> };
 
       const profileMap = new Map<string, string | null>(profiles?.map(p => [p.user_id, p.display_name] as [string, string | null]) || []);
 
