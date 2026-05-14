@@ -93,12 +93,12 @@ export function useAdminUsers() {
     staleTime: 2 * 60_000,
   });
 
-  const { data: userRoles } = useQuery({
+  const { data: userRoles } = useQuery<Array<{ user_id: string; role: string }>>({
     queryKey: ['admin-user-roles'],
     queryFn: async () => {
       const { data, error } = await supabase.from('user_roles').select('user_id, role');
       if (error) throw error;
-      return data;
+      return (data ?? []) as Array<{ user_id: string; role: string }>;
     },
     staleTime: 2 * 60_000,
   });
