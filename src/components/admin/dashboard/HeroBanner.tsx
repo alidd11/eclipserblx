@@ -34,7 +34,7 @@ export function HeroBanner() {
         .from('profiles')
         .select('display_name, avatar_url')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       if (error) return null;
       return data;
     },
