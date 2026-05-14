@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,15 +11,23 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | null> {
 }
 
 function isJwtError(error: unknown): boolean {
-  const msg = String((error as any)?.message ?? '').toLowerCase();
-  const code = String((error as any)?.code ?? '').toUpperCase();
+  const e = error as any;
+  const msg = String(e?.message ?? '').toLowerCase();
+  const details = String(e?.details ?? '').toLowerCase();
+  const hint = String(e?.hint ?? '').toLowerCase();
+  const code = String(e?.code ?? '').toUpperCase();
+  const status = Number(e?.status ?? e?.statusCode ?? 0);
+  const haystack = `${msg} ${details} ${hint}`;
   return (
-    msg.includes('jwt') ||
-    msg.includes('bad_jwt') ||
-    msg.includes('invalid claim') ||
-    msg.includes('missing sub claim') ||
-    msg.includes('403') ||
-    code === 'PGRST301'
+    haystack.includes('jwt') ||
+    haystack.includes('bad_jwt') ||
+    haystack.includes('invalid claim') ||
+    haystack.includes('missing sub claim') ||
+    haystack.includes('403') ||
+    status === 401 ||
+    status === 403 ||
+    code === 'PGRST301' ||
+    code === 'PGRST302'
   );
 }
 
