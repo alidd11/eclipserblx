@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';
+import { errMsg } from '@/lib/errors';
 
 interface XTheme {
   bg: string;
@@ -89,7 +90,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
       queryClient.invalidateQueries({ queryKey: ['twitter-scheduled-posts'] });
       queryClient.invalidateQueries({ queryKey: ['twitter-posts-history'] });
     } catch (err) {
-      toast.error(err.message || 'Failed to send tweet');
+      toast.error(errMsg(err) || 'Failed to send tweet');
     } finally {
       setSending(false);
     }

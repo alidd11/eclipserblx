@@ -8,6 +8,7 @@ import { Bot, ExternalLink, CheckCircle, XCircle, Loader2, Terminal, ChevronDown
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { errMsg } from '@/lib/errors';
 
 const AVAILABLE_COMMANDS = [
  { name: '/retrieve', description: 'Download purchased products directly in Discord' },
@@ -73,7 +74,7 @@ export function AddPortalBotCard() {
  toast.error('No invite URL returned');
  }
  } catch (error) {
- toast.error(error.message || 'Failed to generate invite link');
+ toast.error(errMsg(error) || 'Failed to generate invite link');
  } finally {
  setIsLoading(false);
  }

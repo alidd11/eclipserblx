@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Globe, RefreshCw, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errMsg } from '@/lib/errors';
 
 export default function SEOIndexing() {
  const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export default function SEOIndexing() {
  setLastResult(data);
  toast.success(`Submitted ${data.totalUrls} URLs to search engines`);
  } catch (err) {
- toast.error('Failed to submit: ' + (err.message || 'Unknown error'));
+ toast.error('Failed to submit: ' + (errMsg(err) || 'Unknown error'));
  } finally {
  setLoading(false);
  }

@@ -16,6 +16,7 @@ import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
+import { errMsg } from '@/lib/errors';
 
 interface AppliedDiscount {
   id: string;
@@ -188,7 +189,7 @@ export default function Checkout() {
       showSuccessNotification(t('checkout.paymentSuccess'), 'Your free products are ready to download!');
       navigate(`/order-success?order_id=${data.orderId}&free=true`);
     } catch (err) {
-      showErrorNotification(t('common.error'), err.message || 'Failed to claim free products');
+      showErrorNotification(t('common.error'), errMsg(err) || 'Failed to claim free products');
     } finally {
       setIsProcessing(false);
     }

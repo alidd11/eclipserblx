@@ -14,6 +14,7 @@ import { useSellerSubscription, SellerBillingPeriod } from '@/hooks/useSellerSub
 import { toast } from 'sonner';
 import { format } from '@/lib/dateUtils';
 import { formatGBP } from '@/lib/formatters';
+import { errMsg } from '@/lib/errors';
 
 const highlights = [
   { icon: Percent, title: 'Lower Commission', description: 'Keep 90% of every sale — down from 85% on Free.' },
@@ -104,7 +105,7 @@ export default function SellerProPage() {
     try {
       await subscribe(billingPeriod);
     } catch (err) {
-      toast.error(err?.message || 'Failed to start subscription');
+      toast.error(errMsg(err) || 'Failed to start subscription');
     } finally {
       setIsSubscribing(false);
     }

@@ -6,6 +6,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import type { SavedPaymentMethod } from '@/hooks/useSavedPaymentMethods';
+import { errMsg } from '@/lib/errors';
 
 interface CartItem {
   id: string;
@@ -112,7 +113,7 @@ export function SavedCardButton({
       }
     } catch (err) {
       console.error('Saved card payment error:', err);
-      showErrorNotification('Payment Failed', err.message || 'Please try again or use a different payment method');
+      showErrorNotification('Payment Failed', errMsg(err) || 'Please try again or use a different payment method');
       onProcessing(false);
     } finally {
       setIsCharging(false);

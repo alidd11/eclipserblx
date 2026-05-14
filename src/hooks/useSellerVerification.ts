@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { errMsg } from '@/lib/errors';
 
 export interface VerificationResults {
   discord_server: {
@@ -245,7 +246,7 @@ export function useSellerVerification() {
         } catch (err) {
           results.roblox_group = {
             in_group: false,
-            error: err.message || 'Failed to verify group membership',
+            error: errMsg(err) || 'Failed to verify group membership',
           };
         }
       }
@@ -328,7 +329,7 @@ export function useSellerVerification() {
         discord_server: {
           valid: false,
           is_permanent: false,
-          error: err.message || 'Failed to validate invite',
+          error: errMsg(err) || 'Failed to validate invite',
         },
       }));
     } finally {

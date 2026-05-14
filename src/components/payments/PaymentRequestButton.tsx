@@ -6,6 +6,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/hooks/useCart';
+import { errMsg } from '@/lib/errors';
 
 interface CartItem {
   id: string;
@@ -154,7 +155,7 @@ export function PaymentRequestButton({
         navigate(`/order-success?payment_intent=${data.paymentIntentId}`);
       } catch (err) {
         console.error('Payment error:', err);
-        showErrorNotification('Payment Failed', err.message || 'Please try again');
+        showErrorNotification('Payment Failed', errMsg(err) || 'Please try again');
         event.complete('fail');
         onProcessing(false);
       }

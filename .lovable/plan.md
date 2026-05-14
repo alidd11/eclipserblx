@@ -1,88 +1,117 @@
-## Full Remediation Plan — Fix Everything
+# Wave 6 — Strict TypeScript Engagement
 
-Goal: clear every real issue surfaced by the audit. No new features. Grouped into waves you approve in order — each wave is independently shippable and reversible.
+## Baseline (measured, not estimated)
 
----
+A temporary `tsconfig.strict.json` extending `tsconfig.app.json` with `strict: true`, `noImplicitAny: true`, `strictNullChecks: true` produces **294 errors across 115 files**.
 
-### Wave 1 — Quick Wins (low risk, ~1 turn)
+### Error code breakdown
 
-1. **Strip stray `console.log`** in `SecureCodeInput.tsx` and `BotIntegrationGuide.tsx`.
-2. **Fix React DOM warning** — `EclipseLogo.tsx` uses `fetchPriority` (camelCase) on a plain `<img>`; React wants lowercase `fetchpriority`. Visible in console right now.
-3. **Silence React Router v7 deprecation warnings** — add `future={{ v7_startTransition: true, v7_relativeSplatPath: true }}` to `<BrowserRouter>` in `App.tsx`. Removes two warnings on every page load.
-4. **Remove `bun add` artifact** — the `lovable.js` "Unknown message type: RESET_BLANK_CHECK" warning is platform-side; nothing to fix, just confirming.
+| Code | Count | Meaning | Typical fix |
+|------|-------|---------|-------------|
+| TS2345 | 83 | Argument not assignable (mostly `string \| null` → `string`) | `?? ''` / guard / narrow |
+| TS2322 | 58 | Type assignment mismatch (null/undefined into non-nullable) | Make field optional or coalesce |
+| TS7006 | 39 | Implicit `any` parameter | Add explicit type |
+| TS18046 | 31 | `unknown` in catch blocks | `err instanceof Error ? err.message : String(err)` |
+| TS2769 | 29 | No overload matches (Date/format helpers given `null`) | Guard before call |
+| TS18047 | 29 | Value possibly `null` | `?.` chain or guard |
+| TS2339 | 12 | Property doesn't exist | Fix type definition or narrow |
+| TS18048 | 7 | Possibly `undefined` | Guard / coalesce |
+| TS2538 | 5 | Type `null` cannot be used as index | Guard before lookup |
+| TS18049 | 1 | Possibly `null` callable | Guard |
 
-### Wave 2 — Dependency & Bundle Hygiene (~1–2 turns)
-
-5. **Align Radix UI versions** — 27 packages pinned to ancient majors (`1.0.x`, `1.1.2`), 5 floating. Bump them all to the latest `^1.x` in one pass, run `bun install`, smoke-test dialogs/popovers/tooltips.
-6. **Add `rollup-plugin-visualizer`** to `vite.config.ts` (dev-only). Generate a one-off `stats.html` so we can see the actual heavy chunks before optimising further.
-7. **Audit eager-imported heavy pages in `AppRoutes.tsx`** (38 KB file). Convert any non-critical route still using static `import` to `lazy()`.
-
-### Wave 3 — Oversized Files (~2–3 turns)
-
-8. **Split `admin/Products.tsx` (42 KB)** into table / filters / bulk-action sub-components.
-9. **Split `AppRoutes.tsx` (38 KB)** into route-group files (`adminRoutes.tsx`, `sellerRoutes.tsx`, `publicRoutes.tsx`, `botRoutes.tsx`).
-10. **Split `Account.tsx`, `CustomerTicketDetail.tsx`, `IncomeSources.tsx`, `SellerAnalytics.tsx`, `SellerLeakReports.tsx`, `SellerSettingsAppearance.tsx`, `StaffChatRoom.tsx`** — one per turn, behaviour preserved, components extracted alongside.
-
-### Wave 4 — Edge Function Standardisation (~2 turns)
-
-11. **Adopt `_shared/edge-response.ts` everywhere** — it already exists. Sweep the 167 functions, replace local `corsHeaders` declarations, and use `jsonOk` / `jsonError` / `unauthorized` etc. Cuts ~3 KB per function and removes duplicate-identifier risk.
-12. **Apply the `image-proxy` abort/buffer fix pattern** to other functions that stream upstream bodies (e.g. `download-asset`, anything fetching external HTTP). Same `req.signal` propagation + `arrayBuffer()` buffering.
-13. **Add a shared `_shared/rate-limit.ts`** (token bucket keyed on `auth.uid()` or IP) and apply it to the obvious abuse vectors: `ai-chat-support`, `check-nsfw`, `auto-detect-leaks`, `discord-auth-url`. Memory `[Infrastructure Hardening]` already specifies `X-RateLimit-Remaining` headers — bring functions inline.
-
-### Wave 5 — Image Pipeline (~1 turn)
-
-14. **Extend `image-proxy` allow-list** to Discord CDN (`cdn.discordapp.com`), Roblox CDN (`tr.rbxcdn.com`, `t1-tr.rbxcdn.com`), and our own published domain. Currently external avatars/thumbs bypass the cache layer entirely.
-15. **Add a small `<Img srcSet>` helper** that emits `1x / 2x` `srcset` from `optimizeImageUrl(width)` — use it in product cards, hero, and avatar components. Roadmap Phase 11 already promises this.
-
-### Wave 6 — TypeScript Strictness (multi-turn, biggest payoff)
-
-16. **Flip `tsconfig.app.json` to `strict: true`** and fix the resulting errors in waves:
-    - 16a. Auth + payments paths (`useAuth`, Stripe edge functions, cart, checkout)
-    - 16b. Hooks layer (`src/hooks/*`)
-    - 16c. Pages layer
-    - 16d. Component leaves
-    
-    Track the error count down after each pass. Memory `[Codebase Modularization Limit]` "strict any floor" → updated to "strict any **ceiling**, trending to zero".
-
-### Wave 7 — Test Coverage on Money Paths (~2 turns)
-
-17. **Add tests for cart maths** — discount tiers (`[Pricing Discount Hierarchy]`), VAT, multi-store split.
-18. **Add tests for Stripe webhook signature handling** — `confirm-embedded-payment`, `customer-portal` callback, payout splits.
-19. **Add tests for RLS-sensitive reads** — `usePublicProduct`, `usePublicStore`, `useStoreAccess`.
-
-### Wave 8 — Observability & CI (~1 turn)
-
-20. **Sentry is already configured** (DSN hard-coded in `src/lib/sentry.ts`) — confirm production events arrive, then **remove the @security-memory note** about it being unset (was stale audit finding).
-21. **Add a request-id** header in `supabase/client` interceptor + log it on the edge function side. Lets us correlate one user action across browser → function → DB.
-22. **Add a `.github/workflows/ci.yml`** running `tsc --noEmit`, `vitest run`, `eslint .`, and `supabase db lint` on every PR. This is the single biggest preventer of regressions.
-
-### Wave 9 — Service Worker & PWA (~1 turn)
-
-23. **Audit `public/custom-sw.js` vs the auto-generated SW** — pick one, delete the other, document in memory.
-
----
-
-## What's Already OK (closing prior audit gaps)
-
-- React Query defaults — `App.tsx` already sets `staleTime: 5min`, `gcTime: 30min`, `refetchOnWindowFocus: false`, `retry: 1`. ✅ No change needed.
-- Sentry DSN — actually configured. ✅
-- `_shared/edge-response.ts` exists. We just need to adopt it.
-
----
-
-## Sequencing & Risk
+### File hot-spots (top 15)
 
 ```text
-Wave 1  ──► Wave 2  ──► Wave 3  ──► Wave 4  ──► Wave 5
-   ▲                                              │
-   │                                              ▼
-Wave 9 ◄── Wave 8 ◄── Wave 7 ◄── Wave 6 ◄────────┘
+18  src/pages/admin/SellerPayouts.tsx
+15  src/pages/admin/Affiliates.tsx
+14  src/pages/admin/Users.tsx
+13  src/pages/admin/SellerStoreDetail.tsx
+12  src/pages/StoreAbout.tsx
+10  src/pages/Featured.tsx
+ 8  src/pages/admin/CustomerTicketDetail.tsx
+ 8  src/hooks/useBackgroundPush.ts
+ 7  src/pages/StoreReviewsPage.tsx
+ 7  src/components/product/FrequentlyBoughtTogether.tsx
+ 6  src/pages/admin/staff-profile/useStaffProfileData.ts
+ 6  src/pages/admin/Categories.tsx
+ 6  src/pages/SearchResults.tsx
+ 5  src/components/admin/discord-settings/ConfigurationTab.tsx
+ 4× ~12 files with 4 errors each
 ```
+Long tail: ~85 files at 1–3 errors.
 
-- Waves 1–5 are mechanical and reversible.
-- Wave 6 (strict TS) is the largest and where regressions are most likely; it goes after the dependency/bundle cleanup so we're not chasing types in code that's about to be deleted.
-- Waves 7–9 lock in quality so we don't slide back.
+## Strategy
 
-**Estimated turns: ~15 total.** I'll execute one wave per approved turn, run the full diagnostic suite (`tsc`, `vitest`, `eslint`, supabase linter, edge logs) after each, and report deltas.
+Flip strictness incrementally — never in one commit. Land a phase, run `tsc + vitest`, ship, repeat.
 
-Reply "go" to start with Wave 1, or name a wave to start there.
+### Phase A — Foundations (1 turn, low risk)
+
+Goal: the easy wins that don't change runtime behaviour.
+
+1. Enable **only** `useUnknownInCatchVariables: true` (it's part of `strict` already; isolate it). Fix all 31 TS18046 catch blocks with one helper:
+   ```ts
+   // src/lib/errors.ts (new, ~10 lines)
+   export const errMsg = (e: unknown) =>
+     e instanceof Error ? e.message : typeof e === 'string' ? e : 'Unknown error';
+   ```
+   Replace `err.message` / `e.message` with `errMsg(e)`.
+2. Enable `noImplicitAny: true`. Fix 39 TS7006 — explicit annotation on event handlers, map callbacks, and a few prop destructures. Most are `(e) =>`, `(item) =>` in array callbacks where the inferred element type already exists once `noImplicitAny` is on.
+
+**End-of-phase gate:** `tsc -p tsconfig.app.json --noEmit` clean with those two flags on. Do **not** enable `strictNullChecks` yet.
+
+### Phase B — Null-safety primitives (2 turns)
+
+Goal: clean the null/undefined plumbing in shared layers before page code.
+
+1. Tighten generated-adjacent helper types where pages routinely pass nullable Supabase columns into formatters:
+   - `src/lib/formatters.ts` — `formatGBP`, `formatRelative`, `formatDate` accept `string | number | Date | null | undefined` and return `'—'` for nullish (already done in some, audit + finish).
+   - `src/utils/optimizeImageUrl.ts` — already handles `null | undefined`. Verify call sites.
+2. Add narrow guards to `src/lib/mediaUtils.ts` re: image array filtering.
+3. Fix `src/hooks/useBackgroundPush.ts` (8 errors) and `src/hooks/useBiometricAuth.ts` (3) — these are leaf hooks consumed everywhere; fixing them removes downstream noise.
+
+**Gate:** error count drops by ~40 without `strictNullChecks` flipped.
+
+### Phase C — Flip `strictNullChecks` and burn down (3–4 turns)
+
+Order chosen to minimise blast radius (low-traffic admin pages first, marketplace last):
+
+| Turn | Files | Errors to clear |
+|------|-------|-----------------|
+| C1 | `admin/SellerPayouts.tsx`, `admin/Affiliates.tsx`, `admin/Users.tsx`, `admin/SellerStoreDetail.tsx` | 60 |
+| C2 | `admin/CustomerTicketDetail.tsx`, `admin/Categories.tsx`, `admin/staff-profile/useStaffProfileData.ts`, `admin/discord-settings/ConfigurationTab.tsx`, all admin files at 2–3 errors | ~50 |
+| C3 | `pages/StoreAbout.tsx`, `pages/StoreReviewsPage.tsx`, `pages/Featured.tsx`, `pages/SearchResults.tsx`, `pages/ProductDetail.tsx`, `components/product/FrequentlyBoughtTogether.tsx` | ~50 |
+| C4 | Long tail — 85 files at 1–3 errors, mechanical | ~50 |
+
+Dominant fix patterns (apply consistently; do **not** invent ad-hoc shapes):
+
+- `value ?? ''` for string defaults
+- `value ? new Date(value) : null` before `format()` calls
+- Optional chaining for chained DB joins (`row.profiles?.username ?? 'Unknown'`)
+- Narrow `null` out at the top of a function with an early return rather than threading nullable through callees
+
+### Phase D — Lock it in (1 turn)
+
+1. Flip `tsconfig.app.json`: `strict: true`, drop `strictNullChecks: false`, keep `noUnusedLocals: false` / `noUnusedParameters: false` (out of scope — not part of strict).
+2. Mirror in root `tsconfig.json` so editors agree.
+3. Add a **non-blocking** strict-check note to `.lovable/plan.md` (no CI workflow — that would be new implementation per your prior directive).
+
+## Out of scope (explicit)
+
+- `noUnusedLocals`, `noUnusedParameters` — large dead-code purge, separate engagement.
+- `noImplicitReturns`, `noFallthroughCasesInSwitch` — separate.
+- Edits to `src/integrations/supabase/types.ts` — auto-generated, never touched.
+- Refactoring `any` casts in 3rd-party shim files (`portalBotFiles.ts` data, etc).
+
+## Risks
+
+- Phase C touches admin pages used by staff. Each turn ends with `tsc + vitest run` and a smoke-check of the affected route in preview before moving on.
+- A few TS2769 errors in `PaymentRequestButton.tsx` are Stripe SDK overload mismatches — may require `as` cast, flagged in Phase C3.
+- No runtime behaviour should change. Any fix that needs a logic change (not just a guard) gets called out in the turn note rather than silently inlined.
+
+## Estimated total
+
+**7 turns** (A:1, B:2, C:3–4, D:1). Reversible at every gate — each phase commits independently.
+
+## Approval
+
+Reply with the phase you want started (default: Phase A) or "all phases" to proceed end-to-end without intermediate confirmation.

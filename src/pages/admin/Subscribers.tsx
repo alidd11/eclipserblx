@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from '@/lib/dateUtils';
 import { Mail, Users, Tag, Newspaper, Bell, Search, Download, Send, Loader2 } from 'lucide-react';
+import { errMsg } from '@/lib/errors';
 
 type Subscriber = {
  id: string;
@@ -172,7 +173,7 @@ export default function Subscribers() {
  setEmailTarget('all');
  } catch (error) {
  console.error('Error sending emails:', error);
- toast.error('Send Failed', { description: error.message || 'Failed to send emails.' });
+ toast.error('Send Failed', { description: errMsg(error) || 'Failed to send emails.' });
  } finally {
  setIsSending(false);
  }

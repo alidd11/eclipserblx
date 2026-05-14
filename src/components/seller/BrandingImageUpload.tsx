@@ -7,6 +7,7 @@ import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDropZone } from '@/hooks/useDropZone';
 import { performSecurityScan, validateFile } from '@/lib/secureFileUpload';
+import { errMsg } from '@/lib/errors';
 
 interface BrandingImageUploadProps {
   userId: string;
@@ -84,7 +85,7 @@ export function BrandingImageUpload({
       toast.success(`${type === 'logo' ? 'Logo' : 'Banner'} uploaded successfully`);
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error(`Failed to upload ${type}: ${error.message}`);
+      toast.error(`Failed to upload ${type}: ${errMsg(error)}`);
     } finally {
       setIsUploading(false);
     }

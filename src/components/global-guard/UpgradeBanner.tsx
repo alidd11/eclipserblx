@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
 import { formatGBP } from '@/lib/formatters';
+import { errMsg } from '@/lib/errors';
 
 interface UpgradeBannerProps {
  currentServers?: number;
@@ -45,7 +46,7 @@ export function UpgradeBanner({ currentServers = 0, maxServers = 2, variant = 'f
  window.open(data.url, '_blank');
  }
  } catch (err) {
- toast.error(err.message || 'Failed to start checkout');
+ toast.error(errMsg(err) || 'Failed to start checkout');
  } finally {
  setIsLoading(false);
  }

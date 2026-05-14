@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { WebhookInput, TestResultBadge } from './WebhookInput';
 import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
 import type { DiscordSettingsData, WebhookTestResult } from '@/hooks/useDiscordSettings';
+import { errMsg } from '@/lib/errors';
 
 interface ConfigurationTabProps {
   formData: DiscordSettingsData;
@@ -33,7 +34,8 @@ export function ConfigurationTab({ formData, handleChange, testingWebhook, webho
         toast.success(`${type === 'commands' ? 'Discord' : 'Fun Bot'} commands registered successfully!`);
       }
     } catch (err) {
-      const msg = err?.context?.details || err?.context?.error || err?.context?.body?.details || err?.context?.body?.error || err?.message || 'Failed to register commands';
+      const ctx = (err as { context?: { details?: string; error?: string; body?: { details?: string; error?: string } } })?.context;
+      const msg = ctx?.details || ctx?.error || ctx?.body?.details || ctx?.body?.error || errMsg(err) || 'Failed to register commands';
       toast.error(String(msg));
     } finally {
       setTestingWebhook(null);

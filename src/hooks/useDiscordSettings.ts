@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/copyToClipboard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { errMsg } from '@/lib/errors';
 
 export interface DiscordSettingsData {
   discord_invite_url: string;
@@ -173,7 +174,7 @@ export function useDiscordSettings() {
       if (result.success) toast.success(result.message);
       else toast.error(result.message);
     } catch (err) {
-      const result = { success: false, message: 'Request failed', details: err.message };
+      const result = { success: false, message: 'Request failed', details: errMsg(err) };
       setWebhookTestResults((prev) => ({ ...prev, [type]: result }));
       toast.error('Test failed');
     } finally {
@@ -276,7 +277,7 @@ export function useDiscordSettings() {
       else if (data?.success) toast.success(`${config.label} sent!`);
       else toast.error(data?.error || 'Failed');
     } catch (err) {
-      toast.error(`Failed: ${err.message}`);
+      toast.error(`Failed: ${errMsg(err)}`);
     } finally {
       setIsSendingAnnouncement(null);
     }

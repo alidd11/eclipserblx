@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { errMsg } from '@/lib/errors';
 
 export interface SavedPaymentMethod {
   id: string;
@@ -37,7 +38,7 @@ export function useSavedPaymentMethods() {
       setPaymentMethods(data?.paymentMethods || []);
     } catch (err) {
       console.error('Error fetching payment methods:', err);
-      setError(err.message || 'Failed to fetch payment methods');
+      setError(errMsg(err) || 'Failed to fetch payment methods');
       setPaymentMethods([]);
     } finally {
       setIsLoading(false);
