@@ -440,13 +440,17 @@ export default function AdminCategories() {
  };
 
  return (
- <AdminLayout requiredPermissions={['manage_categories', 'view_categories']}>
-  <div className="space-y-4">
-  <AdminPageHeader
-    title="Categories"
-    description="Manage product categories"
-    actions={<Button onClick={openCreate} className="h-12"><Plus className="h-4 w-4 mr-2" />Add Category</Button>}
-  />
+    <AdminLayout requiredPermissions={['manage_categories', 'view_categories']}>
+   <div className="space-y-4">
+   <AdminPageHeader
+     title="Categories"
+     description="Manage product categories"
+     actions={
+       <PermissionGate permission="manage_categories">
+         <Button onClick={openCreate} className="h-12"><Plus className="h-4 w-4 mr-2" />Add Category</Button>
+       </PermissionGate>
+     }
+   />
 
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
@@ -491,8 +495,8 @@ export default function AdminCategories() {
  <SortableRow
  key={category.id}
  category={category as any}
- onEdit={() => openEdit(category as any)}
- onDelete={() => openDelete(category as any)}
+ onEdit={canManage ? () => openEdit(category as any) : undefined}
+ onDelete={canManage ? () => openDelete(category as any) : undefined}
  />
  ))}
  </SortableContext>
@@ -510,8 +514,8 @@ export default function AdminCategories() {
  <SortableMobileCard
  key={category.id}
  category={category as any}
- onEdit={() => openEdit(category as any)}
- onDelete={() => openDelete(category as any)}
+ onEdit={canManage ? () => openEdit(category as any) : undefined}
+ onDelete={canManage ? () => openDelete(category as any) : undefined}
  />
  ))}
  </SortableContext>
