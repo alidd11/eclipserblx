@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -123,4 +124,27 @@ export function useUserPermissions(options: UseUserPermissionsOptions = {}) {
     isLoading: queryEnabled ? (isLoading && !isAuthExpired) : false,
     isAuthExpired,
   };
+}
+
+/**
+ * Conditionally render children based on a permission check.
+ * Pass `permission` for single-perm gating or `anyOf` for multi-perm OR-gating.
+ * Renders nothing while permissions are loading, then `fallback` (default null) if denied.
+ */
+interface PermissionGateProps {
+  permission?: string;
+  anyOf?: string[];
+  fallback?: ReactNode;
+  children: ReactNode;
+}
+
+export function PermissionGate({ permission, anyOf, fallback = null, children }: PermissionGateProps) {
+  const { hasPermission, hasAnyPermission, isLoading } = useUserPermissions();
+  if (isLoading) return null;
+  const allowed = permission
+    ? hasPermission(permission)
+    : anyOf
+      ? hasAnyPermission(anyOf)
+      : true;
+  return <>{allowed ? children : fallback}</>;
 }

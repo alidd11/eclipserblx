@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserPermissions, PermissionGate } from '@/hooks/useUserPermissions';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminEmptyState } from '@/components/admin/AdminEmptyState';
@@ -84,8 +85,8 @@ function SortableRow({
  onDelete 
 }: { 
  category: Category & { product_count: number }; 
- onEdit: () => void; 
- onDelete: () => void;
+ onEdit?: () => void; 
+ onDelete?: () => void;
 }) {
  const {
  attributes,
@@ -137,12 +138,17 @@ function SortableRow({
  </TableCell>
  <TableCell>
  <div className="flex items-center gap-2 justify-end">
- <Button variant="ghost" size="icon" aria-label="Edit" onClick={onEdit}>
- <Pencil className="h-4 w-4" />
- </Button>
- <Button variant="ghost" size="icon" aria-label="Delete" onClick={onDelete}>
- <Trash2 className="h-4 w-4 text-destructive" />
- </Button>
+ {onEdit && (
+   <Button variant="ghost" size="icon" aria-label="Edit" onClick={onEdit}>
+     <Pencil className="h-4 w-4" />
+   </Button>
+ )}
+ {onDelete && (
+   <Button variant="ghost" size="icon" aria-label="Delete" onClick={onDelete}>
+     <Trash2 className="h-4 w-4 text-destructive" />
+   </Button>
+ )}
+ {!onEdit && !onDelete && <span className="text-xs text-muted-foreground">Read-only</span>}
  </div>
  </TableCell>
  </TableRow>
@@ -156,8 +162,8 @@ function SortableMobileCard({
  onDelete 
 }: { 
  category: Category & { product_count: number }; 
- onEdit: () => void; 
- onDelete: () => void;
+ onEdit?: () => void; 
+ onDelete?: () => void;
 }) {
  const [isOpen, setIsOpen] = useState(false);
  const {
@@ -216,16 +222,22 @@ function SortableMobileCard({
  <p className="text-xs text-muted-foreground mb-1">Description</p>
  <p className="text-sm">{category.description || '—'}</p>
  </div>
- <div className="flex items-center gap-2 pt-2">
- <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
- <Pencil className="h-4 w-4 mr-2" />
- Edit
- </Button>
- <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={onDelete}>
- <Trash2 className="h-4 w-4 mr-2" />
- Delete
- </Button>
- </div>
+ {(onEdit || onDelete) && (
+   <div className="flex items-center gap-2 pt-2">
+   {onEdit && (
+     <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
+       <Pencil className="h-4 w-4 mr-2" />
+       Edit
+     </Button>
+   )}
+   {onDelete && (
+     <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={onDelete}>
+       <Trash2 className="h-4 w-4 mr-2" />
+       Delete
+     </Button>
+   )}
+   </div>
+ )}
  </div>
  </CollapsibleContent>
  </Collapsible>
@@ -234,7 +246,8 @@ function SortableMobileCard({
 }
 
 export default function AdminCategories() {
- 
+ const { hasPermission } = useUserPermissions();
+ const canManage = hasPermission('manage_categories');
  const queryClient = useQueryClient();
  const [dialogOpen, setDialogOpen] = useState(false);
  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -440,13 +453,17 @@ export default function AdminCategories() {
  };
 
  return (
- <AdminLayout requiredPermissions={['manage_products']}>
-  <div className="space-y-4">
-  <AdminPageHeader
-    title="Categories"
-    description="Manage product categories"
-    actions={<Button onClick={openCreate} className="h-12"><Plus className="h-4 w-4 mr-2" />Add Category</Button>}
-  />
+    <AdminLayout requiredPermissions={['manage_categories', 'view_categories']}>
+   <div className="space-y-4">
+   <AdminPageHeader
+     title="Categories"
+     description="Manage product categories"
+     actions={
+       <PermissionGate permission="manage_categories">
+         <Button onClick={openCreate} className="h-12"><Plus className="h-4 w-4 mr-2" />Add Category</Button>
+       </PermissionGate>
+     }
+   />
 
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
@@ -491,8 +508,8 @@ export default function AdminCategories() {
  <SortableRow
  key={category.id}
  category={category as any}
- onEdit={() => openEdit(category as any)}
- onDelete={() => openDelete(category as any)}
+ onEdit={canManage ? () => openEdit(category as any) : undefined}
+ onDelete={canManage ? () => openDelete(category as any) : undefined}
  />
  ))}
  </SortableContext>
@@ -510,8 +527,8 @@ export default function AdminCategories() {
  <SortableMobileCard
  key={category.id}
  category={category as any}
- onEdit={() => openEdit(category as any)}
- onDelete={() => openDelete(category as any)}
+ onEdit={canManage ? () => openEdit(category as any) : undefined}
+ onDelete={canManage ? () => openDelete(category as any) : undefined}
  />
  ))}
  </SortableContext>

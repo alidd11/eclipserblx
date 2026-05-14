@@ -6,6 +6,7 @@ import { Plus, Search, Upload, FileCheck, X, Loader2, ImagePlus, Video, Edit3, C
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { AdminLayout } from '@/components/admin/AdminLayout';
+import { PermissionGate } from '@/hooks/useUserPermissions';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -326,12 +327,16 @@ export default function AdminProducts() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['view_products']}>
+    <AdminLayout requiredPermissions={['view_products', 'manage_products']}>
       <div className="space-y-4">
         <AdminPageHeader
           title="Products"
           description="Manage your product catalog"
-          actions={<Button onClick={openCreate} className="gradient-button border-0 h-12"><Plus className="h-4 w-4 mr-2" />Add Product</Button>}
+          actions={
+            <PermissionGate permission="manage_products">
+              <Button onClick={openCreate} className="gradient-button border-0 h-12"><Plus className="h-4 w-4 mr-2" />Add Product</Button>
+            </PermissionGate>
+          }
         />
 
         <div className="space-y-4">

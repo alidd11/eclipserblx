@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserPermissions } from '@/hooks/useUserPermissions';
 import { toast } from 'sonner';
 import { formatRelative } from '@/lib/dateUtils';
 import { ApplicationDetailDialog } from '@/components/admin/store-applications/ApplicationDetailDialog';
@@ -50,6 +51,8 @@ interface StoreApplication {
 
 export default function StoreApplications() {
   const { user } = useAuth();
+  const { hasPermission } = useUserPermissions();
+  const canReview = hasPermission('review_store_applications');
   const queryClient = useQueryClient();
   const [selectedApplication, setSelectedApplication] = useState<StoreApplication | null>(null);
   const [storeAppTab, setStoreAppTab] = useState('pending');
@@ -210,8 +213,8 @@ export default function StoreApplications() {
         <ApplicationDetailDialog
           application={selectedApplication}
           onClose={() => setSelectedApplication(null)}
-          onApprove={(app) => approveApplication.mutate(app)}
-          onReject={(id, reason) => rejectApplication.mutate({ id, reason })}
+          onApprove={canReview ? (app) => approveApplication.mutate(app) : undefined}
+          onReject={canReview ? (id, reason) => rejectApplication.mutate({ id, reason }) : undefined}
           isApproving={approveApplication.isPending}
           isRejecting={rejectApplication.isPending}
         />
