@@ -70,9 +70,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     ? showNewBadge 
     : createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
-  const isEligible = isEligibleForDiscount(categoryId, isResellable, storeEclipseEnabled);
-  const memberPrice = isEligible ? getMemberPrice(price, categoryId, isResellable) : price;
-  const discountPercent = isEligible ? getDiscountPercent(categoryId, isResellable) : 0;
+  const isEligible = isEligibleForDiscount(categoryId, isResellable ?? undefined, storeEclipseEnabled ?? undefined);
+  const memberPrice = isEligible ? getMemberPrice(price, categoryId, isResellable ?? undefined) : price;
+  const discountPercent = isEligible ? getDiscountPercent(categoryId, isResellable ?? undefined) : 0;
   const hasMemberDiscount = isEligible && memberPrice < price;
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
@@ -85,11 +85,11 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         price,
         image: currentMedia || undefined,
         slug,
-        category_slug: categorySlug,
-        category_id: categoryId,
-        is_resellable: isResellable,
-        store_eclipse_enabled: storeEclipseEnabled,
-        store_name: storeName,
+        category_slug: categorySlug ?? undefined,
+        category_id: categoryId ?? undefined,
+        is_resellable: isResellable ?? undefined,
+        store_eclipse_enabled: storeEclipseEnabled ?? undefined,
+        store_name: storeName ?? undefined,
       });
     }
   }, [inCart, addItem, id, name, price, currentMedia, slug, categorySlug, categoryId, isResellable, storeEclipseEnabled, storeName]);
