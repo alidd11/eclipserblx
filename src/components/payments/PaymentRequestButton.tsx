@@ -161,10 +161,10 @@ export function PaymentRequestButton({
       }
     };
 
-    paymentRequest.on('paymentmethod', handlePaymentMethod);
+    (paymentRequest as any).on('paymentmethod', handlePaymentMethod);
 
     return () => {
-      paymentRequest.off('paymentmethod', handlePaymentMethod);
+      (paymentRequest as any).off('paymentmethod', handlePaymentMethod);
     };
   }, [paymentRequest, items, email, accessToken, discountCodeId, stripe, navigate, onProcessing, clearCart]);
 
