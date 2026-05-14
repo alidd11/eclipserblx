@@ -36,7 +36,8 @@ export function EclipseLogo({ className, size = 'md' }: EclipseLogoProps) {
         height={sizePx[size]}
         loading="lazy"
         decoding="async"
-        fetchPriority="low"
+        // React 18 doesn't whitelist this prop on plain <img>; lowercase pass-through avoids dev warning
+        {...({ fetchpriority: 'low' } as Record<string, string>)}
         className="w-full h-full object-cover"
       />
     </div>
