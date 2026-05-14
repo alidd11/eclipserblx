@@ -20,24 +20,24 @@ interface ProductCardProps {
   name: string;
   slug: string;
   price: number;
-  image?: string;
-  images?: string[];
-  category?: string;
-  categorySlug?: string;
-  categoryId?: string;
-  isFeatured?: boolean;
-  createdAt?: string;
-  storeName?: string;
-  storeSlug?: string;
+  image?: string | null;
+  images?: string[] | null;
+  category?: string | null;
+  categorySlug?: string | null;
+  categoryId?: string | null;
+  isFeatured?: boolean | null;
+  createdAt?: string | null;
+  storeName?: string | null;
+  storeSlug?: string | null;
   storeLogo?: string | null;
-  isVerified?: boolean;
-  isResellable?: boolean;
+  isVerified?: boolean | null;
+  isResellable?: boolean | null;
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
   averageRating?: number;
-  storeEclipseEnabled?: boolean;
-  isPayWhatYouWant?: boolean;
-  minPrice?: number;
+  storeEclipseEnabled?: boolean | null;
+  isPayWhatYouWant?: boolean | null;
+  minPrice?: number | null;
   /** When true, loads image eagerly with high fetch priority */
   priority?: boolean;
 }
