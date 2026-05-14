@@ -589,7 +589,7 @@ export default function SellerPayouts() {
  <Button
  variant="destructive"
  disabled={processMutation.isPending || wisePayoutMutation.isPending}
- onClick={() => processMutation.mutate({
+ onClick={() => selectedPayout && processMutation.mutate({
  payoutId: selectedPayout.id,
  status: "rejected",
  notes })}
@@ -602,7 +602,7 @@ export default function SellerPayouts() {
  <Button
  variant="default"
  disabled={wisePayoutMutation.isPending || processMutation.isPending}
- onClick={() => wisePayoutMutation.mutate({ payoutId: selectedPayout.id })}
+ onClick={() => selectedPayout && wisePayoutMutation.mutate({ payoutId: selectedPayout.id })}
  >
  {wisePayoutMutation.isPending ? (
  <Loader2 className="h-4 w-4 animate-spin mr-1" />
@@ -615,7 +615,7 @@ export default function SellerPayouts() {
  <Button
  variant="default"
  disabled={processMutation.isPending}
- onClick={() => processMutation.mutate({
+ onClick={() => selectedPayout && processMutation.mutate({
  payoutId: selectedPayout.id,
  status: "completed",
  notes })}
@@ -623,7 +623,6 @@ export default function SellerPayouts() {
  {processMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
  Mark as Paid
  </Button>
- )}
  </DialogFooter>
  </DialogContent>
  </Dialog>
