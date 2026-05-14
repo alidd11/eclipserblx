@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserPermissions, PermissionGate } from '@/hooks/useUserPermissions';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { AdminEmptyState } from '@/components/admin/AdminEmptyState';
@@ -84,8 +85,8 @@ function SortableRow({
  onDelete 
 }: { 
  category: Category & { product_count: number }; 
- onEdit: () => void; 
- onDelete: () => void;
+ onEdit?: () => void; 
+ onDelete?: () => void;
 }) {
  const {
  attributes,
@@ -137,12 +138,17 @@ function SortableRow({
  </TableCell>
  <TableCell>
  <div className="flex items-center gap-2 justify-end">
- <Button variant="ghost" size="icon" aria-label="Edit" onClick={onEdit}>
- <Pencil className="h-4 w-4" />
- </Button>
- <Button variant="ghost" size="icon" aria-label="Delete" onClick={onDelete}>
- <Trash2 className="h-4 w-4 text-destructive" />
- </Button>
+ {onEdit && (
+   <Button variant="ghost" size="icon" aria-label="Edit" onClick={onEdit}>
+     <Pencil className="h-4 w-4" />
+   </Button>
+ )}
+ {onDelete && (
+   <Button variant="ghost" size="icon" aria-label="Delete" onClick={onDelete}>
+     <Trash2 className="h-4 w-4 text-destructive" />
+   </Button>
+ )}
+ {!onEdit && !onDelete && <span className="text-xs text-muted-foreground">Read-only</span>}
  </div>
  </TableCell>
  </TableRow>
@@ -156,8 +162,8 @@ function SortableMobileCard({
  onDelete 
 }: { 
  category: Category & { product_count: number }; 
- onEdit: () => void; 
- onDelete: () => void;
+ onEdit?: () => void; 
+ onDelete?: () => void;
 }) {
  const [isOpen, setIsOpen] = useState(false);
  const {
@@ -216,16 +222,22 @@ function SortableMobileCard({
  <p className="text-xs text-muted-foreground mb-1">Description</p>
  <p className="text-sm">{category.description || '—'}</p>
  </div>
- <div className="flex items-center gap-2 pt-2">
- <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
- <Pencil className="h-4 w-4 mr-2" />
- Edit
- </Button>
- <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={onDelete}>
- <Trash2 className="h-4 w-4 mr-2" />
- Delete
- </Button>
- </div>
+ {(onEdit || onDelete) && (
+   <div className="flex items-center gap-2 pt-2">
+   {onEdit && (
+     <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
+       <Pencil className="h-4 w-4 mr-2" />
+       Edit
+     </Button>
+   )}
+   {onDelete && (
+     <Button variant="outline" size="sm" className="flex-1 text-destructive hover:text-destructive" onClick={onDelete}>
+       <Trash2 className="h-4 w-4 mr-2" />
+       Delete
+     </Button>
+   )}
+   </div>
+ )}
  </div>
  </CollapsibleContent>
  </Collapsible>
