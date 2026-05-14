@@ -9,6 +9,7 @@ export function RobuxPayButton({ className }: RobuxPayButtonProps) {
   const { robloxUrl } = useRobloxGameUrl();
 
   const handleClick = () => {
+    if (!robloxUrl) return;
     window.open(robloxUrl, "_blank", "noopener,noreferrer");
   };
 

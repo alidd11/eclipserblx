@@ -62,11 +62,11 @@ export function useAdTiers() {
       
       if (error) throw error;
       
-      return (data || []).map(tier => ({
-        ...tier,
-        tier: tier.tier as AdTier,
-        features: Array.isArray(tier.features) ? tier.features as string[] : [],
-      }));
+       return (data || []).map(tier => ({
+         ...tier,
+         tier: tier.tier as AdTier,
+         features: Array.isArray(tier.features) ? tier.features as string[] : [],
+       })) as AdTierData[];
     },
     staleTime: 5 * 60 * 1000,
   });

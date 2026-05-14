@@ -28,7 +28,7 @@ export default function StoreAbout() {
     );
   }
 
-  if (notFound) {
+  if (notFound || !store) {
     return <StoreNotFound />;
   }
 
@@ -36,7 +36,7 @@ export default function StoreAbout() {
 
   return (
     <StoreLayout
-      store={store}
+      store={store as any}
       activeTab={null}
       onTabChange={() => {}}
       bio={store.bio}

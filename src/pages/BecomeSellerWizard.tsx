@@ -238,7 +238,7 @@ export default function BecomeSellerWizard() {
  return (
  <MainLayout>
  <ResponsiveContainer size="md" className="py-6 md:py-12 px-4">
- <PendingApplicationView application={application} />
+ <PendingApplicationView application={application ?? {}} />
  </ResponsiveContainer>
  </MainLayout>
  );

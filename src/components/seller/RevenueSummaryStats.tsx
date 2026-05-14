@@ -46,12 +46,12 @@ export function RevenueSummaryStats() {
       let lastMonthOrders = 0;
 
       for (const t of sales) {
-        const d = new Date(t.created_at);
+        const d = new Date(t.created_at!);
         const amt = t.net_amount || 0;
         if (d >= startOfThisMonth) {
           thisMonthRevenue += amt;
           thisMonthOrders++;
-          if (t.created_at >= startOfToday) todayRevenue += amt;
+          if (t.created_at! >= startOfToday) todayRevenue += amt;
         } else {
           lastMonthRevenue += amt;
           lastMonthOrders++;

@@ -284,7 +284,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
       const usernameValue = fallbackDisplayName || user.email?.split('@')[0] || 'user';
       const { error } = await supabase.from('profiles').insert({
         user_id: user.id,
-        email: user.email,
+        email: user.email!,
         display_name: fallbackDisplayName || null,
         username: usernameValue,
       });

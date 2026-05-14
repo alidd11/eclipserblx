@@ -101,7 +101,7 @@ export function CategoriesGrid() {
       const countPerCat: Record<string, number> = {};
 
       for (const p of products || []) {
-        const parentId = childToParent[p.category_id] || p.category_id;
+        const parentId = childToParent[p.category_id ?? ''] || (p.category_id ?? '');
         countPerCat[parentId] = (countPerCat[parentId] || 0) + 1;
         const categoryImage = Array.isArray(p.images) ? getFirstImageUrl(p.images as string[]) : null;
         if (!bestPerCat[parentId] && categoryImage) {

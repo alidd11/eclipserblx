@@ -77,7 +77,7 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
       // Maintain frequency ordering
       return productIds
         .map(id => fullProducts.find((p) => p.id === id))
-        .filter(Boolean);
+        .filter((p): p is NonNullable<typeof p> => Boolean(p));
     },
     enabled: !!productId,
     staleTime: 1000 * 60 * 10,

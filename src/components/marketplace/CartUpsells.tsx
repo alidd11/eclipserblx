@@ -115,8 +115,8 @@ export function CartUpsells() {
                       price: product.price,
                       image: getFirstImageUrl(product.images) || product.images?.[0],
                       slug: String(product.product_number),
-                      category_id: product.category_id,
-                      is_resellable: product.is_resellable,
+                       category_id: product.category_id ?? undefined,
+                       is_resellable: product.is_resellable ?? undefined,
                     })}
                   >
                     <Plus className="h-3 w-3" />

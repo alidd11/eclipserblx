@@ -48,7 +48,7 @@ export function FileReviewConsentBanner() {
  .from('products')
  .update({ file_review_consented_at: new Date().toISOString() })
  .eq('id', productId)
- .eq('store_id', store?.id);
+ .eq('store_id', store?.id ?? '');
 
  if (error) throw error;
 

@@ -103,6 +103,7 @@ export function useMarketplaceAccess() {
     }
 
     async function checkRoles() {
+      if (!user) return;
       try {
         const [rolesResult, storeResult] = await Promise.all([
           supabase

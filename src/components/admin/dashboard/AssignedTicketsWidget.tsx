@@ -45,8 +45,8 @@ export function AssignedTicketsWidget() {
       const seller = (sellerRes.data || []).map(t => ({ ...t, type: 'seller' as const }));
       return [...customer, ...seller]
         .sort((a, b) => {
-          const pa = PRIORITY_ORDER[a.priority] ?? 99;
-          const pb = PRIORITY_ORDER[b.priority] ?? 99;
+          const pa = PRIORITY_ORDER[a.priority ?? 'low'] ?? 99;
+          const pb = PRIORITY_ORDER[b.priority ?? 'low'] ?? 99;
           if (pa !== pb) return pa - pb;
           return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         })

@@ -220,8 +220,8 @@ export default function ProductDetail() {
  price: effectivePrice,
  image: product.images?.[0],
  slug: String((product as any).product_number || product.slug),
- category_slug: product.categories?.slug,
- category_id: product.category_id,
+ category_slug: product.categories?.slug ?? undefined,
+ category_id: product.category_id ?? undefined,
  is_resellable: product.is_resellable,
  store_eclipse_enabled: storeEclipseEnabled,
  store_name: product.stores?.name,
@@ -418,7 +418,7 @@ export default function ProductDetail() {
  
   {/* Store card - below image gallery */}
   {product.stores && (
-  <StoreDetailsCard store={product.stores} className="w-full" />
+  <StoreDetailsCard store={product.stores as any} className="w-full" />
   )}
  </div>
 
@@ -625,7 +625,7 @@ export default function ProductDetail() {
  ref={reviewSectionRef as React.RefObject<HTMLElement>}
  productId={product.id}
  productName={product.name}
- reviews={productReviews || []}
+ reviews={(productReviews || []) as any}
  userId={user?.id}
  hasPurchased={!!hasPurchased}
  existingReview={!!existingReview}

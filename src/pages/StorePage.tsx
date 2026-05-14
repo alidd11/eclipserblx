@@ -466,7 +466,7 @@ export default function StorePage() {
                   case 'trust_signals':
                     return (
                       <section key={`section-${section.type}-${idx}`} className="border-t border-border pt-4">
-                        <StoreTrustSignals accentColor={accentColor} isVerified={store.is_verified} />
+                        <StoreTrustSignals accentColor={accentColor} isVerified={store.is_verified ?? undefined} />
                       </section>
                     );
 

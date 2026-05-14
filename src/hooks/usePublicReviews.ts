@@ -80,8 +80,8 @@ export function usePublicReviews(
         user_id: review.user_id,
         product_id: review.product_id,
         profile: profileMap.get(review.user_id) || null,
-        product: productMap?.get(review.product_id) ?? null,
-      }));
+        product: productMap?.get(review.product_id ?? '') ?? null,
+      })) as any[];
     },
     enabled: !!id,
   });

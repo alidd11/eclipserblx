@@ -40,7 +40,7 @@ export function RevenueChart() {
       }
 
       data?.forEach((t) => {
-        const day = formatShortDate(new Date(t.created_at));
+        const day = formatShortDate(new Date(t.created_at!));
         dayMap.set(day, (dayMap.get(day) || 0) + (t.net_amount || 0));
       });
 

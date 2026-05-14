@@ -108,7 +108,7 @@ export default function StoreReviewsPage() {
  );
  }
 
- if (notFound) {
+ if (notFound || !store) {
  return <StoreNotFound />;
  }
 

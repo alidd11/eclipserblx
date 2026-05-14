@@ -39,7 +39,7 @@ export function usePromotedProduct(zone: string, categoryId?: string) {
       const { data: promoData, error: promoError } = await supabase
         .rpc('get_weighted_promotion', {
           p_zone: zone,
-          p_category_id: categoryId || null,
+          p_category_id: categoryId || undefined,
         });
 
       if (promoError || !promoData || promoData.length === 0) return null;

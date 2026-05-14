@@ -78,7 +78,7 @@ export function CreditsAnalyticsTab() {
  const monthStart = startOfMonth(now);
  const yearStart = startOfYear(now);
 
- const calculatePeriod = (filterFn: (tx: typeof creditTransactions[0]) => boolean) => {
+ const calculatePeriod = (filterFn: (tx: NonNullable<typeof creditTransactions>[number]) => boolean) => {
  const filtered = creditTransactions.filter(filterFn);
  const purchases = filtered.filter(t => t.type === 'purchase');
  const gifts = filtered.filter(t => t.type === 'gift' || t.type === 'subscription_bonus');
