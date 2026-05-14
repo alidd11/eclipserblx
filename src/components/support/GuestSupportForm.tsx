@@ -7,13 +7,13 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle, Clock } from 'lucide-react';
 import {
-import { errMsg } from '@/lib/errors';
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { errMsg } from '@/lib/errors';
 
 const categories = [
   { value: 'downloads', label: 'Downloads & Products' },
