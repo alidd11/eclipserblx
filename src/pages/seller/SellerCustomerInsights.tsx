@@ -44,9 +44,9 @@ export default function SellerCustomerInsights() {
         if (existing) {
           existing.orders++;
           existing.total += Number(tx.gross_amount || 0);
-          if (tx.created_at > existing.lastOrder) existing.lastOrder = tx.created_at;
+          if ((tx.created_at ?? '') > existing.lastOrder) existing.lastOrder = tx.created_at!;
         } else {
-          buyerMap.set(id, { orders: 1, total: Number(tx.gross_amount || 0), lastOrder: tx.created_at });
+          buyerMap.set(id, { orders: 1, total: Number(tx.gross_amount || 0), lastOrder: tx.created_at! });
         }
       });
 
@@ -167,7 +167,7 @@ export default function SellerCustomerInsights() {
                 <div className="p-4">
                   {data?.topCustomers?.length ? (
                     <div className="divide-y divide-border">
-                      {data.topCustomers.map((customer: { id: string; name: string; avatar?: string; orders: number; total: number }, i: number) => (
+                      {data.topCustomers.map((customer: { id: string; name: string; avatar?: string | null; orders: number; total: number; lastOrder?: string }, i: number) => (
                         <div key={customer.id} className="flex items-center gap-3 py-2.5">
                           <span className="text-xs font-bold text-muted-foreground w-5">#{i + 1}</span>
                           <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">

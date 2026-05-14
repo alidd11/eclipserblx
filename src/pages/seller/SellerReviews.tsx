@@ -306,7 +306,7 @@ export default function SellerReviews() {
                           className="h-7 text-xs"
                           onClick={() => {
                             setReplyingTo(review.id);
-                            setReplyText(review.seller_reply);
+                            setReplyText(review.seller_reply ?? '');
                           }}
                         >
                           Edit Reply

@@ -149,7 +149,7 @@ export default function SellerAnalytics() {
 
     // Visitor analysis
     const visitorEventCounts = analyticsData.reduce((acc: Record<string, number>, e: AnalyticsEvent) => {
-      acc[e.visitor_id] = (acc[e.visitor_id] || 0) + 1;
+      acc[e.visitor_id ?? 'unknown'] = (acc[e.visitor_id ?? 'unknown'] || 0) + 1;
       return acc;
     }, {});
     const returningVisitors = Object.values(visitorEventCounts).filter((count) => count > 1).length;
