@@ -87,7 +87,7 @@ export default function MyPurchases() {
     (userDisputes || []).forEach((d) => {
       const orderKey = d.order_id ?? '';
       if (!map[orderKey] || ['pending', 'escalated', 'denied'].includes(d.status)) {
-        map[orderKey] = { id: d.id, status: d.status, amount: d.amount, dispute_number: d.dispute_number };
+        map[orderKey] = { id: d.id, status: d.status, amount: d.amount, dispute_number: d.dispute_number ?? '' };
       }
     });
     return map;

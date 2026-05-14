@@ -36,7 +36,7 @@ export default function StoreAbout() {
 
   return (
     <StoreLayout
-      store={store}
+      store={store as any}
       activeTab={null}
       onTabChange={() => {}}
       bio={store.bio}

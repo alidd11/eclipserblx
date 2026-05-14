@@ -221,7 +221,7 @@ export default function ProductDetail() {
  image: product.images?.[0],
  slug: String((product as any).product_number || product.slug),
  category_slug: product.categories?.slug ?? undefined,
- category_id: product.category_id,
+ category_id: product.category_id ?? undefined,
  is_resellable: product.is_resellable,
  store_eclipse_enabled: storeEclipseEnabled,
  store_name: product.stores?.name,
