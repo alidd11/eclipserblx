@@ -60,7 +60,8 @@ export function useRoadmapStatus() {
   }, [overrides]);
 
   const setStatus = useCallback(async (task_key: string, status: RoadmapStatus, note?: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     const { error } = await supabase
       .from('platform_roadmap_status')
       .upsert({ task_key, status, note: note ?? null, updated_by: user?.id ?? null, updated_at: new Date().toISOString() });

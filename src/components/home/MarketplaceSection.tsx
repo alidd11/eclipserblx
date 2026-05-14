@@ -162,7 +162,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
           {(() => {
             const imgUrl = getFirstImageUrl(product.images);
             return imgUrl ? (
-              <img src={optimizeImageUrl(imgUrl, 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" fetchPriority="low" className="w-full h-full object-contain transition-transform duration-300" />
+              <img src={optimizeImageUrl(imgUrl, 400, 300)} alt={product.name} width={400} height={300} loading="lazy" decoding="async" {...({ fetchpriority: 'low' } as Record<string, string>)} className="w-full h-full object-contain transition-transform duration-300" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <span className="text-muted-foreground text-sm">No image</span>
