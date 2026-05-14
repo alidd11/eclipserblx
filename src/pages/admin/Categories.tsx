@@ -246,7 +246,8 @@ function SortableMobileCard({
 }
 
 export default function AdminCategories() {
- 
+ const { hasPermission } = useUserPermissions();
+ const canManage = hasPermission('manage_categories');
  const queryClient = useQueryClient();
  const [dialogOpen, setDialogOpen] = useState(false);
  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
