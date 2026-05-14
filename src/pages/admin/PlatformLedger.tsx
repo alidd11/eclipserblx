@@ -102,7 +102,7 @@ export default function PlatformLedger() {
   const exportCSV = () => {
     const headers = ['Date', 'Store', 'Type', 'Description', 'Gross', 'Commission', 'Stripe Fee', 'Seller Net', 'Status'];
     const rows = filtered.map((t) => [
-      format(new Date(t.created_at), 'yyyy-MM-dd HH:mm'),
+      format(new Date(t.created_at!), 'yyyy-MM-dd HH:mm'),
       (t.stores as any)?.name || 'Unknown',
       t.type,
       `"${(t.description || '').replace(/"/g, '""')}"`,
@@ -252,7 +252,7 @@ export default function PlatformLedger() {
                   ) : filtered.map((t) => (
                     <TableRow key={t.id}>
                       <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                        {format(new Date(t.created_at), 'dd MMM yyyy HH:mm')}
+                        {format(new Date(t.created_at!), 'dd MMM yyyy HH:mm')}
                       </TableCell>
                       <TableCell className="text-sm font-medium">
                         {(t.stores as any)?.name || 'Unknown'}

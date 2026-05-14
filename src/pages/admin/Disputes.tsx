@@ -130,7 +130,7 @@ export default function Disputes() {
     },
     onError: () => toast.error('Failed to update dispute') });
 
-  const filtered = disputes?.filter((d: EnrichedDispute) => {
+  const filtered = (disputes as EnrichedDispute[] | undefined)?.filter((d: EnrichedDispute) => {
     if (!search) return true;
     const s = search.toLowerCase();
     return (
@@ -152,7 +152,7 @@ export default function Disputes() {
     escalated: disputes?.filter((d) => d.status === 'escalated').length ?? 0,
     resolved: disputes?.filter((d) => ['resolved', 'approved', 'denied'].includes(d.status)).length ?? 0,
     frozen: disputes?.filter((d) => d.escrow?.escrow_frozen).length ?? 0,
-    overdue: disputes?.filter((d: EnrichedDispute) => {
+    overdue: (disputes as EnrichedDispute[] | undefined)?.filter((d: EnrichedDispute) => {
       if (d.status !== 'pending') return false;
       return getDeadlineInfo(d.created_at).isOverdue;
     }).length ?? 0 };
@@ -267,7 +267,7 @@ export default function Disputes() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {paginatedItems?.map((d: EnrichedDispute) => {
+                      {(paginatedItems as EnrichedDispute[] | undefined)?.map((d: EnrichedDispute) => {
                         const statusCfg = statusConfig[d.status] || statusConfig.pending;
                         const StatusIcon = statusCfg.icon;
                         const { isOverdue } = d.status === 'pending' ? getDeadlineInfo(d.created_at) : { isOverdue: false };

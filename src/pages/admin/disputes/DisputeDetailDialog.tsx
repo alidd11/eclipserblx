@@ -335,9 +335,9 @@ function DisputeEvidenceSection({ disputeId }: { disputeId: string }) {
             <FileImage className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="truncate flex-1">{e.file_name}</span>
             <span className="text-xs text-muted-foreground shrink-0">
-              {e.file_size < 1024 * 1024
-                ? `${(e.file_size / 1024).toFixed(1)} KB`
-                : `${(e.file_size / (1024 * 1024)).toFixed(1)} MB`}
+              {(e.file_size ?? 0) < 1024 * 1024
+                ? `${((e.file_size ?? 0) / 1024).toFixed(1)} KB`
+                : `${((e.file_size ?? 0) / (1024 * 1024)).toFixed(1)} MB`}
             </span>
           </div>
         ))}

@@ -102,7 +102,7 @@ import { formatGBP } from '@/lib/formatters';
        const { error } = await supabase
          .from('developer_product_submissions')
          .insert({
-           developer_id: user?.id,
+           developer_id: user?.id ?? '',
            product_name: data.product_name,
            product_description: data.product_description || null,
            category_id: data.category_id || null,
@@ -374,7 +374,7 @@ import { formatGBP } from '@/lib/formatters';
                  </div>
                  <div>
                    <Label className="text-muted-foreground">Price</Label>
-                   <p className="text-sm mt-1">{formatGBP(selectedSubmission?.price)}</p>
+                   <p className="text-sm mt-1">{formatGBP(selectedSubmission?.price ?? 0)}</p>
                  </div>
                </div>
                <div className="space-y-2">

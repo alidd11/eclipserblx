@@ -119,7 +119,7 @@ export default function ModerationQueue() {
  subtitle: (a.profiles as any)?.display_name || 'Unknown Applicant',
  status: 'Pending Approval',
  severity: 'warning',
- createdAt: a.created_at,
+ createdAt: a.created_at ?? '',
  href: '/admin/store-applications' });
  });
 

@@ -252,7 +252,7 @@ export default function AdminIncomeSources() {
       txns.push({
         id: `comm-${c.id}`, source: 'commission',
         description: `Commission on {formatGBP((c.gross_amount ?? 0))} sale · ${storeName}`,
-        amount: platformFee, currency: '£', status: c.status ?? 'completed', date: c.created_at,
+        amount: platformFee, currency: '£', status: c.status ?? 'completed', date: c.created_at ?? '',
         metadata: `${storeName} · Seller earned {formatGBP((c.net_amount ?? 0))} · Stripe fee {formatGBP((c.stripe_fee ?? 0))}`,
       });
     });
