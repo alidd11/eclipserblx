@@ -326,12 +326,16 @@ export default function AdminProducts() {
   };
 
   return (
-    <AdminLayout requiredPermissions={['view_products']}>
+    <AdminLayout requiredPermissions={['view_products', 'manage_products']}>
       <div className="space-y-4">
         <AdminPageHeader
           title="Products"
           description="Manage your product catalog"
-          actions={<Button onClick={openCreate} className="gradient-button border-0 h-12"><Plus className="h-4 w-4 mr-2" />Add Product</Button>}
+          actions={
+            <PermissionGate permission="manage_products">
+              <Button onClick={openCreate} className="gradient-button border-0 h-12"><Plus className="h-4 w-4 mr-2" />Add Product</Button>
+            </PermissionGate>
+          }
         />
 
         <div className="space-y-4">
