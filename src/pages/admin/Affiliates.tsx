@@ -133,9 +133,9 @@ export default function AdminAffiliates() {
    .in('user_id', userIds);
 
   const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
-  const paymentMap = new Map(paymentDetailsList?.map(pd => [pd.user_id, pd]) || []);
+  const paymentMap = new Map((paymentDetailsList as Array<{ user_id: string; stripe_account_id: string }> | null)?.map((pd) => [pd.user_id, pd]) || []);
 
-  return data.map(p => ({
+  return (data as any[]).map((p: any) => ({
   ...p,
   user: profileMap.get(p.user_id),
   paymentDetails: paymentMap.get(p.user_id),
@@ -340,7 +340,7 @@ export default function AdminAffiliates() {
  </TableRow>
  </TableHeader>
  <TableBody>
- {payouts.map((payout) => (
+ {(payouts as any[])?.map((payout: any) => (
  <TableRow key={payout.id}>
  <TableCell>
  <div>
