@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client'; import { safeStorage } from '@/lib/safeStorage';
+import { errMsg } from '@/lib/errors';
 
 interface BiometricCredential {
   credentialId: string;

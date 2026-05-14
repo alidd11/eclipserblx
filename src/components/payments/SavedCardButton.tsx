@@ -6,6 +6,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import type { SavedPaymentMethod } from '@/hooks/useSavedPaymentMethods';
+import { errMsg } from '@/lib/errors';
 
 interface CartItem {
   id: string;

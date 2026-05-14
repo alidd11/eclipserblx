@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { ConversationList } from '@/components/admin/live-chat/ConversationList';
 import { ChatMessageThread } from '@/components/admin/live-chat/ChatMessageThread';
 import { Conversation, Message } from '@/components/admin/live-chat/ChatConstants';
+import { errMsg } from '@/lib/errors';
 
 export default function AdminLiveChat() {
   const { user } = useAuth();

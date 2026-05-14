@@ -16,6 +16,7 @@ import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
+import { errMsg } from '@/lib/errors';
 
 interface AppliedDiscount {
   id: string;

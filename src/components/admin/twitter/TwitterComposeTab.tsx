@@ -8,6 +8,7 @@ import { Send, Loader2, Hash, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { errMsg } from '@/lib/errors';
 
 export function TwitterComposeTab() {
  const [content, setContent] = useState('');

@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification, showInfoNotification } from '@/lib/nativeNotification';
 import { useDropZone } from '@/hooks/useDropZone';
 import { performSecurityScan } from '@/lib/secureFileUpload';
+import { errMsg } from '@/lib/errors';
 interface AvatarUploadProps {
   userId: string;
   currentAvatarUrl: string | null;

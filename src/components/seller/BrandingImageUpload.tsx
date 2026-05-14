@@ -7,6 +7,7 @@ import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { useDropZone } from '@/hooks/useDropZone';
 import { performSecurityScan, validateFile } from '@/lib/secureFileUpload';
+import { errMsg } from '@/lib/errors';
 
 interface BrandingImageUploadProps {
   userId: string;

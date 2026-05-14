@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { WebhookInput, TestResultBadge } from './WebhookInput';
 import { DiscordRoleManager } from '@/components/discord/DiscordRoleManager';
 import type { DiscordSettingsData, WebhookTestResult } from '@/hooks/useDiscordSettings';
+import { errMsg } from '@/lib/errors';
 
 interface ConfigurationTabProps {
   formData: DiscordSettingsData;

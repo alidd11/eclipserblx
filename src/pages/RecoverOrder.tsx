@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle, ArrowLeft, Mail, Copy, ClipboardPaste, AlertCircle } from 'lucide-react';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { errMsg } from '@/lib/errors';
 
 export default function RecoverOrder() {
   usePageMeta({ title: 'Recover Order', description: 'Recover a missing order by verifying your payment.', canonicalPath: '/recover-order' });

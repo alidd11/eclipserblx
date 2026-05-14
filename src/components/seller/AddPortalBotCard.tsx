@@ -8,6 +8,7 @@ import { Bot, ExternalLink, CheckCircle, XCircle, Loader2, Terminal, ChevronDown
 import { toast } from 'sonner';
 import { useSearchParams } from 'react-router-dom';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { errMsg } from '@/lib/errors';
 
 const AVAILABLE_COMMANDS = [
  { name: '/retrieve', description: 'Download purchased products directly in Discord' },

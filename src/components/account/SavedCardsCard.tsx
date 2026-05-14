@@ -16,6 +16,7 @@ import { useSavedPaymentMethods, SavedPaymentMethod } from '@/hooks/useSavedPaym
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
+import { errMsg } from '@/lib/errors';
 
 // Card brand icons
 function CardBrandIcon({ brand }: { brand: string }) {

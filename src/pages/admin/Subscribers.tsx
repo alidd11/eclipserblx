@@ -14,6 +14,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from '@/lib/dateUtils';
 import { Mail, Users, Tag, Newspaper, Bell, Search, Download, Send, Loader2 } from 'lucide-react';
+import { errMsg } from '@/lib/errors';
 
 type Subscriber = {
  id: string;

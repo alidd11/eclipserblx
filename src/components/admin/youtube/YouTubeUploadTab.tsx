@@ -9,6 +9,7 @@ import { Upload, Youtube, Loader2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { errMsg } from '@/lib/errors';
 
 const CATEGORIES = [
  'Education', 'Entertainment', 'Gaming', 'Science & Technology',

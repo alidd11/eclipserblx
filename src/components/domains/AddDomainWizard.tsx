@@ -13,6 +13,7 @@ import {
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { DnsRecordRow } from './DnsRecordRow';
+import { errMsg } from '@/lib/errors';
 
 interface PreCheckResult {
   domain: string;

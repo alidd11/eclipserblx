@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import avatarImg from '@/assets/marketplace-logo-icon-sm.webp';
+import { errMsg } from '@/lib/errors';
 
 interface XTheme {
   bg: string;

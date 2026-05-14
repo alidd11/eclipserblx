@@ -6,6 +6,7 @@ import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNoti
 import { useNavigate } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/hooks/useCart';
+import { errMsg } from '@/lib/errors';
 
 interface CartItem {
   id: string;

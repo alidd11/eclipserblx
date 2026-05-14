@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { copyToClipboard } from '@/lib/copyToClipboard';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { errMsg } from '@/lib/errors';
 
 export interface DiscordSettingsData {
   discord_invite_url: string;

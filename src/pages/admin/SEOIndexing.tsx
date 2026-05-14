@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Globe, RefreshCw, CheckCircle, AlertCircle, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { errMsg } from '@/lib/errors';
 
 export default function SEOIndexing() {
  const [loading, setLoading] = useState(false);
