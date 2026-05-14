@@ -154,7 +154,7 @@ export function PaymentRequestButton({
         navigate(`/order-success?payment_intent=${data.paymentIntentId}`);
       } catch (err) {
         console.error('Payment error:', err);
-        showErrorNotification('Payment Failed', err.message || 'Please try again');
+        showErrorNotification('Payment Failed', errMsg(err) || 'Please try again');
         event.complete('fail');
         onProcessing(false);
       }

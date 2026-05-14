@@ -89,7 +89,7 @@ export function TwitterComposer({ xTheme }: { xTheme: XTheme }) {
       queryClient.invalidateQueries({ queryKey: ['twitter-scheduled-posts'] });
       queryClient.invalidateQueries({ queryKey: ['twitter-posts-history'] });
     } catch (err) {
-      toast.error(err.message || 'Failed to send tweet');
+      toast.error(errMsg(err) || 'Failed to send tweet');
     } finally {
       setSending(false);
     }

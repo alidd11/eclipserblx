@@ -18,7 +18,7 @@ export default function SEOIndexing() {
  setLastResult(data);
  toast.success(`Submitted ${data.totalUrls} URLs to search engines`);
  } catch (err) {
- toast.error('Failed to submit: ' + (err.message || 'Unknown error'));
+ toast.error('Failed to submit: ' + (errMsg(err) || 'Unknown error'));
  } finally {
  setLoading(false);
  }

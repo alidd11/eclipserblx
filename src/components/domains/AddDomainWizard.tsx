@@ -82,7 +82,7 @@ export function AddDomainWizard({ open, onOpenChange, onPreCheck, onConnect, isC
         toast.error('Issues still detected');
       }
     } catch (e) {
-      toast.error('Re-check failed', { description: e.message });
+      toast.error('Re-check failed', { description: errMsg(e) });
     } finally {
       setRecheckLoading(false);
     }

@@ -245,7 +245,7 @@ export function useSellerVerification() {
         } catch (err) {
           results.roblox_group = {
             in_group: false,
-            error: err.message || 'Failed to verify group membership',
+            error: errMsg(err) || 'Failed to verify group membership',
           };
         }
       }
@@ -328,7 +328,7 @@ export function useSellerVerification() {
         discord_server: {
           valid: false,
           is_permanent: false,
-          error: err.message || 'Failed to validate invite',
+          error: errMsg(err) || 'Failed to validate invite',
         },
       }));
     } finally {

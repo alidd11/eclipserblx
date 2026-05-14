@@ -73,7 +73,7 @@ export function AddPortalBotCard() {
  toast.error('No invite URL returned');
  }
  } catch (error) {
- toast.error(error.message || 'Failed to generate invite link');
+ toast.error(errMsg(error) || 'Failed to generate invite link');
  } finally {
  setIsLoading(false);
  }

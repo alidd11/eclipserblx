@@ -79,7 +79,7 @@ export function SavedCardsCard() {
  refetch();
  } catch (err) {
  console.error('Error deleting payment method:', err);
- showErrorNotification('Error', err.message || 'Failed to remove card');
+ showErrorNotification('Error', errMsg(err) || 'Failed to remove card');
  } finally {
  setDeletingId(null);
  }

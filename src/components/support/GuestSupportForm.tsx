@@ -47,7 +47,7 @@ export function GuestSupportForm() {
       setIsSubmitted(true);
       toast.success('Support ticket created. We\'ll get back to you via email.');
     } catch (err) {
-      toast.error(err?.message || 'Failed to submit ticket. Please try again.');
+      toast.error(errMsg(err) || 'Failed to submit ticket. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

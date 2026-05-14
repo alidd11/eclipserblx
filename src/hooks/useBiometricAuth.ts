@@ -92,7 +92,7 @@ export function useBiometricAuth() {
       return { success: true };
     } catch (error) {
       console.error('Biometric enrollment error:', error);
-      return { success: false, error: error.message || 'Enrollment failed' };
+      return { success: false, error: errMsg(error) || 'Enrollment failed' };
     } finally {
       setLoading(false);
     }
@@ -141,10 +141,10 @@ export function useBiometricAuth() {
       return { success: true, userId: credentialData.userId };
     } catch (error) {
       console.error('Biometric authentication error:', error);
-      if (error.name === 'NotAllowedError') {
+      if ((error as { name?: string })?.name === 'NotAllowedError') {
         return { success: false, error: 'Authentication cancelled' };
       }
-      return { success: false, error: error.message || 'Authentication failed' };
+      return { success: false, error: errMsg(error) || 'Authentication failed' };
     } finally {
       setLoading(false);
     }

@@ -223,25 +223,28 @@ export function useBackgroundPush() {
       return { success: true };
     } catch (error) {
       console.error('Error subscribing to push:', error);
-      
+
+      const name = (error as { name?: string })?.name;
+      const message = errMsg(error);
+
       // Handle specific error types
-      if (error.name === 'NotAllowedError') {
+      if (name === 'NotAllowedError') {
         return { success: false, error: 'Permission denied. Please allow notifications in your browser settings.' };
       }
-      if (error.name === 'AbortError') {
+      if (name === 'AbortError') {
         return { success: false, error: 'The operation was cancelled. Please try again.' };
       }
-      if (error.message?.includes('push service')) {
+      if (message?.includes('push service')) {
         return { success: false, error: 'Unable to connect to push service. Please check your internet connection.' };
       }
-      if (error.message?.includes('Invalid VAPID key') || error.message?.includes('invalid characters')) {
+      if (message?.includes('Invalid VAPID key') || message?.includes('invalid characters')) {
         return { success: false, error: 'VAPID key configuration error. Please regenerate VAPID keys in Admin Settings.' };
       }
-      if (error.name === 'InvalidCharacterError' || error.message?.includes('The string contains invalid characters')) {
+      if (name === 'InvalidCharacterError' || message?.includes('The string contains invalid characters')) {
         return { success: false, error: 'VAPID key is malformed. Please regenerate VAPID keys in Admin Settings.' };
       }
-      
-      return { success: false, error: error.message || 'Failed to enable push notifications. Please try again.' };
+
+      return { success: false, error: message || 'Failed to enable push notifications. Please try again.' };
     }
   }, [isSupported, user]);
 

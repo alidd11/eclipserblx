@@ -162,7 +162,7 @@ export default function AdminLiveChat() {
     } catch (error) {
       console.error('Error sending message:', error);
       hapticError();
-      toast.error('Failed to send message', { description: error?.message || 'Please try again' });
+      toast.error('Failed to send message', { description: errMsg(error) || 'Please try again' });
       setMessages((prev) => prev.map((m) => (m._tempId === tempId ? { ...m, _status: 'failed' as const } : m)));
     }
   };

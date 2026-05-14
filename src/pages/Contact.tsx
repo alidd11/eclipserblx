@@ -120,7 +120,7 @@ export default function Contact() {
  } catch (error) {
  console.error('Error submitting contact form:', error);
  // Handle rate limit error from RLS
- if (error?.code === '42501') {
+ if ((error as { code?: string })?.code === '42501') {
  showErrorNotification('Too Many Requests', 'Please wait before submitting another message.');
  } else {
  showErrorNotification('Failed to Send', 'Please try again or use an alternative contact method.');

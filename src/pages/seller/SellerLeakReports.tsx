@@ -252,7 +252,7 @@ export default function SellerLeakReports() {
       setNotes('');
       refetch();
     } catch (err) {
-      toast.error(err.message || 'Failed to submit report');
+      toast.error(errMsg(err) || 'Failed to submit report');
     } finally {
       setIsSubmitting(false);
     }
