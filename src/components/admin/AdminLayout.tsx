@@ -158,11 +158,20 @@ export function AdminLayout({ children, requiredRoles = [], requiredPermissions 
 
   const isGateLoading = loading || (!!user?.id && permissionsRequired && permissionsLoading) || isAuthRecovering;
 
+  // One-shot stale-session purge: if the cached JWT lacks `sub`, clear it and bounce to /admin/login.
+  // This breaks the bad_jwt → white-screen loop for installed-PWA staff.
+  if (!loading && !user && typeof window !== 'undefined') {
+    if (purgeStaleAdminSessionOnce()) {
+      return <Navigate to="/admin/login?reason=session-expired" replace />;
+    }
+  }
+
   // Show loading spinner (bounded — will not hang forever)
   if (isGateLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background safe-area-page">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-3 bg-background safe-area-page">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-xs text-muted-foreground">Loading admin dashboard…</p>
       </div>
     );
   }
