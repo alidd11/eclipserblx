@@ -88,7 +88,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         .limit(8);
       if (data) {
         const filtered = data.filter((p) => p.stores?.is_active === true);
-        setTrendingProducts(filtered.slice(0, 6));
+        setTrendingProducts(filtered.slice(0, 6) as any);
       }
     };
     fetchTrending();
@@ -107,14 +107,14 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
         const [rpcRes, storeRes] = await Promise.all([
           supabase.rpc('search_products_v2', {
             search_query: searchQuery,
-            category_filter: categoryFilter,
-            min_price: null,
-            max_price: null,
+            category_filter: categoryFilter ?? undefined,
+            min_price: undefined,
+            max_price: undefined,
             free_only: false,
             sort_by: 'relevance',
             page_size: 6,
             page_offset: 0,
-          }),
+          } as any),
           supabase
             .from('stores')
             .select('id, name, slug, logo_url, is_verified')

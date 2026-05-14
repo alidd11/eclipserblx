@@ -71,7 +71,7 @@ export function SellerHeroBanner() {
                   <span className="text-border">·</span>
                   <span className="inline-flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    {store.follower_count} followers
+                    {store?.follower_count} followers
                   </span>
                 </>
               )}

@@ -59,7 +59,7 @@ export function ExportReportsCard() {
 
  headers = ['Date', 'Order ID', 'Description', 'Amount', 'Platform Fee', 'Net Amount', 'Status'];
  data = (transactions || []).map((tx) => [
- format(new Date(tx.created_at), 'yyyy-MM-dd HH:mm'),
+ format(new Date(tx.created_at!), 'yyyy-MM-dd HH:mm'),
  tx.order_id || '',
  tx.description || '',
  tx.amount?.toFixed(2) || '0.00',
@@ -88,7 +88,7 @@ export function ExportReportsCard() {
  // Group by date
  const dailyRevenue: Record<string, { sales: number; revenue: number; fees: number; refunds: number }> = {};
  (transactions || []).forEach((tx) => {
- const date = format(new Date(tx.created_at), 'yyyy-MM-dd');
+ const date = format(new Date(tx.created_at!), 'yyyy-MM-dd');
  if (!dailyRevenue[date]) {
  dailyRevenue[date] = { sales: 0, revenue: 0, fees: 0, refunds: 0 };
  }

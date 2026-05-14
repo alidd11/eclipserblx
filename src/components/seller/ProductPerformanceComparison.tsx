@@ -79,17 +79,17 @@ export function ProductPerformanceComparison() {
  // Build metrics
  const orderItemMap = new Map<string, string>();
  orderItems?.forEach((oi) => {
- orderItemMap.set(oi.id, oi.product_id);
+  orderItemMap.set(oi.id, oi.product_id ?? '');
  });
 
  return ids.map(id => {
  const product = products?.find(p => p.id === id);
  const productSales = sales?.filter((s) => {
- const productId = orderItemMap.get(s.order_item_id);
+ const productId = orderItemMap.get(s.order_item_id ?? '');
  return productId === id;
  }) || [];
  const productViews = views?.filter((v) => 
- v.page_path?.includes(product?.name?.toLowerCase().replace(/\s+/g, '-'))
+ v.page_path?.includes(product?.name?.toLowerCase().replace(/\s+/g, '-') ?? '')
  )?.length || 0;
  const revenue = productSales.reduce((sum: number, s) => sum + (s.net_amount || 0), 0);
  const salesCount = productSales.length;

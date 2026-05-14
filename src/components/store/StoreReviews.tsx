@@ -88,7 +88,7 @@ export function StoreReviews({ storeId, storeName, accentColor = '#8b5cf6', aver
       return reviewsData.map(review => ({
         ...review,
         profile: profilesMap.get(review.user_id) || null,
-        product: productsMap.get(review.product_id) || null,
+        product: productsMap.get(review.product_id ?? '') || null,
       })) as Review[];
     },
     enabled: !!storeId,

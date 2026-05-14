@@ -80,7 +80,7 @@ export function RecentOrdersTable() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground text-right whitespace-nowrap">
-                        {formatRelative(order.created_at)}
+                        {formatRelative(order.created_at ?? '')}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -95,7 +95,7 @@ export function RecentOrdersTable() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{order.description || 'Sale'}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {formatRelative(order.created_at)}
+                      {formatRelative(order.created_at ?? '')}
                     </p>
                   </div>
                   <div className="text-right shrink-0">

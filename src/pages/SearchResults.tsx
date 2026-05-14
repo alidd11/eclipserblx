@@ -107,14 +107,14 @@ export default function SearchResults() {
       try {
         const { data, error } = await supabase.rpc('search_products_v2', {
           search_query: debouncedQuery || '',
-          category_filter: categorySlug || null,
-          min_price: debouncedMinPrice ? parseFloat(debouncedMinPrice) : null,
-          max_price: debouncedMaxPrice ? parseFloat(debouncedMaxPrice) : null,
+          category_filter: categorySlug ?? undefined,
+          min_price: debouncedMinPrice ? parseFloat(debouncedMinPrice) : undefined,
+          max_price: debouncedMaxPrice ? parseFloat(debouncedMaxPrice) : undefined,
           free_only: freeOnly,
           sort_by: sortMapping[sortBy] || 'relevance',
           page_size: PAGE_SIZE,
           page_offset: 0,
-        });
+        } as any);
 
         if (!error && data) {
           const results = (data as any[]).map(r => ({
@@ -145,14 +145,14 @@ export default function SearchResults() {
     try {
       const { data, error } = await supabase.rpc('search_products_v2', {
         search_query: debouncedQuery || '',
-        category_filter: categorySlug || null,
-        min_price: debouncedMinPrice ? parseFloat(debouncedMinPrice) : null,
-        max_price: debouncedMaxPrice ? parseFloat(debouncedMaxPrice) : null,
+        category_filter: categorySlug ?? undefined,
+        min_price: debouncedMinPrice ? parseFloat(debouncedMinPrice) : undefined,
+        max_price: debouncedMaxPrice ? parseFloat(debouncedMaxPrice) : undefined,
         free_only: freeOnly,
         sort_by: sortMapping[sortBy] || 'relevance',
         page_size: PAGE_SIZE,
         page_offset: nextOffset,
-      });
+      } as any);
 
       if (!error && data) {
         const results = (data as any[]).map(r => ({

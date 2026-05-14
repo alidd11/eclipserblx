@@ -422,7 +422,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                       </div>
                       <p className="text-xs font-mono text-muted-foreground mt-1">{sellerStore.store_id}</p>
                       <p className="text-xs text-muted-foreground">
-                        Since {format(new Date(sellerStore.created_at), 'MMM d, yyyy')}
+                        Since {format(new Date(sellerStore.created_at!), 'MMM d, yyyy')}
                       </p>
                     </div>
                     <Store className={`h-6 w-6 ${sellerStore.is_active ? 'text-purple-500' : 'text-muted-foreground'}`} />

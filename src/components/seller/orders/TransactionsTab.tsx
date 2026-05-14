@@ -95,7 +95,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
  const exportCSV = () => {
  const headers = ['Date', 'Type', 'Description', 'Amount', 'Platform Fee', 'Net Amount', 'Status'];
  const rows = filteredTransactions.map((tx) => [
- format(new Date(tx.created_at), 'yyyy-MM-dd HH:mm'),
+ format(new Date(tx.created_at!), 'yyyy-MM-dd HH:mm'),
  tx.type, tx.description || '', tx.amount, tx.platform_fee || 0, tx.net_amount || tx.amount, tx.status,
  ]);
  const csv = [headers.join(','), ...rows.map(r => r.map(v => `"${v}"`).join(','))].join('\n');
@@ -168,7 +168,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
  <TableBody>
  {filteredTransactions.map((tx) => (
  <TableRow key={tx.id}>
- <TableCell className="whitespace-nowrap">{format(new Date(tx.created_at), 'dd MMM yyyy')}</TableCell>
+ <TableCell className="whitespace-nowrap">{format(new Date(tx.created_at!), 'dd MMM yyyy')}</TableCell>
  <TableCell>{getTypeBadge(tx.type)}</TableCell>
  <TableCell>
  <div>
@@ -181,7 +181,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
  <TableCell className={tx.type === 'sale' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
  {tx.type === 'sale' ? '+' : '-'}{formatCurrency(tx.net_amount || tx.amount)}
  </TableCell>
- <TableCell>{getStatusBadge(tx.status)}</TableCell>
+ <TableCell>{getStatusBadge(tx.status ?? 'pending')}</TableCell>
  </TableRow>
  ))}
  </TableBody>

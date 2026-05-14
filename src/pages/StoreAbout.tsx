@@ -28,7 +28,7 @@ export default function StoreAbout() {
     );
   }
 
-  if (notFound) {
+  if (notFound || !store) {
     return <StoreNotFound />;
   }
 

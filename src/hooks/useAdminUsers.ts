@@ -171,7 +171,7 @@ export function useAdminUsers() {
 
   const ipBanMutation = useMutation({
     mutationFn: async ({ ipAddress: ip, reason, userId }: { ipAddress: string; reason?: string; userId?: string }) => {
-      const { error } = await supabase.from('ip_bans').insert({ ip_address: ip, reason: reason || null, banned_by: user?.id, user_id: userId || null });
+      const { error } = await supabase.from('ip_bans').insert({ ip_address: ip, reason: reason || null, banned_by: user?.id ?? '', user_id: userId || null });
       if (error) throw error;
       await supabase.from('audit_logs').insert({ user_id: user?.id, action: 'ip_banned', resource: 'ip_bans', details: { ip_address: ip, reason, target_user_id: userId } });
     },

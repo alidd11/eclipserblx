@@ -85,8 +85,9 @@ export default function MyPurchases() {
   const disputesByOrder = useMemo(() => {
     const map: Record<string, { id: string; status: string; amount: number; dispute_number: string }> = {};
     (userDisputes || []).forEach((d) => {
-      if (!map[d.order_id] || ['pending', 'escalated', 'denied'].includes(d.status)) {
-        map[d.order_id] = { id: d.id, status: d.status, amount: d.amount, dispute_number: d.dispute_number };
+      const orderKey = d.order_id ?? '';
+      if (!map[orderKey] || ['pending', 'escalated', 'denied'].includes(d.status)) {
+        map[orderKey] = { id: d.id, status: d.status, amount: d.amount, dispute_number: d.dispute_number };
       }
     });
     return map;

@@ -55,7 +55,7 @@ export function RobuxEarningsTab() {
  const breakdown = useMemo(() => {
  if (!robuxTransactions) return null;
  const now = new Date();
- const calc = (fn: (tx: typeof robuxTransactions[0]) => boolean) => {
+ const calc = (fn: (tx: NonNullable<typeof robuxTransactions>[number]) => boolean) => {
  const filtered = robuxTransactions.filter(fn);
  const net = filtered.reduce((s, t) => s + (t.robux_after_tax || 0), 0);
  return { net, count: filtered.length, gbp: net * ROBUX_TO_GBP_RATE };

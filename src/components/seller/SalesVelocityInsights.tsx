@@ -47,7 +47,7 @@ export function SalesVelocityInsights() {
  productMap.set(name, { current: 0, previous: 0, revenue: 0 });
  }
  const entry = productMap.get(name)!;
- const isCurrentPeriod = new Date(t.created_at) >= new Date(last7);
+ const isCurrentPeriod = new Date(t.created_at!) >= new Date(last7);
 
  if (isCurrentPeriod) {
  entry.current++;
