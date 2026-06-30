@@ -5464,6 +5464,186 @@ export type Database = {
           },
         ]
       }
+      orion_change_requests: {
+        Row: {
+          applied_at: string | null
+          apply_error: string | null
+          apply_result: Json | null
+          board_meeting_id: string | null
+          category: string
+          created_at: string
+          decision_notes: string | null
+          external_id: string | null
+          id: string
+          proposal: Json
+          proposing_agent: string
+          rationale: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          risk_level: string
+          status: string
+          title: string
+          transcript: Json | null
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string | null
+          apply_error?: string | null
+          apply_result?: Json | null
+          board_meeting_id?: string | null
+          category: string
+          created_at?: string
+          decision_notes?: string | null
+          external_id?: string | null
+          id?: string
+          proposal?: Json
+          proposing_agent: string
+          rationale: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string
+          status?: string
+          title: string
+          transcript?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string | null
+          apply_error?: string | null
+          apply_result?: Json | null
+          board_meeting_id?: string | null
+          category?: string
+          created_at?: string
+          decision_notes?: string | null
+          external_id?: string | null
+          id?: string
+          proposal?: Json
+          proposing_agent?: string
+          rationale?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          risk_level?: string
+          status?: string
+          title?: string
+          transcript?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orion_event_outbox: {
+        Row: {
+          attempts: number
+          created_at: string
+          dead_lettered_at: string | null
+          delivered_at: string | null
+          event_type: string
+          id: string
+          last_error: string | null
+          next_attempt_at: string
+          payload: Json
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          dead_lettered_at?: string | null
+          delivered_at?: string | null
+          event_type: string
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload?: Json
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          dead_lettered_at?: string | null
+          delivered_at?: string | null
+          event_type?: string
+          id?: string
+          last_error?: string | null
+          next_attempt_at?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
+      orion_findings: {
+        Row: {
+          created_at: string
+          evidence: Json
+          id: string
+          kind: string
+          raised_by: string | null
+          related_migration: string | null
+          resolution: string | null
+          root_cause: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          kind: string
+          raised_by?: string | null
+          related_migration?: string | null
+          resolution?: string | null
+          root_cause?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          evidence?: Json
+          id?: string
+          kind?: string
+          raised_by?: string | null
+          related_migration?: string | null
+          resolution?: string | null
+          root_cause?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      orion_inbound_commands: {
+        Row: {
+          command_type: string
+          error: string | null
+          executed_at: string | null
+          id: string
+          payload: Json
+          received_at: string
+          result: Json | null
+          signature_valid: boolean | null
+          status: string
+        }
+        Insert: {
+          command_type: string
+          error?: string | null
+          executed_at?: string | null
+          id?: string
+          payload?: Json
+          received_at?: string
+          result?: Json | null
+          signature_valid?: boolean | null
+          status?: string
+        }
+        Update: {
+          command_type?: string
+          error?: string | null
+          executed_at?: string | null
+          id?: string
+          payload?: Json
+          received_at?: string
+          result?: Json | null
+          signature_valid?: boolean | null
+          status?: string
+        }
+        Relationships: []
+      }
       page_visits: {
         Row: {
           browser: string | null
@@ -12473,6 +12653,7 @@ export type Database = {
         }
         Returns: number
       }
+      orion_admin_send_ping: { Args: never; Returns: string }
       product_file_review_consented: {
         Args: { file_path: string }
         Returns: boolean

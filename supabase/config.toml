@@ -223,3 +223,10 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.orion-inbound]
+    verify_jwt = false
+  [functions.orion-dispatch]
+    verify_jwt = false
+  [functions.orion-change-decide]
+    verify_jwt = false
+

@@ -149,6 +149,7 @@ const navGroups: NavGroup[] = [
       { title: 'Audit Logs', icon: ClipboardList, href: '/admin/audit-logs', permissions: ['view_audit_logs'] },
       { title: 'Platform Roadmap', icon: Activity, href: '/admin/roadmap', permissions: ['view_audit_logs'] },
       { title: 'Observability', icon: Activity, href: '/admin/observability', permissions: ['view_audit_logs'] },
+      { title: 'Orion', icon: Bot, href: '/admin/orion', permissions: [], roles: ['admin'] },
       { title: 'Rate Limits', icon: Shield, href: '/admin/rate-limits', permissions: ['view_audit_logs'] },
       { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', permissions: ['manage_permissions'], dividerAfter: true },
       { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', permissions: ['manage_settings'] },
