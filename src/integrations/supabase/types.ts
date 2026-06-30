@@ -12527,6 +12527,15 @@ export type Database = {
           severity: string
         }[]
       }
+      get_page_visits_daily_summary: {
+        Args: { days?: number }
+        Returns: {
+          day: string
+          new_visitors: number
+          unique_paths: number
+          visits: number
+        }[]
+      }
       get_push_subscription_total: { Args: never; Returns: number }
       get_reset_code_attempts: {
         Args: { p_email: string }
