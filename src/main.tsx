@@ -5,6 +5,7 @@ import "./lib/sentry";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import "@fontsource/jetbrains-mono/500.css";
 import "./i18n";
 
 // Lock to dark mode permanently
