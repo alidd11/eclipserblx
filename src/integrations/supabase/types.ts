@@ -11402,6 +11402,15 @@ export type Database = {
           },
         ]
       }
+      page_visits_daily_summary: {
+        Row: {
+          day: string | null
+          new_visitors: number | null
+          unique_paths: number | null
+          visits: number | null
+        }
+        Relationships: []
+      }
       popular_searches: {
         Row: {
           last_searched: string | null
@@ -12654,6 +12663,7 @@ export type Database = {
         Returns: number
       }
       orion_admin_send_ping: { Args: never; Returns: string }
+      orion_scan_findings: { Args: never; Returns: number }
       product_file_review_consented: {
         Args: { file_path: string }
         Returns: boolean
@@ -12674,6 +12684,7 @@ export type Database = {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined
       }
+      refresh_page_visits_summary: { Args: never; Returns: undefined }
       release_escrow_funds: {
         Args: never
         Returns: {
