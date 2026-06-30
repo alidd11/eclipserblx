@@ -11402,6 +11402,15 @@ export type Database = {
           },
         ]
       }
+      page_visits_daily_summary: {
+        Row: {
+          day: string | null
+          new_visitors: number | null
+          unique_paths: number | null
+          visits: number | null
+        }
+        Relationships: []
+      }
       popular_searches: {
         Row: {
           last_searched: string | null
@@ -12518,6 +12527,15 @@ export type Database = {
           severity: string
         }[]
       }
+      get_page_visits_daily_summary: {
+        Args: { days?: number }
+        Returns: {
+          day: string
+          new_visitors: number
+          unique_paths: number
+          visits: number
+        }[]
+      }
       get_push_subscription_total: { Args: never; Returns: number }
       get_reset_code_attempts: {
         Args: { p_email: string }
@@ -12654,6 +12672,7 @@ export type Database = {
         Returns: number
       }
       orion_admin_send_ping: { Args: never; Returns: string }
+      orion_scan_findings: { Args: never; Returns: number }
       product_file_review_consented: {
         Args: { file_path: string }
         Returns: boolean
@@ -12674,6 +12693,7 @@ export type Database = {
         Args: { p_action_type: string; p_identifier: string }
         Returns: undefined
       }
+      refresh_page_visits_summary: { Args: never; Returns: undefined }
       release_escrow_funds: {
         Args: never
         Returns: {

@@ -74,10 +74,12 @@ export function useStaffPresence() {
     };
   }, [user?.id]);
 
-  // Keep last_seen fresh on its own cadence — independent of channel lifecycle
+  // Keep last_seen fresh on its own cadence — paused while tab is hidden
+  // so backgrounded sessions don't keep hammering the DB.
   useEffect(() => {
     if (!user?.id) return;
     const update = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
       void supabase
         .from('profiles')
         .update({ last_seen: new Date().toISOString() })
@@ -86,8 +88,16 @@ export function useStaffPresence() {
     };
     update();
     const interval = setInterval(update, 60_000);
-    return () => clearInterval(interval);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') update();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [user?.id]);
+
 
   return {
     presenceChannelRef,
