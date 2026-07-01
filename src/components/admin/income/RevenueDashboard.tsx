@@ -121,19 +121,6 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- // Ad revenue
- const { data: adRevenue, isLoading: adsLoading } = useQuery({
- queryKey: ['admin-revenue-ads'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('discord_advertisements')
- .select('price_paid, ping_price_paid, posted_at')
- .not('posted_at', 'is', null);
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
 
  // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading } = useQuery({
