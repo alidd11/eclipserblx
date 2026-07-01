@@ -234,7 +234,7 @@ export default function AdminIncomeSources() {
     });
 
     return txns.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [ordersData, subsData, adsData, creditsData, robuxData, commissionData]);
+  }, [ordersData, subsData, creditsData, robuxData, commissionData]);
 
   // Filter by period, source, and search
   const filteredTransactions = useMemo(() => {
