@@ -95,8 +95,6 @@ const navGroups: NavGroup[] = [
     title: 'Integrations',
     icon: Gamepad2,
     items: [
-      { title: 'Discord', icon: MessageCircle, href: '/seller/discord' },
-      { title: 'Discord Bots', icon: Bot, href: '/seller/bots' },
       { title: 'Roblox', icon: Gamepad2, href: '/seller/roblox' },
       { title: 'Webhooks', icon: Webhook, href: '/seller/webhooks' },
     ],
