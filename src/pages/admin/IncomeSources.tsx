@@ -25,7 +25,7 @@ import { formatGBP } from '@/lib/formatters';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
-type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'ads' | 'credits' | 'robux' | 'commission';
+type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'credits' | 'robux' | 'commission';
 type TimePeriod = '7d' | '30d' | 'month' | 'year' | 'all';
 
 interface UnifiedTransaction {
