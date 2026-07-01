@@ -159,15 +159,14 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- const isLoading = stripeLoading || ordersLoading || adsLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
  // Only show full error if ALL non-Stripe sources fail — Stripe is optional (edge function may be down)
- const coreErrors = [ordersError, adsError, subsError, commError, creditsError, robuxError];
+ const coreErrors = [ordersError, subsError, commError, creditsError, robuxError];
  const hasError = coreErrors.every(Boolean);
 
  const handleRetryAll = () => {
  refetchStripe();
  refetchOrders();
- refetchAds();
  refetchSubs();
  refetchComm();
  refetchCredits();
