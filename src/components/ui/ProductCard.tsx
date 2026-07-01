@@ -130,12 +130,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onTouchStart={() => prefetchProduct(slug)}
     >
       <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-all duration-300 contain-layout",
-        "border border-transparent hover:border-border",
-        isFeatured && "border-primary/20"
+        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-colors duration-200 contain-layout",
+        "border border-border/60 hover:border-border",
+        isFeatured && "border-primary/30"
       )}>
-        {/* Image */}
-        <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
+        {/* Image — taller aspect on mobile to breathe, tighter on desktop */}
+        <div className="relative aspect-[5/4] bg-muted overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
