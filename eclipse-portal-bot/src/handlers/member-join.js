@@ -1,11 +1,20 @@
 import { EmbedBuilder } from 'discord.js';
 import { supabase } from '../supabase.js';
 import { ECLIPSE_COLOR, ECLIPSE_ICON, config } from '../config.js';
+import { sendOrionWebhook } from '../utils/orion-webhook.js';
 
 export async function handleMemberJoin(member) {
   if (member.user.bot) return;
 
   console.log(`[JOIN] ${member.user.tag} joined ${member.guild.name} (${member.guild.id})`);
+
+  // Fire-and-forget Orion notification. Runs alongside existing welcome flow.
+  sendOrionWebhook('member_join', {
+    guild: member.guild.name,
+    member_id: String(member.id),
+    member_count_now: member.guild.memberCount ?? 0,
+  });
+
 
   try {
     const { data: store } = await supabase
