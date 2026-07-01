@@ -177,7 +177,7 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- const isLoading = stripeLoading || ordersLoading || adsLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
 
  const handleRefresh = () => {
  refetchStripe();
