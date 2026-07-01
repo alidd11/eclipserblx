@@ -130,12 +130,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onTouchStart={() => prefetchProduct(slug)}
     >
       <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-all duration-300 contain-layout",
-        "border border-transparent hover:border-border",
-        isFeatured && "border-primary/20"
+        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-colors duration-200 contain-layout",
+        "border border-border/60 hover:border-border",
+        isFeatured && "border-primary/30"
       )}>
-        {/* Image */}
-        <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
+        {/* Image — taller aspect on mobile to breathe, tighter on desktop */}
+        <div className="relative aspect-[5/4] bg-muted overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
@@ -179,24 +179,24 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           )}
 
           {/* Badges — Sale/Featured/New only */}
-          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 flex-wrap z-[3]">
+          <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
             {hasMemberDiscount && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
                 Sale
               </div>
             )}
             {showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-foreground rounded shadow-sm">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-foreground rounded shadow-sm">
                 Best Seller
               </div>
             )}
             {isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded">
                 Featured
               </div>
             )}
             {isNew && !isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-emerald-500 text-foreground rounded">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-emerald-500 text-foreground rounded">
                 New
               </div>
             )}
@@ -218,22 +218,22 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           )}
           
           {/* Wishlist button */}
-          <div className="absolute top-1.5 right-1.5 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
+          <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
             <WishlistButton productId={id} variant="icon" />
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-3 sm:p-3.5 flex flex-col flex-1 gap-1.5">
+        {/* Content — roomier on mobile */}
+        <div className="p-3.5 sm:p-4 flex flex-col flex-1 gap-2">
           {/* Category label */}
           {category && (
-            <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-wide">
+            <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
               {category}
             </span>
           )}
 
           {/* Title */}
-          <h3 className="font-display font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+          <h3 className="font-display font-semibold text-[15px] sm:text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
             {name}
           </h3>
 
@@ -251,7 +251,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               </div>
             )}
             <span 
-              className="text-[11px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
+              className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
               onClick={(e) => {
                 if (storeSlug) {
                   e.preventDefault();
@@ -270,10 +270,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
 
           {/* Price row + rating + quick-add */}
-          <div className="flex items-center gap-2 mt-auto pt-2">
+          <div className="flex items-center gap-2 mt-auto pt-2.5 border-t border-border/40">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               {isPayWhatYouWant ? (
-                <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-emerald-500">
+                <span className="text-base sm:text-lg font-bold whitespace-nowrap leading-none text-emerald-500">
                   {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
                 </span>
               ) : hasMemberDiscount ? (
@@ -281,16 +281,16 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   <span className="text-[11px] text-muted-foreground leading-none line-through">
                     {formatPrice(price)}
                   </span>
-                  <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-amber-400">
+                  <span className="text-base sm:text-lg font-bold whitespace-nowrap leading-none text-amber-400">
                     {formatPrice(memberPrice)}
                   </span>
-                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[8px] font-medium leading-none bg-amber-500/20 text-amber-400">
+                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium leading-none bg-amber-500/20 text-amber-400">
                     <Sparkles className="h-2 w-2 flex-shrink-0" />
                     {discountPercent}%
                   </span>
                 </>
               ) : (
-                <span className="text-sm sm:text-base font-bold whitespace-nowrap leading-none text-foreground">
+                <span className="text-base sm:text-lg font-bold whitespace-nowrap leading-none text-foreground">
                   {formatPrice(price)}
                 </span>
               )}
@@ -308,14 +308,14 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             <button
               onClick={handleAddToCart}
               className={cn(
-                "flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                "flex-shrink-0 h-9 w-9 rounded-lg flex items-center justify-center transition-colors active:scale-[0.97]",
                 inCart 
                   ? "bg-emerald-500/20 text-emerald-500" 
                   : "bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground"
               )}
               aria-label={inCart ? "In cart" : "Add to cart"}
             >
-              {inCart ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" />}
+              {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
             </button>
           </div>
         </div>

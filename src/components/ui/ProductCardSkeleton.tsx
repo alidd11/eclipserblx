@@ -3,12 +3,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export const ProductCardSkeleton = memo(function ProductCardSkeleton() {
   return (
-    <div className="overflow-hidden h-full flex flex-col rounded-xl bg-card">
-      {/* Image skeleton — square */}
+    <div className="overflow-hidden h-full flex flex-col rounded-xl bg-card border border-border/60">
+      {/* Image skeleton — matches ProductCard 5/4 */}
       <Skeleton className="aspect-[5/4] w-full" />
       
       {/* Content skeleton */}
-      <div className="p-2.5 sm:p-3 flex flex-col flex-1 gap-1.5">
+      <div className="p-3.5 sm:p-4 flex flex-col flex-1 gap-2">
         {/* Category */}
         <Skeleton className="h-2.5 w-14" />
         
@@ -18,14 +18,14 @@ export const ProductCardSkeleton = memo(function ProductCardSkeleton() {
         
         {/* Store */}
         <div className="flex items-center gap-1.5 mt-0.5">
-          <Skeleton className="h-3.5 w-3.5 rounded-sm" />
+          <Skeleton className="h-4 w-4 rounded-sm" />
           <Skeleton className="h-3 w-16" />
         </div>
         
         {/* Price + cart */}
-        <div className="flex items-center justify-between mt-auto pt-1.5">
+        <div className="flex items-center justify-between mt-auto pt-2.5 border-t border-border/40">
           <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-7 w-7 rounded-lg" />
+          <Skeleton className="h-9 w-9 rounded-lg" />
         </div>
       </div>
     </div>
