@@ -128,20 +128,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const { data: adsData, isLoading: adsLoading } = useQuery({
-    queryKey: ['income-sources-ads'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('advertisement_subscriptions')
-        .select('id, user_id, tier, status, billing_period, payment_method, created_at')
-        .order('created_at', { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 60000,
-    retry: 2,
-  });
 
   const { data: creditsData, isLoading: creditsLoading } = useQuery({
     queryKey: ['income-sources-credits'],
