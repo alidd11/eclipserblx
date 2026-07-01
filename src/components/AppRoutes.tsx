@@ -5,8 +5,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
 
-// Lazy load Global Guard router for /guard path
-const GlobalGuardRouter = lazyWithRetry(() => import("@/components/global-guard/GlobalGuardRouter").then(m => ({ default: m.GlobalGuardRouter })));
 
 // Lazy loaded - critical path (keeps initial bundle small)
 const Index = lazyWithRetry(() => import("@/pages/Index"));
@@ -132,9 +130,6 @@ const AdminManualPayouts = lazyWithRetry(() => import("@/pages/admin/ManualPayou
 const AdminSellerTickets = lazyWithRetry(() => import("@/pages/admin/SellerTickets"));
 const AdminRolePermissions = lazyWithRetry(() => import("@/pages/admin/RolePermissions"));
 
-const AdminCommunityAnnouncements = lazyWithRetry(() => import("@/pages/admin/CommunityAnnouncements"));
-const AdminDiscordPolls = lazyWithRetry(() => import("@/pages/admin/DiscordPolls"));
-const AdminDiscordQOTD = lazyWithRetry(() => import("@/pages/admin/DiscordQOTD"));
 const AdminTranscripts = lazyWithRetry(() => import("@/pages/admin/Transcripts"));
 const AdminEmailTemplates = lazyWithRetry(() => import("@/pages/admin/EmailTemplates"));
 const AdminRefunds = lazyWithRetry(() => import("@/pages/admin/Refunds"));
@@ -150,7 +145,7 @@ const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompli
 
 const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
 const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
-const AdminTwitterPosts = lazyWithRetry(() => import("@/pages/admin/TwitterPosts"));
+
 const AdminYouTubePodcasts = lazyWithRetry(() => import("@/pages/admin/YouTubePodcasts"));
 
 // Standalone bot dashboard pages
@@ -285,8 +280,6 @@ function useResumeCounter() {
 }
 
 export function AppRoutes() {
-  const hostname = window.location.hostname;
-  const isGlobalGuardDomain = hostname.startsWith('guard.') || hostname === 'guard.eclipserblx.com';
   const { isCustomStoreDomain, loading: domainLoading } = useStoreDomain();
   const location = useLocation();
   const resumeCounter = useResumeCounter();
@@ -294,14 +287,7 @@ export function AppRoutes() {
   // Combine location key + resume counter so the boundary resets on nav or app resume
   const boundaryResetKey = `${location.key}-${resumeCounter}`;
 
-  // If on Global Guard subdomain, render the Global Guard app
-  if (isGlobalGuardDomain) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <GlobalGuardRouter />
-      </Suspense>
-    );
-  }
+
 
   // If on a store custom domain/subdomain, render standalone store
   if (isCustomStoreDomain) {
@@ -521,9 +507,6 @@ export function AppRoutes() {
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
         
-        <Route path="/admin/community-announcements" element={<AdminCommunityAnnouncements />} />
-        <Route path="/admin/discord-polls" element={<AdminDiscordPolls />} />
-        <Route path="/admin/discord-qotd" element={<AdminDiscordQOTD />} />
         <Route path="/admin/transcripts" element={<AdminTranscripts />} />
         <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
         <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
@@ -551,13 +534,10 @@ export function AppRoutes() {
         <Route path="/bot/reaction-roles" element={<BotReactionRolesPage />} />
         <Route path="/bot/custom-commands" element={<BotCustomCommandsPage />} />
         <Route path="/bot/community" element={<BotCommunityPage />} />
-        <Route path="/admin/twitter-posts" element={<AdminTwitterPosts />} />
         <Route path="/admin/youtube-podcasts" element={<AdminYouTubePodcasts />} />
         <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
-        {/* Global Guard routes (path-based instead of subdomain) */}
-        <Route path="/guard/*" element={<GlobalGuardRouter />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

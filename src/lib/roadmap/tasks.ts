@@ -197,7 +197,7 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
       { key: 'bot.licensing', title: 'Bot licensing system', description: 'bot_installation_codes powers activation', probe: 'db:rowExists:bot_installation_codes', seed: 'done', notes: 'See mem://features/bots/licensing-and-management-v2' },
       { key: 'bot.activate_fn', title: 'activate-bot-license edge function', description: 'Customers redeem licence codes', probe: 'fileExists:supabase/functions/activate-bot-license/index.ts', seed: 'done' },
       { key: 'bot.guild_settings_fn', title: 'bot-guild-settings edge function', description: 'Per-guild config CRUD', probe: 'fileExists:supabase/functions/bot-guild-settings/index.ts', seed: 'done' },
-      { key: 'bot.global_guard', title: 'Global Guard cross-server bans', description: 'discord-global-guard-bot service', probe: 'fileExists:supabase/functions/discord-global-guard-bot/index.ts', seed: 'done', notes: 'See mem://features/global-guard/system-v16-specs-no-plus' },
+      
       { key: 'bot.audit_log_poll', title: 'Discord audit log poller', description: 'poll-discord-audit-log every minute', probe: 'fileExists:supabase/functions/poll-discord-audit-log/index.ts', seed: 'done' },
       { key: 'bot.finance_notify', title: 'Finance notifications to Discord', description: 'finance-notify routes to Eclipse Finances guild', probe: 'fileExists:supabase/functions/finance-notify/index.ts', seed: 'done', notes: 'See mem://features/discord/notification-and-server-integration' },
     ],
