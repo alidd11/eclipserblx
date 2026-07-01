@@ -217,10 +217,6 @@ export function RevenueDashboard() {
  .filter(c => { const d = safeParse(c.created_at); return d && isAfter(d, periodStart); })
  .reduce((s, c) => s + (Number(c.platform_fee) || 0), 0);
 
- // Ad revenue
- const totalAdRevenue = (adRevenue ?? []).reduce(
- (s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0
- );
 
  // Seller Pro MRR (£7.99/mo per active sub)
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
