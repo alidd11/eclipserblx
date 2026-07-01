@@ -232,8 +232,8 @@ export function FinancialOverview() {
  const stripeFees30d = stripeBalance?.summary?.last30Days?.fees ?? 0;
  const stripeRefunds30d = stripeBalance?.summary?.last30Days?.refunds ?? 0;
 
- // Net profit this month = thisMonthRevenue + thisMonthCommission + thisMonthAdRevenue - estimated fees
- const totalRevenueThisMonth = thisMonthRevenue + thisMonthCommission + thisMonthAdRevenue;
+ // Net profit this month = thisMonthRevenue + thisMonthCommission - estimated fees
+ const totalRevenueThisMonth = thisMonthRevenue + thisMonthCommission;
  // Estimate profit margin from stripe data
  const profitMargin = totalRevenueThisMonth > 0
  ? ((totalRevenueThisMonth - stripeFees30d - stripeRefunds30d) / totalRevenueThisMonth) * 100
