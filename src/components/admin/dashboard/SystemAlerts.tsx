@@ -76,27 +76,6 @@ export function SystemAlerts() {
         });
       }
 
-      if ((pendingStoreApps.count || 0) > 0) {
-        items.push({
-          id: 'store-apps',
-          label: 'Store Applications',
-          count: pendingStoreApps.count || 0,
-          severity: 'info',
-          icon: Clock,
-          href: '/admin/store-applications',
-        });
-      }
-
-      if ((pendingJobApps.count || 0) > 0) {
-        items.push({
-          id: 'job-apps',
-          label: 'Job Applications',
-          count: pendingJobApps.count || 0,
-          severity: 'info',
-          icon: FileText,
-          href: '/admin/applications',
-        });
-      }
 
       return items;
     },
