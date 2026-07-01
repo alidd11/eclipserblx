@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, ShieldAlert, Clock, Package, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Package, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
