@@ -370,9 +370,8 @@ export function RevenueDashboard() {
  <span className="text-sm font-semibold">Earnings Breakdown</span>
  </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <KPICard label="All-Time Gross" value={`{formatGBP(metrics.allTimeGross)}`} isLoading={isLoading} />
- <KPICard label="Ad Revenue" value={`{formatGBP(metrics.totalAdRevenue)}`} isLoading={isLoading} />
  <KPICard label="Credits" value={`{formatGBP(metrics.totalCredits)}`} isLoading={isLoading} />
  <KPICard label="Robux (est.)" value={`{formatGBP(metrics.totalRobuxGBP)}`} isLoading={isLoading} />
  </div>
