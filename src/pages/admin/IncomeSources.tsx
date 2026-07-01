@@ -201,15 +201,6 @@ export default function AdminIncomeSources() {
       });
     });
 
-    (adsData ?? []).forEach(a => {
-      const price = adTierPricing[a.tier] ?? 0;
-      txns.push({
-        id: a.id, source: 'ads',
-        description: `Ad ${a.tier} (${a.billing_period ?? 'monthly'})`,
-        amount: price, currency: '£', status: a.status, date: a.created_at,
-        metadata: a.payment_method ?? undefined,
-      });
-    });
 
     (creditsData ?? []).forEach(c => {
       txns.push({
