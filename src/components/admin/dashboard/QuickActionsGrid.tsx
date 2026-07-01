@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, TrendingUp, Gavel, CreditCard, Settings, UserCheck, Headphones, Store, Bot, Ticket, BookOpen, ClipboardList, Timer, Shield } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, BarChart3, TrendingUp, Gavel, CreditCard, Settings, UserCheck, Headphones, Ticket, BookOpen, ClipboardList, Timer, Shield } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 
