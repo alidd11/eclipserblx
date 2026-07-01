@@ -5,6 +5,7 @@ import { config } from './src/config.js';
 import { handleInteraction } from './src/handlers/interaction.js';
 import { handleDM } from './src/handlers/dm.js';
 import { handleMemberJoin } from './src/handlers/member-join.js';
+import { handleMemberLeave } from './src/handlers/member-leave.js';
 import { handleAfkListener } from './src/handlers/afk-listener.js';
 import { logBotError } from './src/utils/error-logger.js';
 
@@ -47,6 +48,7 @@ client.on('messageCreate', (message) => {
 
 // Welcome DMs on member join
 client.on('guildMemberAdd', handleMemberJoin);
+client.on('guildMemberRemove', handleMemberLeave);
 
 // Bot ready
 client.once('ready', () => {
