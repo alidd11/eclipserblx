@@ -176,7 +176,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const adTierPricing: Record<string, number> = { basic: 4.99, pro: 9.99, premium: 19.99 };
   const eclipsePricing = { monthly: 4.99, annual: 49.99 };
 
   // Build unified transaction list
