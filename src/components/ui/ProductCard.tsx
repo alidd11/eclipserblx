@@ -179,24 +179,24 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           )}
 
           {/* Badges — Sale/Featured/New only */}
-          <div className="absolute top-1.5 left-1.5 flex items-center gap-1 flex-wrap z-[3]">
+          <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
             {hasMemberDiscount && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
                 Sale
               </div>
             )}
             {showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-foreground rounded shadow-sm">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-foreground rounded shadow-sm">
                 Best Seller
               </div>
             )}
             {isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded">
                 Featured
               </div>
             )}
             {isNew && !isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-emerald-500 text-foreground rounded">
+              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-emerald-500 text-foreground rounded">
                 New
               </div>
             )}
