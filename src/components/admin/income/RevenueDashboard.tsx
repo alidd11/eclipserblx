@@ -254,7 +254,6 @@ export function RevenueDashboard() {
  const composition = [
  { name: 'Product Sales', value: Math.round(allTimeGross) },
  { name: 'Commission', value: Math.round(totalCommission) },
- { name: 'Advertising', value: Math.round(totalAdRevenue) },
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
  { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
@@ -265,10 +264,10 @@ export function RevenueDashboard() {
  periodGross, grossTrend, periodOrders,
  periodCommission, totalCommission,
  mrr, activeSubs: activeSubs.length,
- allTimeGross, totalAdRevenue, totalCredits, totalRobuxGBP,
+ allTimeGross, totalCredits, totalRobuxGBP,
  trendData, composition,
  };
- }, [ordersData, commissionData, adRevenue, subsData, creditPurchases, robuxData, stripeBalance, selectedPeriod]);
+ }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance, selectedPeriod]);
 
  const COMPOSITION_COLORS = [
  'hsl(262 100% 71%)', 'hsl(220 95% 59%)', 'hsl(185 85% 50%)',
