@@ -103,19 +103,6 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- // Ad revenue
- const { data: adRevenue, isLoading: adsLoading, isError: adsError, refetch: refetchAds } = useQuery({
- queryKey: ['admin-financial-overview-ads'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('discord_advertisements')
- .select('price_paid, ping_price_paid, posted_at')
- .not('posted_at', 'is', null);
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
 
  // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading, isError: subsError, refetch: refetchSubs } = useQuery({
