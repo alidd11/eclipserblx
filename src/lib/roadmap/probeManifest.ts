@@ -75,7 +75,7 @@ const STATIC_PRESENT = new Set<string>([
   'supabase/functions/modmail-response-reminder/index.ts',
   'supabase/functions/ai-chat-support/index.ts',
   'supabase/functions/discord-customer-bot/index.ts',
-  'supabase/functions/discord-global-guard-bot/index.ts',
+  
   'supabase/functions/poll-discord-audit-log/index.ts',
   'supabase/functions/finance-notify/index.ts',
   'supabase/functions/activate-bot-license/index.ts',
