@@ -302,7 +302,7 @@ export function FinancialOverview() {
  stripeFees30d,
  stripeRefunds30d,
  };
- }, [ordersData, commissionData, adRevenue, subsData, creditPurchases, robuxData, stripeBalance]);
+ }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance]);
 
  if (hasError && !isLoading) {
  return (
