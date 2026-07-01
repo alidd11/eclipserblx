@@ -203,23 +203,6 @@ export const ROADMAP_PHASES: RoadmapPhase[] = [
     ],
   },
   {
-    key: 'careers',
-    title: 'Phase 9 — Careers & Growth',
-    subtitle: 'Job listings, applicant portal, affiliate, ads, custom domains',
-    tasks: [
-      { key: 'crs.careers_portal', title: 'Careers portal + applicant token portal', description: 'High-density /careers + token-based applicant portal', probe: 'fileExists:src/pages/Jobs.tsx', seed: 'done', notes: 'See mem://features/careers/enterprise-portal-architecture-v1' },
-      { key: 'crs.applications_table', title: 'job_applications table', description: 'Applicant data with RLS', probe: 'db:rowExists:job_applications', seed: 'done' },
-      { key: 'crs.affiliate_program', title: 'Affiliate program', description: 'affiliate_balances + payouts via Stripe Connect', probe: 'db:rowExists:affiliate_balances', seed: 'done' },
-      { key: 'crs.affiliate_connect', title: 'Affiliate Stripe Connect', description: 'create-affiliate-connect-account + status check', probe: 'fileExists:supabase/functions/create-affiliate-connect-account/index.ts', seed: 'done' },
-      { key: 'crs.ads_subscriptions', title: 'Advertisement subscriptions', description: '3-tier ad system + ping balances', probe: 'db:rowExists:advertisement_subscriptions', seed: 'done', notes: 'See mem://features/advertisements/unified-infrastructure' },
-      { key: 'crs.ads_checkout_fn', title: 'create-advertisement-checkout', description: 'Stripe checkout for ad subscriptions', probe: 'fileExists:supabase/functions/create-advertisement-checkout/index.ts', seed: 'done' },
-      { key: 'crs.ad_scheduler', title: 'Scheduled ad processor', description: 'process-scheduled-ads cron', probe: 'fileExists:supabase/functions/process-scheduled-ads/index.ts', seed: 'done' },
-      { key: 'crs.seller_webhooks', title: 'Pro seller webhooks', description: 'seller_webhooks + fire-seller-webhook', probe: 'db:rowExists:seller_webhooks', seed: 'done', notes: 'See mem://features/seller-dashboard/webhooks-and-integrations-v1' },
-      { key: 'crs.custom_domains', title: 'Custom domain management', description: 'Pro-gated custom domain suite', probe: 'fileExists:src/pages/seller/SellerSettingsDomain.tsx', seed: 'done', notes: 'See mem://features/stores/custom-domain-management-v6-pro-gated' },
-      { key: 'crs.domain_subscription_fn', title: 'domain-subscription edge function', description: 'Manages custom-domain billing', probe: 'fileExists:supabase/functions/domain-subscription/index.ts', seed: 'done' },
-    ],
-  },
-  {
     key: 'quality',
     title: 'Phase 10 — Quality, Bug Hunt & Test Coverage',
     subtitle: 'Automated bug detection, regression coverage, dead-code sweep',
