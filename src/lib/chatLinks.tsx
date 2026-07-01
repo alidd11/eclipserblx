@@ -20,7 +20,7 @@ const VALID_ROUTES = [
   '/downloads',
   '/wishlist',
   '/affiliate',
-  '/advertise',
+  
 ];
 
 // Pattern to match route paths like /products, /categories/vehicles

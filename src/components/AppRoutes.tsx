@@ -33,7 +33,6 @@ const ChatHistory = lazyWithRetry(() => import("@/pages/ChatHistory"));
 const SupportTickets = lazyWithRetry(() => import("@/pages/SupportTickets"));
 const SupportTicketDetail = lazyWithRetry(() => import("@/pages/SupportTicketDetail"));
 const Jobs = lazyWithRetry(() => import("@/pages/Jobs"));
-const ApplicantPortal = lazyWithRetry(() => import("@/pages/ApplicantPortal"));
 const RefundPolicy = lazyWithRetry(() => import("@/pages/RefundPolicy"));
 const PrivacyPolicy = lazyWithRetry(() => import("@/pages/PrivacyPolicy"));
 const TermsOfService = lazyWithRetry(() => import("@/pages/TermsOfService"));
@@ -48,8 +47,6 @@ const Status = lazyWithRetry(() => import("@/pages/Status"));
 const SecurityPage = lazyWithRetry(() => import("@/pages/Security"));
 const BrandPage = lazyWithRetry(() => import("@/pages/Brand"));
 const Changelog = lazyWithRetry(() => import("@/pages/Changelog"));
-const BotInstallation = lazyWithRetry(() => import("@/pages/BotInstallation"));
-const BotDashboard = lazyWithRetry(() => import("@/pages/BotDashboard"));
 const NotificationPreferences = lazyWithRetry(() => import("@/pages/NotificationPreferences"));
 const Unsubscribe = lazyWithRetry(() => import("@/pages/Unsubscribe"));
 
@@ -57,14 +54,11 @@ const Unsubscribe = lazyWithRetry(() => import("@/pages/Unsubscribe"));
 const LiveChat = lazyWithRetry(() => import("@/pages/LiveChat"));
 const Affiliate = lazyWithRetry(() => import("@/pages/Affiliate"));
 const Messages = lazyWithRetry(() => import("@/pages/Messages"));
-const Advertise = lazyWithRetry(() => import("@/pages/Advertise"));
 const Credits = lazyWithRetry(() => import("@/pages/Credits"));
 const Sell = lazyWithRetry(() => import("@/pages/Sell"));
 const BecomeSellerWizard = lazyWithRetry(() => import("@/pages/BecomeSellerWizard"));
 const SearchResults = lazyWithRetry(() => import("@/pages/SearchResults"));
 const FreeAssets = lazyWithRetry(() => import("@/pages/FreeAssets"));
-const MyAdvertisementsPage = lazyWithRetry(() => import("@/pages/Account/MyAdvertisementsPage"));
-const AdAnalyticsPage = lazyWithRetry(() => import("@/pages/Account/AdAnalyticsPage"));
 const FollowingPage = lazyWithRetry(() => import("@/pages/Account/FollowingPage").then(m => ({ default: m.FollowingPage })));
 
 // Lazy loaded - admin pages
@@ -85,11 +79,8 @@ const AdminUsers = lazyWithRetry(() => import("@/pages/admin/Users"));
 const AdminModerationQueue = lazyWithRetry(() => import("@/pages/admin/ModerationQueue"));
 const AdminSettings = lazyWithRetry(() => import("@/pages/admin/Settings"));
 const AdminCannedResponses = lazyWithRetry(() => import("@/pages/admin/CannedResponses"));
-const AdminDiscordSettings = lazyWithRetry(() => import("@/pages/admin/DiscordSettings"));
-const AdminGameNewsFeeds = lazyWithRetry(() => import("@/pages/admin/GameNewsFeeds"));
 const AdminRobloxSettings = lazyWithRetry(() => import("@/pages/admin/RobloxSettings"));
 const AdminLiveChat = lazyWithRetry(() => import("@/pages/admin/LiveChat"));
-const AdminApplications = lazyWithRetry(() => import("@/pages/admin/Applications"));
 const AdminReviews = lazyWithRetry(() => import("@/pages/admin/Reviews"));
 const AdminAuditLogs = lazyWithRetry(() => import("@/pages/admin/AuditLogs"));
 const AdminRoadmap = lazyWithRetry(() => import("@/pages/admin/Roadmap"));
@@ -103,23 +94,16 @@ const AdminSubscribers = lazyWithRetry(() => import("@/pages/admin/Subscribers")
 const AdminIpBans = lazyWithRetry(() => import("@/pages/admin/IpBans"));
 const AdminReferrals = lazyWithRetry(() => import("@/pages/admin/Referrals"));
 const AdminAffiliates = lazyWithRetry(() => import("@/pages/admin/Affiliates"));
-const AdminBotCodes = lazyWithRetry(() => import("@/pages/admin/BotCodes"));
-const AdminBotRequests = lazyWithRetry(() => import("@/pages/admin/BotRequests"));
-const AdminBotServers = lazyWithRetry(() => import("@/pages/admin/BotServers"));
 
 const AdminCustomerTickets = lazyWithRetry(() => import("@/pages/admin/CustomerTickets"));
 const AdminCustomerTicketDetail = lazyWithRetry(() => import("@/pages/admin/CustomerTicketDetail"));
-const AdminArchivedApplications = lazyWithRetry(() => import("@/pages/admin/ArchivedApplications"));
-const AdminJobChannels = lazyWithRetry(() => import("@/pages/admin/JobChannels"));
 const AdminStaffDirectory = lazyWithRetry(() => import("@/pages/admin/StaffDirectory"));
 const AdminStaffProfile = lazyWithRetry(() => import("@/pages/admin/StaffProfile"));
 
-const AdminStoreApplications = lazyWithRetry(() => import("@/pages/admin/StoreApplications"));
 const AdminSellerProductReview = lazyWithRetry(() => import("@/pages/admin/SellerProductReview"));
 const AdminSEOIndexing = lazyWithRetry(() => import("@/pages/admin/SEOIndexing"));
 const AdminSellerProductsAll = lazyWithRetry(() => import("@/pages/admin/SellerProductsAll"));
 const AdminSellerPayouts = lazyWithRetry(() => import("@/pages/admin/SellerPayouts"));
-const AdminSellerRecruitment = lazyWithRetry(() => import("@/pages/admin/SellerRecruitment"));
 const AdminSellerCommissions = lazyWithRetry(() => import("@/pages/admin/SellerCommissions"));
 const AdminSellerStoreDetail = lazyWithRetry(() => import("@/pages/admin/SellerStoreDetail"));
 const AdminSellerAgreements = lazyWithRetry(() => import("@/pages/admin/SellerAgreements"));
@@ -134,7 +118,6 @@ const AdminTranscripts = lazyWithRetry(() => import("@/pages/admin/Transcripts")
 const AdminEmailTemplates = lazyWithRetry(() => import("@/pages/admin/EmailTemplates"));
 const AdminRefunds = lazyWithRetry(() => import("@/pages/admin/Refunds"));
 const AdminDisputes = lazyWithRetry(() => import("@/pages/admin/Disputes"));
-const AdminAdvertisementAnalytics = lazyWithRetry(() => import("@/pages/admin/AdvertisementAnalytics"));
 const AdminGiftCredits = lazyWithRetry(() => import("@/pages/admin/GiftCredits"));
 const AdminIPReports = lazyWithRetry(() => import("@/pages/admin/IPReports"));
 
@@ -143,25 +126,7 @@ const AdminDeveloperPayments = lazyWithRetry(() => import("@/pages/admin/Develop
 const AdminDeveloperPaymentDetail = lazyWithRetry(() => import("@/pages/admin/DeveloperPaymentDetail"));
 const AdminGDPRCompliance = lazyWithRetry(() => import("@/pages/admin/GDPRCompliance"));
 
-const AdminPortalBotSetup = lazyWithRetry(() => import("@/pages/admin/PortalBotSetup"));
-const AdminBotDashboard = lazyWithRetry(() => import("@/pages/admin/AdminBotDashboard"));
 
-const AdminYouTubePodcasts = lazyWithRetry(() => import("@/pages/admin/YouTubePodcasts"));
-
-// Standalone bot dashboard pages
-const BotOverviewPage = lazyWithRetry(() => import("@/pages/bot/BotOverview"));
-const BotServersPage = lazyWithRetry(() => import("@/pages/bot/BotServers"));
-const BotCommandsPage = lazyWithRetry(() => import("@/pages/bot/BotCommands"));
-const BotRolesPage = lazyWithRetry(() => import("@/pages/bot/BotRoles"));
-const BotActionsPage = lazyWithRetry(() => import("@/pages/bot/BotActions"));
-const BotSettingsPage = lazyWithRetry(() => import("@/pages/bot/BotSettings"));
-const BotModerationPage = lazyWithRetry(() => import("@/pages/bot/BotModeration"));
-const BotAnalyticsPage = lazyWithRetry(() => import("@/pages/bot/BotAnalytics"));
-const BotLogsPage = lazyWithRetry(() => import("@/pages/bot/BotLogs"));
-const BotAutoModPage = lazyWithRetry(() => import("@/pages/bot/BotAutoMod"));
-const BotReactionRolesPage = lazyWithRetry(() => import("@/pages/bot/BotReactionRoles"));
-const BotCustomCommandsPage = lazyWithRetry(() => import("@/pages/bot/BotCustomCommands"));
-const BotCommunityPage = lazyWithRetry(() => import("@/pages/bot/BotCommunity"));
 const AdminInternalNotes = lazyWithRetry(() => import("@/pages/admin/InternalNotes"));
 const AdminRevenueHub = lazyWithRetry(() => import("@/pages/admin/RevenueHub"));
 const AdminPayoutsHub = lazyWithRetry(() => import("@/pages/admin/PayoutsHub"));
@@ -216,8 +181,6 @@ const SellerSupport = lazyWithRetry(() => import("@/pages/seller/SellerSupport")
 const SellerAccountHealth = lazyWithRetry(() => import("@/pages/seller/SellerAccountHealth"));
 const SellerMessages = lazyWithRetry(() => import("@/pages/seller/SellerMessages"));
 const SellerReviews = lazyWithRetry(() => import("@/pages/seller/SellerReviews"));
-const SellerDiscord = lazyWithRetry(() => import("@/pages/seller/SellerDiscord"));
-const SellerBots = lazyWithRetry(() => import("@/pages/seller/SellerBots"));
 const SellerImport = lazyWithRetry(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazyWithRetry(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazyWithRetry(() => import("@/pages/seller/SellerTaxSummary"));
@@ -331,7 +294,6 @@ export function AppRoutes() {
         <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
          <Route path="/jobs" element={<Jobs />} />
-         <Route path="/careers/portal" element={<ApplicantPortal />} />
         <Route path="/refunds" element={<RefundPolicy />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
@@ -346,20 +308,15 @@ export function AppRoutes() {
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/brand" element={<BrandPage />} />
         <Route path="/changelog" element={<Changelog />} />
-        <Route path="/bot-installation" element={<BotInstallation />} />
-        <Route path="/bot-dashboard" element={<BotDashboard />} />
         <Route path="/notifications" element={<NotificationPreferences />} />
         
         <Route path="/marketplace" element={<Products />} />
         <Route path="/stores" element={<AllStores />} />
         <Route path="/affiliate" element={<Affiliate />} />
         
-        <Route path="/advertise" element={<Advertise />} />
         <Route path="/credits" element={<Credits />} />
         <Route path="/sell" element={<Sell />} />
         <Route path="/become-seller" element={<BecomeSellerWizard />} />
-        <Route path="/account/advertisements" element={<MyAdvertisementsPage />} />
-        <Route path="/account/ad-analytics" element={<AdAnalyticsPage />} />
         <Route path="/account/following" element={<FollowingPage />} />
         <Route path="/support/chat" element={<LiveChat />} />
         {/* Legacy compatibility redirects */}
@@ -373,7 +330,6 @@ export function AppRoutes() {
         <Route path="/seller/setup" element={<SellerSetup />} />
         <Route path="/seller/analytics" element={<SellerAnalytics />} />
         <Route path="/seller/products" element={<SellerProducts />} />
-        <Route path="/seller/bots" element={<SellerBots />} />
         <Route path="/seller/products/new" element={<SellerProductEditor />} />
         <Route path="/seller/products/:productId/edit" element={<SellerProductEditor />} />
         <Route path="/seller/orders" element={<SellerOrders />} />
@@ -418,7 +374,6 @@ export function AppRoutes() {
         <Route path="/seller/webhooks" element={<SellerWebhooks />} />
         <Route path="/seller/messages" element={<SellerMessages />} />
         <Route path="/seller/reviews" element={<SellerReviews />} />
-        <Route path="/seller/discord" element={<SellerDiscord />} />
         <Route path="/seller/import" element={<SellerImport />} />
         <Route path="/seller/promote" element={<SellerPromotions />} />
         <Route path="/seller/store-pages" element={<SellerStorePages />} />
@@ -460,11 +415,8 @@ export function AppRoutes() {
         <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/canned-responses" element={<AdminCannedResponses />} />
-        <Route path="/admin/discord-settings" element={<AdminDiscordSettings />} />
-        <Route path="/admin/game-news-feeds" element={<AdminGameNewsFeeds />} />
         <Route path="/admin/roblox-settings" element={<AdminRobloxSettings />} />
         <Route path="/admin/live-chat" element={<AdminLiveChat />} />
-        <Route path="/admin/applications" element={<AdminApplications />} />
         <Route path="/admin/reviews" element={<AdminReviews />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
         <Route path="/admin/roadmap" element={<AdminRoadmap />} />
@@ -480,18 +432,12 @@ export function AppRoutes() {
         <Route path="/admin/ip-bans" element={<AdminIpBans />} />
         <Route path="/admin/referrals" element={<Navigate to="/admin/affiliate-hub?tab=referrals" replace />} />
         <Route path="/admin/affiliates" element={<Navigate to="/admin/affiliate-hub?tab=overview" replace />} />
-        <Route path="/admin/bot-codes" element={<Navigate to="/bot/settings?tab=license-codes" replace />} />
-        <Route path="/admin/bot-requests" element={<AdminBotRequests />} />
-        <Route path="/admin/bot-servers" element={<Navigate to="/bot/servers" replace />} />
         
         <Route path="/admin/customer-tickets" element={<AdminCustomerTickets />} />
         <Route path="/admin/customer-tickets/:ticketId" element={<AdminCustomerTicketDetail />} />
-        <Route path="/admin/archived-applications" element={<AdminArchivedApplications />} />
-        <Route path="/admin/job-channels" element={<AdminJobChannels />} />
         <Route path="/admin/staff-directory" element={<AdminStaffDirectory />} />
         <Route path="/admin/staff/:userId" element={<AdminStaffProfile />} />
         <Route path="/admin/affiliate-applications" element={<Navigate to="/admin/affiliate-hub" replace />} />
-        <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/seller-product-review" element={<AdminSellerProductReview />} />
         <Route path="/admin/seo-indexing" element={<AdminSEOIndexing />} />
         <Route path="/admin/seller-products" element={<AdminSellerProductsAll />} />
@@ -502,14 +448,12 @@ export function AppRoutes() {
         <Route path="/admin/staff-documents" element={<AdminStaffDocuments />} />
         <Route path="/admin/public-documents" element={<AdminPublicDocuments />} />
         <Route path="/admin/seller-documents" element={<AdminSellerDocuments />} />
-        <Route path="/admin/seller-recruitment" element={<AdminSellerRecruitment />} />
         <Route path="/admin/manual-payouts" element={<Navigate to="/admin/payouts?tab=manual" replace />} />
         <Route path="/admin/seller-tickets" element={<AdminSellerTickets />} />
         <Route path="/admin/role-permissions" element={<AdminRolePermissions />} />
         
         <Route path="/admin/transcripts" element={<AdminTranscripts />} />
         <Route path="/admin/email-templates" element={<AdminEmailTemplates />} />
-        <Route path="/admin/advertisement-analytics" element={<AdminAdvertisementAnalytics />} />
         <Route path="/admin/gift-credits" element={<AdminGiftCredits />} />
         <Route path="/admin/ip-reports" element={<AdminIPReports />} />
         
@@ -517,24 +461,6 @@ export function AppRoutes() {
         <Route path="/admin/developer-payments" element={<Navigate to="/admin/payouts?tab=developer" replace />} />
         <Route path="/admin/developer-payments/:id" element={<AdminDeveloperPaymentDetail />} />
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
-        <Route path="/admin/botghost-setup" element={<Navigate to="/bot/settings" replace />} />
-        <Route path="/admin/portal-bot-setup" element={<AdminPortalBotSetup />} />
-        <Route path="/admin/bot-control" element={<AdminBotDashboard />} />
-        {/* Standalone bot dashboard */}
-        <Route path="/bot" element={<BotOverviewPage />} />
-        <Route path="/bot/servers" element={<BotServersPage />} />
-        <Route path="/bot/commands" element={<BotCommandsPage />} />
-        <Route path="/bot/moderation" element={<BotModerationPage />} />
-        <Route path="/bot/roles" element={<BotRolesPage />} />
-        <Route path="/bot/actions" element={<BotActionsPage />} />
-        <Route path="/bot/analytics" element={<BotAnalyticsPage />} />
-        <Route path="/bot/settings" element={<BotSettingsPage />} />
-        <Route path="/bot/logs" element={<BotLogsPage />} />
-        <Route path="/bot/automod" element={<BotAutoModPage />} />
-        <Route path="/bot/reaction-roles" element={<BotReactionRolesPage />} />
-        <Route path="/bot/custom-commands" element={<BotCustomCommandsPage />} />
-        <Route path="/bot/community" element={<BotCommunityPage />} />
-        <Route path="/admin/youtube-podcasts" element={<AdminYouTubePodcasts />} />
         <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
         <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />

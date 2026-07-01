@@ -50,7 +50,6 @@ const navGroups: NavGroup[] = [
     icon: ShoppingCart,
     items: [
       { title: 'Analytics', icon: BarChart3, href: '/admin/analytics', permissions: ['view_analytics'] },
-      { title: 'Ad Analytics', icon: Megaphone, href: '/admin/advertisement-analytics', permissions: ['view_analytics'], dividerAfter: true },
       { title: 'Promotions', icon: Tags, href: '/admin/promotions', permissions: ['manage_discounts'], dividerAfter: true },
       
     ],
@@ -97,7 +96,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Seller Stores', icon: Store, href: '/admin/seller-commissions', permissions: ['view_seller_stores'] },
       { title: 'Compliance', icon: ShieldCheck, href: '/admin/compliance', permissions: ['view_seller_stores'] },
-      { title: 'Store Applications', icon: FileText, href: '/admin/store-applications', permissions: ['view_store_applications'] },
+      
       { title: 'Product Review', icon: Package, href: '/admin/seller-product-review', permissions: ['view_seller_stores'] },
       { title: 'All Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },
       { title: 'IP Reports', icon: Shield, href: '/admin/ip-reports', permissions: ['manage_seller_stores'] },
@@ -117,10 +116,7 @@ const navGroups: NavGroup[] = [
       { title: 'Staff Activity', icon: Activity, href: '/admin/staff-activity', permissions: ['view_staff_activity'] },
       { title: 'Duty Logs', icon: Activity, href: '/admin/duty-logs', permissions: [] },
       { title: 'Internal Notes', icon: FileText, href: '/admin/internal-notes', permissions: [] },
-      { title: 'Staff Documents', icon: FolderOpen, href: '/admin/staff-documents', permissions: ['manage_staff'], dividerAfter: true },
-      { title: 'Job Channels', icon: Megaphone, href: '/admin/job-channels', permissions: ['view_job_channels'] },
-      { title: 'Applications', icon: FileText, href: '/admin/applications', permissions: ['view_applications'] },
-      { title: 'Archived', icon: Archive, href: '/admin/archived-applications', permissions: ['review_applications'] },
+      { title: 'Staff Documents', icon: FolderOpen, href: '/admin/staff-documents', permissions: ['manage_staff'] },
     ],
   },
   {
@@ -148,15 +144,10 @@ const navGroups: NavGroup[] = [
       { title: 'Orion', icon: Bot, href: '/admin/orion', permissions: [], roles: ['admin'] },
       { title: 'Rate Limits', icon: Shield, href: '/admin/rate-limits', permissions: ['view_audit_logs'] },
       { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', permissions: ['manage_permissions'], dividerAfter: true },
-      { title: 'Discord', icon: MessageCircle, href: '/admin/discord-settings', permissions: ['manage_settings'] },
-      { title: 'Game News Feeds', icon: Rss, href: '/admin/game-news-feeds', permissions: ['manage_settings'] },
       { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
-      { title: 'YouTube Podcasts', icon: Upload, href: '/admin/youtube-podcasts', permissions: [], roles: ['admin'] },
       { title: 'SEO & Indexing', icon: Activity, href: '/admin/seo-indexing', permissions: ['manage_settings'] },
       { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
       { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },
-      { title: 'Bot Dashboard', icon: Bot, href: '/bot', permissions: [], roles: ['admin'] },
-      { title: 'Portal Bot Files', icon: FileCode, href: '/admin/portal-bot-setup', permissions: [], roles: ['admin'] },
       { title: 'Canned Responses', icon: Zap, href: '/admin/canned-responses', permissions: [] },
       { title: 'Settings', icon: Settings, href: '/admin/settings', permissions: [] },
       { title: 'Help', icon: HelpCircle, href: '/admin/help', permissions: [] },
