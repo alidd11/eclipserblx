@@ -1,8 +1,0 @@
-app = "eclipse-support-bot"
-primary_region = "lhr"
-
-[build]
-  builder = "heroku/buildpacks:20"
-
-[env]
-  NODE_ENV = "production"
