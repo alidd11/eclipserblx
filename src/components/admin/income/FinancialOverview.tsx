@@ -290,8 +290,6 @@ export function FinancialOverview() {
  monthOverMonth,
  totalCommission,
  thisMonthCommission,
- totalAdRevenue,
- thisMonthAdRevenue,
  mrr,
  activeSubs: activeSubs.length,
  composition,
