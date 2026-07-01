@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  DollarSign, ShoppingCart, CreditCard, Megaphone, Crown, Gamepad2, Percent,
+  DollarSign, ShoppingCart, CreditCard, Crown, Gamepad2, Percent,
   ArrowUpRight, ArrowDownRight, Search, Filter, Download,
   TrendingUp, Calendar
 } from 'lucide-react';
