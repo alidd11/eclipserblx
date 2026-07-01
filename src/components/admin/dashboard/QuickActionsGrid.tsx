@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Package, ShoppingCart, Users, MessageCircle, FileText, BarChart3, TrendingUp, Gavel, CreditCard, Settings, UserCheck, Headphones, Store, Bot, Ticket, BookOpen, ClipboardList, Timer, Shield } from 'lucide-react';
+import { Package, ShoppingCart, Users, MessageCircle, BarChart3, TrendingUp, Gavel, CreditCard, Settings, UserCheck, Headphones, Ticket, BookOpen, ClipboardList, Timer, Shield } from 'lucide-react';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useUserPermissions } from '@/hooks/useUserPermissions';
 
@@ -15,18 +15,15 @@ const allLinks: QuickLink[] = [
   { title: 'Products', href: '/admin/products', icon: Package, permissions: ['view_products', 'manage_products'] },
   { title: 'Orders', href: '/admin/orders', icon: ShoppingCart, permissions: ['view_orders', 'manage_orders'] },
   { title: 'Live Chat', href: '/admin/live-chat', icon: MessageCircle, permissions: ['view_live_chat', 'manage_live_chat'] },
-  { title: 'Applications', href: '/admin/applications', icon: FileText, permissions: ['view_applications', 'manage_applications'] },
   { title: 'Customers', href: '/admin/users', icon: Users, permissions: ['view_users', 'manage_users'] },
   { title: 'Revenue', href: '/admin/revenue', icon: CreditCard, permissions: ['view_income'] },
   { title: 'Disputes', href: '/admin/disputes', icon: Gavel, permissions: ['view_orders', 'manage_orders'] },
   { title: 'Tickets', href: '/admin/customer-tickets', icon: Ticket, permissions: ['view_live_chat', 'manage_live_chat'] },
-  { title: 'Stores', href: '/admin/store-applications', icon: Store, permissions: ['view_applications', 'manage_applications'] },
   { title: 'Messages', href: '/admin/messages', icon: Headphones, permissions: [] },
   { title: 'Roles', href: '/admin/role-permissions', icon: UserCheck, permissions: ['manage_roles'] },
   { title: 'Settings', href: '/admin/settings', icon: Settings, permissions: ['manage_settings'] },
   { title: 'Moderation', href: '/admin/moderation', icon: Shield, permissions: ['view_products', 'manage_products'] },
   { title: 'Audit Logs', href: '/admin/audit-logs', icon: BookOpen, permissions: ['view_analytics'] },
-  { title: 'Bot Setup', href: '/admin/bot-ghost-setup', icon: Bot, permissions: ['manage_settings'] },
   { title: 'Affiliates', href: '/admin/affiliates', icon: TrendingUp, permissions: ['view_applications', 'manage_applications'] },
   { title: 'Staff Activity', href: '/admin/staff-activity', icon: Timer, permissions: ['view_analytics'] },
   { title: 'Duty Logs', href: '/admin/duty-logs', icon: ClipboardList, permissions: [] },

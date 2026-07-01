@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  DollarSign, ShoppingCart, CreditCard, Megaphone, Crown, Gamepad2, Percent,
+  DollarSign, ShoppingCart, CreditCard, Crown, Gamepad2, Percent,
   ArrowUpRight, ArrowDownRight, Search, Filter, Download,
   TrendingUp, Calendar
 } from 'lucide-react';
@@ -25,7 +25,7 @@ import { formatGBP } from '@/lib/formatters';
 
 const ROBUX_TO_GBP_RATE = 0.00275;
 
-type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'ads' | 'credits' | 'robux' | 'commission';
+type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'credits' | 'robux' | 'commission';
 type TimePeriod = '7d' | '30d' | 'month' | 'year' | 'all';
 
 interface UnifiedTransaction {
@@ -42,7 +42,7 @@ interface UnifiedTransaction {
 const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: typeof ShoppingCart; color: string; chartColor: string; badgeVariant: string }> = {
   orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-emerald-500', chartColor: 'hsl(152, 69%, 53%)', badgeVariant: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
   subscriptions: { label: 'Subscriptions', icon: Crown, color: 'text-amber-500', chartColor: 'hsl(38, 92%, 50%)', badgeVariant: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  ads: { label: 'Advertising', icon: Megaphone, color: 'text-blue-500', chartColor: 'hsl(217, 91%, 60%)', badgeVariant: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  
   credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: 'hsl(262, 100%, 71%)', badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
   robux: { label: 'Robux', icon: Gamepad2, color: 'text-red-500', chartColor: 'hsl(0, 84%, 60%)', badgeVariant: 'bg-red-500/10 text-red-500 border-red-500/20' },
   commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', chartColor: 'hsl(25, 95%, 53%)', badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
@@ -128,20 +128,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const { data: adsData, isLoading: adsLoading } = useQuery({
-    queryKey: ['income-sources-ads'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('advertisement_subscriptions')
-        .select('id, user_id, tier, status, billing_period, payment_method, created_at')
-        .order('created_at', { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 60000,
-    retry: 2,
-  });
 
   const { data: creditsData, isLoading: creditsLoading } = useQuery({
     queryKey: ['income-sources-credits'],
@@ -190,7 +176,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const adTierPricing: Record<string, number> = { basic: 4.99, pro: 9.99, premium: 19.99 };
   const eclipsePricing = { monthly: 4.99, annual: 49.99 };
 
   // Build unified transaction list
@@ -216,15 +201,6 @@ export default function AdminIncomeSources() {
       });
     });
 
-    (adsData ?? []).forEach(a => {
-      const price = adTierPricing[a.tier] ?? 0;
-      txns.push({
-        id: a.id, source: 'ads',
-        description: `Ad ${a.tier} (${a.billing_period ?? 'monthly'})`,
-        amount: price, currency: '£', status: a.status, date: a.created_at,
-        metadata: a.payment_method ?? undefined,
-      });
-    });
 
     (creditsData ?? []).forEach(c => {
       txns.push({
@@ -258,7 +234,7 @@ export default function AdminIncomeSources() {
     });
 
     return txns.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [ordersData, subsData, adsData, creditsData, robuxData, commissionData]);
+  }, [ordersData, subsData, creditsData, robuxData, commissionData]);
 
   // Filter by period, source, and search
   const filteredTransactions = useMemo(() => {
@@ -280,7 +256,7 @@ export default function AdminIncomeSources() {
     const summary: Record<Exclude<IncomeSource, 'all'>, { total: number; count: number; prev: number; prevCount: number; maxTxn: number; sparkline: number[] }> = {
       orders: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       subscriptions: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
-      ads: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
+      
       credits: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       robux: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       commission: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
@@ -341,7 +317,7 @@ export default function AdminIncomeSources() {
   }, [allTransactions, periodStart, periodDays]);
 
   const grandTotal = Object.values(summaryBySource).reduce((sum, s) => sum + s.total, 0);
-  const isLoading = ordersLoading || subsLoading || adsLoading || creditsLoading || robuxLoading || commissionLoading;
+  const isLoading = ordersLoading || subsLoading || creditsLoading || robuxLoading || commissionLoading;
 
   const exportCSV = () => {
     const headers = ['Date', 'Source', 'Description', 'Amount (£)', 'Status', 'ID'];

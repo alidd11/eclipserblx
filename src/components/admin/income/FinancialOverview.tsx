@@ -103,19 +103,6 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- // Ad revenue
- const { data: adRevenue, isLoading: adsLoading, isError: adsError, refetch: refetchAds } = useQuery({
- queryKey: ['admin-financial-overview-ads'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('discord_advertisements')
- .select('price_paid, ping_price_paid, posted_at')
- .not('posted_at', 'is', null);
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
 
  // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading, isError: subsError, refetch: refetchSubs } = useQuery({
@@ -172,15 +159,14 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- const isLoading = stripeLoading || ordersLoading || adsLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
  // Only show full error if ALL non-Stripe sources fail — Stripe is optional (edge function may be down)
- const coreErrors = [ordersError, adsError, subsError, commError, creditsError, robuxError];
+ const coreErrors = [ordersError, subsError, commError, creditsError, robuxError];
  const hasError = coreErrors.every(Boolean);
 
  const handleRetryAll = () => {
  refetchStripe();
  refetchOrders();
- refetchAds();
  refetchSubs();
  refetchComm();
  refetchCredits();
@@ -226,14 +212,6 @@ export function FinancialOverview() {
  // Total stripe fees from seller transactions
  const totalStripeFees = (commissionData ?? []).reduce((s, c) => s + (Number((c as any).stripe_fee) || 0), 0);
 
- // Ad revenue
- const totalAdRevenue = (adRevenue ?? []).reduce(
- (s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0),
- 0
- );
- const thisMonthAdRevenue = (adRevenue ?? [])
- .filter(a => { const d = safeDateParse(a.posted_at); return d && isAfter(d, thisMonth); })
- .reduce((s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0);
 
  // Seller Pro MRR (£7.99/mo per active sub)
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
@@ -254,8 +232,8 @@ export function FinancialOverview() {
  const stripeFees30d = stripeBalance?.summary?.last30Days?.fees ?? 0;
  const stripeRefunds30d = stripeBalance?.summary?.last30Days?.refunds ?? 0;
 
- // Net profit this month = thisMonthRevenue + thisMonthCommission + thisMonthAdRevenue - estimated fees
- const totalRevenueThisMonth = thisMonthRevenue + thisMonthCommission + thisMonthAdRevenue;
+ // Net profit this month = thisMonthRevenue + thisMonthCommission - estimated fees
+ const totalRevenueThisMonth = thisMonthRevenue + thisMonthCommission;
  // Estimate profit margin from stripe data
  const profitMargin = totalRevenueThisMonth > 0
  ? ((totalRevenueThisMonth - stripeFees30d - stripeRefunds30d) / totalRevenueThisMonth) * 100
@@ -269,7 +247,7 @@ export function FinancialOverview() {
  const composition = [
  { name: 'Product Sales', value: Math.round(allTimeGross) },
  { name: 'Commission', value: Math.round(totalCommission) },
- { name: 'Advertising', value: Math.round(totalAdRevenue) },
+ 
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
  { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
@@ -312,8 +290,6 @@ export function FinancialOverview() {
  monthOverMonth,
  totalCommission,
  thisMonthCommission,
- totalAdRevenue,
- thisMonthAdRevenue,
  mrr,
  activeSubs: activeSubs.length,
  composition,
@@ -326,7 +302,7 @@ export function FinancialOverview() {
  stripeFees30d,
  stripeRefunds30d,
  };
- }, [ordersData, commissionData, adRevenue, subsData, creditPurchases, robuxData, stripeBalance]);
+ }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance]);
 
  if (hasError && !isLoading) {
  return (

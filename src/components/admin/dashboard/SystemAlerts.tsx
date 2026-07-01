@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertTriangle, ShieldAlert, Clock, Package, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, ShieldAlert, Package, MessageCircle, FileText, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -21,15 +21,11 @@ export function SystemAlerts() {
       const [
         pendingModeration,
         openDisputes,
-        pendingStoreApps,
-        pendingJobApps,
         unresolvedTickets,
         pendingSellerProducts,
       ] = await Promise.all([
         supabase.from('products').select('id', { count: 'exact', head: true }).eq('moderation_status', 'pending').eq('is_seller_product', true),
         supabase.from('refund_requests').select('id', { count: 'exact', head: true }).in('status', ['pending', 'escalated']),
-        supabase.from('store_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('job_applications').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('support_tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']),
         supabase.from('developer_product_submissions').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
@@ -80,27 +76,6 @@ export function SystemAlerts() {
         });
       }
 
-      if ((pendingStoreApps.count || 0) > 0) {
-        items.push({
-          id: 'store-apps',
-          label: 'Store Applications',
-          count: pendingStoreApps.count || 0,
-          severity: 'info',
-          icon: Clock,
-          href: '/admin/store-applications',
-        });
-      }
-
-      if ((pendingJobApps.count || 0) > 0) {
-        items.push({
-          id: 'job-apps',
-          label: 'Job Applications',
-          count: pendingJobApps.count || 0,
-          severity: 'info',
-          icon: FileText,
-          href: '/admin/applications',
-        });
-      }
 
       return items;
     },

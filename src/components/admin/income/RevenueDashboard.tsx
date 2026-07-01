@@ -121,19 +121,6 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- // Ad revenue
- const { data: adRevenue, isLoading: adsLoading } = useQuery({
- queryKey: ['admin-revenue-ads'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('discord_advertisements')
- .select('price_paid, ping_price_paid, posted_at')
- .not('posted_at', 'is', null);
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
 
  // Seller Pro Subscriptions
  const { data: subsData, isLoading: subsLoading } = useQuery({
@@ -190,7 +177,7 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- const isLoading = stripeLoading || ordersLoading || adsLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
 
  const handleRefresh = () => {
  refetchStripe();
@@ -230,10 +217,6 @@ export function RevenueDashboard() {
  .filter(c => { const d = safeParse(c.created_at); return d && isAfter(d, periodStart); })
  .reduce((s, c) => s + (Number(c.platform_fee) || 0), 0);
 
- // Ad revenue
- const totalAdRevenue = (adRevenue ?? []).reduce(
- (s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0
- );
 
  // Seller Pro MRR (£7.99/mo per active sub)
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
@@ -271,7 +254,6 @@ export function RevenueDashboard() {
  const composition = [
  { name: 'Product Sales', value: Math.round(allTimeGross) },
  { name: 'Commission', value: Math.round(totalCommission) },
- { name: 'Advertising', value: Math.round(totalAdRevenue) },
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
  { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
@@ -282,10 +264,10 @@ export function RevenueDashboard() {
  periodGross, grossTrend, periodOrders,
  periodCommission, totalCommission,
  mrr, activeSubs: activeSubs.length,
- allTimeGross, totalAdRevenue, totalCredits, totalRobuxGBP,
+ allTimeGross, totalCredits, totalRobuxGBP,
  trendData, composition,
  };
- }, [ordersData, commissionData, adRevenue, subsData, creditPurchases, robuxData, stripeBalance, selectedPeriod]);
+ }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance, selectedPeriod]);
 
  const COMPOSITION_COLORS = [
  'hsl(262 100% 71%)', 'hsl(220 95% 59%)', 'hsl(185 85% 50%)',
@@ -388,9 +370,8 @@ export function RevenueDashboard() {
  <span className="text-sm font-semibold">Earnings Breakdown</span>
  </div>
 
- <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+ <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <KPICard label="All-Time Gross" value={`{formatGBP(metrics.allTimeGross)}`} isLoading={isLoading} />
- <KPICard label="Ad Revenue" value={`{formatGBP(metrics.totalAdRevenue)}`} isLoading={isLoading} />
  <KPICard label="Credits" value={`{formatGBP(metrics.totalCredits)}`} isLoading={isLoading} />
  <KPICard label="Robux (est.)" value={`{formatGBP(metrics.totalRobuxGBP)}`} isLoading={isLoading} />
  </div>
