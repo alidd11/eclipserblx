@@ -7,7 +7,7 @@ const VALID_ROUTES = [
   '/featured',
   
   
-  '/jobs',
+  
   '/cart',
   '/account',
   '/support',
