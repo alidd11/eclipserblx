@@ -293,7 +293,7 @@ export function AppRoutes() {
         <Route path="/support/tickets" element={<SupportTickets />} />
         <Route path="/support/tickets/:ticketId" element={<SupportTicketDetail />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
-         <Route path="/jobs" element={<Jobs />} />
+         
         <Route path="/refunds" element={<RefundPolicy />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
