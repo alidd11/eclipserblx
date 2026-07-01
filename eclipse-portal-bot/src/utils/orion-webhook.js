@@ -6,6 +6,7 @@ import crypto from 'crypto';
 
 const URL_ENV = 'ORION_WEBHOOK_URL';
 const SECRET_ENV = 'DISCORD_WEBHOOK_SECRET';
+const DEFAULT_URL = 'https://orion-production-21df.up.railway.app/hooks/discord';
 
 /**
  * Compute the signature header exactly as the receiver expects.
@@ -30,11 +31,11 @@ export function signOrionPayload(body, secret, ts = Math.floor(Date.now() / 1000
  * @param {{ guild: string, member_id: string, member_count_now: number }} data
  */
 export async function sendOrionWebhook(type, data) {
-  const url = process.env[URL_ENV];
+  const url = process.env[URL_ENV] || DEFAULT_URL;
   const secret = process.env[SECRET_ENV];
 
-  if (!url || !secret) {
-    console.warn(`[orion-webhook] Skipped ${type}: missing ${!url ? URL_ENV : ''}${!url && !secret ? ' and ' : ''}${!secret ? SECRET_ENV : ''}`);
+  if (!secret) {
+    console.warn(`[orion-webhook] Skipped ${type}: missing ${SECRET_ENV}`);
     return;
   }
 
