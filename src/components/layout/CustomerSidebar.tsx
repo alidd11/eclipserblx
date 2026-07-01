@@ -151,7 +151,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
         { title: t('sidebar.helpCenter'), icon: HelpCircle, href: '/support' },
         { title: t('sidebar.myTickets'), icon: MessageSquareText, href: '/support/tickets' },
         { title: t('sidebar.faq'), icon: FileQuestion, href: '/faq' },
-        { title: 'Careers', icon: Briefcase, href: '/jobs' },
+        
         { title: t('sidebar.discord'), icon: DiscordIcon as unknown as LucideIcon, href: discordUrl, external: true },
       ],
     },
