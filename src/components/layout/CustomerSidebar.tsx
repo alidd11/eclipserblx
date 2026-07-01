@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { 
-  Package, Grid3X3, Star, Circle, MessageSquare, Briefcase, 
+  Package, Grid3X3, Star, Circle, MessageSquare, 
   HelpCircle, ShoppingCart, 
   User, LucideIcon, Home, TrendingUp, Store, Bell,
   Sparkles, Heart, LogOut,
