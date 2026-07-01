@@ -212,14 +212,6 @@ export function FinancialOverview() {
  // Total stripe fees from seller transactions
  const totalStripeFees = (commissionData ?? []).reduce((s, c) => s + (Number((c as any).stripe_fee) || 0), 0);
 
- // Ad revenue
- const totalAdRevenue = (adRevenue ?? []).reduce(
- (s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0),
- 0
- );
- const thisMonthAdRevenue = (adRevenue ?? [])
- .filter(a => { const d = safeDateParse(a.posted_at); return d && isAfter(d, thisMonth); })
- .reduce((s, a) => s + (Number(a.price_paid) || 0) + (Number(a.ping_price_paid) || 0), 0);
 
  // Seller Pro MRR (£7.99/mo per active sub)
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
