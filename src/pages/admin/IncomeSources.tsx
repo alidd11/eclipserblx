@@ -256,7 +256,7 @@ export default function AdminIncomeSources() {
     const summary: Record<Exclude<IncomeSource, 'all'>, { total: number; count: number; prev: number; prevCount: number; maxTxn: number; sparkline: number[] }> = {
       orders: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       subscriptions: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
-      ads: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
+      
       credits: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       robux: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       commission: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
