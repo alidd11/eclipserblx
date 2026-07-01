@@ -247,7 +247,7 @@ export function FinancialOverview() {
  const composition = [
  { name: 'Product Sales', value: Math.round(allTimeGross) },
  { name: 'Commission', value: Math.round(totalCommission) },
- { name: 'Advertising', value: Math.round(totalAdRevenue) },
+ 
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
  { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
