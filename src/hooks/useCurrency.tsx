@@ -61,10 +61,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const formatPrice = useCallback((priceInGBP: number): string => {
     const converted = convertPrice(priceInGBP);
     const info = CURRENCIES[currency];
-    return new Intl.NumberFormat(info.locale, {
+    const formatted = new Intl.NumberFormat(info.locale, {
       style: 'currency',
       currency: info.code,
     }).format(converted);
+    // Non-GBP figures are indicative — Stripe always charges in GBP.
+    return currency === 'GBP' ? formatted : `~${formatted}`;
   }, [currency, convertPrice]);
 
   const currencyInfo = CURRENCIES[currency];
