@@ -102,19 +102,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
   }, [items]);
 
+  // Refs let addItem/removeItem reference each other's latest version
+  // without stale closures, while keeping stable identities.
+  const addItemRef = useRef<(item: CartItem) => void>(() => {});
+  const removeItemRef = useRef<(id: string) => void>(() => {});
+
+  // Cart entries are keyed by product id + optional bundle id, so the same
+  // product added as both a single and a bundle stays distinct.
+  const keyOf = (item: Pick<CartItem, 'id' | 'bundle_id'>) =>
+    `${item.id}::${item.bundle_id ?? ''}`;
+
   const addItem = useCallback((item: CartItem) => {
     setItems((prev) => {
-      if (prev.some((i) => i.id === item.id)) {
+      const k = keyOf(item);
+      if (prev.some((i) => keyOf(i) === k)) {
         return prev;
       }
-      // Optimistic: update immediately, show feedback
       hapticTap();
       toast.success('Added to cart', {
         description: item.name,
         duration: 2000,
         action: {
           label: 'Undo',
-          onClick: () => removeItem(item.id),
+          onClick: () => removeItemRef.current(item.id),
         },
       });
       return [...prev, item];
@@ -132,7 +142,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           duration: 2000,
           action: {
             label: 'Undo',
-            onClick: () => addItem(item),
+            onClick: () => addItemRef.current(item),
           },
         });
       }
@@ -140,22 +150,38 @@ export function CartProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  addItemRef.current = addItem;
+  removeItemRef.current = removeItem;
+
   const clearCart = useCallback(() => {
     setItems([]);
   }, []);
 
-  const isInCart = (id: string) => {
-    return items.some((item) => item.id === id);
-  };
-
-  const total = items.reduce((sum, item) => sum + item.price, 0);
-  const itemCount = items.length;
-
-  return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, isInCart, total, itemCount }}>
-      {children}
-    </CartContext.Provider>
+  const isInCart = useCallback(
+    (id: string) => items.some((item) => item.id === id),
+    [items],
   );
+
+  const value = useMemo<CartContextType>(() => {
+    // Bundles store their full bundle price in `item.price`, so `quantity` is
+    // display-only metadata and MUST NOT be multiplied here (would double-charge).
+    // PWYW items use the buyer-chosen `custom_price` when present.
+    const total = items.reduce(
+      (sum, item) => sum + (item.is_pwyw ? (item.custom_price ?? item.price) : item.price),
+      0,
+    );
+    return {
+      items,
+      addItem,
+      removeItem,
+      clearCart,
+      isInCart,
+      total,
+      itemCount: items.length,
+    };
+  }, [items, addItem, removeItem, clearCart, isInCart]);
+
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
 
 export function useCart() {
