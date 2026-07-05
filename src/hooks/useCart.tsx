@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useRef, useCallback } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { hapticTap } from '@/lib/haptics';
 import { safeStorage } from '@/lib/safeStorage';
