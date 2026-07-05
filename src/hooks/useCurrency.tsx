@@ -16,8 +16,11 @@ export const CURRENCIES: Record<CurrencyCode, CurrencyInfo> = {
   EUR: { code: 'EUR', symbol: '€', name: 'Euro', locale: 'de-DE' },
 };
 
-// Exchange rates relative to GBP (base currency)
-// These would ideally come from an API, but for simplicity we use static rates
+// Exchange rates relative to GBP (base currency).
+// TODO: replace with a daily-refreshed table populated by a scheduled edge
+// function (e.g. `refresh-fx-rates`) that pulls from a real FX API and caches
+// per-currency rates the client reads at boot. Fall back to these constants
+// if the fetch fails. Charges are always processed in GBP by Stripe.
 const EXCHANGE_RATES: Record<CurrencyCode, number> = {
   GBP: 1,
   USD: 1.27,
@@ -58,10 +61,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const formatPrice = useCallback((priceInGBP: number): string => {
     const converted = convertPrice(priceInGBP);
     const info = CURRENCIES[currency];
-    return new Intl.NumberFormat(info.locale, {
+    const formatted = new Intl.NumberFormat(info.locale, {
       style: 'currency',
       currency: info.code,
     }).format(converted);
+    // Non-GBP figures are indicative — Stripe always charges in GBP.
+    return currency === 'GBP' ? formatted : `~${formatted}`;
   }, [currency, convertPrice]);
 
   const currencyInfo = CURRENCIES[currency];

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode, useRef } from 'react';
+import { useState, useEffect, createContext, useContext, ReactNode, useRef, useCallback, useMemo } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,10 +20,24 @@ function decodeJwtPayload(accessToken: string | undefined): Record<string, any> 
     if (!part) return null;
     const normalized = part.replace(/-/g, '+').replace(/_/g, '/');
     const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-    return JSON.parse(atob(padded));
+    // UTF-8 safe: atob → bytes → TextDecoder
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return null;
   }
+}
+
+/** Fetch this user's non-status roles (shared between login/logout logging) */
+async function fetchStaffRoles(userId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from('user_roles')
+    .select('role, custom_roles!inner(is_status_role)')
+    .eq('user_id', userId)
+    .eq('custom_roles.is_status_role', false);
+  return data ? data.map((r: any) => r.role) : [];
 }
 
 /** Check if a JWT access token contains a valid `sub` claim */
@@ -228,17 +242,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /** Deferred staff activity logging — non-blocking */
   const logStaffActivity = async (sess: Session) => {
     try {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role, custom_roles!inner(is_status_role)')
-        .eq('user_id', sess.user.id)
-        .eq('custom_roles.is_status_role', false);
-
-      if (roles && roles.length > 0) {
+      const roles = await fetchStaffRoles(sess.user.id);
+      if (roles.length > 0) {
         await supabase.from('staff_activity').insert({
           user_id: sess.user.id,
           activity_type: 'login',
-          details: { roles: roles.map(r => r.role) },
+          details: { roles },
         }).throwOnError();
       }
     } catch (e) {
@@ -255,60 +264,49 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signUp = async (email: string, password: string, displayName?: string) => {
+  const signUp = useCallback(async (email: string, password: string, displayName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          display_name: displayName,
-        },
-      },
+      options: { emailRedirectTo: redirectUrl, data: { display_name: displayName } },
     });
-    
     return { error: error as Error | null };
-  };
+  }, []);
 
-  const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
-  };
+  }, []);
 
-  const signOut = async () => {
-    if (user) {
-      try {
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role, custom_roles!inner(is_status_role)')
-          .eq('user_id', user.id)
-          .eq('custom_roles.is_status_role', false);
-
-        if (roles && roles.length > 0) {
-          await supabase.from('staff_activity').insert({
-            user_id: user.id,
-            activity_type: 'logout',
-            details: { roles: roles.map(r => r.role) },
-          }).throwOnError();
+  const signOut = useCallback(async () => {
+    // Fire logout logging non-blocking so the sign-out feels instant.
+    const uid = user?.id;
+    if (uid) {
+      setTimeout(async () => {
+        try {
+          const roles = await fetchStaffRoles(uid);
+          if (roles.length > 0) {
+            await supabase.from('staff_activity').insert({
+              user_id: uid,
+              activity_type: 'logout',
+              details: { roles },
+            }).throwOnError();
+          }
+        } catch (e) {
+          console.debug('Staff activity logout log skipped:', e);
         }
-      } catch (e) {
-        console.debug('Staff activity logout log skipped:', e);
-      }
+      }, 0);
     }
     await supabase.auth.signOut();
-  };
+  }, [user]);
 
-  return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextType>(
+    () => ({ user, session, loading, signUp, signIn, signOut }),
+    [user, session, loading, signUp, signIn, signOut],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
