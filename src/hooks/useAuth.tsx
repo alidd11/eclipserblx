@@ -20,10 +20,24 @@ function decodeJwtPayload(accessToken: string | undefined): Record<string, any> 
     if (!part) return null;
     const normalized = part.replace(/-/g, '+').replace(/_/g, '/');
     const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
-    return JSON.parse(atob(padded));
+    // UTF-8 safe: atob → bytes → TextDecoder
+    const binary = atob(padded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return null;
   }
+}
+
+/** Fetch this user's non-status roles (shared between login/logout logging) */
+async function fetchStaffRoles(userId: string): Promise<string[]> {
+  const { data } = await supabase
+    .from('user_roles')
+    .select('role, custom_roles!inner(is_status_role)')
+    .eq('user_id', userId)
+    .eq('custom_roles.is_status_role', false);
+  return data ? data.map((r: any) => r.role) : [];
 }
 
 /** Check if a JWT access token contains a valid `sub` claim */
