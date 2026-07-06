@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (targetProfile.email === PRIMARY_ADMIN_EMAIL) {
+    if (PRIMARY_ADMIN_EMAIL && (targetProfile.email || '').toLowerCase() === PRIMARY_ADMIN_EMAIL) {
       return new Response(
         JSON.stringify({ error: 'Cannot delete the primary administrator account' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
