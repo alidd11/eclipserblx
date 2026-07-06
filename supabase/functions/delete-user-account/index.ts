@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+const PRIMARY_ADMIN_EMAIL = (Deno.env.get('PRIMARY_ADMIN_EMAIL') || '').trim().toLowerCase();
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
