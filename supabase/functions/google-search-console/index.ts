@@ -80,6 +80,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const _auth = await requireAdmin(req, corsHeaders);
+  if ("error" in _auth) return _auth.error;
+
   try {
     let saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
     if (!saJson) throw new Error("GOOGLE_SERVICE_ACCOUNT_JSON not configured");
