@@ -29,15 +29,14 @@ export function usePublicStore(slug: string | undefined) {
 
       if (error) throw error;
 
-      // Verify store has signed the current ToS
-      const { data: agreement } = await supabase
-        .from('seller_agreements')
-        .select('id')
-        .eq('store_id', data.id)
-        .eq('agreement_version', CURRENT_TOS_VERSION)
-        .maybeSingle();
+      // Verify store has signed the current ToS via SECURITY DEFINER RPC
+      // (seller_agreements is not directly readable by anon).
+      const { data: hasSigned } = await supabase.rpc('store_has_signed_agreement', {
+        _store_id: data.id,
+        _version: CURRENT_TOS_VERSION,
+      });
 
-      if (!agreement) throw new Error('Store agreement not signed');
+      if (!hasSigned) throw new Error('Store agreement not signed');
 
       return data;
     },
