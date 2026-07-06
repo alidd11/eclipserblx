@@ -85,3 +85,25 @@ export async function requireStaff(
   }
   return { user: { id: data.user.id, email: data.user.email }, supabase };
 }
+
+export async function requireAuth(
+  req: Request,
+  extraHeaders: Record<string, string> = {},
+): Promise<{ error: Response } | { user: { id: string; email?: string }; supabase: SupabaseClient }> {
+  const auth = req.headers.get("Authorization") || req.headers.get("authorization") || "";
+  if (!auth.toLowerCase().startsWith("bearer ")) {
+    return { error: new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...jsonHeaders, ...extraHeaders } }) };
+  }
+  const token = auth.slice(7);
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  if (token === serviceKey) {
+    return { user: { id: "service_role" }, supabase: createClient(url, serviceKey) };
+  }
+  const supabase = createClient(url, serviceKey);
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data?.user) {
+    return { error: new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...jsonHeaders, ...extraHeaders } }) };
+  }
+  return { user: { id: data.user.id, email: data.user.email }, supabase };
+}

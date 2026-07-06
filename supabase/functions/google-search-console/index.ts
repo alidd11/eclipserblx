@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.12";
+import { requireAdmin } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,6 +79,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const _auth = await requireAdmin(req, corsHeaders);
+  if ("error" in _auth) return _auth.error;
 
   try {
     let saJson = Deno.env.get("GOOGLE_SERVICE_ACCOUNT_JSON");
