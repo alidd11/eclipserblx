@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       .eq('user_id', requestingUser.id)
       .single();
 
-    if (adminProfile?.email !== PRIMARY_ADMIN_EMAIL) {
+    if (!PRIMARY_ADMIN_EMAIL || (adminProfile?.email || '').toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
       console.error('Non-primary admin attempted account deletion:', requestingUser.id);
       return new Response(
         JSON.stringify({ error: 'Only the primary administrator can delete accounts' }),
