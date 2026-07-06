@@ -13,8 +13,32 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Require authenticated user
+    const authHeader = req.headers.get('Authorization') || '';
+    if (!authHeader.toLowerCase().startsWith('bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const jwt = authHeader.slice(7);
+    const authClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: userData, error: userErr } = await authClient.auth.getUser(jwt);
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Per-user rate limit for expensive AI operation
+    const rl = checkRateLimit({ ...RATE_LIMITS.EXPENSIVE, identifier: userData.user.id, action: 'check-nsfw' });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const body = await req.json();
-    
+
     // Support both single image and batch
     const images: { imageBase64: string; hash?: string }[] = body.images
       ? body.images
@@ -22,11 +46,21 @@ Deno.serve(async (req) => {
         ? [{ imageBase64: body.imageBase64, hash: body.hash }]
         : [];
 
-    if (images.length === 0) {
+    if (images.length === 0 || images.length > 20) {
       return new Response(
-        JSON.stringify({ error: 'No images provided' }),
+        JSON.stringify({ error: 'Invalid images payload (1-20 allowed)' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Bound each payload size (base64 ~ 8MB max)
+    for (const img of images) {
+      if (typeof img.imageBase64 !== 'string' || img.imageBase64.length > 8_000_000) {
+        return new Response(
+          JSON.stringify({ error: 'Image payload too large' }),
+          { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
