@@ -133,7 +133,9 @@
     "picomatch": "^4.0.5",
     "fast-uri": "^4.1.0",
     "@babel/plugin-transform-modules-systemjs": "^8.0.1",
-    "ajv": "^8.20.0"
+    "ajv": "^8.20.0",
+    "linkify-it": "^5.0.2",
+    "markdown-it": "^14.3.0"
   },
   "resolutions": {
     "minimatch": "^10.0.5",
@@ -145,6 +147,8 @@
     "picomatch": "^4.0.5",
     "fast-uri": "^4.1.0",
     "@babel/plugin-transform-modules-systemjs": "^8.0.1",
-    "ajv": "^8.20.0"
+    "ajv": "^8.20.0",
+    "linkify-it": "^5.0.2",
+    "markdown-it": "^14.3.0"
   }
 }
