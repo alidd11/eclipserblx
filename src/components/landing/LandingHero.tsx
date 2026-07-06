@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useState, useEffect } from 'react';
 
 const ROTATING_WORDS = ['Roblox', 'Discord'];
-const STATS = ['1,000+ Assets', '200+ Sellers', 'Instant Delivery'];
+
 
 export function LandingHero() {
   const [wordIndex, setWordIndex] = useState(0);
