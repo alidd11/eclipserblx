@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,6 +13,9 @@ const LOG = (step: string, d?: unknown) => {
 };
 
 serve(async (req) => {
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

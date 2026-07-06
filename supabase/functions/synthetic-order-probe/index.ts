@@ -2,6 +2,7 @@
 // Touches the public catalog the way an anonymous shopper would, without
 // creating real orders. Records per-step latency to synthetic_runs.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,6 +24,9 @@ async function timed<T>(name: string, fn: () => Promise<T>): Promise<{ step: Ste
 }
 
 Deno.serve(async (req) => {
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);

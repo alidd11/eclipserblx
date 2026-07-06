@@ -151,29 +151,38 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
-    // Auth (store emails can be service-role calls; mass/compensation require admin)
+    // Auth required for ALL email types. Store emails may be called by internal
+    // functions using the service role key; user-triggered types require admin.
     const authHeader = req.headers.get("Authorization");
     const body = await req.json();
     const emailType: string = body.email_type;
 
     if (!emailType) throw new Error("email_type is required");
+    if (!authHeader) throw new Error("Unauthorized");
+    const token = authHeader.replace("Bearer ", "");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const isServiceRole = token === serviceKey;
 
     LOG("Request", { emailType });
 
-    // Store emails don't require user auth (called internally)
+    // Store emails require service-role (internal callers only)
     if (emailType === 'store_deactivation' || emailType === 'store_reactivation') {
+      if (!isServiceRole) throw new Error("Unauthorized");
       return await handleStoreEmail(supabase, body, emailType === 'store_deactivation' ? 'deactivation' : 'reactivation');
     }
 
-    // All other types require auth + admin
-    if (!authHeader) throw new Error("Unauthorized");
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    if (authError || !user) throw new Error("Unauthorized");
-
-    const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
-    const isAdmin = roles?.some(r => ['admin', 'staff', 'moderator', 'head_moderator'].includes(r.role));
-    if (!isAdmin) throw new Error("Forbidden: Staff access required");
+    // All other types require auth + admin (service role allowed too)
+    let user: { id: string } | null = null;
+    if (!isServiceRole) {
+      const { data: { user: u }, error: authError } = await supabase.auth.getUser(token);
+      if (authError || !u) throw new Error("Unauthorized");
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
+      const isAdmin = roles?.some(r => ['admin', 'staff', 'moderator', 'head_moderator'].includes(r.role));
+      if (!isAdmin) throw new Error("Forbidden: Staff access required");
+      user = { id: u.id };
+    } else {
+      user = { id: 'service_role' };
+    }
 
     switch (emailType) {
       case 'mass_email':

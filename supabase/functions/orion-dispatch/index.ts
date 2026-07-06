@@ -4,6 +4,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { signOrionPayload } from "../_shared/orionHmac.ts";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const corsHeaders: Record<string, string> = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +16,9 @@ const MAX_BATCH = 50;
 const MAX_ATTEMPTS = 8;
 
 Deno.serve(async (req) => {
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const url = Deno.env.get("ORION_WEBHOOK_URL");

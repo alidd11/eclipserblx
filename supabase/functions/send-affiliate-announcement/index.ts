@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
  import { sendBotMessage, buildSettingsMap } from "../_shared/discord-bot.ts";
 
 const corsHeaders = {
@@ -8,7 +9,10 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders }
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+);
   }
 
   try {

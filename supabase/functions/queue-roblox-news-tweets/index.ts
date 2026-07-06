@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { handleCors, jsonOk, jsonError, internalError } from "../_shared/edge-response.ts";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const SITE_URL = "https://eclipserblx.com";
 
@@ -88,6 +89,9 @@ async function fetchBlogNews(): Promise<NewsItem[]> {
 
 // ── Main handler ────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const _unauth = requireServiceRole(req);
+  if (_unauth) return _unauth;
+
   const cors = handleCors(req);
   if (cors) return cors;
 

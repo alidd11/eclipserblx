@@ -19,10 +19,10 @@ Deno.serve(async (req) => {
   if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
   try {
-    const { userId, productId, limit = 6 } = await req.json();
+    const { userId: rawUserId, productId, limit = 6 } = await req.json();
 
     // Validate inputs
-    if (userId && (!UUID_REGEX.test(userId))) {
+    if (rawUserId && (!UUID_REGEX.test(rawUserId))) {
       return new Response(
         JSON.stringify({ error: "Invalid userId" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -41,6 +41,20 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Only allow personalization when caller is authenticated AND their user
+    // matches the requested userId. Otherwise fall back to anonymous recs.
+    let userId: string | null = null;
+    if (rawUserId) {
+      const authHeader = req.headers.get("Authorization") || "";
+      if (authHeader.toLowerCase().startsWith("bearer ")) {
+        const token = authHeader.slice(7);
+        const { data: userRes } = await supabase.auth.getUser(token);
+        if (userRes?.user?.id === rawUserId) {
+          userId = rawUserId;
+        }
+      }
+    }
 
     let recommendations: any[] = [];
     let strategy = "popular";

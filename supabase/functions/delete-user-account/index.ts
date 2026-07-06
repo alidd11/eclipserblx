@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PRIMARY_ADMIN_EMAIL = 'alicanimir1@gmail.com';
+const PRIMARY_ADMIN_EMAIL = (Deno.env.get('PRIMARY_ADMIN_EMAIL') || '').trim().toLowerCase();
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 Deno.serve(async (req) => {
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
       .eq('user_id', requestingUser.id)
       .single();
 
-    if (adminProfile?.email !== PRIMARY_ADMIN_EMAIL) {
+    if (!PRIMARY_ADMIN_EMAIL || (adminProfile?.email || '').toLowerCase() !== PRIMARY_ADMIN_EMAIL) {
       console.error('Non-primary admin attempted account deletion:', requestingUser.id);
       return new Response(
         JSON.stringify({ error: 'Only the primary administrator can delete accounts' }),
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (targetProfile.email === PRIMARY_ADMIN_EMAIL) {
+    if (PRIMARY_ADMIN_EMAIL && (targetProfile.email || '').toLowerCase() === PRIMARY_ADMIN_EMAIL) {
       return new Response(
         JSON.stringify({ error: 'Cannot delete the primary administrator account' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

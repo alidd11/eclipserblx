@@ -1,4 +1,5 @@
 import { sendBotMessage, type DiscordEmbed } from '../_shared/discord-bot.ts';
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const FREE_GAMES_CHANNEL_ID = '1482478628062367926';
 const FREE_GAMES_PING_ROLE_ID = '1482480973726744660';
@@ -78,7 +79,10 @@ Deno.serve(async (req) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
+      }
+  const _unauth = requireServiceRole(req);
+  if (_unauth) return _unauth;
+,
     });
   }
 
