@@ -61,9 +61,10 @@ export function useNotifications() {
 
     fetchNotifications();
 
-    // Only create one realtime channel for notifications
-    // Use a unique channel name per user to avoid conflicts
-    const channelName = `notifications-unified-${user.id}`;
+    // Unique channel name per mount to avoid re-subscribing a cached channel
+    // (Supabase throws "cannot add postgres_changes callbacks after subscribe()"
+    // if .channel(name) returns an already-subscribed instance.)
+    const channelName = `notifications-unified-${user.id}-${crypto.randomUUID()}`;
     const channel = supabase
       .channel(channelName)
       .on(
@@ -106,7 +107,8 @@ export function useNotifications() {
       supabase.removeChannel(channel);
       channelRef.current = null;
     };
-  }, [user, fetchNotifications, playSound]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const markAsRead = useCallback(async (id: string) => {
     await supabase
