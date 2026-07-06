@@ -12801,6 +12801,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      store_has_signed_agreement: {
+        Args: { _store_id: string; _version: string }
+        Returns: boolean
+      }
       store_password_reset_code: {
         Args: { p_code: string; p_email: string; p_expires_at: string }
         Returns: undefined
