@@ -122,12 +122,12 @@
     "vite": "5.4.19"
   },
   "overrides": {
-    "minimatch": "^10.0.5",
+    "minimatch": "^10.2.5",
     "brace-expansion": "^2.0.2",
     "@isaacs/brace-expansion": "^5.0.1",
     "@xmldom/xmldom": "^0.9.10",
     "glob": "^11.0.3",
-    "tar": "^7.5.2",
+    "tar": "^7.5.19",
     "picomatch": "^4.0.5",
     "fast-uri": "^4.1.0",
     "@babel/plugin-transform-modules-systemjs": "^8.0.1",
