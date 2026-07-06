@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -90,7 +91,10 @@ async function getWiseGBPBalance(wiseApiKey: string, profileId: string): Promise
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders }
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+);
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
