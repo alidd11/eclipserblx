@@ -44,26 +44,7 @@ export function LandingHero() {
       <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
 
       <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-20 flex flex-col items-center text-center">
-        {/* Stat pill */}
-        <div className="mb-7 sm:mb-9 inline-flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-2 rounded-full border border-border/60 bg-card/40 backdrop-blur-md shadow-lg">
-          <span className="flex items-center gap-2">
-            <span
-              className="w-1.5 h-1.5 rounded-full bg-primary"
-              style={{ boxShadow: '0 0 8px hsl(var(--primary) / 0.8)' }}
-            />
-            <span className="font-mono text-[10px] sm:text-[11px] font-medium tracking-[0.1em] text-muted-foreground uppercase">
-              {STATS[0]}
-            </span>
-          </span>
-          <span className="w-px h-3 bg-border" />
-          <span className="font-mono text-[10px] sm:text-[11px] font-medium tracking-[0.1em] text-muted-foreground uppercase">
-            {STATS[1]}
-          </span>
-          <span className="w-px h-3 bg-border hidden sm:inline-block" />
-          <span className="font-mono text-[10px] sm:text-[11px] font-medium tracking-[0.1em] text-muted-foreground uppercase hidden sm:inline">
-            {STATS[2]}
-          </span>
-        </div>
+
 
         {/* Headline */}
         <h1
