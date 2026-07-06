@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -35,8 +36,32 @@ serve(async (req) => {
   }
 
   try {
+    // Require authenticated user (only sellers uploading products should call this)
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader.toLowerCase().startsWith("bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const jwt = authHeader.slice(7);
+    const authClient = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: userData, error: userErr } = await authClient.auth.getUser(jwt);
+    if (userErr || !userData?.user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Per-user rate limit for expensive AI call
+    const rl = checkRateLimit({ ...RATE_LIMITS.EXPENSIVE, identifier: userData.user.id, action: "analyze-lua-script" });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    
+
     if (!LOVABLE_API_KEY) {
       console.error("LOVABLE_API_KEY is not configured");
       return new Response(
@@ -47,11 +72,16 @@ serve(async (req) => {
 
     const { scriptContent, fileName }: AnalyzeRequest = await req.json();
 
-    if (!scriptContent) {
+    if (typeof scriptContent !== "string" || scriptContent.length === 0) {
       return new Response(
         JSON.stringify({ isSafe: true, riskLevel: "low", concerns: [] }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+    if (scriptContent.length > 50_000) {
+      return new Response(JSON.stringify({ error: "scriptContent too large" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const lowerFileName = (fileName || '').toLowerCase();
