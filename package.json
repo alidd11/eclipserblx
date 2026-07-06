@@ -127,7 +127,11 @@
     "@isaacs/brace-expansion": "^5.0.1",
     "@xmldom/xmldom": "^0.9.10",
     "glob": "^11.0.3",
-    "tar": "^7.5.2"
+    "tar": "^7.5.2",
+    "picomatch": "^4.0.5",
+    "fast-uri": "^4.1.0",
+    "@babel/plugin-transform-modules-systemjs": "^8.0.1",
+    "ajv": "^8.20.0"
   },
   "resolutions": {
     "minimatch": "^10.0.5",
@@ -135,6 +139,10 @@
     "@isaacs/brace-expansion": "^5.0.1",
     "@xmldom/xmldom": "^0.9.10",
     "glob": "^11.0.3",
-    "tar": "^7.5.2"
+    "tar": "^7.5.2",
+    "picomatch": "^4.0.5",
+    "fast-uri": "^4.1.0",
+    "@babel/plugin-transform-modules-systemjs": "^8.0.1",
+    "ajv": "^8.20.0"
   }
 }
