@@ -1,6 +1,8 @@
 // verify-platform-readiness — returns booleans for required server secrets.
 // Roadmap probes use this to flip "secret:*" tasks from todo to done.
-// Read-only and returns the same data to any caller — no auth needed.
+// Admin-only: exposes which integrations are configured.
+import { requireAdmin } from "../_shared/auth-guard.ts";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -11,8 +13,10 @@ function present(name: string): boolean {
   return typeof v === 'string' && v.trim().length > 0;
 }
 
-Deno.serve((req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const _auth = await requireAdmin(req, corsHeaders);
+  if ("error" in _auth) return _auth.error;
 
   const facts = {
     // Stripe
