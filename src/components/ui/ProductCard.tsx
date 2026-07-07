@@ -121,7 +121,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   }, [isVideo]);
 
   return (
-    <Link 
+    <Link
       ref={ref}
       to={`/products/${slug}`}
       className="group block h-full"
@@ -129,20 +129,23 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onMouseLeave={handleMouseLeave}
       onTouchStart={() => prefetchProduct(slug)}
     >
-      <div className={cn(
-        "overflow-hidden h-full flex flex-col rounded-xl bg-card transition-colors duration-200 contain-layout",
-        "border border-border/60 hover:border-border",
-        isFeatured && "border-primary/30"
-      )}>
-        {/* Image — taller aspect on mobile to breathe, tighter on desktop */}
-        <div className="relative aspect-[5/4] bg-muted overflow-hidden flex-shrink-0">
+      <div
+        className={cn(
+          'relative overflow-hidden h-full flex flex-col rounded-xl bg-card contain-layout',
+          'border border-border/60 transition-colors duration-200',
+          'hover:border-border',
+          isFeatured && 'border-primary/40'
+        )}
+      >
+        {/* Media */}
+        <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
                 ref={videoRef}
                 src={currentMedia!}
                 onError={handleMediaError}
-                className="w-full h-full object-cover object-center transition-transform duration-500"
+                className="w-full h-full object-cover object-center"
               />
             ) : (
               <img
@@ -158,17 +161,17 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   const img = e.currentTarget;
                   if (img.naturalWidth === 0) handleMediaError();
                 }}
-                className="w-full h-full object-cover object-center transition-transform duration-500"
+                className="w-full h-full object-cover object-center"
               />
             )
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
-              <span className="text-2xl font-display font-bold text-muted-foreground/30">
+              <span className="text-3xl font-display font-black text-muted-foreground/20">
                 {name.charAt(0)}
               </span>
             </div>
           )}
-          
+
           {/* Quantis overlay */}
           {storeSlug === 'quantis' && (
             <img
@@ -178,80 +181,91 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             />
           )}
 
-          {/* Badges — Sale/Featured/New only */}
-          <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
+          {/* Subtle bottom gradient for legibility of dot indicators */}
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-[2]" />
+
+          {/* Badges — single-line, refined */}
+          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 flex-wrap z-[3]">
             {hasMemberDiscount && (
-              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-destructive text-destructive-foreground rounded shadow-sm">
-                Sale
-              </div>
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-md">
+                −{discountPercent}%
+              </span>
             )}
             {showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-gradient-to-r from-amber-500 to-orange-500 text-foreground rounded shadow-sm">
-                Best Seller
-              </div>
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-amber-500 text-black rounded-md">
+                Bestseller
+              </span>
             )}
-            {isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-primary text-primary-foreground rounded">
+            {isFeatured && !showBestSellerBadge && !hasMemberDiscount && (
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-primary text-primary-foreground rounded-md">
                 Featured
-              </div>
+              </span>
             )}
-            {isNew && !isFeatured && !showBestSellerBadge && (
-              <div className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-emerald-500 text-foreground rounded">
+            {isNew && !isFeatured && !showBestSellerBadge && !hasMemberDiscount && (
+              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-emerald-500 text-black rounded-md">
                 New
-              </div>
+              </span>
             )}
+          </div>
+
+          {/* Wishlist */}
+          <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
+            <WishlistButton productId={id} variant="icon" />
           </div>
 
           {/* Image dot indicators */}
           {mediaChain.length > 1 && (
-            <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
               {mediaChain.map((_, i) => (
                 <div
                   key={i}
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-colors",
-                    i === mediaIndex ? "bg-background" : "bg-background/40"
+                    'h-1 rounded-full transition-all',
+                    i === mediaIndex ? 'w-4 bg-background' : 'w-1 bg-background/50'
                   )}
                 />
               ))}
             </div>
           )}
-          
-          {/* Wishlist button */}
-          <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
-            <WishlistButton productId={id} variant="icon" />
-          </div>
         </div>
 
-        {/* Content — roomier on mobile */}
-        <div className="p-3.5 sm:p-4 flex flex-col flex-1 gap-2">
-          {/* Category label */}
-          {category && (
-            <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-              {category}
-            </span>
-          )}
+        {/* Content */}
+        <div className="p-4 flex flex-col flex-1 gap-2.5">
+          {/* Category + rating row */}
+          <div className="flex items-center justify-between gap-2 min-h-[14px]">
+            {category ? (
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em] truncate">
+                {category}
+              </span>
+            ) : <span />}
+            {typeof averageRating === 'number' && averageRating > 0 && (
+              <span className="flex items-center gap-0.5 text-muted-foreground">
+                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                <span className="text-[11px] font-semibold text-foreground/80">{averageRating.toFixed(1)}</span>
+              </span>
+            )}
+          </div>
 
           {/* Title */}
-          <h3 className="font-display font-semibold text-[15px] sm:text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+          <h3 className="font-display font-semibold text-[15px] text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
             {name}
           </h3>
 
-          {/* Store + verified — inline */}
-          <div className="flex items-center gap-1.5 mt-0.5">
+          {/* Store */}
+          <div className="flex items-center gap-1.5">
             {storeLogo ? (
-              <img 
-                src={storeLogo} 
+              <img
+                src={storeLogo}
                 alt={storeName || ''}
-                className="h-4 w-4 rounded-sm object-cover flex-shrink-0"
+                className="h-4 w-4 rounded-full object-cover flex-shrink-0 ring-1 ring-border"
               />
             ) : (
-              <div className="h-4 w-4 rounded-sm bg-muted flex items-center justify-center flex-shrink-0">
+              <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border">
                 <Store className="h-2.5 w-2.5 text-muted-foreground" />
               </div>
             )}
-            <span 
-              className="text-[11px] sm:text-xs text-muted-foreground font-medium truncate hover:text-foreground transition-colors cursor-pointer"
+            <span
+              className="text-[11px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors"
               onClick={(e) => {
                 if (storeSlug) {
                   e.preventDefault();
@@ -263,57 +277,45 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               {storeName || 'Eclipse'}
             </span>
             {isVerified && (
-              <span title="Verified seller">
-                <BadgeCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />
+              <span title="Verified seller" className="flex-shrink-0">
+                <BadgeCheck className="h-3 w-3 text-primary" />
               </span>
             )}
           </div>
 
-          {/* Price row + rating + quick-add */}
-          <div className="flex items-center gap-2 mt-auto pt-2.5 border-t border-border/40">
-            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          {/* Price row */}
+          <div className="flex items-end justify-between gap-2 mt-auto pt-3 border-t border-border/50">
+            <div className="flex items-baseline gap-1.5 min-w-0">
               {isPayWhatYouWant ? (
-                <span className="text-base sm:text-lg font-bold whitespace-nowrap leading-none text-emerald-500">
+                <span className="text-lg font-bold whitespace-nowrap leading-none text-emerald-400">
                   {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
                 </span>
               ) : hasMemberDiscount ? (
                 <>
+                  <span className="text-lg font-bold whitespace-nowrap leading-none text-foreground">
+                    {formatPrice(memberPrice)}
+                  </span>
                   <span className="text-[11px] text-muted-foreground leading-none line-through">
                     {formatPrice(price)}
                   </span>
-                  <span className="text-base sm:text-lg font-bold whitespace-nowrap leading-none text-amber-400">
-                    {formatPrice(memberPrice)}
-                  </span>
-                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium leading-none bg-amber-500/20 text-amber-400">
-                    <Sparkles className="h-2 w-2 flex-shrink-0" />
-                    {discountPercent}%
-                  </span>
                 </>
               ) : (
-                <span className="text-base sm:text-lg font-bold whitespace-nowrap leading-none text-foreground">
+                <span className="text-lg font-bold whitespace-nowrap leading-none text-foreground">
                   {formatPrice(price)}
-                </span>
-              )}
-
-              {/* Rating next to price */}
-              {typeof averageRating === 'number' && averageRating > 0 && (
-                <span className="flex items-center gap-0.5 text-muted-foreground ml-auto">
-                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-[10px] font-medium">{averageRating.toFixed(1)}</span>
                 </span>
               )}
             </div>
 
-            {/* Quick-add cart button */}
+            {/* Quick-add — icon-only, subtle */}
             <button
               onClick={handleAddToCart}
               className={cn(
-                "flex-shrink-0 h-9 w-9 rounded-lg flex items-center justify-center transition-colors active:scale-[0.97]",
-                inCart 
-                  ? "bg-emerald-500/20 text-emerald-500" 
-                  : "bg-muted hover:bg-primary hover:text-primary-foreground text-muted-foreground"
+                'flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors active:scale-[0.97]',
+                inCart
+                  ? 'bg-emerald-500/15 text-emerald-400'
+                  : 'text-muted-foreground hover:text-primary-foreground hover:bg-primary'
               )}
-              aria-label={inCart ? "In cart" : "Add to cart"}
+              aria-label={inCart ? 'In cart' : 'Add to cart'}
             >
               {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
             </button>
