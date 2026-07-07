@@ -60,72 +60,84 @@ export function LandingHero() {
       aria-labelledby="hero-heading"
       className="relative isolate overflow-hidden -mt-px"
     >
-      {/* Full-bleed rotating backdrop */}
+      {/* Full-bleed rotating backdrop — heavily dimmed & blurred */}
       <div aria-hidden className="absolute inset-0 -z-10">
         {backdrops.length > 0 ? (
           backdrops.map((b, i) => (
             <div
               key={b.slug + i}
               className={cn(
-                'absolute inset-0 bg-center bg-cover transition-opacity duration-[1400ms] ease-out',
+                'absolute inset-0 bg-center bg-cover transition-opacity duration-[1600ms] ease-out',
                 i === bgIndex ? 'opacity-100' : 'opacity-0'
               )}
-              style={{ backgroundImage: `url(${b.image})` }}
+              style={{
+                backgroundImage: `url(${b.image})`,
+                filter: 'blur(24px) saturate(1.1)',
+                transform: 'scale(1.1)',
+              }}
             />
           ))
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-background" />
-        )}
-        {/* Dimming + vignette using theme bg */}
-        <div className="absolute inset-0 bg-background/72" />
+        ) : null}
+        {/* Heavy dimming layers */}
+        <div className="absolute inset-0 bg-background/85" />
         <div
           className="absolute inset-0"
           style={{
             background:
-              'radial-gradient(120% 80% at 50% 40%, transparent, hsl(var(--background) / 0.85) 70%, hsl(var(--background)) 100%)',
+              'radial-gradient(60% 55% at 50% 45%, hsl(var(--primary) / 0.18), transparent 70%)',
           }}
         />
-        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-background/80 to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'radial-gradient(120% 90% at 50% 50%, transparent 40%, hsl(var(--background) / 0.7) 75%, hsl(var(--background)) 100%)',
+          }}
+        />
+        {/* Dot grid */}
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              'radial-gradient(circle at 1px 1px, hsl(var(--foreground)) 1px, transparent 0)',
+            backgroundSize: '32px 32px',
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 lg:pt-32 pb-20 sm:pb-24 lg:pb-32 flex flex-col items-center text-center">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 lg:pb-24 flex flex-col items-center text-center">
         {/* Eyebrow */}
-        <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/60 backdrop-blur-md">
+        <div className="mb-7 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/80 backdrop-blur-md">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             The Creator Marketplace
           </span>
         </div>
 
-        {/* Headline */}
+        {/* Headline — inline rotating word */}
         <h1
           id="hero-heading"
-          className="font-display font-black tracking-tighter leading-[0.95] text-[clamp(2.25rem,7.2vw,5.25rem)] max-w-[18ch]"
+          className="font-display font-black tracking-tight leading-[1.02] text-[clamp(2.5rem,6.4vw,4.75rem)] max-w-[20ch]"
         >
-          <span className="block text-foreground">The Marketplace for</span>
-          <span className="block relative h-[1.05em]">
-            {ROTATING_WORDS.map((w, i) => (
-              <span
-                key={w}
-                aria-hidden={i !== wordIndex}
-                className={cn(
-                  'absolute inset-0 flex items-center justify-center transition-all duration-500 ease-out',
-                  i === wordIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
-                )}
-                style={{
-                  backgroundImage:
-                    'linear-gradient(180deg, hsl(var(--primary)) 10%, hsl(var(--primary) / 0.7) 90%)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  color: 'transparent',
-                }}
-              >
-                {w}
-              </span>
-            ))}
+          <span className="text-foreground">The Marketplace for </span>
+          <span className="relative inline-block align-baseline">
+            <span
+              key={ROTATING_WORDS[wordIndex]}
+              className="inline-block animate-fade-in"
+              style={{
+                backgroundImage:
+                  'linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.75) 100%)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                color: 'transparent',
+              }}
+            >
+              {ROTATING_WORDS[wordIndex]}
+            </span>
           </span>
-          <span className="block text-foreground">Creators</span>
+          <br />
+          <span className="text-foreground">Creators</span>
         </h1>
 
         <p className="mt-6 max-w-xl text-sm sm:text-base text-muted-foreground">
