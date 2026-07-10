@@ -38,7 +38,6 @@ export function LandingHero() {
     return () => clearInterval(t);
   }, [backdrops.length]);
 
-  const current = backdrops[bgIndex];
   const inputRef = useRef<HTMLInputElement>(null);
 
   const submit = (e: React.FormEvent) => {
