@@ -66,7 +66,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write your de
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleItalic().run()}
+          onClick={() => (editor.chain().focus() as any).toggleItalic().run()}
           className={cn("h-8 w-8 p-0", editor.isActive('italic') && 'bg-muted')}
         >
           <Italic className="h-4 w-4" />
