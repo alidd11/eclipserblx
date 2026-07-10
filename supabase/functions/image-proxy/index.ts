@@ -19,6 +19,8 @@ Deno.serve(async (req) => {
   const url = new URL(req.url)
   const imageUrl = url.searchParams.get('url')
   const width = url.searchParams.get('w')
+  const height = url.searchParams.get('h')
+  const resize = url.searchParams.get('resize')
   const quality = url.searchParams.get('q') || '80'
 
   if (!imageUrl) {
@@ -67,6 +69,10 @@ Deno.serve(async (req) => {
 
       // Add transform parameters
       if (width) renderUrl.searchParams.set('width', width)
+      if (height) renderUrl.searchParams.set('height', height)
+      if (resize === 'cover' || resize === 'contain' || resize === 'fill') {
+        renderUrl.searchParams.set('resize', resize)
+      }
       renderUrl.searchParams.set('quality', quality)
       if (supportsWebP) renderUrl.searchParams.set('format', 'origin')
 

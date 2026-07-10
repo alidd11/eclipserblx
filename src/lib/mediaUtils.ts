@@ -57,11 +57,16 @@ export function isStaticImageUrl(url: string | null | undefined): boolean {
  * Gets the first static image URL from a media array (skips videos).
  * Returns an optimized URL with long-cache headers via the image proxy.
  */
-export function getFirstImageUrl(media: string[] | null | undefined, width?: number): string | null {
+export function getFirstImageUrl(
+  media: string[] | null | undefined,
+  width?: number,
+  height?: number,
+  resize?: 'cover' | 'contain' | 'fill',
+): string | null {
   const validMedia = getValidMediaUrls(media);
   const firstImage = validMedia.find((item) => !isVideoUrl(item));
   if (!firstImage) return null;
-  return optimizeImageUrl(firstImage, width);
+  return optimizeImageUrl(firstImage, width, height, resize);
 }
 
 /**
@@ -77,12 +82,17 @@ export function sortMediaVideosFirst(media: string[] | null | undefined): string
 /**
  * Gets the first media item prioritizing video, or first valid media if no video.
  */
-export function getFirstMediaPrioritizeVideo(media: string[] | null | undefined, width?: number): string | null {
+export function getFirstMediaPrioritizeVideo(
+  media: string[] | null | undefined,
+  width?: number,
+  height?: number,
+  resize?: 'cover' | 'contain' | 'fill',
+): string | null {
   const validMedia = getValidMediaUrls(media);
   if (validMedia.length === 0) return null;
 
   const firstVideo = validMedia.find(isVideoUrl);
-  return firstVideo ?? optimizeImageUrl(validMedia[0], width);
+  return firstVideo ?? optimizeImageUrl(validMedia[0], width, height, resize);
 }
 
 /**
@@ -93,6 +103,8 @@ export function getCardMediaChain(
   media: string[] | null | undefined,
   fallbackMedia?: string | null,
   width?: number,
+  height?: number,
+  resize?: 'cover' | 'contain' | 'fill',
 ): string[] {
   const combined = [
     ...getValidMediaUrls(media),
@@ -100,7 +112,7 @@ export function getCardMediaChain(
   ];
 
   const unique = Array.from(new Set(combined));
-  const images = unique.filter((item) => !isVideoUrl(item)).map((url) => optimizeImageUrl(url, width));
+  const images = unique.filter((item) => !isVideoUrl(item)).map((url) => optimizeImageUrl(url, width, height, resize));
   const videos = unique.filter(isVideoUrl);
 
   return [...images, ...videos];

@@ -51,7 +51,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const inCart = isInCart(id);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const mediaChain = useMemo(() => getCardMediaChain(images, image, 620), [images, image]);
+  const mediaChain = useMemo(() => getCardMediaChain(images, image, 620, 465, 'contain'), [images, image]);
   const [mediaIndex, setMediaIndex] = useState(0);
 
   useEffect(() => {

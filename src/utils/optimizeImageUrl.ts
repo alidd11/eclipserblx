@@ -15,8 +15,8 @@ const PROJECT_ID = import.meta.env.VITE_SUPABASE_PROJECT_ID || '';
 export function optimizeImageUrl(
   url: string | null | undefined,
   width?: number,
-  _height?: number,
-  _resize?: 'cover' | 'contain' | 'fill',
+  height?: number,
+  resize?: 'cover' | 'contain' | 'fill',
   quality?: number,
 ): string {
   if (!url) return '';
@@ -26,6 +26,9 @@ export function optimizeImageUrl(
     let proxyUrl = `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
     // Pass width for on-the-fly resizing (saves bandwidth significantly)
     if (width) proxyUrl += `&w=${Math.round(width)}`;
+    // Pass height + contain mode when callers need uncropped product thumbnails
+    if (height) proxyUrl += `&h=${Math.round(height)}`;
+    if (resize) proxyUrl += `&resize=${resize}`;
     // Pass quality (default 80 in proxy, allow override)
     if (quality) proxyUrl += `&q=${quality}`;
     return proxyUrl;
