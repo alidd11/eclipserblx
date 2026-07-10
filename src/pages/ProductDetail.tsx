@@ -293,17 +293,11 @@ export default function ProductDetail() {
  <div className="grid lg:grid-cols-2 gap-5 lg:gap-10 max-w-full">
  {/* Images */}
  <div className="space-y-3 min-w-0">
- <div 
- className="aspect-[16/10] lg:aspect-[16/9] lg:max-h-[480px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
- onContextMenu={(e) => e.preventDefault()}
- onClick={() => {
- const currentImg = images[selectedImage];
- if (currentImg && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(currentImg)) {
- setIsZoomOpen(true);
- }
- }}
- {...swipeHandlers}
- >
+				<div 
+					className="aspect-[16/10] lg:aspect-[16/9] lg:max-h-[480px] rounded-xl overflow-hidden select-none relative bg-muted/30 group w-full touch-pan-y border border-border/30 flex items-center justify-center"
+					onContextMenu={(e) => e.preventDefault()}
+					{...swipeHandlers}
+				>
  {images[selectedImage] ? (
  isVideoUrl(images[selectedImage]) ? (
  <BackgroundVideo
