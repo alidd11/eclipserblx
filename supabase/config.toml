@@ -179,8 +179,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.smart-search]
     verify_jwt = false
-  [functions.store-domain-manager]
-    verify_jwt = false
   [functions.stripe-subscription-webhook]
     verify_jwt = false
   [functions.stripe-webhook]
