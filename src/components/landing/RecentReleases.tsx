@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ProductCard } from '@/components/ui/ProductCard';
+import { ProductCardSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
@@ -39,11 +40,17 @@ export function RecentReleases() {
 
   if (isLoading) {
     return (
-      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <Skeleton className="h-6 w-48 mb-4" />
-        <div className="flex gap-3 overflow-hidden">
+      <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="flex items-end justify-between gap-4 mb-6 pb-4 border-b border-border/60">
+          <div className="min-w-0 space-y-1.5">
+            <Skeleton className="h-3 w-32" />
+            <Skeleton className="h-7 w-48" />
+          </div>
+          <Skeleton className="h-4 w-16" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="min-w-[220px] aspect-[4/3] rounded-lg" />
+            <ProductCardSkeleton key={i} />
           ))}
         </div>
       </section>
@@ -77,7 +84,11 @@ export function RecentReleases() {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
-              <div key={product.id}>
+              <div
+                key={product.id}
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 60}ms` }}
+              >
                 <ProductCard
                   id={product.id}
                   name={product.name}
