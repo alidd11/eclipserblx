@@ -291,7 +291,7 @@ export default function AdminIncomeSources() {
   }, [allTransactions, periodStart, periodDays]);
 
   const grandTotal = Object.values(summaryBySource).reduce((sum, s) => sum + s.total, 0);
-  const isLoading = ordersLoading || subsLoading || creditsLoading || robuxLoading || commissionLoading;
+  const isLoading = ordersLoading || subsLoading || creditsLoading || commissionLoading;
 
   const exportCSV = () => {
     const headers = ['Date', 'Source', 'Description', 'Amount (£)', 'Status', 'ID'];
