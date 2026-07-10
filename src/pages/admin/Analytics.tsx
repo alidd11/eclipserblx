@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PercentChange } from '@/components/admin/analytics/PercentChange';
 import { exportToCSV } from '@/lib/export-csv';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 export default function AdminAnalytics() {
  const [activeTab, setActiveTab] = useState('overview');
@@ -216,7 +217,7 @@ export default function AdminAnalytics() {
  {productDownloads?.map((product, index) => (
  <div key={product.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary font-bold text-xs shrink-0">{index + 1}</div>
- {product.images?.[0] && <img src={product.images[0]} alt={product.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />}
+  {product.images?.[0] && <img src={optimizeImageUrl(product.images[0], 36, 36, 'contain')} alt={product.name} className="w-9 h-9 rounded-lg object-contain object-center shrink-0" />}
  <div className="flex-1 min-w-0"><p className="font-medium text-sm truncate">{product.name}</p></div>
  <div className="flex items-center gap-1 text-primary font-bold text-sm shrink-0"><Download className="h-3.5 w-3.5" />{product.download_count ?? 0}</div>
  </div>

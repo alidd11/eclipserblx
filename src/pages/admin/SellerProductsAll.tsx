@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { Label } from "@/components/ui/label";
 import { formatGBP } from '@/lib/formatters';
 
@@ -272,7 +273,7 @@ export default function SellerProductsAll() {
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-10 w-10 rounded-md bg-muted shrink-0 overflow-hidden">
                         {product.images?.[0] ? (
-                          <img src={product.images[0]} alt="" className="h-full w-full object-cover" />
+                          <img src={optimizeImageUrl(product.images[0], 40, 40, 'contain')} alt="" className="h-full w-full object-contain object-center" />
                         ) : (
                           <div className="h-full w-full flex items-center justify-center">
                             <Package className="h-4 w-4 text-muted-foreground" />
