@@ -61,14 +61,14 @@ export function LandingHero() {
         </div>
 
         {/* Editorial split: featured hero product + side rail */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 lg:h-[400px]">
           {/* Featured hero */}
           <HeroFeature hero={hero} id="hero-heading" />
 
           {/* Side rail */}
-          <div className="flex flex-col gap-4 lg:gap-5">
+          <div className="flex flex-col gap-3 lg:gap-4 min-h-0">
             {rail.length > 0
-              ? rail.map((p) => <RailPick key={p.id} pick={p} />)
+              ? rail.slice(0, 3).map((p) => <RailPick key={p.id} pick={p} />)
               : Array.from({ length: 3 }).map((_, i) => <RailSkeleton key={i} />)}
           </div>
         </div>
@@ -80,7 +80,7 @@ export function LandingHero() {
 function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
   if (!hero) {
     return (
-      <div className="lg:col-span-2 aspect-[16/10] lg:aspect-auto lg:min-h-[440px] bg-muted/30 border border-border animate-pulse" />
+      <div className="lg:col-span-2 aspect-[16/10] lg:aspect-auto lg:min-h-[360px] bg-muted/30 border border-border animate-pulse" />
     );
   }
 
@@ -89,7 +89,7 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
       to={`/products/${hero.slug}`}
       className="group relative lg:col-span-2 overflow-hidden border border-border bg-card"
     >
-      <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[440px] bg-muted overflow-hidden">
+      <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] bg-muted overflow-hidden">
         <img
           src={hero.image!}
           alt={hero.name}
@@ -156,9 +156,9 @@ function RailPick({ pick }: { pick: HeroPick }) {
   return (
     <Link
       to={`/products/${pick.slug}`}
-      className="group flex items-stretch gap-3 border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
+      className="group flex items-stretch gap-3 border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors flex-1 min-h-0"
     >
-      <div className="relative w-28 sm:w-36 shrink-0 aspect-square bg-muted overflow-hidden">
+      <div className="relative w-28 sm:w-32 shrink-0 bg-muted overflow-hidden self-stretch">
         {pick.image ? (
           <img
             src={pick.image}
