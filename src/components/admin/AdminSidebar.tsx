@@ -100,7 +100,7 @@ const navGroups: NavGroup[] = [
       { title: 'Product Review', icon: Package, href: '/admin/seller-product-review', permissions: ['view_seller_stores'] },
       { title: 'All Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },
       { title: 'IP Reports', icon: Shield, href: '/admin/ip-reports', permissions: ['manage_seller_stores'] },
-      { title: 'Custom Domains', icon: Globe, href: '/admin/custom-domains', permissions: ['manage_seller_stores'], dividerAfter: true },
+      
       { title: 'Developer Submissions', icon: Upload, href: '/admin/developer-submissions', permissions: ['manage_developer_submissions'], dividerAfter: true },
       { title: 'Seller Documents', icon: FolderOpen, href: '/admin/seller-documents', permissions: ['manage_seller_stores'] },
       { title: 'Public Documents', icon: FolderOpen, href: '/admin/public-documents', permissions: ['manage_seller_stores'] },

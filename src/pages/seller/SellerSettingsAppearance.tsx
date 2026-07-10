@@ -661,56 +661,6 @@ export default function SellerSettingsAppearance() {
               </div>
             </div>
 
-            <div className="border border-border rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-muted/30">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <Image className="h-5 w-5" />
-                  Favicon
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Custom browser icon for your store (visible on custom domains)
-                </p>
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="space-y-2">
-                  <Label>Favicon URL</Label>
-                  <Input
-                    value={formData.favicon_url}
-                    onChange={(e) => setFormData({ ...formData, favicon_url: e.target.value })}
-                    placeholder="https://example.com/favicon.ico"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Recommended: 32x32 or 64x64 .ico or .png file
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-border rounded-xl overflow-hidden">
-              <div className="px-4 py-3 border-b border-border bg-muted/30">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <EyeOff className="h-5 w-5" />
-                  Branding
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Control the "Powered by Eclipse" badge on your custom domain
-                </p>
-              </div>
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label>Hide "Powered by" Badge</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Only applies to stores using a custom domain
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formData.hide_branding}
-                    onCheckedChange={(checked) => setFormData({ ...formData, hide_branding: checked })}
-                  />
-                </div>
-              </div>
-            </div>
           </TabsContent>
         </Tabs>
 

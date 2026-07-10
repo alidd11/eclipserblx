@@ -1,39 +1,13 @@
 import { Link } from 'react-router-dom';
 import { SITE_NAME } from '@/lib/constants';
 import { useTranslation } from 'react-i18next';
-import { useStoreDomain } from '@/hooks/useStoreDomain';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { Shield, Lock } from 'lucide-react';
 
 export function Footer() {
   const { t } = useTranslation();
   const { discordUrl } = useDiscordUrl();
-  const { isCustomStoreDomain, storeDomainData } = useStoreDomain();
 
-  // Minimal footer for custom store domains
-  if (isCustomStoreDomain) {
-    const storeName = storeDomainData?.stores?.name || 'Store';
-    return (
-      <footer className="border-t border-border mt-auto" role="contentinfo" aria-label="Site footer">
-        <div className="px-4 sm:px-6 lg:px-8 py-6 max-w-3xl mx-auto flex flex-col gap-1">
-          <p className="text-sm text-foreground/70">
-            © {new Date().getFullYear()} {storeName}. All rights reserved.
-          </p>
-          <p className="text-sm text-foreground/70">
-            Powered by{' '}
-            <a
-              href="https://eclipserblx.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline"
-            >
-              Eclipse
-            </a>
-          </p>
-        </div>
-      </footer>
-    );
-  }
 
   const columns = [
     {

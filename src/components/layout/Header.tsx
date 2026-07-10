@@ -18,7 +18,7 @@ import { HeaderSearchBar } from './HeaderSearchBar';
 import { CurrencySelector } from './CurrencySelector';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
-import { useStoreDomain } from '@/hooks/useStoreDomain';
+
 
 // Nav links use translation keys - labels resolved in render
 const navLinkDefs = [
@@ -51,9 +51,10 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
   const { itemCount } = useCart();
   
   const { t } = useTranslation();
-  const { isCustomStoreDomain, storeDomainData } = useStoreDomain();
-  const storeLogoUrl = storeDomainData?.stores?.logo_url;
-  const storeName = storeDomainData?.stores?.name;
+  const isCustomStoreDomain = false;
+  const storeLogoUrl: string | undefined = undefined;
+  const storeName: string | undefined = undefined;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const systemStatus = useSystemStatus();
   const [showSignOutDialog, setShowSignOutDialog] = useState(false);

@@ -106,7 +106,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: 'Store Profile', icon: Store, href: '/seller/settings/profile' },
       { title: 'Appearance', icon: Palette, href: '/seller/settings/appearance' },
-      { title: 'Custom Domain', icon: Globe, href: '/seller/settings/domain' },
+      
       { title: 'Payments', icon: CreditCard, href: '/seller/settings/payments' },
       { title: 'Team', icon: Users, href: '/seller/settings/team' },
     ],
