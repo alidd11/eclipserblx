@@ -76,7 +76,7 @@ export function RichTextEditor({ content, onChange, placeholder = 'Write your de
           type="button"
           variant="ghost"
           size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() => (editor.chain().focus() as any).toggleHeading({ level: 2 }).run()}
           className={cn("h-8 w-8 p-0", editor.isActive('heading', { level: 2 }) && 'bg-muted')}
         >
           <Heading2 className="h-4 w-4" />
