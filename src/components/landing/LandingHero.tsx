@@ -33,7 +33,7 @@ function toPick(p: ScoredProduct): HeroPick {
 }
 
 export function LandingHero() {
-  const { data: products } = useFeaturedProducts({ limit: 5, queryKey: 'landing-hero-editorial' });
+  const { data: products } = useFeaturedProducts({ limit: 8, maxPerStore: 5, queryKey: 'landing-hero-editorial' });
 
   const picks = useMemo(() => (products ?? []).map(toPick).filter((p) => p.image), [products]);
   const hero = picks[0];
