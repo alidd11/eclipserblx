@@ -1,12 +1,12 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Check, ChevronLeft, Sparkles, ZoomIn, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Sparkles, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
-import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
+
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
@@ -46,7 +46,7 @@ export default function ProductDetail() {
  const { addItem, isInCart } = useCart();
  const { formatPrice } = useCurrency();
  const [selectedImage, setSelectedImage] = useState(0);
- const [isZoomOpen, setIsZoomOpen] = useState(false);
+ 
  const [showSwipeHint, setShowSwipeHint] = useState(true);
  const [showIPReportDialog, setShowIPReportDialog] = useState(false);
  const [pwywAmount, setPwywAmount] = useState<string>('');
@@ -293,17 +293,11 @@ export default function ProductDetail() {
  <div className="grid lg:grid-cols-2 gap-5 lg:gap-10 max-w-full">
  {/* Images */}
  <div className="space-y-3 min-w-0">
- <div 
- className="aspect-[16/10] lg:aspect-[16/9] lg:max-h-[480px] rounded-xl overflow-hidden select-none relative bg-muted/30 cursor-zoom-in group w-full touch-pan-y border border-border/30 flex items-center justify-center"
- onContextMenu={(e) => e.preventDefault()}
- onClick={() => {
- const currentImg = images[selectedImage];
- if (currentImg && !/\.(mp4|webm|mov|avi|mkv)(\?|$)/i.test(currentImg)) {
- setIsZoomOpen(true);
- }
- }}
- {...swipeHandlers}
- >
+				<div 
+					className="aspect-[16/10] lg:aspect-[16/9] lg:max-h-[480px] rounded-xl overflow-hidden select-none relative bg-muted/30 group w-full touch-pan-y border border-border/30 flex items-center justify-center"
+					onContextMenu={(e) => e.preventDefault()}
+					{...swipeHandlers}
+				>
  {images[selectedImage] ? (
  isVideoUrl(images[selectedImage]) ? (
  <BackgroundVideo
@@ -338,56 +332,38 @@ export default function ProductDetail() {
  </div>
  )}
  
- {/* Zoom hint */}
- {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
- <div className="absolute top-3 right-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-foreground/60 rounded-full p-2">
- <ZoomIn className="h-5 w-5 text-foreground" />
- </div>
- </div>
- )}
- 
- {/* Pagination dots */}
- {images.length > 1 && (
- <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
- {images.map((_, i) => (
- <div
- key={i}
- className={cn(
- "h-1.5 rounded-full transition-all duration-200",
- selectedImage === i 
- ? "bg-primary w-4" 
- : "bg-background/40 w-1.5"
- )}
- />
- ))}
- </div>
- )}
- 
- {/* Swipe hint overlay - mobile only */}
- {isMobile && images.length > 1 && showSwipeHint && (
- <div 
- className="absolute inset-0 flex items-center justify-center bg-foreground/40 animate-fade-in pointer-events-none"
- onAnimationEnd={() => {}}
- >
- <div className="flex items-center gap-3 text-foreground/90">
- <ChevronLeft className="h-6 w-6 animate-pulse" />
- <span className="text-sm font-medium">Swipe to browse</span>
- <ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />
- </div>
- </div>
- )}
- </div>
- 
- {/* Zoom Modal */}
- {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
- <ImageZoomModal
- src={images[selectedImage]}
- alt={product.name}
- isOpen={isZoomOpen}
- onClose={() => setIsZoomOpen(false)}
- />
- )}
+					{/* Pagination dots */}
+					{images.length > 1 && (
+						<div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
+							{images.map((_, i) => (
+								<div
+									key={i}
+									className={cn(
+										"h-1.5 rounded-full transition-all duration-200",
+										selectedImage === i 
+											? "bg-primary w-4" 
+											: "bg-background/40 w-1.5"
+									)}
+								/>
+							))}
+						</div>
+					)}
+					
+					{/* Swipe hint overlay - mobile only */}
+					{isMobile && images.length > 1 && showSwipeHint && (
+						<div 
+							className="absolute inset-0 flex items-center justify-center bg-foreground/40 animate-fade-in pointer-events-none"
+							onAnimationEnd={() => {}}
+						>
+							<div className="flex items-center gap-3 text-foreground/90">
+								<ChevronLeft className="h-6 w-6 animate-pulse" />
+								<span className="text-sm font-medium">Swipe to browse</span>
+								<ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />
+							</div>
+						</div>
+					)}
+				</div>
+
  
  {images.length > 1 && (
  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
