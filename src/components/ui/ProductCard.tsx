@@ -150,23 +150,23 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
         )}
 
-        {/* Image — insetted 16:10 frame */}
-        <div className="relative p-3 pb-0 flex-shrink-0">
-          <div className="relative w-full aspect-[16/10] bg-muted overflow-hidden">
+        {/* Image — full product image, no cropping */}
+        <div className="relative p-2.5 pb-0 flex-shrink-0">
+          <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-muted/60 to-background rounded-md overflow-hidden">
             {showMedia ? (
               isVideo ? (
                 <BackgroundVideo
                   ref={videoRef}
                   src={currentMedia!}
                   onError={handleMediaError}
-                  className="w-full h-full object-cover object-center opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                  className="w-full h-full object-contain object-center"
                 />
               ) : (
                 <img
                   src={currentMedia!}
                   alt={name}
                   width={620}
-                  height={388}
+                  height={465}
                   loading={priority ? 'eager' : 'lazy'}
                   decoding={priority ? 'sync' : 'async'}
                   {...(priority ? ({ fetchpriority: 'high' } as Record<string, string>) : {})}
@@ -175,11 +175,11 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                     const img = e.currentTarget;
                     if (img.naturalWidth === 0) handleMediaError();
                   }}
-                  className="w-full h-full object-cover object-center opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                  className="w-full h-full object-contain object-center"
                 />
               )
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
+              <div className="w-full h-full flex items-center justify-center">
                 <span className="text-4xl font-serif text-muted-foreground/25">
                   {name.charAt(0)}
                 </span>
