@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  DollarSign, ShoppingCart, CreditCard, Crown, Gamepad2, Percent,
+  DollarSign, ShoppingCart, CreditCard, Crown, Percent,
   ArrowUpRight, ArrowDownRight, Search, Filter, Download,
   TrendingUp, Calendar
 } from 'lucide-react';
@@ -23,9 +23,7 @@ import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { formatGBP } from '@/lib/formatters';
 
-const ROBUX_TO_GBP_RATE = 0.00275;
-
-type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'credits' | 'robux' | 'commission';
+type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'credits' | 'commission';
 type TimePeriod = '7d' | '30d' | 'month' | 'year' | 'all';
 
 interface UnifiedTransaction {
@@ -44,7 +42,6 @@ const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: 
   subscriptions: { label: 'Subscriptions', icon: Crown, color: 'text-amber-500', chartColor: 'hsl(38, 92%, 50%)', badgeVariant: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
   
   credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: 'hsl(262, 100%, 71%)', badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
-  robux: { label: 'Robux', icon: Gamepad2, color: 'text-red-500', chartColor: 'hsl(0, 84%, 60%)', badgeVariant: 'bg-red-500/10 text-red-500 border-red-500/20' },
   commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', chartColor: 'hsl(25, 95%, 53%)', badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
 };
 
@@ -145,20 +142,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const { data: robuxData, isLoading: robuxLoading } = useQuery({
-    queryKey: ['income-sources-robux'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('robux_transactions')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 60000,
-    retry: 2,
-  });
 
   const { data: commissionData, isLoading: commissionLoading } = useQuery({
     queryKey: ['income-sources-commission'],
