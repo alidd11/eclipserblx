@@ -80,7 +80,7 @@ export function LandingHero() {
 function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
   if (!hero) {
     return (
-      <div className="lg:col-span-2 aspect-[16/10] lg:aspect-auto lg:min-h-[440px] bg-muted/30 border border-border animate-pulse" />
+      <div className="lg:col-span-2 aspect-[16/10] lg:aspect-auto lg:min-h-[360px] bg-muted/30 border border-border animate-pulse" />
     );
   }
 
