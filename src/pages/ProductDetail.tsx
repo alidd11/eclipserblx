@@ -332,56 +332,38 @@ export default function ProductDetail() {
  </div>
  )}
  
- {/* Zoom hint */}
- {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
- <div className="absolute top-3 right-3 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
- <div className="bg-foreground/60 rounded-full p-2">
- <ZoomIn className="h-5 w-5 text-foreground" />
- </div>
- </div>
- )}
- 
- {/* Pagination dots */}
- {images.length > 1 && (
- <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
- {images.map((_, i) => (
- <div
- key={i}
- className={cn(
- "h-1.5 rounded-full transition-all duration-200",
- selectedImage === i 
- ? "bg-primary w-4" 
- : "bg-background/40 w-1.5"
- )}
- />
- ))}
- </div>
- )}
- 
- {/* Swipe hint overlay - mobile only */}
- {isMobile && images.length > 1 && showSwipeHint && (
- <div 
- className="absolute inset-0 flex items-center justify-center bg-foreground/40 animate-fade-in pointer-events-none"
- onAnimationEnd={() => {}}
- >
- <div className="flex items-center gap-3 text-foreground/90">
- <ChevronLeft className="h-6 w-6 animate-pulse" />
- <span className="text-sm font-medium">Swipe to browse</span>
- <ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />
- </div>
- </div>
- )}
- </div>
- 
- {/* Zoom Modal */}
- {images[selectedImage] && !isVideoUrl(images[selectedImage]) && (
- <ImageZoomModal
- src={images[selectedImage]}
- alt={product.name}
- isOpen={isZoomOpen}
- onClose={() => setIsZoomOpen(false)}
- />
- )}
+					{/* Pagination dots */}
+					{images.length > 1 && (
+						<div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 pointer-events-none z-20">
+							{images.map((_, i) => (
+								<div
+									key={i}
+									className={cn(
+										"h-1.5 rounded-full transition-all duration-200",
+										selectedImage === i 
+											? "bg-primary w-4" 
+											: "bg-background/40 w-1.5"
+									)}
+								/>
+							))}
+						</div>
+					)}
+					
+					{/* Swipe hint overlay - mobile only */}
+					{isMobile && images.length > 1 && showSwipeHint && (
+						<div 
+							className="absolute inset-0 flex items-center justify-center bg-foreground/40 animate-fade-in pointer-events-none"
+							onAnimationEnd={() => {}}
+						>
+							<div className="flex items-center gap-3 text-foreground/90">
+								<ChevronLeft className="h-6 w-6 animate-pulse" />
+								<span className="text-sm font-medium">Swipe to browse</span>
+								<ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />
+							</div>
+						</div>
+					)}
+				</div>
+
  
  {images.length > 1 && (
  <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
