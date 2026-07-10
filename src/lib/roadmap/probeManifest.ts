@@ -83,7 +83,7 @@ const STATIC_PRESENT = new Set<string>([
   'supabase/functions/create-affiliate-connect-account/index.ts',
   'supabase/functions/create-advertisement-checkout/index.ts',
   'supabase/functions/process-scheduled-ads/index.ts',
-  'supabase/functions/domain-subscription/index.ts',
+  
 ]);
 
 const presentPaths = new Set<string>([
