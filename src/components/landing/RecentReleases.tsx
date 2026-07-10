@@ -91,7 +91,7 @@ export function RecentReleases() {
           </div>
         </div>
 
-        <div ref={scrollRef} className="flex gap-3 lg:gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-4 lg:overflow-visible lg:pb-0">
+        <div ref={scrollRef} className="flex gap-3 lg:gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0">
           {products.map((product, index) => {
             const store = product.stores as any;
             const category = product.categories as any;
