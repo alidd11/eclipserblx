@@ -295,7 +295,6 @@ export default function AdminProducts() {
       release_at: formatDateTimeForInput(product.release_at), schedule_enabled: hasSchedule,
       early_access_enabled: hasSchedule && hasEarlyAccess, early_access_hours: product.early_access_hours?.toString() || '',
       marketplace_store: product.store_id === QUANTIS_STORE_ID ? 'quantis' : product.store_id === VINO_STORE_ID ? 'vino' : null,
-      marketplace_store: product.store_id === QUANTIS_STORE_ID ? 'quantis' : product.store_id === VINO_STORE_ID ? 'vino' : null,
     });
     setIsDialogOpen(true);
   };
