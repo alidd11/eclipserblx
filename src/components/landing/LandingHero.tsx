@@ -2,7 +2,7 @@ import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useMemo } from 'react';
 import { useFeaturedProducts, type ScoredProduct } from '@/hooks/useFeaturedProducts';
-import { formatGBP } from '@/lib/format';
+import { formatGBP } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
 
 interface HeroPick {
