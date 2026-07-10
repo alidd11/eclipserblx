@@ -64,23 +64,28 @@ export function RecentReleases() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="border-l-2 border-primary pl-3">
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Recent Releases</h2>
-            </div>
-            <span className="text-[10px] text-muted-foreground font-medium bg-muted/60 px-1.5 py-0.5 rounded">{products.length} items</span>
+        <div className="flex items-end justify-between gap-4 mb-6 pb-4 border-b border-border/60">
+          <div className="min-w-0">
+            <span className="block text-[10px] font-semibold tracking-[0.25em] uppercase text-primary mb-1.5">
+              Fresh from creators
+            </span>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">
+              Recent releases
+            </h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 shrink-0">
             <div className="hidden sm:flex items-center gap-1">
-              <Button variant="outline" size="icon" aria-label="Go back" className="h-7 w-7 rounded-md" onClick={() => scroll('left')}>
+              <Button variant="outline" size="icon" aria-label="Go back" className="h-8 w-8 rounded-md" onClick={() => scroll('left')}>
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="outline" size="icon" aria-label="Go forward" className="h-7 w-7 rounded-md" onClick={() => scroll('right')}>
+              <Button variant="outline" size="icon" aria-label="Go forward" className="h-8 w-8 rounded-md" onClick={() => scroll('right')}>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <Link to="/products?sort=newest" className="text-sm text-foreground hover:text-primary hover:underline flex items-center gap-1">
+            <Link
+              to="/products?sort=newest"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 uppercase tracking-widest font-semibold"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
