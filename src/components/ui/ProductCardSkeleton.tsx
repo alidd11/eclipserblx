@@ -3,34 +3,34 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export const ProductCardSkeleton = memo(function ProductCardSkeleton() {
   return (
-    <div className="overflow-hidden h-full flex flex-col rounded-xl bg-card border border-border/60">
-      {/* Image skeleton — matches ProductCard 5/4 */}
-      <Skeleton className="aspect-[5/4] w-full" />
-      
-      {/* Content skeleton */}
-      <div className="p-3.5 sm:p-4 flex flex-col flex-1 gap-2">
-        {/* Category */}
-        <Skeleton className="h-2.5 w-14" />
-        
-        {/* Title */}
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-3/4" />
-        
-        {/* Store */}
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <Skeleton className="h-4 w-4 rounded-sm" />
-          <Skeleton className="h-3 w-16" />
+    <div className="h-full flex flex-col bg-card border border-border/60 overflow-hidden">
+      <div className="p-3 pb-0">
+        <Skeleton className="aspect-[16/10] w-full" />
+      </div>
+      <div className="p-5 md:p-6 flex flex-col flex-1">
+        <div className="flex justify-between items-start gap-4 mb-5">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-2.5 w-20" />
+            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-6 w-2/3" />
+          </div>
+          <Skeleton className="h-6 w-14 shrink-0" />
         </div>
-        
-        {/* Price + cart */}
-        <div className="flex items-center justify-between mt-auto pt-2.5 border-t border-border/40">
-          <Skeleton className="h-5 w-16" />
-          <Skeleton className="h-9 w-9 rounded-lg" />
+        <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-5 mt-auto">
+          <div className="flex items-center gap-3 min-w-0">
+            <Skeleton className="h-9 w-9 rounded-full" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-2 w-16" />
+              <Skeleton className="h-2.5 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-11 w-11" />
         </div>
       </div>
     </div>
   );
 });
+
 
 export const ProductGridSkeleton = memo(function ProductGridSkeleton({ 
   count = 8 
