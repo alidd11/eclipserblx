@@ -332,8 +332,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
         </div>
 
-        {/* Corner accent */}
-        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary pointer-events-none" />
       </article>
     </Link>
   );
