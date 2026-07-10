@@ -46,7 +46,7 @@ export function GlobalCategoryBar() {
   if (!categories?.length) return null;
 
   return (
-    <div className="border-b border-border/30">
+    <div className="border-b border-border/30 bg-background/95 backdrop-blur-md">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <nav className="flex items-center gap-1 overflow-x-auto scrollbar-hide py-2 -mx-1 px-1">
           <Link
