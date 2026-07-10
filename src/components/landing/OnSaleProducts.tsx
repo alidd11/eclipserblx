@@ -140,7 +140,7 @@ export function OnSaleProducts() {
             const store = product.stores as any;
             const category = product.categories as any;
             return (
-              <div key={product.id} className="min-w-[200px] max-w-[240px] flex-shrink-0 snap-start sm:min-w-[220px] sm:max-w-[260px] lg:min-w-0 lg:max-w-none relative">
+              <div key={product.id} className="w-[82%] min-w-[260px] flex-shrink-0 snap-start sm:w-[44%] sm:min-w-[240px] lg:w-auto lg:min-w-0 relative">
                 {product.discountPercent > 0 && (
                   <div className="absolute top-2 right-2 z-10 bg-red-500 text-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
                     -{product.discountPercent}%
