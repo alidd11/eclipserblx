@@ -157,12 +157,7 @@ export function LandingHero() {
           </Link>
         </form>
       </div>
-
-            {current.name}
-            {current.store ? <span className="text-muted-foreground font-normal"> · {current.store}</span> : null}
-          </Link>
-        </div>
-      )}
     </section>
+
   );
 }
