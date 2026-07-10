@@ -144,7 +144,7 @@ const navGroups: NavGroup[] = [
       { title: 'Orion', icon: Bot, href: '/admin/orion', permissions: [], roles: ['admin'] },
       { title: 'Rate Limits', icon: Shield, href: '/admin/rate-limits', permissions: ['view_audit_logs'] },
       { title: 'Role Permissions', icon: Shield, href: '/admin/role-permissions', permissions: ['manage_permissions'], dividerAfter: true },
-      { title: 'Roblox', icon: Gamepad2, href: '/admin/roblox-settings', permissions: ['manage_settings'], dividerAfter: true },
+      
       { title: 'SEO & Indexing', icon: Activity, href: '/admin/seo-indexing', permissions: ['manage_settings'] },
       { title: 'Email Templates', icon: Mail, href: '/admin/email-templates', permissions: ['manage_settings'] },
       { title: 'GDPR Compliance', icon: Scale, href: '/admin/gdpr-compliance', permissions: [], roles: ['admin'] },

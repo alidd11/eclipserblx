@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { IncomeErrorState } from './IncomeErrorState';
 import { formatGBP } from '@/lib/formatters';
 
-const ROBUX_TO_GBP_RATE = 0.00275;
+
 
 interface StripeBalanceData {
  balance: { available: number; pending: number; currency: string };
@@ -146,22 +146,9 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- // Robux
- const { data: robuxData, isLoading: robuxLoading, isError: robuxError, refetch: refetchRobux } = useQuery({
- queryKey: ['admin-financial-overview-robux'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('robux_transactions')
- .select('robux_after_tax, created_at');
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
-
- const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading;
  // Only show full error if ALL non-Stripe sources fail — Stripe is optional (edge function may be down)
- const coreErrors = [ordersError, subsError, commError, creditsError, robuxError];
+ const coreErrors = [ordersError, subsError, commError, creditsError];
  const hasError = coreErrors.every(Boolean);
 
  const handleRetryAll = () => {
@@ -170,7 +157,6 @@ export function FinancialOverview() {
  refetchSubs();
  refetchComm();
  refetchCredits();
- refetchRobux();
  };
 
  const metrics = useMemo(() => {
@@ -220,11 +206,6 @@ export function FinancialOverview() {
  // Credits
  const totalCredits = (creditPurchases ?? []).reduce((s, c) => s + (Number(c.amount) || 0), 0);
 
- // Robux in GBP
- const totalRobuxGBP = (robuxData ?? []).reduce(
- (s, r) => s + (Number(r.robux_after_tax) || 0) * ROBUX_TO_GBP_RATE,
- 0
- );
 
  // Stripe actual balance
  const stripeAvailable = stripeBalance?.balance?.available ?? 0;
@@ -250,7 +231,6 @@ export function FinancialOverview() {
  
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
- { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
  ].filter(c => c.value > 0);
 
  // 30-day revenue trend (daily)
@@ -302,7 +282,7 @@ export function FinancialOverview() {
  stripeFees30d,
  stripeRefunds30d,
  };
- }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance]);
+ }, [ordersData, commissionData, subsData, creditPurchases, stripeBalance]);
 
  if (hasError && !isLoading) {
  return (

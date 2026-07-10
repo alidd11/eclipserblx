@@ -49,16 +49,13 @@ interface ProductForm {
   schedule_enabled: boolean;
   early_access_enabled: boolean;
   early_access_hours: string;
-  robux_enabled: boolean;
-  robux_product_id: string;
-  robux_price: string;
   marketplace_store: 'quantis' | 'vino' | null;
 }
 
 const emptyForm: ProductForm = {
   name: '', slug: '', price: '', description: '', category_id: '', is_active: true, is_featured: false, is_resellable: false,
   images: '', asset_file_url: '', release_at: '', schedule_enabled: false, early_access_enabled: false, early_access_hours: '',
-  robux_enabled: false, robux_product_id: '', robux_price: '', marketplace_store: 'quantis',
+  marketplace_store: 'quantis',
 };
 
 interface MassEditForm {
@@ -201,7 +198,7 @@ export default function AdminProducts() {
   // Mutations
   const saveMutation = useMutation({
     mutationFn: async (data: ProductForm) => {
-      const robuxPriceValue = data.robux_price?.trim() ? Number.parseInt(data.robux_price, 10) : null;
+      
       let earlyAccessHours: number | null = null;
       if (data.schedule_enabled && data.early_access_enabled) earlyAccessHours = data.early_access_hours ? parseInt(data.early_access_hours) : null;
       const isEditing = !!data.id;
@@ -214,9 +211,7 @@ export default function AdminProducts() {
         category_id: data.category_id || null, is_active: data.is_active, is_featured: data.is_featured, is_resellable: data.is_resellable,
         images: data.images ? data.images.split(',').map(s => s.trim()) : [], asset_file_url: data.asset_file_url || null,
         release_at: data.schedule_enabled && data.release_at ? new Date(data.release_at).toISOString() : null,
-        early_access_hours: earlyAccessHours, robux_enabled: data.robux_enabled,
-        robux_product_id: data.robux_product_id?.trim() ? data.robux_product_id.trim() : null,
-        robux_price: typeof robuxPriceValue === 'number' && Number.isFinite(robuxPriceValue) ? robuxPriceValue : null,
+        early_access_hours: earlyAccessHours,
       };
       if (!isSellerProduct) {
         payload.store_id = data.marketplace_store === 'quantis' ? QUANTIS_STORE_ID : data.marketplace_store === 'vino' ? VINO_STORE_ID : null;
@@ -240,7 +235,7 @@ export default function AdminProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-products'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-products-robux-status'] });
+      
       if (form.slug) submitProductUrl(form.slug);
       setIsDialogOpen(false); setForm(emptyForm);
       toast.success(form.id ? 'Product updated' : 'Product created');
@@ -299,7 +294,6 @@ export default function AdminProducts() {
       images: product.images?.join(', ') || '', asset_file_url: product.asset_file_url || '',
       release_at: formatDateTimeForInput(product.release_at), schedule_enabled: hasSchedule,
       early_access_enabled: hasSchedule && hasEarlyAccess, early_access_hours: product.early_access_hours?.toString() || '',
-      robux_enabled: !!product.robux_enabled, robux_product_id: product.robux_product_id || '', robux_price: product.robux_price ? String(product.robux_price) : '',
       marketplace_store: product.store_id === QUANTIS_STORE_ID ? 'quantis' : product.store_id === VINO_STORE_ID ? 'vino' : null,
     });
     setIsDialogOpen(true);
@@ -490,15 +484,6 @@ export default function AdminProducts() {
                 </div>
               </div>
             )}
-            <div className="space-y-3 p-3 rounded-lg border border-border bg-muted/30">
-              <div className="flex items-center justify-between"><Label htmlFor="robux_enabled" className="font-medium">Robux Payments</Label><Switch id="robux_enabled" checked={form.robux_enabled} onCheckedChange={(checked) => setForm({ ...form, robux_enabled: checked })} /></div>
-              {form.robux_enabled && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="space-y-1.5"><Label htmlFor="robux_product_id" className="text-sm">Roblox Product ID</Label><Input id="robux_product_id" type="text" inputMode="numeric" pattern="[0-9]*" value={form.robux_product_id} onChange={(e) => setForm({ ...form, robux_product_id: e.target.value })} placeholder="e.g. 1234567890" className="bg-background" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} /></div>
-                  <div className="space-y-1.5"><Label htmlFor="robux_price" className="text-sm">Robux Price</Label><Input id="robux_price" type="number" inputMode="numeric" value={form.robux_price} onChange={(e) => setForm({ ...form, robux_price: e.target.value })} placeholder="e.g. 100" className="bg-background" min="1" step="1" /></div>
-                </div>
-              )}
-            </div>
             <div className="space-y-2 p-3 rounded-lg border border-primary/30 bg-primary/5">
               <Label className="font-medium flex items-center gap-2"><Store className="h-4 w-4 text-primary" />Marketplace Store</Label>
               <Select value={form.marketplace_store || 'none'} onValueChange={(v) => setForm({ ...form, marketplace_store: v === 'none' ? null : v as 'quantis' | 'vino' })}>

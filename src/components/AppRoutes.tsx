@@ -79,7 +79,7 @@ const AdminUsers = lazyWithRetry(() => import("@/pages/admin/Users"));
 const AdminModerationQueue = lazyWithRetry(() => import("@/pages/admin/ModerationQueue"));
 const AdminSettings = lazyWithRetry(() => import("@/pages/admin/Settings"));
 const AdminCannedResponses = lazyWithRetry(() => import("@/pages/admin/CannedResponses"));
-const AdminRobloxSettings = lazyWithRetry(() => import("@/pages/admin/RobloxSettings"));
+
 const AdminLiveChat = lazyWithRetry(() => import("@/pages/admin/LiveChat"));
 const AdminReviews = lazyWithRetry(() => import("@/pages/admin/Reviews"));
 const AdminAuditLogs = lazyWithRetry(() => import("@/pages/admin/AuditLogs"));
@@ -415,7 +415,7 @@ export function AppRoutes() {
         <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/canned-responses" element={<AdminCannedResponses />} />
-        <Route path="/admin/roblox-settings" element={<AdminRobloxSettings />} />
+        
         <Route path="/admin/live-chat" element={<AdminLiveChat />} />
         <Route path="/admin/reviews" element={<AdminReviews />} />
         <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
