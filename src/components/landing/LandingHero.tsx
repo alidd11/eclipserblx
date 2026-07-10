@@ -61,7 +61,7 @@ export function LandingHero() {
         </div>
 
         {/* Editorial split: featured hero product + side rail */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 lg:gap-4 lg:h-[400px]">
           {/* Featured hero */}
           <HeroFeature hero={hero} id="hero-heading" />
 
