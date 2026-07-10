@@ -34,7 +34,7 @@ export function TrendingProducts() {
   });
 
   const imageUrls = useMemo(() => 
-    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
     [products]
   );
   usePreloadImages(imageUrls);
@@ -129,7 +129,7 @@ const MasonryProductCard = forwardRef<HTMLDivElement, {
         name={product.name}
         slug={product.slug}
         price={product.price}
-        image={getFirstImageUrl(product.images)}
+        image={getFirstImageUrl(product.images, 620, 465, 'contain')}
         images={product.images as string[]}
         category={category?.name}
         categorySlug={category?.slug}

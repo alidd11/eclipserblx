@@ -42,7 +42,8 @@ export function optimizeImageUrl(
     if (width) proxyUrl += `&w=${Math.round(width)}`;
     // Pass height + contain mode when callers need uncropped product thumbnails
     if (height) proxyUrl += `&h=${Math.round(height)}`;
-    if (resize) proxyUrl += `&resize=${resize}`;
+    const finalResize = resize || (width && height ? 'contain' : undefined);
+    if (finalResize) proxyUrl += `&resize=${finalResize}`;
     // Pass quality (default 80 in proxy, allow override)
     if (quality) proxyUrl += `&q=${quality}`;
     return proxyUrl;
