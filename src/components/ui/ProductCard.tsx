@@ -2,7 +2,6 @@ import { memo, useCallback, useRef, forwardRef, useState, useEffect, useMemo } f
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Store, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useCart } from '@/hooks/useCart';
 import { useSubscription } from '@/hooks/useSubscription';

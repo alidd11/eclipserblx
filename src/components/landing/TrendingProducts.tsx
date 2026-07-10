@@ -92,12 +92,23 @@ export function TrendingProducts() {
                 className="animate-fade-in"
                 style={{ animationDelay: `${idx * 60}ms` }}
               >
-                <MasonryProductCard
-                  product={product}
-                  store={store}
-                  category={category}
-                  isTall={false}
-                  rank={idx + 1}
+                <ProductCard
+                  id={product.id}
+                  name={product.name}
+                  slug={product.slug}
+                  price={product.price}
+                  image={getFirstImageUrl(product.images, 620, 465, 'contain')}
+                  images={product.images as string[]}
+                  category={category?.name}
+                  categorySlug={category?.slug}
+                  categoryId={product.category_id ?? undefined}
+                  storeName={store?.name}
+                  storeSlug={store?.slug}
+                  storeLogo={store?.logo_url}
+                  isVerified={store?.is_verified}
+                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                  createdAt={product.created_at}
+                  priority
                 />
               </div>
             );
@@ -107,42 +118,4 @@ export function TrendingProducts() {
     </section>
   );
 }
-
-/** Masonry-specific card with variable aspect ratio */
-const MasonryProductCard = forwardRef<HTMLDivElement, {
-  product: any;
-  store: any;
-  category: any;
-  isTall: boolean;
-  rank: number;
-}>(function MasonryProductCard({ product, store, category, isTall, rank }, ref) {
-  return (
-    <div ref={ref} className="relative">
-      {/* Rank badge — editorial numeral */}
-      <div className="absolute top-4 left-4 z-[4] pointer-events-none">
-        <span className="inline-flex items-center h-5 px-1.5 text-[10px] font-bold tracking-wider bg-foreground text-background rounded-sm shadow-sm">
-          {`#${rank}`}
-        </span>
-      </div>
-      <ProductCard
-        id={product.id}
-        name={product.name}
-        slug={product.slug}
-        price={product.price}
-        image={getFirstImageUrl(product.images, 620, 465, 'contain')}
-        images={product.images as string[]}
-        category={category?.name}
-        categorySlug={category?.slug}
-        categoryId={product.category_id ?? undefined}
-        storeName={store?.name}
-        storeSlug={store?.slug}
-        storeLogo={store?.logo_url}
-        isVerified={store?.is_verified}
-        storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
-        createdAt={product.created_at}
-        priority
-      />
-    </div>
-  );
-});
 
