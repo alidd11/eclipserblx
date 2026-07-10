@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
-import { ImageZoomModal } from '@/components/ui/ImageZoomModal';
+
 import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
