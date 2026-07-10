@@ -66,9 +66,9 @@ export function LandingHero() {
           <HeroFeature hero={hero} id="hero-heading" />
 
           {/* Side rail */}
-          <div className="flex flex-col gap-4 lg:gap-5">
+          <div className="flex flex-col gap-3 lg:gap-4 min-h-0">
             {rail.length > 0
-              ? rail.map((p) => <RailPick key={p.id} pick={p} />)
+              ? rail.slice(0, 3).map((p) => <RailPick key={p.id} pick={p} />)
               : Array.from({ length: 3 }).map((_, i) => <RailSkeleton key={i} />)}
           </div>
         </div>
