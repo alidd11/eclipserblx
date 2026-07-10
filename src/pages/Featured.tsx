@@ -89,7 +89,7 @@ export default function Featured() {
           <section className="py-8 md:py-12">
             <div className="container mx-auto px-4">
               <SectionHeader title="Featured Collection" subtitle="More hand-picked favorites" />
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
                 {curatedProducts.map((product, idx) => (
                   <div key={product.id} className="relative">
                     <div className="absolute top-2 left-2 z-10 w-6 h-6 rounded-md bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-sm">
@@ -136,7 +136,7 @@ export default function Featured() {
             {loadingNew ? (
               <SkeletonGrid count={4} />
             ) : newProducts && newProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
                 {newProducts.map((product) => (
                   <ProductCard
                     key={product.id}
@@ -189,7 +189,7 @@ export default function Featured() {
             {loadingPopular ? (
               <SkeletonGrid count={4} />
             ) : popularProducts && popularProducts.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
                 {popularProducts.map((product) => (
                   <div key={product.id} className="relative">
                     {(product as any).download_count > 0 && (
@@ -251,7 +251,7 @@ function SectionHeader({ title, subtitle }: { title: string; subtitle: string })
 
 function SkeletonGrid({ count }: { count: number }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
           <Skeleton className="aspect-square" />

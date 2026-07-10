@@ -40,9 +40,11 @@ export function optimizeImageUrl(
     let proxyUrl = `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(sourceUrl)}`;
     // Pass width for on-the-fly resizing (saves bandwidth significantly)
     if (width) proxyUrl += `&w=${Math.round(width)}`;
-    // Pass height + contain mode when callers need uncropped product thumbnails
-    if (height) proxyUrl += `&h=${Math.round(height)}`;
     const finalResize = resize || (width && height ? 'contain' : undefined);
+    // For contained product thumbnails, only constrain width server-side.
+    // Sending a fixed height can preserve old cropped/canvas transforms from
+    // the storage renderer; CSS object-contain handles the frame safely.
+    if (height && finalResize !== 'contain') proxyUrl += `&h=${Math.round(height)}`;
     if (finalResize) proxyUrl += `&resize=${finalResize}`;
     // Pass quality (default 80 in proxy, allow override)
     if (quality) proxyUrl += `&q=${quality}`;

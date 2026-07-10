@@ -5,7 +5,7 @@ export const ProductCardSkeleton = memo(function ProductCardSkeleton() {
   return (
     <div className="h-full flex flex-col bg-card border border-border/60 overflow-hidden">
       <div className="p-3 pb-0">
-        <Skeleton className="aspect-[4/3] w-full" />
+        <Skeleton className="aspect-[16/10] w-full" />
       </div>
       <div className="p-5 md:p-6 flex flex-col flex-1">
         <div className="flex justify-between items-start gap-4 mb-5">
@@ -38,7 +38,7 @@ export const ProductGridSkeleton = memo(function ProductGridSkeleton({
   count?: number 
 }) {
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: count }).map((_, i) => (
         <ProductCardSkeleton key={i} />
       ))}

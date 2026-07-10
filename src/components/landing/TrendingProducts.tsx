@@ -46,7 +46,7 @@ export function TrendingProducts() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
@@ -82,7 +82,7 @@ export function TrendingProducts() {
         </div>
 
         {/* Masonry layout using CSS columns */}
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {products.map((product, idx) => {
             const store = product.stores as any;
             const category = product.categories as any;
