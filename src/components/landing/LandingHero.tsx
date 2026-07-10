@@ -156,9 +156,9 @@ function RailPick({ pick }: { pick: HeroPick }) {
   return (
     <Link
       to={`/products/${pick.slug}`}
-      className="group flex items-stretch gap-3 border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
+      className="group flex items-stretch gap-3 border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors flex-1 min-h-0"
     >
-      <div className="relative w-28 sm:w-36 shrink-0 aspect-square bg-muted overflow-hidden">
+      <div className="relative w-28 sm:w-32 shrink-0 aspect-square bg-muted overflow-hidden self-stretch">
         {pick.image ? (
           <img
             src={pick.image}
