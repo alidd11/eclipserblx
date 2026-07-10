@@ -1,5 +1,4 @@
 import { forwardRef } from 'react';
-import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ShieldCheck, Award, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -28,14 +27,14 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
           {/* Image */}
           <div className={`relative overflow-hidden bg-muted ${featured ? 'aspect-[16/10]' : 'aspect-[4/3]'}`}>
             {(() => {
-              const imgUrl = getFirstImageUrl(product.images);
+              const imgUrl = getFirstImageUrl(product.images, 400, 300, 'contain');
               return imgUrl ? (
                 <img
-                  src={optimizeImageUrl(imgUrl, 400, 300)}
+                  src={imgUrl}
                   alt={product.name}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain transition-transform duration-300"
+                  className="w-full h-full object-contain object-center"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-muted">

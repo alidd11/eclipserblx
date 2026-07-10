@@ -267,7 +267,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
   isEligibleForDiscount,
 }, ref) {
   const navigate = useNavigate();
-  const displayMedia = getFirstMediaPrioritizeVideo(product.images, 400);
+  const displayMedia = getFirstMediaPrioritizeVideo(product.images, 400, 300, 'contain');
   const isVideo = isVideoUrl(displayMedia);
   const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
@@ -286,13 +286,13 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
           isVideo ? (
             <BackgroundVideo
               src={displayMedia}
-              className="w-full h-full object-cover transition-transform duration-300"
+              className="w-full h-full object-contain object-center"
             />
           ) : (
             <img 
-              src={optimizeImageUrl(displayMedia, 400, 300)} 
+              src={displayMedia} 
               alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-300"
+              className="w-full h-full object-contain object-center"
             />
           )
         ) : (

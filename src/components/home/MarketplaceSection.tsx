@@ -411,9 +411,9 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                           <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
                             <div className="aspect-[16/9] relative overflow-hidden bg-muted">
                               {(() => {
-                                const imgUrl = getFirstImageUrl(spotlight.images);
+                                const imgUrl = getFirstImageUrl(spotlight.images, 540, 300, 'contain');
                                 return imgUrl ? (
-                                  <img src={optimizeImageUrl(imgUrl, 540, 300)} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-contain transition-transform duration-500" />
+                                  <img src={imgUrl} alt={spotlight.name} loading="lazy" decoding="async" className="w-full h-full object-contain object-center" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center bg-muted">
                                     <Package className="h-8 w-8 text-muted-foreground/30" />
