@@ -68,14 +68,14 @@ export function ForYouSection() {
           >
             <div className="aspect-square bg-muted overflow-hidden">
               {(() => {
-                const imgUrl = getFirstImageUrl(product.images);
+                const imgUrl = getFirstImageUrl(product.images, 400, 300, 'contain');
                 return imgUrl ? (
                   <img
                     src={imgUrl}
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-contain transition-transform duration-300"
+                    className="w-full h-full object-contain object-center"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

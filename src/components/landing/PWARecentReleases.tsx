@@ -23,9 +23,9 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
       <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
         <div className="aspect-[16/9] relative overflow-hidden bg-muted">
           {(() => {
-            const imgUrl = getFirstImageUrl(product.images);
+            const imgUrl = getFirstImageUrl(product.images, 720, 405, 'contain');
             return imgUrl ? (
-              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain transition-transform duration-500" />
+              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain object-center" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <Package className="h-8 w-8 text-muted-foreground/30" />
@@ -78,9 +78,9 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
       <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {(() => {
-            const imgUrl = getFirstImageUrl(product.images);
+            const imgUrl = getFirstImageUrl(product.images, 400, 300, 'contain');
             return imgUrl ? (
-              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain transition-transform duration-300" />
+              <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain object-center" />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-muted">
                 <span className="text-muted-foreground text-sm">No image</span>
