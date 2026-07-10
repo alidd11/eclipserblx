@@ -292,47 +292,42 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   navigate(`/store/${storeSlug}`);
                 }
               }}
-              className="flex items-center gap-3 min-w-0 text-left"
+              className="flex items-center gap-2 min-w-0 text-left"
             >
-              <div className="relative w-9 h-9 shrink-0">
+              <div className="relative w-6 h-6 shrink-0">
                 {storeLogo ? (
                   <img
                     src={storeLogo}
                     alt={storeName || ''}
-                    className="w-9 h-9 rounded-full object-cover border border-border"
+                    className="w-6 h-6 rounded-full object-cover border border-border"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center border border-border">
-                    <Store className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-border">
+                    <Store className="h-3 w-3 text-muted-foreground" />
                   </div>
                 )}
                 {isVerified && (
-                  <span className="absolute -right-0.5 -bottom-0.5 bg-primary rounded-full p-[2px] border-2 border-card">
-                    <Check className="h-2 w-2 text-primary-foreground" strokeWidth={4} />
+                  <span className="absolute -right-0.5 -bottom-0.5 bg-primary rounded-full p-[1px] border border-card">
+                    <Check className="h-1.5 w-1.5 text-primary-foreground" strokeWidth={4} />
                   </span>
                 )}
               </div>
-              <div className="min-w-0">
-                <p className="text-muted-foreground text-[9px] uppercase tracking-[0.2em] mb-0.5 font-medium">
-                  Provided by
-                </p>
-                <p className="text-foreground text-[11px] font-semibold uppercase tracking-wider truncate">
-                  {storeName || 'Eclipse'}
-                </p>
-              </div>
+              <p className="text-muted-foreground text-[11px] font-medium truncate">
+                {storeName || 'Eclipse'}
+              </p>
             </button>
 
             <button
               onClick={handleAddToCart}
               className={cn(
-                'shrink-0 relative w-11 h-11 flex items-center justify-center border transition-colors duration-200 active:scale-[0.97]',
+                'shrink-0 relative w-9 h-9 flex items-center justify-center border transition-colors duration-200 active:scale-[0.97]',
                 inCart
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
                   : 'border-border text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground'
               )}
               aria-label={inCart ? 'In cart' : 'Add to cart'}
             >
-              {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />}
+              {inCart ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" strokeWidth={1.75} />}
             </button>
           </div>
         </div>
