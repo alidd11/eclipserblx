@@ -21,20 +21,35 @@ export function optimizeImageUrl(
 ): string {
   if (!url) return '';
 
+  let sourceUrl = url;
+
+  // If a caller passes an already-proxied image back through with better
+  // dimensions/resize, rebuild from the original source instead of preserving
+  // the old cropped transform.
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname.includes('/functions/v1/image-proxy')) {
+      sourceUrl = parsed.searchParams.get('url') || url;
+    }
+  } catch {
+    sourceUrl = url;
+  }
+
   // Route Supabase storage public URLs through the image proxy for long caching
-  if (url.includes('.supabase.co/storage/v1/object/public/') && SUPABASE_URL && PROJECT_ID) {
-    let proxyUrl = `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(url)}`;
+  if (sourceUrl.includes('.supabase.co/storage/v1/object/public/') && SUPABASE_URL && PROJECT_ID) {
+    let proxyUrl = `${SUPABASE_URL}/functions/v1/image-proxy?url=${encodeURIComponent(sourceUrl)}`;
     // Pass width for on-the-fly resizing (saves bandwidth significantly)
     if (width) proxyUrl += `&w=${Math.round(width)}`;
     // Pass height + contain mode when callers need uncropped product thumbnails
     if (height) proxyUrl += `&h=${Math.round(height)}`;
-    if (resize) proxyUrl += `&resize=${resize}`;
+    const finalResize = resize || (width && height ? 'contain' : undefined);
+    if (finalResize) proxyUrl += `&resize=${finalResize}`;
     // Pass quality (default 80 in proxy, allow override)
     if (quality) proxyUrl += `&q=${quality}`;
     return proxyUrl;
   }
 
-  return url;
+  return sourceUrl;
 }
 
 /**

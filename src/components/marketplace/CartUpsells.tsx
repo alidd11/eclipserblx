@@ -84,13 +84,13 @@ export function CartUpsells() {
             <Link to={`/products/${product.product_number}`}>
               <div className="aspect-[4/3] bg-muted overflow-hidden">
                 {(() => {
-                  const imgUrl = getFirstImageUrl(product.images);
+                  const imgUrl = getFirstImageUrl(product.images, 300, 225, 'contain');
                   return imgUrl ? (
                     <img
                       src={imgUrl}
                       alt={product.name}
                       loading="lazy"
-                      className="w-full h-full object-contain transition-transform duration-300"
+                      className="w-full h-full object-contain object-center"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -113,7 +113,7 @@ export function CartUpsells() {
                       id: product.id,
                       name: product.name,
                       price: product.price,
-                      image: getFirstImageUrl(product.images) || product.images?.[0],
+                      image: getFirstImageUrl(product.images, 300, 225, 'contain') || product.images?.[0],
                       slug: String(product.product_number),
                        category_id: product.category_id ?? undefined,
                        is_resellable: product.is_resellable ?? undefined,

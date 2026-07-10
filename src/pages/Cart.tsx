@@ -12,6 +12,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 import { CartUpsells } from '@/components/marketplace/CartUpsells';
 import { LoyaltyBadge } from '@/components/marketplace/LoyaltyBadge';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 export default function Cart() {
   usePageTracking({ pagePath: '/cart' });
@@ -102,7 +103,7 @@ export default function Cart() {
                       className="w-20 h-20 sm:w-24 sm:h-24 bg-muted/40 rounded-lg overflow-hidden flex-shrink-0 border border-border"
                     >
                       {item.image ? (
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+                        <img src={optimizeImageUrl(item.image, 96, 96, 'contain')} alt={item.name} className="w-full h-full object-contain object-center" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <span className="text-2xl font-bold text-muted-foreground/40">{item.name.charAt(0)}</span>

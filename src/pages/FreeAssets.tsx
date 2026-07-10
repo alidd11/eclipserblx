@@ -137,7 +137,7 @@ export default function FreeAssets() {
                   name={product.name}
                   slug={product.slug}
                   price={product.price}
-                  image={getFirstImageUrl(product.images)}
+                  image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                   images={product.images as string[]}
                   category={category?.name}
                   categorySlug={category?.slug}

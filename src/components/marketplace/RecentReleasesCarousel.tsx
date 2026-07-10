@@ -153,14 +153,14 @@ export function RecentReleasesCarousel() {
                 {/* Large image area like ClearlyDev */}
                 <div className="aspect-[4/3] relative overflow-hidden bg-muted">
                   {(() => {
-                    const imgUrl = getFirstImageUrl(product.images);
+                    const imgUrl = getFirstImageUrl(product.images, 300, 225, 'contain');
                     return imgUrl ? (
                       <img
-                        src={optimizeImageUrl(imgUrl, 300, 225)}
+                        src={imgUrl}
                         alt={product.name}
                         loading="lazy"
                         decoding="async"
-                        className="w-full h-full object-contain transition-transform duration-300"
+                        className="w-full h-full object-contain object-center"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">

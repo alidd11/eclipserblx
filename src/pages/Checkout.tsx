@@ -17,6 +17,7 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 import { errMsg } from '@/lib/errors';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface AppliedDiscount {
   id: string;
@@ -254,7 +255,7 @@ export default function Checkout() {
                 <div key={item.id} className="flex gap-3">
                   <div className="w-16 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
                     {item.image ? (
-                      <img src={item.image} alt="" className="w-full h-full object-cover" />
+                      <img src={optimizeImageUrl(item.image, 96, 72, 'contain')} alt="" className="w-full h-full object-contain object-center" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="text-sm font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>

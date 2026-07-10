@@ -12,6 +12,7 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { BreadcrumbSchema } from '@/components/seo/StructuredData';
 import { useCallback } from 'react';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const CUSTOM_BANNER_CATEGORIES = new Set<string>();
 
@@ -123,9 +124,7 @@ function useCategoriesWithProducts(sourceFilter: string | null) {
 }
 
 function getProductThumb(product: TopProduct): string | null {
-  if (!product.images?.length) return null;
-  const img = product.images.find(u => !u.endsWith('.mp4') && !u.endsWith('.webm'));
-  return img || null;
+  return getFirstImageUrl(product.images, 320, 240, 'contain');
 }
 
 function CategoryCard({ category, sourceParam, index }: { category: CategoryData; sourceParam: string; index: number }) {
@@ -228,7 +227,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
                         <img
                           src={thumb}
                           alt={product.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain object-center"
                           loading="lazy"
                         />
                       ) : (

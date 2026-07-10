@@ -8,6 +8,7 @@ import { useCart } from '@/hooks/useCart';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useNavigate } from 'react-router-dom';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface QuickViewModalProps {
   productId: string | null;
@@ -52,7 +53,7 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
         {/* Image */}
         <div className="relative aspect-[4/3] bg-muted">
           {currentImage ? (
-            <img src={currentImage} alt={product.name} className="w-full h-full object-contain" />
+            <img src={optimizeImageUrl(currentImage, 640, 480, 'contain')} alt={product.name} className="w-full h-full object-contain object-center" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground">No image</div>
           )}

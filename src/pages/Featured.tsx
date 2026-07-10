@@ -10,7 +10,7 @@ import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { ArrowRight, Play, ShoppingBag, Download } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
-import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
+import { getFirstImageUrl, getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
@@ -100,7 +100,7 @@ export default function Featured() {
                       name={product.name}
                       slug={String((product as any).product_number)}
                       price={Number(product.price)}
-                      image={product.images?.[0]}
+                      image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                       images={product.images}
                       category={product.categories?.name}
                       categorySlug={product.categories?.slug}
@@ -144,7 +144,7 @@ export default function Featured() {
                     name={product.name}
                     slug={String((product as any).product_number)}
                     price={Number(product.price)}
-                    image={product.images?.[0]}
+                    image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                     images={product.images}
                     category={product.categories?.name}
                     categorySlug={product.categories?.slug}
@@ -203,7 +203,7 @@ export default function Featured() {
                       name={product.name}
                       slug={String((product as any).product_number)}
                       price={Number(product.price)}
-                      image={product.images?.[0]}
+                      image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                       images={product.images}
                       category={product.categories?.name}
                       categorySlug={product.categories?.slug}
@@ -274,7 +274,7 @@ function formatDownloads(count: number): string {
 function HeroProductCard({ product }: { product: any }) {
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
-  const displayMedia = getFirstMediaPrioritizeVideo(product.images, 400);
+  const displayMedia = getFirstMediaPrioritizeVideo(product.images, 900, 506, 'contain');
   const isVideo = isVideoUrl(displayMedia);
 
   const storeEclipseEnabled = product.stores?.eclipse_plus_discount_enabled;
@@ -294,7 +294,7 @@ function HeroProductCard({ product }: { product: any }) {
               <>
                 <BackgroundVideo
                   src={displayMedia}
-                  className="w-full h-full object-cover transition-transform duration-500"
+                  className="w-full h-full object-contain object-center"
                 />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="w-10 h-10 rounded-full bg-background/60 backdrop-blur-sm flex items-center justify-center">
@@ -306,7 +306,7 @@ function HeroProductCard({ product }: { product: any }) {
               <img
                 src={displayMedia}
                 alt={product.name}
-                className="w-full h-full object-cover transition-transform duration-500"
+                className="w-full h-full object-contain object-center"
                 loading="eager"
               />
             )

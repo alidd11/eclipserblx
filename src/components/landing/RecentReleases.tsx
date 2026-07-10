@@ -41,7 +41,7 @@ export function RecentReleases() {
   };
 
   const imageUrls = useMemo(() =>
-    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
     [products]
   );
   usePreloadImages(imageUrls);
@@ -102,7 +102,7 @@ export function RecentReleases() {
                   name={product.name}
                   slug={String((product as any).product_number)}
                   price={product.price}
-                  image={getFirstImageUrl(product.images)}
+                  image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                   images={product.images as string[]}
                   category={category?.name}
                   categorySlug={category?.slug}

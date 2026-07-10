@@ -11,6 +11,7 @@ import { Heart, Trash2, Store, ArrowRight, ChevronLeft, ChevronRight } from 'luc
 import { formatRelative } from '@/lib/dateUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const WISHLIST_ITEMS_PER_PAGE = 10;
 
@@ -84,7 +85,7 @@ export default function Wishlist() {
                 const product = item.products;
                 if (!product) return null;
 
-                const imageUrl = product.images?.[0] || '/placeholder.svg';
+                const imageUrl = getFirstImageUrl(product.images, 160, 160, 'contain') || '/placeholder.svg';
                 const store = product.stores;
 
                 return (
@@ -100,7 +101,7 @@ export default function Wishlist() {
                           alt={product.name}
                           loading="lazy"
                           decoding="async"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain object-center"
                         />
                       </Link>
 

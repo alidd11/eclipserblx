@@ -88,7 +88,7 @@ export function OnSaleProducts() {
   };
 
   const imageUrls = useMemo(() =>
-    (saleProducts || []).slice(0, 4).map(p => getFirstImageUrl(p.images)).filter(Boolean),
+    (saleProducts || []).slice(0, 4).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
     [saleProducts]
   );
   usePreloadImages(imageUrls);
@@ -151,7 +151,7 @@ export function OnSaleProducts() {
                   name={product.name}
                   slug={String(product.product_number || product.id)}
                   price={product.price}
-                  image={getFirstImageUrl(product.images)}
+                  image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                   images={product.images as string[]}
                   category={category?.name}
                   categorySlug={category?.slug}

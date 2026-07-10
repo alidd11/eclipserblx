@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
 import { formatGBP } from '@/lib/formatters';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface ModerationFlags {
   nsfw_flags?: string[];
@@ -84,7 +85,7 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
     <div className="overflow-hidden">
       <div className="aspect-video relative bg-muted">
         {product.images?.[0] ? (
-          <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+          <img src={optimizeImageUrl(product.images[0], 640, 360, 'contain')} alt={product.name} className="w-full h-full object-contain object-center" />
         ) : (
           <div className="flex items-center justify-center h-full">
             <Package className="h-12 w-12 text-muted-foreground" />

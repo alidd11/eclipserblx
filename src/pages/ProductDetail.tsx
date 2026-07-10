@@ -37,6 +37,7 @@ import { SocialShareButtons } from '@/components/product/SocialShareButtons';
 import { StickyBuyBar } from '@/components/product/StickyBuyBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductDetailData } from './product-detail/useProductDetailData';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 export default function ProductDetail() {
  const { productNumber } = useParams<{ productNumber: string }>();
@@ -405,7 +406,7 @@ export default function ProductDetail() {
  isVideo ? (
  <VideoThumbnail src={img} showPlayIcon={true} />
  ) : (
- <img src={img} alt="" className="w-full h-full object-cover" draggable={false} />
+  <img src={optimizeImageUrl(img, 64, 64, 'contain')} alt="" className="w-full h-full object-contain object-center" draggable={false} />
  )
  ) : (
  <div className="w-full h-full bg-muted" />

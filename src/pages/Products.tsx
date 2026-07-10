@@ -24,6 +24,7 @@ import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useTranslation } from 'react-i18next';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 type SortOption = 'smart' | 'newest' | 'oldest' | 'price-low' | 'price-high' | 'popularity';
 
@@ -332,7 +333,7 @@ function ProductsGrid({
  name={product.name}
  slug={String((product as any).product_number)}
  price={product.price}
- image={product.images?.[0]}
+  image={getFirstImageUrl(product.images, 620, 465, 'contain')}
  images={product.images}
  category={product.categories?.name}
  categorySlug={product.categories?.slug}

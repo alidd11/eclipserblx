@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { AddToServerButton } from '@/components/bots/AddToServerButton';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 B';
@@ -123,7 +124,7 @@ export function ProductsTab({
                 )}
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                   {item.product?.images?.[0] ? (
-                    <img src={item.product.images[0]} alt={item.product_name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                    <img src={optimizeImageUrl(item.product.images[0], 64, 64, 'contain')} alt={item.product_name} loading="lazy" decoding="async" className="w-full h-full object-contain object-center" />
                   ) : isBot ? (
                     <div className="w-full h-full flex items-center justify-center bg-blue-500/10">
                       <Bot className="h-6 w-6 text-blue-500" />
