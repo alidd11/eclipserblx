@@ -11,8 +11,6 @@ import { cn } from '@/lib/utils';
 import { getCardMediaChain, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
-import quantisOverlay from '@/assets/quantis-product-overlay.png';
-import { QUANTIS_STORE_ID } from '@/lib/constants';
 
 
 interface ProductCardProps {
