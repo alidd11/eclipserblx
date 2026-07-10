@@ -149,7 +149,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
         {/* Image — full product image, no cropping */}
         <div className="relative p-2 pb-0 flex-shrink-0">
-          <div className="relative w-full aspect-[16/10] bg-transparent rounded-md overflow-hidden">
+          <div className="relative w-full aspect-[16/10] bg-[#141518] rounded-md overflow-hidden ring-1 ring-border/40">
             {showMedia ? (
               isVideo ? (
                 <BackgroundVideo
