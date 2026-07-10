@@ -10,7 +10,7 @@ import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { ArrowRight, Play, ShoppingBag, Download } from 'lucide-react';
 import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
-import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
+import { getFirstImageUrl, getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
@@ -100,7 +100,7 @@ export default function Featured() {
                       name={product.name}
                       slug={String((product as any).product_number)}
                       price={Number(product.price)}
-                      image={product.images?.[0]}
+                      image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                       images={product.images}
                       category={product.categories?.name}
                       categorySlug={product.categories?.slug}
@@ -144,7 +144,7 @@ export default function Featured() {
                     name={product.name}
                     slug={String((product as any).product_number)}
                     price={Number(product.price)}
-                    image={product.images?.[0]}
+                    image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                     images={product.images}
                     category={product.categories?.name}
                     categorySlug={product.categories?.slug}
@@ -203,7 +203,7 @@ export default function Featured() {
                       name={product.name}
                       slug={String((product as any).product_number)}
                       price={Number(product.price)}
-                      image={product.images?.[0]}
+                      image={getFirstImageUrl(product.images, 620, 465, 'contain')}
                       images={product.images}
                       category={product.categories?.name}
                       categorySlug={product.categories?.slug}

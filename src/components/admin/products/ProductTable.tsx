@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 
 interface AdminProduct {
@@ -97,7 +98,7 @@ export function ProductTable({
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded bg-muted overflow-hidden">
                       {product.images?.[0] ? (
-                        <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+                        <img src={optimizeImageUrl(product.images[0], 40, 40, 'contain')} alt="" className="w-full h-full object-contain object-center" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                           {product.name.charAt(0)}

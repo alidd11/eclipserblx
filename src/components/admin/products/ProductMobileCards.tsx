@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Pencil, Clock } from 'lucide-react';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 
 interface AdminProduct {
@@ -80,7 +81,7 @@ export function ProductMobileCards({
  />
  <div className="w-14 h-14 rounded-lg bg-muted overflow-hidden flex-shrink-0">
  {product.images?.[0] ? (
- <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+  <img src={optimizeImageUrl(product.images[0], 56, 56, 'contain')} alt="" className="w-full h-full object-contain object-center" />
  ) : (
  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-lg font-medium">
  {product.name.charAt(0)}

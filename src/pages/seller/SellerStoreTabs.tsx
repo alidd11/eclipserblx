@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { LayoutGrid, Plus, Edit2, Trash2, GripVertical, Package, Save, X } from 'lucide-react';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface StoreTab {
   id: string;
@@ -442,7 +443,7 @@ export default function SellerStoreTabs() {
                     >
                       <div className="h-10 w-10 rounded overflow-hidden bg-muted flex-shrink-0">
                         {product.images?.[0] ? (
-                          <img src={product.images[0]} alt="" className="h-full w-full object-cover" />
+                          <img src={optimizeImageUrl(product.images[0], 40, 40, 'contain')} alt="" className="h-full w-full object-contain object-center" />
                         ) : (
                           <Package className="h-full w-full p-2 text-muted-foreground" />
                         )}

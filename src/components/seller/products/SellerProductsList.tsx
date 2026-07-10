@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ADMIN_MANAGED_STORES } from '@/lib/constants';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isAdminManagedProduct = (product: any) =>
@@ -118,7 +119,7 @@ export function SellerProductsList({
                   onClick={() => !isLocked && onEdit(product)}
                 >
                   {product.images?.[0] ? (
-                    <img src={product.images[0]} alt={product.name} className="h-11 w-11 rounded-lg object-cover flex-shrink-0" />
+                    <img src={optimizeImageUrl(product.images[0], 44, 44, 'contain')} alt={product.name} className="h-11 w-11 rounded-lg object-contain object-center flex-shrink-0" />
                   ) : (
                     <div className="h-11 w-11 rounded-lg bg-muted flex items-center justify-center flex-shrink-0">
                       <Package className="h-5 w-5 text-muted-foreground" />
@@ -194,7 +195,7 @@ export function SellerProductsList({
                       <TableCell>
                         <div className="flex items-center gap-3">
                           {product.images?.[0] ? (
-                            <img src={product.images[0]} alt={product.name} className="h-10 w-10 rounded object-cover" />
+                            <img src={optimizeImageUrl(product.images[0], 40, 40, 'contain')} alt={product.name} className="h-10 w-10 rounded object-contain object-center" />
                           ) : (
                             <div className="h-10 w-10 rounded bg-muted flex items-center justify-center">
                               <Package className="h-5 w-5 text-muted-foreground" />
