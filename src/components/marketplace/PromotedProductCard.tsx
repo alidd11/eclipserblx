@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
+import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 interface PromotedProductCardProps {
   product: {
@@ -34,7 +35,7 @@ export function PromotedProductCard({ product, onClickTracked }: PromotedProduct
         name={product.name}
         slug={String(product.product_number)}
         price={product.price}
-        image={product.images?.[0]}
+        image={getFirstImageUrl(product.images, 620, 465, 'contain')}
         images={product.images}
         category={product.categories?.name}
         categorySlug={product.categories?.slug}
