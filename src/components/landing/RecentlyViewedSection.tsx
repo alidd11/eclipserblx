@@ -3,6 +3,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Clock } from 'lucide-react';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 export function RecentlyViewedSection() {
   const { recentlyViewed } = useRecentlyViewed();
@@ -28,9 +29,9 @@ export function RecentlyViewedSection() {
               <div className="aspect-[4/3] rounded-lg overflow-hidden bg-muted border border-border">
                 {product.image ? (
                   <img
-                    src={product.image}
+                    src={optimizeImageUrl(product.image, 360, 270, 'contain')}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-300"
+                    className="w-full h-full object-contain object-center"
                     loading="lazy"
                   />
                 ) : (

@@ -66,7 +66,7 @@ function PWASpotlightCard({ product }: { product: ScoredProduct }) {
     >
       <div className="aspect-[16/9] relative overflow-hidden bg-muted">
         {(() => {
-          const imgUrl = getFirstImageUrl(product.images);
+          const imgUrl = getFirstImageUrl(product.images, 720, 405, 'contain');
           return imgUrl ? (
             <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
           ) : (
@@ -143,7 +143,7 @@ function PWAProductCard({ product }: { product: ScoredProduct }) {
     >
       <div className="aspect-[4/3] relative overflow-hidden bg-muted">
         {(() => {
-          const imgUrl = getFirstImageUrl(product.images);
+          const imgUrl = getFirstImageUrl(product.images, 400, 300, 'contain');
           return imgUrl ? (
             <img src={imgUrl} alt={product.name} loading="lazy" decoding="async" className="w-full h-full object-contain" />
           ) : (

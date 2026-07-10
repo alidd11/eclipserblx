@@ -26,7 +26,7 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
       {/* Image */}
       <div className="aspect-[4/3] relative overflow-hidden bg-muted">
         {(() => {
-          const imgUrl = getFirstImageUrl(product.images);
+          const imgUrl = getFirstImageUrl(product.images, 400, 300, 'contain');
           return imgUrl ? (
             <img
               src={imgUrl}

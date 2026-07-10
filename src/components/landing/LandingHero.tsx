@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useFeaturedProducts, type ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { formatGBP } from '@/lib/formatters';
 import { cn } from '@/lib/utils';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface HeroPick {
   id: string;
@@ -91,14 +92,14 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
     >
       <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] bg-muted overflow-hidden">
         <img
-          src={hero.image!}
+          src={optimizeImageUrl(hero.image, 1200, 750, 'contain')}
           alt={hero.name}
           width={1200}
           height={750}
           loading="eager"
           decoding="sync"
           {...({ fetchpriority: 'high' } as Record<string, string>)}
-          className="w-full h-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.02]"
+          className="w-full h-full object-contain object-center"
         />
         {/* Bottom gradient for legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
@@ -161,13 +162,13 @@ function RailPick({ pick }: { pick: HeroPick }) {
       <div className="relative w-28 sm:w-32 shrink-0 bg-muted overflow-hidden self-stretch">
         {pick.image ? (
           <img
-            src={pick.image}
+            src={optimizeImageUrl(pick.image, 320, 240, 'contain')}
             alt={pick.name}
             width={288}
             height={288}
             loading="lazy"
             decoding="async"
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+            className="w-full h-full object-contain object-center"
           />
         ) : null}
       </div>

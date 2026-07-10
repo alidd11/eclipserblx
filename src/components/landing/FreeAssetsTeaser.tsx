@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Gift, ArrowRight } from 'lucide-react';
-import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { Button } from '@/components/ui/button';
@@ -62,15 +61,15 @@ export function FreeAssetsTeaser() {
 
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0">
             {products.map((product) => {
-              const imageUrl = getFirstImageUrl(product.images);
+              const imageUrl = getFirstImageUrl(product.images, 360, 360, 'contain');
               return (
                 <Link key={product.id} to={`/product/${product.slug}`} className="block min-w-[160px] lg:min-w-0 group">
                   <div className="aspect-[4/5] sm:aspect-square rounded-lg overflow-hidden bg-muted border border-border">
                     {imageUrl ? (
                       <img
-                        src={optimizeImageUrl(imageUrl, 300)}
+                        src={imageUrl}
                         alt={product.name}
-                        className="w-full h-full object-cover transition-transform duration-300"
+                        className="w-full h-full object-contain object-center"
                         loading="lazy"
                       />
                     ) : (
