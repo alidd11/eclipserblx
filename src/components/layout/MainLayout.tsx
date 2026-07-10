@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 import { LayoutShell } from './LayoutShell';
 import { PageTransition } from './PageTransition';
 import { CustomerSidebar } from './CustomerSidebar';
-import { useDeferredScheduledReleaseCheck } from '@/hooks/useScheduledReleaseCheck';
 import { useAutoPageMeta } from '@/hooks/useAutoPageMeta';
 
 interface MainLayoutProps {
@@ -11,8 +10,8 @@ interface MainLayoutProps {
 }
 
 function MainLayoutContent({ children, showFooter = true }: MainLayoutProps) {
-  useDeferredScheduledReleaseCheck();
   useAutoPageMeta();
+
 
   return (
     <LayoutShell

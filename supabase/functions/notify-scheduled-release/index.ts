@@ -34,11 +34,12 @@ interface ScheduledProduct {
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  // Require service role (cron-only function)
   const _unauth = requireServiceRole(req, corsHeaders);
   if (_unauth) return _unauth;
-);
-  }
 
   // Rate limiting
   const clientIp = getClientIp(req);
@@ -52,6 +53,7 @@ serve(async (req) => {
     console.log(`[notify-scheduled-release] Rate limit exceeded for IP: ${clientIp}`);
     return rateLimitResponse(rateLimitResult, corsHeaders);
   }
+
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
