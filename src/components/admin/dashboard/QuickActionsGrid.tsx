@@ -36,17 +36,18 @@ export function QuickActionsGrid() {
   const links = (isAdmin
     ? allLinks
     : allLinks.filter(link => hasAnyPermission(link.permissions))
-  ).slice(0, 12);
+  ).slice(0, 8);
 
   if (links.length === 0) return null;
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden">
+    <div className="border border-border rounded-xl overflow-hidden bg-card/40">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
-        <h3 className="font-semibold text-sm">Command Center</h3>
+        <h3 className="font-semibold text-sm">Jump to</h3>
       </div>
       <div className="p-4">
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-1.5 sm:gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1.5 sm:gap-2">
+
           {links.map((link) => (
             <Link key={link.href} to={link.href}>
               <div className="flex flex-col items-center gap-1.5 p-3 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-all text-center group cursor-pointer">
