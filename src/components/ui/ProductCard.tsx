@@ -11,8 +11,6 @@ import { cn } from '@/lib/utils';
 import { getCardMediaChain, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
-import quantisOverlay from '@/assets/quantis-product-overlay.png';
-import { QUANTIS_STORE_ID } from '@/lib/constants';
 
 
 interface ProductCardProps {
@@ -186,14 +184,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               </div>
             )}
 
-            {/* Quantis overlay */}
-            {storeSlug === QUANTIS_STORE_ID || storeSlug === 'quantis' ? (
-              <img
-                src={quantisOverlay}
-                alt=""
-                className="absolute inset-0 w-full h-full object-contain object-center pointer-events-none z-[1]"
-              />
-            ) : null}
 
             {/* Status badges (top-left) */}
             <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
