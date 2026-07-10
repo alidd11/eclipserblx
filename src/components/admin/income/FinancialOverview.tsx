@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { IncomeErrorState } from './IncomeErrorState';
 import { formatGBP } from '@/lib/formatters';
 
-const ROBUX_TO_GBP_RATE = 0.00275;
+
 
 interface StripeBalanceData {
  balance: { available: number; pending: number; currency: string };
@@ -146,22 +146,9 @@ export function FinancialOverview() {
  ...queryDefaults,
  });
 
- // Robux
- const { data: robuxData, isLoading: robuxLoading, isError: robuxError, refetch: refetchRobux } = useQuery({
- queryKey: ['admin-financial-overview-robux'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('robux_transactions')
- .select('robux_after_tax, created_at');
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
-
- const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading;
  // Only show full error if ALL non-Stripe sources fail — Stripe is optional (edge function may be down)
- const coreErrors = [ordersError, subsError, commError, creditsError, robuxError];
+ const coreErrors = [ordersError, subsError, commError, creditsError];
  const hasError = coreErrors.every(Boolean);
 
  const handleRetryAll = () => {
@@ -170,7 +157,6 @@ export function FinancialOverview() {
  refetchSubs();
  refetchComm();
  refetchCredits();
- refetchRobux();
  };
 
  const metrics = useMemo(() => {

@@ -23,7 +23,7 @@ import { formatGBP } from '@/lib/formatters';
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
 
-const ROBUX_TO_GBP_RATE = 0.00275;
+
 
 /* ── Period selector ── */
 const periods = [
@@ -164,20 +164,8 @@ export function RevenueDashboard() {
  ...queryDefaults,
  });
 
- // Robux
- const { data: robuxData, isLoading: robuxLoading } = useQuery({
- queryKey: ['admin-revenue-robux'],
- queryFn: async () => {
- const { data, error } = await supabase
- .from('robux_transactions')
- .select('robux_after_tax, created_at');
- if (error) throw error;
- return data ?? [];
- },
- ...queryDefaults,
- });
 
- const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading || robuxLoading;
+ const isLoading = stripeLoading || ordersLoading || subsLoading || commLoading || creditsLoading;
 
  const handleRefresh = () => {
  refetchStripe();
@@ -222,11 +210,8 @@ export function RevenueDashboard() {
  const activeSubs = (subsData ?? []).filter(s => s.status === 'active');
  const mrr = activeSubs.length * 7.99;
 
- // Credits & Robux
+ // Credits
  const totalCredits = (creditPurchases ?? []).reduce((s, c) => s + (Number(c.amount) || 0), 0);
- const totalRobuxGBP = (robuxData ?? []).reduce(
- (s, r) => s + (Number(r.robux_after_tax) || 0) * ROBUX_TO_GBP_RATE, 0
- );
 
  // Stripe
  const stripeAvailable = stripeBalance?.balance?.available ?? 0;
@@ -256,7 +241,6 @@ export function RevenueDashboard() {
  { name: 'Commission', value: Math.round(totalCommission) },
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
- { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
  ].filter(c => c.value > 0);
 
  return {
@@ -264,10 +248,10 @@ export function RevenueDashboard() {
  periodGross, grossTrend, periodOrders,
  periodCommission, totalCommission,
  mrr, activeSubs: activeSubs.length,
- allTimeGross, totalCredits, totalRobuxGBP,
+ allTimeGross, totalCredits,
  trendData, composition,
  };
- }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance, selectedPeriod]);
+ }, [ordersData, commissionData, subsData, creditPurchases, stripeBalance, selectedPeriod]);
 
  const COMPOSITION_COLORS = [
  'hsl(262 100% 71%)', 'hsl(220 95% 59%)', 'hsl(185 85% 50%)',
