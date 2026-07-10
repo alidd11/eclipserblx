@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Check, ChevronLeft, Sparkles, ZoomIn, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Sparkles, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
