@@ -98,48 +98,33 @@ export function LandingHero() {
         <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 lg:pb-24 flex flex-col items-center text-center">
-        {/* Eyebrow */}
-        <div className="mb-7 inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border/60 bg-card/80 backdrop-blur-md">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-            The Creator Marketplace
-          </span>
-        </div>
-
-        {/* Headline — inline rotating word */}
+      <div className="relative z-10 max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 pb-8 sm:pb-10 flex flex-col items-center text-center">
+        {/* Headline — single line, compact */}
         <h1
           id="hero-heading"
-          className="font-display font-black tracking-tight leading-[1.02] text-[clamp(2.5rem,6.4vw,4.75rem)] max-w-[20ch]"
+          className="font-display font-black tracking-tight leading-[1.05] text-[clamp(1.75rem,4.4vw,3rem)] max-w-[22ch]"
         >
           <span className="text-foreground">The Marketplace for </span>
-          <span className="relative inline-block align-baseline">
-            <span
-              key={ROTATING_WORDS[wordIndex]}
-              className="inline-block animate-fade-in"
-              style={{
-                backgroundImage:
-                  'linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.75) 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                color: 'transparent',
-              }}
-            >
-              {ROTATING_WORDS[wordIndex]}
-            </span>
+          <span
+            key={ROTATING_WORDS[wordIndex]}
+            className="inline-block animate-fade-in"
+            style={{
+              backgroundImage:
+                'linear-gradient(180deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.75) 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+            }}
+          >
+            {ROTATING_WORDS[wordIndex]}
           </span>
-          <br />
-          <span className="text-foreground">Creators</span>
+          <span className="text-foreground"> Creators</span>
         </h1>
-
-        <p className="mt-6 max-w-xl text-sm sm:text-base text-muted-foreground">
-          Discover premium assets, scripts, models and systems built by the community's top creators.
-        </p>
 
         {/* Search + secondary CTA */}
         <form
           onSubmit={submit}
-          className="mt-8 w-full max-w-2xl flex flex-col sm:flex-row items-stretch gap-3"
+          className="mt-5 sm:mt-6 w-full max-w-2xl flex flex-col sm:flex-row items-stretch gap-2 sm:gap-3"
         >
           <div
             className="relative flex-1 group"
@@ -153,50 +138,26 @@ export function LandingHero() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search assets, scripts, creators…"
               aria-label="Search the marketplace"
-              className="w-full h-14 pl-11 pr-32 rounded-xl border border-border bg-card/80 backdrop-blur-md text-[16px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/60 focus:bg-card transition-colors"
+              className="w-full h-12 pl-11 pr-28 rounded-xl border border-border bg-card/80 backdrop-blur-md text-[16px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/60 focus:bg-card transition-colors"
             />
             <Button
               type="submit"
               size="sm"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-10 px-5 text-xs font-bold uppercase tracking-[0.14em]"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 px-4 text-xs font-bold uppercase tracking-[0.14em]"
             >
               Search
             </Button>
           </div>
           <Link
             to="/sell"
-            className="group inline-flex items-center justify-center gap-2 h-14 px-6 rounded-xl border border-border bg-card/60 backdrop-blur-md text-sm font-semibold text-foreground hover:border-primary/50 hover:bg-card transition-colors whitespace-nowrap"
+            className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl border border-border bg-card/60 backdrop-blur-md text-sm font-semibold text-foreground hover:border-primary/50 hover:bg-card transition-colors whitespace-nowrap"
           >
             Start selling
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </form>
-
-        {/* Category tiles */}
-        <div className="mt-10 w-full max-w-3xl grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-3">
-          {CATEGORY_TILES.map(({ label, slug, icon: Icon }) => (
-            <Link
-              key={slug}
-              to={`/products?category=${slug}`}
-              className="group flex flex-col items-center justify-center gap-1.5 px-2 py-3 sm:py-4 rounded-xl border border-border bg-card/60 backdrop-blur-md hover:border-primary/40 hover:bg-card transition-colors"
-            >
-              <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
-              <span className="text-[11px] sm:text-xs font-semibold text-foreground/80 group-hover:text-foreground">
-                {label}
-              </span>
-            </Link>
-          ))}
-        </div>
       </div>
 
-      {/* Bottom-right attribution */}
-      {current?.name && (
-        <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 z-10 max-w-[60%] text-right">
-          <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/70">Featured</div>
-          <Link
-            to={`/products/${current.slug}`}
-            className="text-xs sm:text-sm font-semibold text-foreground/90 hover:text-primary transition-colors line-clamp-1"
-          >
             {current.name}
             {current.store ? <span className="text-muted-foreground font-normal"> · {current.store}</span> : null}
           </Link>
