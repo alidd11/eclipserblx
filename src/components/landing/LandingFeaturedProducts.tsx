@@ -139,13 +139,13 @@ export function LandingFeaturedProducts() {
 
         {/* Asymmetric grid: 2 large + 6 smaller */}
         {isLoading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {Array.from({ length: 8 }).map((_, i) => (
               <ProductSkeleton key={i} featured={i < 2} />
             ))}
           </div>
         ) : products?.length ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
             {/* First 2 products span 2 cols on large screens */}
             {products.slice(0, 2).map((product) => (
               <div key={product.id} className="col-span-1 lg:col-span-2">
