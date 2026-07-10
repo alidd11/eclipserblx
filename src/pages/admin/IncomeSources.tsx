@@ -194,15 +194,6 @@ export default function AdminIncomeSources() {
       });
     });
 
-    (robuxData ?? []).forEach(r => {
-      txns.push({
-        id: r.id, source: 'robux',
-        description: `Robux: R$${r.robux_amount ?? 0}`,
-        amount: (r.robux_after_tax ?? 0) * ROBUX_TO_GBP_RATE,
-        currency: '£', status: 'completed', date: r.created_at,
-        metadata: `R$${r.robux_amount ?? 0} → R$${r.robux_after_tax ?? 0} net`,
-      });
-    });
 
     (commissionData ?? []).forEach(c => {
       const platformFee = c.platform_fee ?? 0;
@@ -217,7 +208,7 @@ export default function AdminIncomeSources() {
     });
 
     return txns.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [ordersData, subsData, creditsData, robuxData, commissionData]);
+  }, [ordersData, subsData, creditsData, commissionData]);
 
   // Filter by period, source, and search
   const filteredTransactions = useMemo(() => {
