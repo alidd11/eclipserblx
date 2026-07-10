@@ -174,24 +174,29 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
   const [isSigningOut, setIsSigningOut] = useState(false);
   const chatNotifications = useChatNotifications();
   
-  // Initialize open groups from localStorage or default to all open
+  // Initialize open groups from localStorage; default to only the group
+  // containing the current route (auto-expand effect below handles later changes).
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
     const stored = safeStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         return JSON.parse(stored);
       } catch {
-        return {};
+        // fall through to default
       }
     }
-    // Default: all groups open
-    return navGroups.reduce((acc, group) => ({ ...acc, [group.id]: true }), {});
+    const path = window.location.pathname;
+    return navGroups.reduce((acc, group) => {
+      const active = group.items.some(item => item.href === path);
+      return { ...acc, [group.id]: active };
+    }, {} as Record<string, boolean>);
   });
 
   // Persist open groups to localStorage
   useEffect(() => {
     safeStorage.setItem(STORAGE_KEY, JSON.stringify(openGroups));
   }, [openGroups]);
+
 
   const navRef = useRef<HTMLElement>(null);
 
