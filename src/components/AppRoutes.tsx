@@ -1,6 +1,6 @@
 import { Suspense, useState, useEffect, useCallback } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useStoreDomain } from "@/hooks/useStoreDomain";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { RouteErrorBoundary } from "@/components/RouteErrorBoundary";
 import { lazyWithRetry } from "@/lib/lazyWithRetry";
@@ -133,7 +133,7 @@ const AdminPayoutsHub = lazyWithRetry(() => import("@/pages/admin/PayoutsHub"));
 const AdminDisputesRefundsHub = lazyWithRetry(() => import("@/pages/admin/DisputesRefundsHub"));
 const AdminAffiliateHub = lazyWithRetry(() => import("@/pages/admin/AffiliateHub"));
 const AdminPlatformLedger = lazyWithRetry(() => import("@/pages/admin/PlatformLedger"));
-const AdminCustomDomains = lazyWithRetry(() => import("@/pages/admin/CustomDomains"));
+
 const AdminRateLimitDashboard = lazyWithRetry(() => import("@/pages/admin/RateLimitDashboard"));
 const AdminComplianceDashboard = lazyWithRetry(() => import("@/pages/admin/ComplianceDashboard"));
 
@@ -184,7 +184,7 @@ const SellerReviews = lazyWithRetry(() => import("@/pages/seller/SellerReviews")
 const SellerImport = lazyWithRetry(() => import("@/pages/seller/SellerImport"));
 const SellerPromotions = lazyWithRetry(() => import("@/pages/seller/SellerPromotions"));
 const SellerTaxSummary = lazyWithRetry(() => import("@/pages/seller/SellerTaxSummary"));
-const SellerSettingsDomain = lazyWithRetry(() => import("@/pages/seller/SellerSettingsDomain"));
+
 const SellerStorePages = lazyWithRetry(() => import("@/pages/seller/SellerStorePages"));
 const SellerStoreBuilder = lazyWithRetry(() => import("@/pages/seller/SellerStoreBuilder"));
 const SellerProPage = lazyWithRetry(() => import("@/pages/seller/SellerProPage"));
@@ -199,8 +199,6 @@ const Compare = lazyWithRetry(() => import("@/pages/Compare"));
 // Store custom page
 const StoreCustomPage = lazyWithRetry(() => import("@/pages/StoreCustomPage"));
 
-// Store standalone page for custom domains
-const StoreStandalonePage = lazyWithRetry(() => import("@/pages/StoreStandalonePage"));
 
 
 // Public pages
@@ -243,7 +241,7 @@ function useResumeCounter() {
 }
 
 export function AppRoutes() {
-  const { isCustomStoreDomain, loading: domainLoading } = useStoreDomain();
+  
   const location = useLocation();
   const resumeCounter = useResumeCounter();
 
@@ -252,15 +250,6 @@ export function AppRoutes() {
 
 
 
-  // If on a store custom domain/subdomain, render standalone store
-  if (isCustomStoreDomain) {
-    if (domainLoading) return <PageLoader />;
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <StoreStandalonePage />
-      </Suspense>
-    );
-  }
 
   // Otherwise render the main app routes
   return (
@@ -368,7 +357,7 @@ export function AppRoutes() {
         <Route path="/seller/settings/payments" element={<SellerSettingsPayments />} />
         <Route path="/seller/settings/notifications" element={<SellerSettingsNotifications />} />
         <Route path="/seller/roblox" element={<SellerSettingsRoblox />} />
-        <Route path="/seller/settings/domain" element={<SellerSettingsDomain />} />
+        
         <Route path="/seller/support" element={<SellerSupport />} />
         <Route path="/seller/account-health" element={<SellerAccountHealth />} />
         <Route path="/seller/webhooks" element={<SellerWebhooks />} />
@@ -463,7 +452,7 @@ export function AppRoutes() {
         <Route path="/admin/gdpr-compliance" element={<AdminGDPRCompliance />} />
         <Route path="/admin/internal-notes" element={<AdminInternalNotes />} />
         <Route path="/admin/platform-ledger" element={<AdminPlatformLedger />} />
-        <Route path="/admin/custom-domains" element={<AdminCustomDomains />} />
+        
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
