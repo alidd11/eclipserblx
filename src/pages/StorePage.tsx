@@ -163,6 +163,9 @@ export default function StorePage() {
     ogImage: store?.logo_url || store?.banner_url || undefined,
   });
 
+  // Must run every render — keep above any early returns to obey Rules of Hooks
+  const { accentColor } = useStoreTheme(store);
+
   if (storeLoading) {
     return (
       <div className="min-h-[100dvh] flex flex-col bg-background">
@@ -182,8 +185,8 @@ export default function StorePage() {
     return <StoreNotFound />;
   }
 
-  const { accentColor } = useStoreTheme(store);
   const bio = store.bio;
+
 
   return (
     <>
