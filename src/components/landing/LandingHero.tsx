@@ -1,8 +1,6 @@
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { ArrowRight, Search } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { cn } from '@/lib/utils';
 
@@ -11,8 +9,6 @@ const ROTATING_WORDS = ['Roblox', 'Discord'];
 export function LandingHero() {
   const [wordIndex, setWordIndex] = useState(0);
   const [bgIndex, setBgIndex] = useState(0);
-  const [query, setQuery] = useState('');
-  const navigate = useNavigate();
   const { data: products } = useFeaturedProducts({ limit: 6, queryKey: 'landing-hero-bg' });
 
   const backdrops = useMemo(
@@ -37,14 +33,6 @@ export function LandingHero() {
     const t = setInterval(() => setBgIndex((p) => (p + 1) % backdrops.length), 6500);
     return () => clearInterval(t);
   }, [backdrops.length]);
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const q = query.trim();
-    navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/products');
-  };
 
   return (
     <section
@@ -120,43 +108,18 @@ export function LandingHero() {
           <span className="text-foreground"> Creators</span>
         </h1>
 
-        {/* Search + secondary CTA */}
-        <form
-          onSubmit={submit}
-          className="mt-5 sm:mt-6 w-full max-w-2xl flex flex-col sm:flex-row items-stretch gap-2 sm:gap-3"
-        >
-          <div
-            className="relative flex-1 group"
-            onClick={() => inputRef.current?.focus()}
-          >
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-            <input
-              ref={inputRef}
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search assets, scripts, creators…"
-              aria-label="Search the marketplace"
-              className="w-full h-12 pl-11 pr-28 rounded-xl border border-border bg-card/80 backdrop-blur-md text-[16px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/60 focus:bg-card transition-colors"
-            />
-            <Button
-              type="submit"
-              size="sm"
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 px-4 text-xs font-bold uppercase tracking-[0.14em]"
-            >
-              Search
-            </Button>
-          </div>
+        {/* Secondary CTA */}
+        <div className="mt-5 sm:mt-6">
           <Link
             to="/sell"
-            className="group inline-flex items-center justify-center gap-2 h-12 px-5 rounded-xl border border-border bg-card/60 backdrop-blur-md text-sm font-semibold text-foreground hover:border-primary/50 hover:bg-card transition-colors whitespace-nowrap"
+            className="group inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-border bg-card/60 backdrop-blur-md text-sm font-semibold text-foreground hover:border-primary/50 hover:bg-card transition-colors whitespace-nowrap"
           >
             Start selling
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
-        </form>
+        </div>
       </div>
     </section>
-
   );
 }
+
