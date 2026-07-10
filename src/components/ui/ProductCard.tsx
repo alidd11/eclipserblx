@@ -131,14 +131,14 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     >
       <div
         className={cn(
-          'relative overflow-hidden h-full flex flex-col rounded-xl bg-card contain-layout',
-          'border border-border/60 transition-colors duration-200',
+          'relative overflow-hidden h-full flex flex-col rounded-2xl bg-card contain-layout',
+          'border border-border/60 transition-colors duration-300',
           'hover:border-border',
           isFeatured && 'border-primary/40'
         )}
       >
-        {/* Media */}
-        <div className="relative aspect-[4/3] bg-muted overflow-hidden flex-shrink-0">
+        {/* Media — square */}
+        <div className="relative aspect-square bg-muted overflow-hidden flex-shrink-0">
           {showMedia ? (
             isVideo ? (
               <BackgroundVideo
@@ -166,7 +166,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             )
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
-              <span className="text-3xl font-display font-black text-muted-foreground/20">
+              <span className="text-4xl font-display font-black text-muted-foreground/20">
                 {name.charAt(0)}
               </span>
             </div>
@@ -181,10 +181,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             />
           )}
 
-          {/* Subtle bottom gradient for legibility of dot indicators */}
-          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent pointer-events-none z-[2]" />
+          {/* Gradient fade into card body */}
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card via-card/40 to-transparent pointer-events-none z-[2]" />
 
-          {/* Badges — single-line, refined */}
+          {/* Badges */}
           <div className="absolute top-2.5 left-2.5 flex items-center gap-1 flex-wrap z-[3]">
             {hasMemberDiscount && (
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-md">
@@ -230,19 +230,24 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col flex-1 gap-2.5">
-          {/* Category + rating row */}
-          <div className="flex items-center justify-between gap-2 min-h-[14px]">
-            {category ? (
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.12em] truncate">
+        <div className="p-4 flex flex-col flex-1 gap-3">
+          {/* Category eyebrow row */}
+          <div className="flex items-center gap-2 min-h-[14px]">
+            {category && (
+              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary truncate">
                 {category}
               </span>
-            ) : <span />}
+            )}
             {typeof averageRating === 'number' && averageRating > 0 && (
-              <span className="flex items-center gap-0.5 text-muted-foreground">
-                <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                <span className="text-[11px] font-semibold text-foreground/80">{averageRating.toFixed(1)}</span>
-              </span>
+              <>
+                <span className="h-1 w-1 rounded-full bg-border" />
+                <span className="flex items-center gap-0.5">
+                  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                  <span className="text-[10px] font-extrabold text-muted-foreground tracking-wider">
+                    {averageRating.toFixed(1)}
+                  </span>
+                </span>
+              </>
             )}
           </div>
 
@@ -252,15 +257,15 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </h3>
 
           {/* Store */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {storeLogo ? (
               <img
                 src={storeLogo}
                 alt={storeName || ''}
-                className="h-4 w-4 rounded-full object-cover flex-shrink-0 ring-1 ring-border"
+                className="h-5 w-5 rounded-full object-cover flex-shrink-0 ring-1 ring-border"
               />
             ) : (
-              <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border">
+              <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border">
                 <Store className="h-2.5 w-2.5 text-muted-foreground" />
               </div>
             )}
@@ -278,21 +283,21 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             </span>
             {isVerified && (
               <span title="Verified seller" className="flex-shrink-0">
-                <BadgeCheck className="h-3 w-3 text-primary" />
+                <BadgeCheck className="h-3.5 w-3.5 text-primary" />
               </span>
             )}
           </div>
 
           {/* Price row */}
-          <div className="flex items-end justify-between gap-2 mt-auto pt-3 border-t border-border/50">
+          <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-border/50">
             <div className="flex items-baseline gap-1.5 min-w-0">
               {isPayWhatYouWant ? (
-                <span className="text-lg font-bold whitespace-nowrap leading-none text-emerald-400">
+                <span className="text-xl font-extrabold whitespace-nowrap leading-none text-emerald-400 tracking-tight">
                   {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
                 </span>
               ) : hasMemberDiscount ? (
                 <>
-                  <span className="text-lg font-bold whitespace-nowrap leading-none text-foreground">
+                  <span className="text-xl font-extrabold whitespace-nowrap leading-none text-foreground tracking-tight">
                     {formatPrice(memberPrice)}
                   </span>
                   <span className="text-[11px] text-muted-foreground leading-none line-through">
@@ -300,20 +305,20 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   </span>
                 </>
               ) : (
-                <span className="text-lg font-bold whitespace-nowrap leading-none text-foreground">
+                <span className="text-xl font-extrabold whitespace-nowrap leading-none text-foreground tracking-tight">
                   {formatPrice(price)}
                 </span>
               )}
             </div>
 
-            {/* Quick-add — icon-only, subtle */}
+            {/* Quick-add */}
             <button
               onClick={handleAddToCart}
               className={cn(
-                'flex-shrink-0 h-8 w-8 rounded-lg flex items-center justify-center transition-colors active:scale-[0.97]',
+                'flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center transition-colors border active:scale-[0.97]',
                 inCart
-                  ? 'bg-emerald-500/15 text-emerald-400'
-                  : 'text-muted-foreground hover:text-primary-foreground hover:bg-primary'
+                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
+                  : 'bg-background/40 text-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary'
               )}
               aria-label={inCart ? 'In cart' : 'Add to cart'}
             >
