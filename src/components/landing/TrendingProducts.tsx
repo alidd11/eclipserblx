@@ -26,7 +26,7 @@ export function TrendingProducts() {
         .eq('moderation_status', 'approved')
         .eq('stores.is_active', true)
         .order('download_count', { ascending: false })
-        .limit(8);
+        .limit(4);
       if (error) throw error;
       return data;
     },
@@ -34,7 +34,7 @@ export function TrendingProducts() {
   });
 
   const imageUrls = useMemo(() => 
-    (products || []).slice(0, 8).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
+    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
     [products]
   );
   usePreloadImages(imageUrls);
@@ -46,8 +46,8 @@ export function TrendingProducts() {
           <Skeleton className="h-5 w-5" />
           <Skeleton className="h-6 w-40" />
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <ProductCardSkeleton key={i} />
           ))}
         </div>
@@ -81,8 +81,7 @@ export function TrendingProducts() {
           </Link>
         </div>
 
-        {/* Masonry layout using CSS columns */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {products.map((product, idx) => {
             const store = product.stores as any;
             const category = product.categories as any;
