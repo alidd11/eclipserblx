@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, forwardRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, BadgeCheck, Store, Star } from 'lucide-react';
+import { ShoppingCart, Check, Store, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useCart } from '@/hooks/useCart';
