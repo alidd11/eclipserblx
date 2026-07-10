@@ -1,5 +1,5 @@
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { ArrowRight, Search, Car, Code, Box, Layout as LayoutIcon, Bot } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,14 +7,6 @@ import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
 import { cn } from '@/lib/utils';
 
 const ROTATING_WORDS = ['Roblox', 'Discord'];
-
-const CATEGORY_TILES = [
-  { label: 'Vehicles', slug: 'vehicle-liveries', icon: Car },
-  { label: 'Scripts', slug: 'scripts-systems', icon: Code },
-  { label: 'Models', slug: '3d-models', icon: Box },
-  { label: 'UI Kits', slug: 'ui-kits', icon: LayoutIcon },
-  { label: 'Bots', slug: 'discord-bots', icon: Bot },
-];
 
 export function LandingHero() {
   const [wordIndex, setWordIndex] = useState(0);
