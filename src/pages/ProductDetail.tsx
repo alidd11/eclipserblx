@@ -46,7 +46,7 @@ export default function ProductDetail() {
  const { addItem, isInCart } = useCart();
  const { formatPrice } = useCurrency();
  const [selectedImage, setSelectedImage] = useState(0);
- const [isZoomOpen, setIsZoomOpen] = useState(false);
+ 
  const [showSwipeHint, setShowSwipeHint] = useState(true);
  const [showIPReportDialog, setShowIPReportDialog] = useState(false);
  const [pwywAmount, setPwywAmount] = useState<string>('');
