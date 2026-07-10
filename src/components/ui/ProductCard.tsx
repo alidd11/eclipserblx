@@ -148,8 +148,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         )}
 
         {/* Image — full product image, no cropping */}
-        <div className="relative p-2.5 pb-0 flex-shrink-0">
-          <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-muted/60 to-background rounded-md overflow-hidden">
+        <div className="relative p-2 pb-0 flex-shrink-0">
+          <div className="relative w-full aspect-[16/10] bg-transparent rounded-md overflow-hidden">
             {showMedia ? (
               isVideo ? (
                 <BackgroundVideo
@@ -176,8 +176,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 />
               )
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-4xl font-serif text-muted-foreground/25">
+              <div className="w-full h-full flex items-center justify-center bg-muted/40">
+                <span className="text-3xl font-medium text-muted-foreground/30">
                   {name.charAt(0)}
                 </span>
               </div>
