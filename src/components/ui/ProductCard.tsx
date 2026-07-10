@@ -191,7 +191,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               <img
                 src={quantisOverlay}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
+                className="absolute inset-0 w-full h-full object-contain object-center pointer-events-none z-[1]"
               />
             ) : null}
 
