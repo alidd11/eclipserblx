@@ -206,11 +206,6 @@ export function FinancialOverview() {
  // Credits
  const totalCredits = (creditPurchases ?? []).reduce((s, c) => s + (Number(c.amount) || 0), 0);
 
- // Robux in GBP
- const totalRobuxGBP = (robuxData ?? []).reduce(
- (s, r) => s + (Number(r.robux_after_tax) || 0) * ROBUX_TO_GBP_RATE,
- 0
- );
 
  // Stripe actual balance
  const stripeAvailable = stripeBalance?.balance?.available ?? 0;
@@ -236,7 +231,6 @@ export function FinancialOverview() {
  
  { name: 'Subscriptions', value: Math.round(mrr * 12) },
  { name: 'Credits', value: Math.round(totalCredits) },
- { name: 'Robux (est.)', value: Math.round(totalRobuxGBP) },
  ].filter(c => c.value > 0);
 
  // 30-day revenue trend (daily)
@@ -288,7 +282,7 @@ export function FinancialOverview() {
  stripeFees30d,
  stripeRefunds30d,
  };
- }, [ordersData, commissionData, subsData, creditPurchases, robuxData, stripeBalance]);
+ }, [ordersData, commissionData, subsData, creditPurchases, stripeBalance]);
 
  if (hasError && !isLoading) {
  return (
