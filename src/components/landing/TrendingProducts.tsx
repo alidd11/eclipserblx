@@ -113,10 +113,10 @@ const MasonryProductCard = forwardRef<HTMLDivElement, {
 }>(function MasonryProductCard({ product, store, category, isTall, rank }, ref) {
   return (
     <div ref={ref} className="relative">
-      {/* Rank badge */}
-      <div className="absolute top-2 left-2 z-10 flex items-center justify-center w-6 h-6 rounded-full bg-background/90 backdrop-blur-sm border border-border shadow-sm">
-        <span className="text-[10px] font-bold text-foreground">
-          {rank <= 3 ? ['🥇', '🥈', '🥉'][rank - 1] : `#${rank}`}
+      {/* Rank badge — editorial numeral, top-right */}
+      <div className="absolute top-2 right-2 z-10 pointer-events-none">
+        <span className="inline-flex items-center h-5 px-1.5 text-[10px] font-bold tracking-widest text-background bg-foreground rounded-sm">
+          {`#${rank}`}
         </span>
       </div>
       <ProductCard
