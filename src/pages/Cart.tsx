@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Trash2, ShoppingBag, ArrowRight, Shield, Zap, CreditCard, Sparkles } from 'lucide-react';
+import { ShoppingBag, Shield, Zap, Sparkles } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ export default function Cart() {
   usePageMeta({ title: 'Your Cart', description: 'Review items in your Eclipse cart before checkout. Secure payments, instant delivery.', canonicalPath: '/cart' });
   const { t } = useTranslation();
   const { items, removeItem, clearCart, total } = useCart();
-  const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent, isLoading: subscriptionLoading } = useSubscription();
+  const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
 
   // Calculate member discount (only for eligible items)
@@ -37,17 +37,19 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <MainLayout>
-        <div className="container py-16 max-w-lg mx-auto text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-muted mb-4">
-            <ShoppingBag className="h-6 w-6 text-muted-foreground" />
+        <div className="container py-16 md:py-24 flex justify-center">
+          <div className="w-full max-w-lg border border-border rounded-2xl p-10 md:p-16 flex flex-col items-center text-center bg-card/40">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted/40 border border-border flex items-center justify-center mb-6 md:mb-8">
+              <ShoppingBag className="h-7 w-7 md:h-8 md:w-8 text-muted-foreground" />
+            </div>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">{t('cart.cartEmpty')}</h1>
+            <p className="text-muted-foreground mb-8 max-w-[280px] leading-relaxed text-sm">
+              {t('cart.cartEmptyDesc')}
+            </p>
+            <Button asChild variant="outline" className="h-12 px-8 rounded-xl">
+              <Link to="/products">{t('common.browseProducts')}</Link>
+            </Button>
           </div>
-          <h1 className="text-2xl font-display font-bold mb-2">{t('cart.cartEmpty')}</h1>
-          <p className="text-muted-foreground max-w-sm mx-auto mb-6">
-            {t('cart.cartEmptyDesc')}
-          </p>
-          <Button asChild className="gradient-button border-0">
-            <Link to="/products">{t('common.browseProducts')}</Link>
-          </Button>
         </div>
       </MainLayout>
     );
@@ -55,72 +57,93 @@ export default function Cart() {
 
   return (
     <MainLayout>
-      <div className="container py-8 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-display font-bold">{t('cart.yourCart')}</h1>
-            <LoyaltyBadge />
+      <div className="container py-8 md:py-12 max-w-6xl">
+        {/* Header */}
+        <div className="mb-8 md:mb-10 flex items-end justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
+                {t('cart.yourCart')}
+              </h1>
+              <LoyaltyBadge />
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {items.length} {items.length === 1 ? t('cart.items').replace(/s$/, '') : t('cart.items')} • {t('cart.proceedToCheckout')}
+            </p>
           </div>
-          <Button variant="ghost" size="sm" onClick={clearCart} className="text-destructive hover:text-destructive">
-            {t('cart.clearCart')}
-          </Button>
+          <div className="flex items-center gap-4 shrink-0">
+            <Link to="/products" className="hidden sm:inline text-sm text-muted-foreground hover:text-foreground transition-colors">
+              {t('common.browseProducts')}
+            </Link>
+            <button
+              onClick={clearCart}
+              className="text-xs text-muted-foreground hover:text-destructive transition-colors uppercase tracking-widest font-semibold"
+            >
+              {t('cart.clearCart')}
+            </button>
+          </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2 space-y-0">
-            <h2 className="text-lg font-semibold mb-4">{t('cart.cartItems')}</h2>
-            <div className="divide-y divide-border">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
+          {/* Items list */}
+          <div className="lg:col-span-8">
+            <div className="space-y-px bg-border rounded-xl overflow-hidden border border-border">
               {items.map((item) => {
                 const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
                 const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
+                const displayPrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
                 const discountPercent = getDiscountPercent(item.category_id, item.is_resellable);
-                
+
                 return (
-                  <div key={item.id} className="py-4 first:pt-0">
-                    <div className="flex gap-3 sm:gap-4">
-                      <div className="w-16 h-16 sm:w-20 sm:h-14 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                        {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-xl font-bold text-muted-foreground/30">{item.name.charAt(0)}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <Link to={`/products/${item.slug}`} className="font-semibold hover:text-primary transition-colors line-clamp-1 text-sm sm:text-base">
+                  <div key={item.id} className="bg-background p-5 sm:p-6 flex items-start gap-4 sm:gap-6">
+                    {/* Thumbnail */}
+                    <Link
+                      to={`/products/${item.slug}`}
+                      className="w-20 h-20 sm:w-24 sm:h-24 bg-muted/40 rounded-lg overflow-hidden flex-shrink-0 border border-border"
+                    >
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="text-2xl font-bold text-muted-foreground/40">{item.name.charAt(0)}</span>
+                        </div>
+                      )}
+                    </Link>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between gap-3">
+                        <Link
+                          to={`/products/${item.slug}`}
+                          className="text-foreground font-medium hover:text-primary transition-colors line-clamp-2 text-sm sm:text-base"
+                        >
                           {item.name}
                         </Link>
-                        <p className="text-muted-foreground text-xs sm:text-sm">
-                          {item.store_name ? `${item.store_name} • ` : ''}{t('common.digitalProduct')} • {t('common.instantDelivery')}
-                        </p>
+                        <div className="text-right shrink-0">
+                          {hasDiscount ? (
+                            <>
+                              <div className="text-foreground font-medium">{formatPrice(memberPrice)}</div>
+                              <div className="flex items-center justify-end gap-1.5 mt-0.5">
+                                <span className="text-[11px] text-muted-foreground line-through">{formatPrice(displayPrice)}</span>
+                                <Badge variant="secondary" className="text-[10px] px-1 py-0 border-0">
+                                  -{discountPercent}%
+                                </Badge>
+                              </div>
+                            </>
+                          ) : (
+                            <span className="text-foreground font-medium">{formatPrice(displayPrice)}</span>
+                          )}
+                        </div>
                       </div>
-
-                      <div className="flex flex-col items-end gap-1 shrink-0">
-                        {hasDiscount ? (
-                          <>
-                            <span className="font-bold text-sm sm:text-lg text-primary">{formatPrice(memberPrice)}</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-[10px] sm:text-xs text-muted-foreground line-through">{formatPrice(item.price)}</span>
-                              <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-amber-500/20 text-amber-400 border-0">
-                                -{discountPercent}%
-                              </Badge>
-                            </div>
-                          </>
-                        ) : (
-                          <span className="font-bold text-sm sm:text-lg">{formatPrice(item.price)}</span>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon" aria-label="Delete"
-                          onClick={() => removeItem(item.id)}
-                          className="text-muted-foreground hover:text-destructive h-7 w-7 sm:h-8 sm:w-8"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        </Button>
-                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">
+                        {item.store_name ? `${item.store_name} • ` : ''}{t('common.digitalProduct')} • {t('common.instantDelivery')}
+                      </p>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="text-[11px] text-muted-foreground/70 hover:text-destructive mt-3 sm:mt-4 transition-colors uppercase tracking-widest font-semibold"
+                      >
+                        {t('common.remove', { defaultValue: 'Remove' })}
+                      </button>
                     </div>
                   </div>
                 );
@@ -128,72 +151,65 @@ export default function Cart() {
             </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="space-y-6">
-            <div className="border border-border rounded-xl bg-card p-5 h-fit space-y-5">
-              <h2 className="text-lg font-semibold">{t('cart.orderSummary')}</h2>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('cart.subtotal')} ({items.length} {t('cart.items')})</span>
-                  <span>{formatPrice(total)}</span>
+          {/* Summary */}
+          <aside className="lg:col-span-4 space-y-6">
+            <div className="bg-card/40 border border-border rounded-xl p-6 md:p-8 lg:sticky lg:top-8">
+              <h2 className="text-foreground font-semibold mb-6">{t('cart.orderSummary')}</h2>
+
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>{t('cart.subtotal')}</span>
+                  <span className="text-foreground">{formatPrice(total)}</span>
                 </div>
-                
+
                 {isSubscribed && eclipseDiscount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground flex items-center gap-1">
+                  <div className="flex justify-between items-center py-2 px-3 bg-muted/30 rounded-lg border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <Sparkles className="h-3 w-3 text-amber-400" />
-                      {t('cart.eclipseDiscount')}
-                    </span>
-                    <span className="text-primary">{formatPrice(-eclipseDiscount)}</span>
+                      <span>{t('cart.eclipseDiscount')}</span>
+                    </div>
+                    <span className="text-foreground">-{formatPrice(eclipseDiscount)}</span>
                   </div>
                 )}
-                
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">{t('cart.discountCode')}</span>
-                  <span>{formatPrice(0)}</span>
+
+                <div className="pt-4 border-t border-border flex justify-between items-baseline">
+                  <span className="text-foreground font-medium">{t('cart.total')}</span>
+                  <span className="text-foreground font-semibold text-lg">{formatPrice(memberTotal)}</span>
                 </div>
-                
-                <div className="border-t border-border pt-3">
-                  <div className="flex justify-between text-lg font-bold">
-                    <span>{t('cart.total')}</span>
-                    <span>{formatPrice(memberTotal)}</span>
-                  </div>
-                  {isSubscribed && eclipseDiscount > 0 && (
-                    <p className="text-xs text-amber-400 mt-1 flex items-center gap-1">
-                      <Sparkles className="h-3 w-3" />
-                      {t('cart.savingWith', { amount: formatPrice(eclipseDiscount) })}
-                    </p>
-                  )}
-                </div>
+                {isSubscribed && eclipseDiscount > 0 && (
+                  <p className="text-xs text-amber-400 flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    {t('cart.savingWith', { amount: formatPrice(eclipseDiscount) })}
+                  </p>
+                )}
               </div>
 
-              <Button asChild className="w-full h-12 gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-shadow">
-                <Link to="/checkout">
-                  {t('cart.proceedToCheckout')}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
+              <Button
+                asChild
+                className="w-full h-12 rounded-xl mt-8 gradient-button border-0 shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
+              >
+                <Link to="/checkout">{t('cart.proceedToCheckout')}</Link>
               </Button>
 
-              {/* Trust signals — compact inline strip */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 pt-3 border-t border-border/60">
-                {[
-                  { icon: Shield, label: t('common.secure') },
-                  { icon: Zap, label: t('common.instant') },
-                  { icon: CreditCard, label: 'Stripe' },
-                ].map((s, i, arr) => (
-                  <div key={s.label} className="flex items-center gap-1.5">
-                    <s.icon className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-[11px] text-muted-foreground font-medium">{s.label}</span>
-                    {i < arr.length - 1 && <span className="hidden sm:block h-3 w-px bg-border/40 ml-2" />}
-                  </div>
-                ))}
+              {/* Trust signals */}
+              <div className="mt-8 space-y-3 border-t border-border pt-6">
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground uppercase tracking-widest">
+                  <Shield className="h-3.5 w-3.5" />
+                  {t('common.secure')} Checkout
+                </div>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground uppercase tracking-widest">
+                  <Zap className="h-3.5 w-3.5" />
+                  {t('common.instant')} Delivery
+                </div>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                  <span className="opacity-60">Powered by</span>
+                  <span className="font-bold tracking-wider">STRIPE</span>
+                </div>
               </div>
             </div>
 
-            {/* Cart Upsells */}
             <CartUpsells />
-          </div>
+          </aside>
         </div>
       </div>
     </MainLayout>
