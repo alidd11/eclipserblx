@@ -80,10 +80,10 @@ export function NewArrivalsCard() {
             >
               <div className="relative flex-shrink-0">
                 {(() => {
-                  const imgUrl = getFirstImageUrl(product.images);
+                  const imgUrl = getFirstImageUrl(product.images, 48, 48, 'contain');
                   return imgUrl ? (
                     <img 
-                      src={optimizeImageUrl(imgUrl, 48, 48)} 
+                      src={imgUrl} 
                       alt={product.name}
                       width={48}
                       height={48}

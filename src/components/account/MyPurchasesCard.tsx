@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface PurchasedProduct {
  id: string;
@@ -195,11 +196,11 @@ export function MyPurchasesCard() {
  <div className="w-14 h-14 rounded-md overflow-hidden bg-muted shrink-0">
  {product.images?.[0] ? (
  <img
- src={product.images[0]}
+  src={optimizeImageUrl(product.images[0], 56, 56, 'contain')}
  alt={product.name}
  loading="lazy"
  decoding="async"
- className="w-full h-full object-cover"
+  className="w-full h-full object-contain object-center"
  />
  ) : (
  <div className="w-full h-full flex items-center justify-center">

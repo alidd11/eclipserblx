@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Link } from 'react-router-dom';
 import { useCurrency } from '@/hooks/useCurrency';
 import { ShoppingBag } from 'lucide-react';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 interface Props {
   productId: string;
@@ -101,11 +102,11 @@ export function FrequentlyBoughtTogether({ productId, categoryId, storeId }: Pro
             <div className="aspect-square bg-muted overflow-hidden">
               {product.images?.[0] ? (
                 <img
-                  src={product.images[0]}
+                  src={optimizeImageUrl(product.images[0], 240, 240, 'contain')}
                   alt={product.name}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain transition-transform duration-300"
+                  className="w-full h-full object-contain object-center"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">

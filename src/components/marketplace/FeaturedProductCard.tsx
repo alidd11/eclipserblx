@@ -45,16 +45,16 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
           {/* Product image */}
           <div className="aspect-[2.5/1] sm:aspect-[3/1] relative overflow-hidden bg-foreground/20">
             {(() => {
-              const imgUrl = getFirstImageUrl(displayProduct.images);
+              const imgUrl = getFirstImageUrl(displayProduct.images, 540, 180, 'contain');
               return imgUrl ? (
                 <img
-                  src={optimizeImageUrl(imgUrl, 540, 180)}
+                  src={imgUrl}
                   alt={displayProduct.name}
                   width={540}
                   height={180}
                   loading="lazy"
                   decoding="async"
-                  className="w-full h-full object-contain transition-transform duration-500"
+                  className="w-full h-full object-contain object-center"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-muted">
