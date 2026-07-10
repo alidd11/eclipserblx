@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VideoThumbnail } from '@/components/ui/VideoThumbnail';
 
-import { RobuxPayButton } from '@/components/payments/RobuxPayButton';
+
 import { BotLicenseBundleSelector } from '@/components/bots/BotLicenseBundleSelector';
 import { StoreDetailsCard } from '@/components/product/StoreDetailsCard';
 import { ProductNotFound } from '@/components/product/ProductNotFound';
@@ -549,9 +549,6 @@ export default function ProductDetail() {
  )}
  </div>
  
- {product.categories?.slug !== 'bots' && !(isPWYW && getPwywCartPrice() === 0) && (
- <RobuxPayButton />
- )}
  </div>
 
  {/* Trust signals near CTA */}

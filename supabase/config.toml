@@ -51,8 +51,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.create-payment-intent]
     verify_jwt = false
-  [functions.create-robux-ad-pending]
-    verify_jwt = false
   [functions.create-subscription]
     verify_jwt = false
   [functions.custom-password-reset]
@@ -134,10 +132,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
   [functions.roblox-auth-url]
     verify_jwt = false
   [functions.roblox-link-callback]
-    verify_jwt = false
-  [functions.robux-ad-webhook]
-    verify_jwt = false
-  [functions.robux-webhook]
     verify_jwt = false
   [functions.scan-file-virus]
     verify_jwt = false
