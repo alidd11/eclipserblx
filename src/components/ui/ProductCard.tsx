@@ -1,7 +1,7 @@
 import { memo, useCallback, useRef, forwardRef, useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, Check, Sparkles, BadgeCheck, Store, Star } from 'lucide-react';
+import { ShoppingCart, Check, Store, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useCart } from '@/hooks/useCart';
@@ -129,148 +129,174 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       onMouseLeave={handleMouseLeave}
       onTouchStart={() => prefetchProduct(slug)}
     >
-      <div
+      <article
         className={cn(
-          'relative overflow-hidden h-full flex flex-col rounded-2xl bg-card contain-layout',
+          'relative h-full flex flex-col bg-card contain-layout overflow-hidden',
           'border border-border/60 transition-colors duration-300',
-          'hover:border-border',
+          'hover:border-border active:scale-[0.97]',
+          'transition-transform',
           isFeatured && 'border-primary/40'
         )}
       >
-        {/* Media — square */}
-        <div className="relative aspect-square bg-muted overflow-hidden flex-shrink-0">
-          {showMedia ? (
-            isVideo ? (
-              <BackgroundVideo
-                ref={videoRef}
-                src={currentMedia!}
-                onError={handleMediaError}
-                className="w-full h-full object-cover object-center"
-              />
-            ) : (
-              <img
-                src={currentMedia!}
-                alt={name}
-                width={620}
-                height={620}
-                loading={priority ? 'eager' : 'lazy'}
-                decoding={priority ? 'sync' : 'async'}
-                {...(priority ? ({ fetchpriority: 'high' } as Record<string, string>) : {})}
-                onError={handleMediaError}
-                onLoad={(e) => {
-                  const img = e.currentTarget;
-                  if (img.naturalWidth === 0) handleMediaError();
-                }}
-                className="w-full h-full object-cover object-center"
-              />
-            )
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
-              <span className="text-4xl font-display font-black text-muted-foreground/20">
-                {name.charAt(0)}
-              </span>
+        {/* Vertical Featured ribbon */}
+        {isFeatured && (
+          <div className="absolute top-0 right-6 z-20 pointer-events-none">
+            <div
+              className="bg-primary text-primary-foreground text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-4"
+              style={{ writingMode: 'vertical-lr' }}
+            >
+              Featured
             </div>
-          )}
-
-          {/* Quantis overlay */}
-          {storeSlug === 'quantis' && (
-            <img
-              src={quantisOverlay}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
-            />
-          )}
-
-          {/* Gradient fade into card body */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card via-card/40 to-transparent pointer-events-none z-[2]" />
-
-          {/* Badges */}
-          <div className="absolute top-2.5 left-2.5 flex items-center gap-1 flex-wrap z-[3]">
-            {hasMemberDiscount && (
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-md">
-                −{discountPercent}%
-              </span>
-            )}
-            {showBestSellerBadge && (
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-amber-500 text-black rounded-md">
-                Bestseller
-              </span>
-            )}
-            {isFeatured && !showBestSellerBadge && !hasMemberDiscount && (
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-primary text-primary-foreground rounded-md">
-                Featured
-              </span>
-            )}
-            {isNew && !isFeatured && !showBestSellerBadge && !hasMemberDiscount && (
-              <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-emerald-500 text-black rounded-md">
-                New
-              </span>
-            )}
           </div>
+        )}
 
-          {/* Wishlist */}
-          <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
-            <WishlistButton productId={id} variant="icon" />
-          </div>
-
-          {/* Image dot indicators */}
-          {mediaChain.length > 1 && (
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
-              {mediaChain.map((_, i) => (
-                <div
-                  key={i}
-                  className={cn(
-                    'h-1 rounded-full transition-all',
-                    i === mediaIndex ? 'w-4 bg-background' : 'w-1 bg-background/50'
-                  )}
+        {/* Image — insetted 16:10 frame */}
+        <div className="relative p-3 pb-0 flex-shrink-0">
+          <div className="relative w-full aspect-[16/10] bg-muted overflow-hidden">
+            {showMedia ? (
+              isVideo ? (
+                <BackgroundVideo
+                  ref={videoRef}
+                  src={currentMedia!}
+                  onError={handleMediaError}
+                  className="w-full h-full object-cover object-center opacity-90 group-hover:opacity-100 transition-opacity duration-500"
                 />
-              ))}
+              ) : (
+                <img
+                  src={currentMedia!}
+                  alt={name}
+                  width={620}
+                  height={388}
+                  loading={priority ? 'eager' : 'lazy'}
+                  decoding={priority ? 'sync' : 'async'}
+                  {...(priority ? ({ fetchpriority: 'high' } as Record<string, string>) : {})}
+                  onError={handleMediaError}
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth === 0) handleMediaError();
+                  }}
+                  className="w-full h-full object-cover object-center opacity-90 group-hover:opacity-100 transition-opacity duration-500"
+                />
+              )
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-background">
+                <span className="text-4xl font-serif text-muted-foreground/25">
+                  {name.charAt(0)}
+                </span>
+              </div>
+            )}
+
+            {/* Quantis overlay */}
+            {storeSlug === QUANTIS_STORE_ID || storeSlug === 'quantis' ? (
+              <img
+                src={quantisOverlay}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none z-[1]"
+              />
+            ) : null}
+
+            {/* Status badges (top-left) */}
+            <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
+              {hasMemberDiscount && (
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-sm">
+                  −{discountPercent}%
+                </span>
+              )}
+              {showBestSellerBadge && (
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-amber-500 text-black rounded-sm">
+                  Bestseller
+                </span>
+              )}
+              {isNew && !showBestSellerBadge && !hasMemberDiscount && (
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-emerald-500 text-black rounded-sm">
+                  New
+                </span>
+              )}
             </div>
-          )}
+
+            {/* Wishlist */}
+            <div className="absolute top-2 right-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-[3]">
+              <WishlistButton productId={id} variant="icon" />
+            </div>
+
+            {/* Image dot indicators */}
+            {mediaChain.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-[3]">
+                {mediaChain.map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'h-1 rounded-full transition-all',
+                      i === mediaIndex ? 'w-4 bg-background' : 'w-1 bg-background/60'
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 flex flex-col flex-1 gap-3">
-          {/* Category eyebrow row */}
-          <div className="flex items-center gap-2 min-h-[14px]">
-            {category && (
-              <span className="text-[10px] font-extrabold uppercase tracking-[0.15em] text-primary truncate">
-                {category}
-              </span>
-            )}
-            {typeof averageRating === 'number' && averageRating > 0 && (
-              <>
-                <span className="h-1 w-1 rounded-full bg-border" />
-                <span className="flex items-center gap-0.5">
+        <div className="p-5 md:p-6 flex flex-col flex-1">
+          {/* Title + price header */}
+          <div className="flex justify-between items-start gap-4 mb-5">
+            <div className="min-w-0 flex-1 space-y-1.5">
+              {category && (
+                <span className="block text-primary text-[10px] font-bold tracking-[0.25em] uppercase truncate">
+                  {category}
+                </span>
+              )}
+              <h3
+                className="font-serif text-foreground text-[22px] md:text-[26px] leading-[1.05] tracking-tight line-clamp-2 group-hover:text-primary transition-colors"
+                style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
+              >
+                {name}
+              </h3>
+              {typeof averageRating === 'number' && averageRating > 0 && (
+                <span className="inline-flex items-center gap-1 pt-1">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-[10px] font-extrabold text-muted-foreground tracking-wider">
+                  <span className="text-[10px] font-semibold text-muted-foreground tracking-wider">
                     {averageRating.toFixed(1)}
                   </span>
                 </span>
-              </>
-            )}
+              )}
+            </div>
+
+            <div className="text-right shrink-0">
+              {isPayWhatYouWant ? (
+                <span
+                  className="block font-serif text-emerald-400 text-xl md:text-2xl font-medium whitespace-nowrap leading-none tracking-tight"
+                  style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
+                >
+                  {minPrice === 0 ? 'Free+' : formatPrice(minPrice || 0)}
+                </span>
+              ) : hasMemberDiscount ? (
+                <>
+                  <span
+                    className="block font-serif text-foreground text-xl md:text-2xl font-medium whitespace-nowrap leading-none tracking-tight"
+                    style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
+                  >
+                    {formatPrice(memberPrice)}
+                  </span>
+                  <span className="block text-[10px] text-muted-foreground line-through mt-1">
+                    {formatPrice(price)}
+                  </span>
+                </>
+              ) : (
+                <span
+                  className="block font-serif text-foreground text-xl md:text-2xl font-medium whitespace-nowrap leading-none tracking-tight"
+                  style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
+                >
+                  {formatPrice(price)}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Title */}
-          <h3 className="font-display font-semibold text-[15px] text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
-            {name}
-          </h3>
-
-          {/* Store */}
-          <div className="flex items-center gap-2">
-            {storeLogo ? (
-              <img
-                src={storeLogo}
-                alt={storeName || ''}
-                className="h-5 w-5 rounded-full object-cover flex-shrink-0 ring-1 ring-border"
-              />
-            ) : (
-              <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center flex-shrink-0 ring-1 ring-border">
-                <Store className="h-2.5 w-2.5 text-muted-foreground" />
-              </div>
-            )}
-            <span
-              className="text-[11px] text-muted-foreground font-medium truncate hover:text-foreground transition-colors"
+          {/* Seller + cart row */}
+          <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-5 mt-auto">
+            <button
+              type="button"
               onClick={(e) => {
                 if (storeSlug) {
                   e.preventDefault();
@@ -278,57 +304,57 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   navigate(`/store/${storeSlug}`);
                 }
               }}
+              className="flex items-center gap-3 min-w-0 text-left"
             >
-              {storeName || 'Eclipse'}
-            </span>
-            {isVerified && (
-              <span title="Verified seller" className="flex-shrink-0">
-                <BadgeCheck className="h-3.5 w-3.5 text-primary" />
-              </span>
-            )}
-          </div>
-
-          {/* Price row */}
-          <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-border/50">
-            <div className="flex items-baseline gap-1.5 min-w-0">
-              {isPayWhatYouWant ? (
-                <span className="text-xl font-extrabold whitespace-nowrap leading-none text-emerald-400 tracking-tight">
-                  {minPrice === 0 ? 'Free+' : `From ${formatPrice(minPrice || 0)}`}
-                </span>
-              ) : hasMemberDiscount ? (
-                <>
-                  <span className="text-xl font-extrabold whitespace-nowrap leading-none text-foreground tracking-tight">
-                    {formatPrice(memberPrice)}
+              <div className="relative w-9 h-9 shrink-0">
+                {storeLogo ? (
+                  <img
+                    src={storeLogo}
+                    alt={storeName || ''}
+                    className="w-9 h-9 rounded-full object-cover border border-border"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center border border-border">
+                    <Store className="h-3.5 w-3.5 text-muted-foreground" />
+                  </div>
+                )}
+                {isVerified && (
+                  <span className="absolute -right-0.5 -bottom-0.5 bg-primary rounded-full p-[2px] border-2 border-card">
+                    <Check className="h-2 w-2 text-primary-foreground" strokeWidth={4} />
                   </span>
-                  <span className="text-[11px] text-muted-foreground leading-none line-through">
-                    {formatPrice(price)}
-                  </span>
-                </>
-              ) : (
-                <span className="text-xl font-extrabold whitespace-nowrap leading-none text-foreground tracking-tight">
-                  {formatPrice(price)}
-                </span>
-              )}
-            </div>
+                )}
+              </div>
+              <div className="min-w-0">
+                <p className="text-muted-foreground text-[9px] uppercase tracking-[0.2em] mb-0.5 font-medium">
+                  Provided by
+                </p>
+                <p className="text-foreground text-[11px] font-semibold uppercase tracking-wider truncate">
+                  {storeName || 'Eclipse'}
+                </p>
+              </div>
+            </button>
 
-            {/* Quick-add */}
             <button
               onClick={handleAddToCart}
               className={cn(
-                'flex-shrink-0 h-10 w-10 rounded-xl flex items-center justify-center transition-colors border active:scale-[0.97]',
+                'shrink-0 relative w-11 h-11 flex items-center justify-center border transition-colors duration-200 active:scale-[0.97]',
                 inCart
-                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30'
-                  : 'bg-background/40 text-foreground border-border hover:bg-primary hover:text-primary-foreground hover:border-primary'
+                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
+                  : 'border-border text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground'
               )}
               aria-label={inCart ? 'In cart' : 'Add to cart'}
             >
-              {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" />}
+              {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />}
             </button>
           </div>
         </div>
-      </div>
+
+        {/* Corner accent */}
+        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-primary pointer-events-none" />
+      </article>
     </Link>
   );
 }));
 
 ProductCard.displayName = 'ProductCard';
+

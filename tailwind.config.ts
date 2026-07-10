@@ -31,7 +31,9 @@ export default {
       fontFamily: {
         display: ['Sora', 'sans-serif'],
         sans: ['Source Sans 3', 'sans-serif'],
+        serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
       },
+
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
