@@ -12373,6 +12373,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_overview_snapshot: { Args: never; Returns: Json }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       auto_escalate_all_tickets: { Args: never; Returns: Json }
       burn_reset_code: { Args: { p_id: string }; Returns: undefined }
