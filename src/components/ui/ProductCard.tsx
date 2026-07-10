@@ -237,25 +237,22 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         </div>
 
         {/* Content */}
-        <div className="p-5 md:p-6 flex flex-col flex-1">
+        <div className="p-4 flex flex-col flex-1">
           {/* Title + price header */}
-          <div className="flex justify-between items-start gap-4 mb-5">
-            <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex justify-between items-start gap-3 mb-3">
+            <div className="min-w-0 flex-1 space-y-1">
               {category && (
-                <span className="block text-primary text-[10px] font-bold tracking-[0.25em] uppercase truncate">
+                <span className="block text-primary text-[9px] font-semibold tracking-[0.2em] uppercase truncate">
                   {category}
                 </span>
               )}
-              <h3
-                className="font-serif text-foreground text-[22px] md:text-[26px] leading-[1.05] tracking-tight line-clamp-2 group-hover:text-primary transition-colors"
-                style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
-              >
+              <h3 className="text-foreground text-sm md:text-[15px] font-semibold leading-snug tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
                 {name}
               </h3>
               {typeof averageRating === 'number' && averageRating > 0 && (
-                <span className="inline-flex items-center gap-1 pt-1">
+                <span className="inline-flex items-center gap-1 pt-0.5">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="text-[10px] font-semibold text-muted-foreground tracking-wider">
+                  <span className="text-[10px] font-medium text-muted-foreground">
                     {averageRating.toFixed(1)}
                   </span>
                 </span>
@@ -264,18 +261,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
             <div className="text-right shrink-0">
               {isPayWhatYouWant ? (
-                <span
-                  className="block font-serif text-emerald-400 text-xl md:text-2xl font-medium whitespace-nowrap leading-none tracking-tight"
-                  style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
-                >
+                <span className="block text-emerald-400 text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
                   {minPrice === 0 ? 'Free+' : formatPrice(minPrice || 0)}
                 </span>
               ) : hasMemberDiscount ? (
                 <>
-                  <span
-                    className="block font-serif text-foreground text-xl md:text-2xl font-medium whitespace-nowrap leading-none tracking-tight"
-                    style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
-                  >
+                  <span className="block text-foreground text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
                     {formatPrice(memberPrice)}
                   </span>
                   <span className="block text-[10px] text-muted-foreground line-through mt-1">
@@ -283,10 +274,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   </span>
                 </>
               ) : (
-                <span
-                  className="block font-serif text-foreground text-xl md:text-2xl font-medium whitespace-nowrap leading-none tracking-tight"
-                  style={{ fontFamily: "'Fraunces', ui-serif, Georgia, serif" }}
-                >
+                <span className="block text-foreground text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
                   {formatPrice(price)}
                 </span>
               )}
@@ -294,7 +282,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
 
           {/* Seller + cart row */}
-          <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-5 mt-auto">
+          <div className="flex items-center justify-between gap-3 border-t border-border/50 pt-3 mt-auto">
             <button
               type="button"
               onClick={(e) => {
@@ -304,47 +292,42 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   navigate(`/store/${storeSlug}`);
                 }
               }}
-              className="flex items-center gap-3 min-w-0 text-left"
+              className="flex items-center gap-2 min-w-0 text-left"
             >
-              <div className="relative w-9 h-9 shrink-0">
+              <div className="relative w-6 h-6 shrink-0">
                 {storeLogo ? (
                   <img
                     src={storeLogo}
                     alt={storeName || ''}
-                    className="w-9 h-9 rounded-full object-cover border border-border"
+                    className="w-6 h-6 rounded-full object-cover border border-border"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center border border-border">
-                    <Store className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center border border-border">
+                    <Store className="h-3 w-3 text-muted-foreground" />
                   </div>
                 )}
                 {isVerified && (
-                  <span className="absolute -right-0.5 -bottom-0.5 bg-primary rounded-full p-[2px] border-2 border-card">
-                    <Check className="h-2 w-2 text-primary-foreground" strokeWidth={4} />
+                  <span className="absolute -right-0.5 -bottom-0.5 bg-primary rounded-full p-[1px] border border-card">
+                    <Check className="h-1.5 w-1.5 text-primary-foreground" strokeWidth={4} />
                   </span>
                 )}
               </div>
-              <div className="min-w-0">
-                <p className="text-muted-foreground text-[9px] uppercase tracking-[0.2em] mb-0.5 font-medium">
-                  Provided by
-                </p>
-                <p className="text-foreground text-[11px] font-semibold uppercase tracking-wider truncate">
-                  {storeName || 'Eclipse'}
-                </p>
-              </div>
+              <p className="text-muted-foreground text-[11px] font-medium truncate">
+                {storeName || 'Eclipse'}
+              </p>
             </button>
 
             <button
               onClick={handleAddToCart}
               className={cn(
-                'shrink-0 relative w-11 h-11 flex items-center justify-center border transition-colors duration-200 active:scale-[0.97]',
+                'shrink-0 relative w-9 h-9 flex items-center justify-center border transition-colors duration-200 active:scale-[0.97]',
                 inCart
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
                   : 'border-border text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground'
               )}
               aria-label={inCart ? 'In cart' : 'Add to cart'}
             >
-              {inCart ? <Check className="h-4 w-4" /> : <ShoppingCart className="h-4 w-4" strokeWidth={1.5} />}
+              {inCart ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" strokeWidth={1.75} />}
             </button>
           </div>
         </div>
