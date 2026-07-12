@@ -145,7 +145,7 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
   );
 });
 
-const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const prefetch = usePrefetchProduct();
