@@ -189,7 +189,6 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
             ) : <span />}
           </div>
 
-          </div>
           <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
             {product.name}
           </h3>
