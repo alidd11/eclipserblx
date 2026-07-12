@@ -145,7 +145,7 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
   );
 });
 
-const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; average_rating?: number | null; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const prefetch = usePrefetchProduct();
@@ -187,13 +187,8 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
                 {product.categories.name}
               </span>
             ) : <span />}
-            {typeof product.average_rating === 'number' && product.average_rating > 0 && (
-              <span className="flex items-center gap-0.5 text-muted-foreground">
-                <span className="text-amber-400">★</span>
-                <span className="text-[10px] font-medium">{product.average_rating.toFixed(1)}</span>
-              </span>
-            )}
           </div>
+
           <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
             {product.name}
           </h3>
