@@ -187,12 +187,8 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
                 {product.categories.name}
               </span>
             ) : <span />}
-            {typeof product.average_rating === 'number' && product.average_rating > 0 && (
-              <span className="flex items-center gap-0.5 text-muted-foreground">
-                <span className="text-amber-400">★</span>
-                <span className="text-[10px] font-medium">{product.average_rating.toFixed(1)}</span>
-              </span>
-            )}
+          </div>
+
           </div>
           <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
             {product.name}
