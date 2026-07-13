@@ -311,15 +311,16 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             <button
               onClick={handleAddToCart}
               className={cn(
-                'shrink-0 relative w-9 h-9 flex items-center justify-center border transition-colors duration-200 active:scale-[0.97]',
+                'shrink-0 relative w-9 h-9 flex items-center justify-center rounded-lg border transition-all duration-200 active:scale-[0.97]',
                 inCart
                   ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
-                  : 'border-border text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground'
+                  : 'border-border text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-[0_4px_14px_-4px_hsl(var(--primary)/0.5)]'
               )}
               aria-label={inCart ? 'In cart' : 'Add to cart'}
             >
               {inCart ? <Check className="h-3.5 w-3.5" /> : <ShoppingCart className="h-3.5 w-3.5" strokeWidth={1.75} />}
             </button>
+
           </div>
         </div>
 
