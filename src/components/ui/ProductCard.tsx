@@ -128,18 +128,17 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     >
       <article
         className={cn(
-          'relative h-full flex flex-col bg-card contain-layout overflow-hidden',
-          'border border-border/60 transition-colors duration-300',
-          'hover:border-border active:scale-[0.97]',
-          'transition-transform',
-          isFeatured && 'border-primary/40'
+          'relative h-full flex flex-col bg-card contain-layout overflow-hidden rounded-xl',
+          'border border-border/50 transition-all duration-300',
+          'hover:border-primary/40 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.35)] active:scale-[0.97]',
+          isFeatured && 'border-primary/50 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]'
         )}
       >
         {/* Vertical Featured ribbon */}
         {isFeatured && (
           <div className="absolute top-0 right-6 z-20 pointer-events-none">
             <div
-              className="bg-primary text-primary-foreground text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-4"
+              className="bg-primary text-primary-foreground text-[9px] font-bold tracking-[0.2em] uppercase px-2.5 py-4 rounded-b-sm"
               style={{ writingMode: 'vertical-lr' }}
             >
               Featured
@@ -149,7 +148,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
         {/* Image — full product image, no cropping */}
         <div className="relative p-2 pb-0 flex-shrink-0">
-          <div className="relative w-full aspect-[16/10] bg-[#141518] rounded-md overflow-hidden ring-1 ring-border/40">
+          <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-[#0f1024] via-[#141518] to-[#0a0a1a] rounded-lg overflow-hidden ring-1 ring-border/40">
             {showMedia ? (
               isVideo ? (
                 <BackgroundVideo
@@ -172,32 +171,34 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                     const img = e.currentTarget;
                     if (img.naturalWidth === 0) handleMediaError();
                   }}
-                  className="w-full h-full object-contain object-center"
+                  className="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               )
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted/40">
-                <span className="text-3xl font-medium text-muted-foreground/30">
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="text-4xl font-display font-semibold text-primary/20">
                   {name.charAt(0)}
                 </span>
               </div>
             )}
 
+            {/* Subtle top gradient for badge legibility */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/40 to-transparent opacity-70 z-[2]" />
 
             {/* Status badges (top-left) */}
             <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
               {hasMemberDiscount && (
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-sm">
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-md shadow-sm">
                   −{discountPercent}%
                 </span>
               )}
               {showBestSellerBadge && (
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-amber-500 text-black rounded-sm">
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-amber-500 text-black rounded-md shadow-sm">
                   Bestseller
                 </span>
               )}
               {isNew && !showBestSellerBadge && !hasMemberDiscount && (
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-emerald-500 text-black rounded-sm">
+                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-emerald-500 text-black rounded-md shadow-sm">
                   New
                 </span>
               )}
@@ -224,6 +225,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             )}
           </div>
         </div>
+
 
         {/* Content */}
         <div className="p-4 flex flex-col flex-1">
