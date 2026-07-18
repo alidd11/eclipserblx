@@ -12678,6 +12678,16 @@ export type Database = {
       }
       orion_admin_send_ping: { Args: never; Returns: string }
       orion_scan_findings: { Args: never; Returns: number }
+      platform_ledger_summary: {
+        Args: { _date_from?: string; _date_to?: string; _store_id?: string }
+        Returns: {
+          total_commission: number
+          total_gross: number
+          total_net: number
+          total_stripe: number
+          tx_count: number
+        }[]
+      }
       product_file_review_consented: {
         Args: { file_path: string }
         Returns: boolean
