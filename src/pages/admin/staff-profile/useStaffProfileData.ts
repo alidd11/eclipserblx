@@ -17,7 +17,7 @@ export interface StaffNote {
 }
 
 export function useStaffProfileData(userId: string | undefined) {
-  const { hasRole, loading: authLoading } = useAdminAuth();
+  const { hasRole, loading: authLoading, isPrimaryAdmin } = useAdminAuth();
   const { user } = useAuth();
   const isAdmin = hasRole('admin');
   const queryClient = useQueryClient();
@@ -188,13 +188,12 @@ export function useStaffProfileData(userId: string | undefined) {
     },
   });
 
-  const isPrimaryAdmin = isAdmin;
-
   const availableRoles = () => {
     const existing = roles.map(r => r.role as string);
     return customRoles.filter(r => {
       if (existing.includes(r.name)) return false;
       if ((currentUserHierarchy ?? 0) < r.hierarchy_level) return false;
+      if (r.name === 'admin' && !isPrimaryAdmin) return false;
       if (isPrimaryAdmin) return true;
       return userPermissions.includes(`manage_role:${r.name}`);
     });
@@ -214,6 +213,7 @@ export function useStaffProfileData(userId: string | undefined) {
 
   const canRemoveRole = (role: string) => {
     if (isPrimaryAdmin) return true;
+    if (role === 'admin') return false;
     const targetLevel = customRoles.find(r => r.name === role)?.hierarchy_level ?? 999;
     if ((currentUserHierarchy ?? 0) < targetLevel) return false;
     return userPermissions.includes(`manage_role:${role}`);

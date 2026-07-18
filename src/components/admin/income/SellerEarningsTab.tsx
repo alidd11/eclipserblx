@@ -200,31 +200,31 @@ export function SellerEarningsTab() {
  <>
  <AdminStatCard
  label="Platform Commission"
- value={`{formatGBP((summary?.totalCommission ?? 0))}`}
+ value={`${formatGBP((summary?.totalCommission ?? 0))}`}
  valueColor="primary"
  subtitle="Your cut from sales"
  />
  <AdminStatCard
  label="Seller Earnings"
- value={`{formatGBP((summary?.totalSellerEarnings ?? 0))}`}
+ value={`${formatGBP((summary?.totalSellerEarnings ?? 0))}`}
  valueColor="green"
  subtitle="Net earned by sellers"
  />
  <AdminStatCard
  label="Outstanding Balances"
- value={`{formatGBP((balanceSummary?.outstanding ?? 0))}`}
+ value={`${formatGBP((balanceSummary?.outstanding ?? 0))}`}
  valueColor="yellow"
  subtitle="Owed to sellers"
  />
  <AdminStatCard
  label="Total Paid Out"
- value={`{formatGBP((balanceSummary?.totalPaid ?? 0))}`}
+ value={`${formatGBP((balanceSummary?.totalPaid ?? 0))}`}
  valueColor="blue"
  subtitle="Paid to sellers"
  />
  <AdminStatCard
  label="Stripe Fees (Seller)"
- value={`{formatGBP((summary?.totalStripeFees ?? 0))}`}
+ value={`${formatGBP((summary?.totalStripeFees ?? 0))}`}
  valueColor="destructive"
  subtitle="Fees on seller sales"
  />

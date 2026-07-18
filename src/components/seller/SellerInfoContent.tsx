@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useSellerVerification } from "@/hooks/useSellerVerification";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { formatGBP } from "@/lib/formatters";
 
 const sellingPoints = [
   {
@@ -177,8 +178,6 @@ function CompetitiveEarningsCalculator() {
 
   const eclipseAdvantage = eclipseEarnings - competitorEarnings;
   const eclipseWins = eclipseAdvantage >= 0;
-
-  const formatGBP = (v: number) => `{formatGBP(v)}`;
 
   return (
     <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">

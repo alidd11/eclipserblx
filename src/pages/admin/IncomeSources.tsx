@@ -201,9 +201,9 @@ export default function AdminIncomeSources() {
       const storeName = (c as any).stores?.name ?? 'Unknown Store';
       txns.push({
         id: `comm-${c.id}`, source: 'commission',
-        description: `Commission on {formatGBP((c.gross_amount ?? 0))} sale · ${storeName}`,
+        description: `Commission on ${formatGBP((c.gross_amount ?? 0))} sale · ${storeName}`,
         amount: platformFee, currency: '£', status: c.status ?? 'completed', date: c.created_at ?? '',
-        metadata: `${storeName} · Seller earned {formatGBP((c.net_amount ?? 0))} · Stripe fee {formatGBP((c.stripe_fee ?? 0))}`,
+        metadata: `${storeName} · Seller earned ${formatGBP((c.net_amount ?? 0))} · Stripe fee ${formatGBP((c.stripe_fee ?? 0))}`,
       });
     });
 
@@ -485,7 +485,7 @@ export default function AdminIncomeSources() {
                     series={areaSeries}
                     height={320}
                     yFormatter={(v) => `£${v}`}
-                    tooltipFormatter={(v) => [`{formatGBP(Number(v))}`, 'Revenue']}
+                    tooltipFormatter={(v) => [`${formatGBP(Number(v))}`, 'Revenue']}
                   />
                 )}
               </div>

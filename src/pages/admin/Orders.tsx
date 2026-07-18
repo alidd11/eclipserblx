@@ -58,7 +58,7 @@ export default function AdminOrders() {
  const [currentPage, setCurrentPage] = useState(1);
  
  // Check if current user is admin (role-based)
- const { isAdmin: isPrimaryAdmin } = useAdminAuth();
+ const { isPrimaryAdmin } = useAdminAuth();
  const queryClient = useQueryClient();
 
  // Get total count for pagination

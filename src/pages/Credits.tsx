@@ -42,7 +42,7 @@ export default function Credits() {
 
   useEffect(() => {
     if (wasSuccess && purchasedAmount) {
-      toast.success(`Successfully added {formatGBP(parseFloat(purchasedAmount))} to your wallet!`);
+      toast.success(`Successfully added ${formatGBP(parseFloat(purchasedAmount))} to your wallet!`);
       fetchBalance();
       navigate('/credits', { replace: true });
     } else if (wasCanceled) {
@@ -57,7 +57,7 @@ export default function Credits() {
   };
 
   const handlePaymentSuccess = () => {
-    toast.success(`Successfully added {formatGBP(creditAmount)} to your wallet!`);
+    toast.success(`Successfully added ${formatGBP(creditAmount)} to your wallet!`);
     fetchBalance();
     setPaymentModalOpen(false);
   };

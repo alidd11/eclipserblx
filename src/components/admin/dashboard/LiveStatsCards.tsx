@@ -96,7 +96,7 @@ export function LiveStatsCards() {
  },
  {
  label: 'Revenue Today',
- value: `{formatGBP((data?.revenueToday ?? 0))}`,
+ value: `${formatGBP((data?.revenueToday ?? 0))}`,
  icon: DollarSign,
  trend: { value: calcTrend(data?.revenueToday ?? 0, data?.revenueYesterday ?? 0), label: 'vs yesterday' },
  color: 'text-green-500',

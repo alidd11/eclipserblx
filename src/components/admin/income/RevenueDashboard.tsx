@@ -302,26 +302,26 @@ export function RevenueDashboard() {
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
  <KPICard
  label="Gross Volume"
- value={`{formatGBP(metrics.periodGross)}`}
+ value={`${formatGBP(metrics.periodGross)}`}
  trend={metrics.grossTrend !== 0 ? { value: metrics.grossTrend, label: 'vs prev' } : undefined}
  subtitle={`${metrics.periodOrders} orders`}
  isLoading={isLoading}
  />
  <KPICard
  label="Stripe Balance"
- value={`{formatGBP(metrics.stripeAvailable)}`}
- subtitle={`{formatGBP(metrics.stripePending)} pending`}
+ value={`${formatGBP(metrics.stripeAvailable)}`}
+ subtitle={`${formatGBP(metrics.stripePending)} pending`}
  isLoading={isLoading}
  />
  <KPICard
  label="Commission"
- value={`{formatGBP(metrics.periodCommission)}`}
- subtitle={`{formatGBP(metrics.totalCommission)} all time`}
+ value={`${formatGBP(metrics.periodCommission)}`}
+ subtitle={`${formatGBP(metrics.totalCommission)} all time`}
  isLoading={isLoading}
  />
  <KPICard
  label="Seller Pro MRR"
- value={`{formatGBP(metrics.mrr)}`}
+ value={`${formatGBP(metrics.mrr)}`}
  subtitle={`${metrics.activeSubs} Pro sellers`}
  isLoading={isLoading}
  />
@@ -338,10 +338,10 @@ export function RevenueDashboard() {
  <Badge variant="default" className="bg-emerald-600 ml-auto text-[10px]">Live</Badge>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
- <KPICard label="Available" value={`{formatGBP(metrics.stripeAvailable)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
- <KPICard label="Pending" value={`{formatGBP(metrics.stripePending)}`} subtitle="In transit" isLoading={stripeLoading} />
- <KPICard label="30d Fees" value={`{formatGBP(metrics.stripeFees)}`} subtitle={`${stripeBalance?.summary?.avgFeePercent ?? '0'}% avg rate`} isLoading={stripeLoading} />
- <KPICard label="30d Refunds" value={`{formatGBP((stripeBalance?.summary?.last30Days?.refunds ?? 0))}`} subtitle={`${stripeBalance?.summary?.last30Days?.refundCount ?? 0} refunds`} isLoading={stripeLoading} />
+ <KPICard label="Available" value={`${formatGBP(metrics.stripeAvailable)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
+ <KPICard label="Pending" value={`${formatGBP(metrics.stripePending)}`} subtitle="In transit" isLoading={stripeLoading} />
+ <KPICard label="30d Fees" value={`${formatGBP(metrics.stripeFees)}`} subtitle={`${stripeBalance?.summary?.avgFeePercent ?? '0'}% avg rate`} isLoading={stripeLoading} />
+ <KPICard label="30d Refunds" value={`${formatGBP((stripeBalance?.summary?.last30Days?.refunds ?? 0))}`} subtitle={`${stripeBalance?.summary?.last30Days?.refundCount ?? 0} refunds`} isLoading={stripeLoading} />
  </div>
  </div>
  </div>
@@ -355,9 +355,9 @@ export function RevenueDashboard() {
  </div>
 
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
- <KPICard label="All-Time Gross" value={`{formatGBP(metrics.allTimeGross)}`} isLoading={isLoading} />
- <KPICard label="Credits" value={`{formatGBP(metrics.totalCredits)}`} isLoading={isLoading} />
- <KPICard label="Robux (est.)" value={`{formatGBP(metrics.totalRobuxGBP)}`} isLoading={isLoading} />
+ <KPICard label="All-Time Gross" value={`${formatGBP(metrics.allTimeGross)}`} isLoading={isLoading} />
+ <KPICard label="Credits" value={`${formatGBP(metrics.totalCredits)}`} isLoading={isLoading} />
+ <KPICard label="Robux (est.)" value={`${formatGBP(metrics.totalRobuxGBP)}`} isLoading={isLoading} />
  </div>
  </div>
  </div>

@@ -273,7 +273,11 @@ export default function CustomerTicketDetail() {
       const newStatus = isInternal ? ticket?.status : 'awaiting_customer';
       await supabase
         .from('support_tickets')
-        .update({ status: newStatus, updated_at: new Date().toISOString(), assigned_to: user.id })
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+          ...(isInternal ? {} : { assigned_to: user.id }),
+        })
         .eq('id', ticketId);
 
       // Send email notification for non-internal replies

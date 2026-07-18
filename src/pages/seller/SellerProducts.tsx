@@ -139,28 +139,27 @@ export default function SellerProducts() {
       if (data.id) {
         const { error } = await supabase.from('products').update(productData).eq('id', data.id).eq('store_id', store!.id);
         if (error) throw error;
+        return null;
       } else {
-        const { error } = await supabase.from('products').insert(productData as any);
+        const { data: inserted, error } = await supabase.from('products').insert(productData as any).select('id').single();
         if (error) {
           if (error.message?.includes('duplicate') || error.code === '23505') {
             productData.slug = autoSlug + '-' + Date.now();
-            const { error: retryError } = await supabase.from('products').insert(productData as any);
+            const { data: retried, error: retryError } = await supabase.from('products').insert(productData as any).select('id').single();
             if (retryError) throw retryError;
+            return retried.id as string;
           } else throw error;
         }
+        return inserted.id as string;
       }
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: (newProductId, variables) => {
       toast.success(variables.id ? 'Product updated' : 'Product created');
       queryClient.invalidateQueries({ queryKey: ['seller-products'] });
       setIsDialogOpen(false);
       setForm(INITIAL_FORM);
-      if (!variables.id) {
-        supabase.from('products').select('id').eq('store_id', store!.id).eq('slug', variables.slug).order('created_at', { ascending: false }).limit(1).single().then(({ data: newProduct }) => {
-          if (newProduct) {
-            supabase.functions.invoke('send-product-drop-webhook', { body: { productId: newProduct.id, isEarlyAccess: false } });
-          }
-        });
+      if (!variables.id && newProductId) {
+        supabase.functions.invoke('send-product-drop-webhook', { body: { productId: newProductId, isEarlyAccess: false } });
       }
     },
     onError: (error) => toast.error('Failed to save product: ' + error.message),

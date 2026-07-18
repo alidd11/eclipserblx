@@ -78,19 +78,19 @@ export function StripeBalanceTab() {
  <>
  <AdminStatCard
  label="Available Balance"
- value={`{formatGBP((stripeBalance?.balance.available ?? 0))}`}
+ value={`${formatGBP((stripeBalance?.balance.available ?? 0))}`}
  valueColor="green"
  subtitle="Ready to pay out"
  />
  <AdminStatCard
  label="Pending Balance"
- value={`{formatGBP((stripeBalance?.balance.pending ?? 0))}`}
+ value={`${formatGBP((stripeBalance?.balance.pending ?? 0))}`}
  valueColor="yellow"
  subtitle="In transit"
  />
  <AdminStatCard
  label="30-Day Net"
- value={`{formatGBP((stripeBalance?.summary.last30Days.net ?? 0))}`}
+ value={`${formatGBP((stripeBalance?.summary.last30Days.net ?? 0))}`}
  valueColor="blue"
  subtitle="After fees"
  />
@@ -102,7 +102,7 @@ export function StripeBalanceTab() {
  />
  <AdminStatCard
  label="30-Day Refunds"
- value={`{formatGBP((stripeBalance?.summary.last30Days.refunds ?? 0))}`}
+ value={`${formatGBP((stripeBalance?.summary.last30Days.refunds ?? 0))}`}
  valueColor="orange"
  subtitle={`${stripeBalance?.summary.last30Days.refundCount ?? 0} refund${(stripeBalance?.summary.last30Days.refundCount ?? 0) !== 1 ? 's' : ''}`}
  />

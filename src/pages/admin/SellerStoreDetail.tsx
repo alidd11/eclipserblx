@@ -163,7 +163,7 @@ export default function SellerStoreDetail() {
   const statItems = [
     { icon: Package, label: 'Products', value: stats?.productCount || 0 },
     { icon: TrendingUp, label: 'Orders', value: stats?.orderCount || 0 },
-    { icon: DollarSign, label: 'Total Revenue', value: `{formatGBP((stats?.totalRevenue || 0))}` },
+    { icon: DollarSign, label: 'Total Revenue', value: `${formatGBP((stats?.totalRevenue || 0))}` },
     { icon: User, label: 'Followers', value: stats?.followerCount || 0 },
   ];
 

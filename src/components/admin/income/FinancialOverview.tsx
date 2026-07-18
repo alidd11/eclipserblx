@@ -300,7 +300,7 @@ export function FinancialOverview() {
  <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
  <MetricCard
  label="Stripe Available"
- value={`{formatGBP((metrics.stripeAvailable))}`}
+ value={`${formatGBP((metrics.stripeAvailable))}`}
  subtitle="Ready to withdraw"
  icon={Wallet}
  accentClass="text-emerald-500"
@@ -308,7 +308,7 @@ export function FinancialOverview() {
  />
  <MetricCard
  label="This Month Revenue"
- value={`{formatGBP(metrics.thisMonthRevenue)}`}
+ value={`${formatGBP(metrics.thisMonthRevenue)}`}
  trend={metrics.monthOverMonth !== 0 ? { value: metrics.monthOverMonth, label: 'vs last month' } : undefined}
  subtitle="Gross product sales"
  icon={TrendingUp}
@@ -317,7 +317,7 @@ export function FinancialOverview() {
  />
  <MetricCard
  label="Seller Pro MRR"
- value={`{formatGBP(metrics.mrr)}`}
+ value={`${formatGBP(metrics.mrr)}`}
  subtitle={`${metrics.activeSubs} Pro sellers`}
  icon={PiggyBank}
  accentClass="text-amber-500"
@@ -325,15 +325,15 @@ export function FinancialOverview() {
  />
  <MetricCard
  label="Platform Commission"
- value={`{formatGBP(metrics.thisMonthCommission)}`}
- subtitle={`{formatGBP(metrics.totalCommission)} all time`}
+ value={`${formatGBP(metrics.thisMonthCommission)}`}
+ subtitle={`${formatGBP(metrics.totalCommission)} all time`}
  icon={Percent}
  accentClass="text-blue-500"
  isLoading={isLoading}
  />
  <MetricCard
  label="Avg Order Value"
- value={`{formatGBP(metrics.avgOrderValue)}`}
+ value={`${formatGBP(metrics.avgOrderValue)}`}
  subtitle={`${metrics.orderCount} orders total`}
  icon={Target}
  accentClass="text-cyan-500"
@@ -342,7 +342,7 @@ export function FinancialOverview() {
  <MetricCard
  label="Profit Margin (30d)"
  value={`${metrics.profitMargin.toFixed(1)}%`}
- subtitle={`{formatGBP(metrics.stripeFees30d)} fees, {formatGBP(metrics.stripeRefunds30d)} refunds`}
+ subtitle={`${formatGBP(metrics.stripeFees30d)} fees, ${formatGBP(metrics.stripeRefunds30d)} refunds`}
  icon={DollarSign}
  accentClass={metrics.profitMargin >= 70 ? 'text-emerald-500' : metrics.profitMargin >= 50 ? 'text-amber-500' : 'text-red-500'}
  isLoading={isLoading}

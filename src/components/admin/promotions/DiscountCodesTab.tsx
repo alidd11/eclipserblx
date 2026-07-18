@@ -109,7 +109,7 @@ export function DiscountCodesTab() {
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `{formatGBP(d.discount_value)}`;
+  const getDisplay = (d: any) => d.discount_type === 'percentage' ? `${d.discount_value}%` : `${formatGBP(d.discount_value)}`;
 
   const copyCode = (code: string) => { copyToClipboard(code, 'Code copied!'); setCopiedCode(code); setTimeout(() => setCopiedCode(null), 2000); };
 

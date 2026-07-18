@@ -98,7 +98,7 @@ export default function AdminGiftCredits() {
  if (error) throw error;
  if (data.error) throw new Error(data.error);
 
- toast.success(`Successfully gifted {formatGBP(amountNum)} to ${selectedUser.display_name}`);
+ toast.success(`Successfully gifted ${formatGBP(amountNum)} to ${selectedUser.display_name}`);
  setAmount('');
  setReason('');
  setSelectedUser(null);

@@ -124,7 +124,7 @@ export default function SellerDiscounts() {
       if (formData.is_active) {
         const discountDisplay = formData.discount_type === 'percentage'
           ? `${formData.discount_value}% OFF`
-          : `{formatGBP(formData.discount_value)} OFF`;
+          : `${formatGBP(formData.discount_value)} OFF`;
         const storeName = store?.name || 'a seller';
 
         supabase.functions.invoke('send-promotion-discord-webhook', {

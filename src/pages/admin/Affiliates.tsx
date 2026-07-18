@@ -217,7 +217,7 @@ export default function AdminAffiliates() {
  },
  });
 
- const formatAmount = (pence: number) => `{formatGBP((pence / 100))}`;
+ const formatAmount = (pence: number) => `${formatGBP((pence / 100))}`;
 
  const getCommissionStatusBadge = (status: string) => {
  const configs: Record<string, { color: string; icon: React.ElementType }> = {

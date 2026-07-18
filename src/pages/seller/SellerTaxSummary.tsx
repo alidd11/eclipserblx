@@ -134,7 +134,7 @@ export default function SellerTaxSummary() {
     window.print();
   };
 
-  const fmt = (n: number) => `{formatGBP(n)}`;
+  const fmt = (n: number) => `${formatGBP(n)}`;
 
   return (
     <SellerLayout>

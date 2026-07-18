@@ -65,10 +65,10 @@ export default function SellerTaxFeeSummary() {
   const effectiveRate = summary.totalGross > 0 ? ((summary.totalFees / summary.totalGross) * 100).toFixed(1) : '0';
 
   const cards = [
-    { label: 'Gross Revenue', value: `{formatGBP(summary.totalGross)}`, icon: DollarSign, color: 'text-primary' },
-    { label: 'Platform Commission', value: `{formatGBP(summary.totalPlatformFee)}`, icon: Percent, color: 'text-orange-500' },
-    { label: 'Payment Processing', value: `{formatGBP(summary.totalStripeFee)}`, icon: Receipt, color: 'text-yellow-500' },
-    { label: 'Net Earnings', value: `{formatGBP(summary.totalNet)}`, icon: TrendingDown, color: 'text-green-500' },
+    { label: 'Gross Revenue', value: `${formatGBP(summary.totalGross)}`, icon: DollarSign, color: 'text-primary' },
+    { label: 'Platform Commission', value: `${formatGBP(summary.totalPlatformFee)}`, icon: Percent, color: 'text-orange-500' },
+    { label: 'Payment Processing', value: `${formatGBP(summary.totalStripeFee)}`, icon: Receipt, color: 'text-yellow-500' },
+    { label: 'Net Earnings', value: `${formatGBP(summary.totalNet)}`, icon: TrendingDown, color: 'text-green-500' },
   ];
 
   return (
@@ -125,7 +125,7 @@ export default function SellerTaxFeeSummary() {
                 ]}
                 height={288}
                 yFormatter={(v) => `£${v}`}
-                tooltipFormatter={(v) => [`{formatGBP(v)}`, '']}
+                tooltipFormatter={(v) => [`${formatGBP(v)}`, '']}
               />
             ) : (
               <div className="h-full flex items-center justify-center text-sm text-muted-foreground">

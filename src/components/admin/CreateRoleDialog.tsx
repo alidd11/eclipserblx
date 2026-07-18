@@ -94,7 +94,7 @@ const COLOR_OPTIONS = [
 ];
 
 export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0, userEmail }: CreateRoleDialogProps) {
-  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
+  const { isPrimaryAdmin } = useAdminAuth();
   const queryClient = useQueryClient();
   const isEditing = !!editRole;
   
