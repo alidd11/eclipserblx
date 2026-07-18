@@ -367,8 +367,8 @@ export default function ManualPayouts() {
             </AlertDialogTitle>
             <AlertDialogDescription>
               {actionType === "approve" 
-                ? `You are about to approve a payout of ${formatGBP(selectedRequest?.amount)} to ${selectedRequest?.profile?.display_name || "this user"}.`
-                : `You are about to reject the payout request of ${formatGBP(selectedRequest?.amount)} from ${selectedRequest?.profile?.display_name || "this user"}.`
+                ? `You are about to approve a payout of ${formatGBP(selectedRequest?.amount ?? 0)} to ${selectedRequest?.profile?.display_name || "this user"}.`
+                : `You are about to reject the payout request of ${formatGBP(selectedRequest?.amount ?? 0)} from ${selectedRequest?.profile?.display_name || "this user"}.`
               }
             </AlertDialogDescription>
           </AlertDialogHeader>
