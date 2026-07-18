@@ -65,15 +65,16 @@ export default function SellerStoreBuilder() {
   const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   // Load saved layout
-  const { data: savedLayout, isLoading } = useQuery({
+  const { data: savedLayout, isLoading, isError } = useQuery({
     queryKey: ['store-layout', store?.id],
     queryFn: async () => {
       if (!store?.id) return null;
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('stores')
         .select('store_layout')
         .eq('id', store.id)
         .single();
+      if (error) throw error;
       return data?.store_layout;
     },
     enabled: !!store?.id,
@@ -85,6 +86,12 @@ export default function SellerStoreBuilder() {
       if (parsed) setSections(parsed);
     }
   }, [savedLayout]);
+
+  useEffect(() => {
+    if (isError) {
+      toast.error('Could not load your saved store layout — showing defaults instead');
+    }
+  }, [isError]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

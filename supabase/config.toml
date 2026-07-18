@@ -19,6 +19,8 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.auto-register-discord-commands]
     verify_jwt = false
+  [functions.bot-control]
+    verify_jwt = false
   [functions.bot-guild-settings]
     verify_jwt = false
   [functions.calculate-store-health]

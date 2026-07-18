@@ -136,7 +136,7 @@ export function DisputeDialog({ open, onOpenChange, orderId, orderDisplayId, onS
       // Auto-create a support ticket
       try {
         const ticketSubject = `Dispute: ${selectedItem.product_name || 'Order item'} (${orderDisplayId})`;
-        const ticketMessage = `Reason: ${reasonLabel}\n\n${description.trim()}\n\n---\nOrder: ${orderDisplayId}\nProduct: ${selectedItem.product_name}\nAmount: {formatGBP(itemPrice)}`;
+        const ticketMessage = `Reason: ${reasonLabel}\n\n${description.trim()}\n\n---\nOrder: ${orderDisplayId}\nProduct: ${selectedItem.product_name}\nAmount: ${formatGBP(itemPrice)}`;
 
         const { data: ticket, error: ticketError } = await supabase
           .from('support_tickets')

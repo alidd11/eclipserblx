@@ -40,9 +40,23 @@ export default function PlatformLedger() {
     },
   });
 
+  const applyFilters = <T,>(query: T, opts: { forSearch?: boolean } = {}) => {
+    let q = query as any;
+    if (typeFilter !== 'all') q = q.eq('type', typeFilter);
+    if (storeFilter !== 'all') q = q.eq('store_id', storeFilter);
+    if (dateFrom) q = q.gte('created_at', dateFrom);
+    if (dateTo) q = q.lte('created_at', dateTo + 'T23:59:59');
+    if (opts.forSearch && search.trim()) {
+      const term = search.trim();
+      const escaped = term.replace(/[%,]/g, '');
+      q = q.or(`description.ilike.%${escaped}%,id.eq.${term},order_id.eq.${term}`);
+    }
+    return q;
+  };
+
   // Fetch transactions across all stores
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-platform-ledger', page, typeFilter, storeFilter, dateFrom, dateTo],
+    queryKey: ['admin-platform-ledger', page, typeFilter, storeFilter, dateFrom, dateTo, search],
     queryFn: async () => {
       let query = supabase
         .from('seller_transactions')
@@ -50,10 +64,7 @@ export default function PlatformLedger() {
         .order('created_at', { ascending: false })
         .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
 
-      if (typeFilter !== 'all') query = query.eq('type', typeFilter);
-      if (storeFilter !== 'all') query = query.eq('store_id', storeFilter);
-      if (dateFrom) query = query.gte('created_at', dateFrom);
-      if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59');
+      query = applyFilters(query, { forSearch: true });
 
       const { data: items, count, error } = await query;
       if (error) throw error;
@@ -61,29 +72,24 @@ export default function PlatformLedger() {
     },
   });
 
-  // Summary stats
+  // Summary stats — server-side aggregate so totals aren't capped by any fetch limit
   const { data: summary } = useQuery({
     queryKey: ['admin-ledger-summary', storeFilter, dateFrom, dateTo],
     queryFn: async () => {
-      let query = supabase
-        .from('seller_transactions')
-        .select('gross_amount, platform_fee, stripe_fee, net_amount, type, refunded_at')
-        .eq('type', 'sale')
-        .is('refunded_at', null);
+      const { data: row, error } = await supabase.rpc('platform_ledger_summary', {
+        _store_id: storeFilter !== 'all' ? storeFilter : null,
+        _date_from: dateFrom || null,
+        _date_to: dateTo ? dateTo + 'T23:59:59' : null,
+      }).single();
 
-      if (storeFilter !== 'all') query = query.eq('store_id', storeFilter);
-      if (dateFrom) query = query.gte('created_at', dateFrom);
-      if (dateTo) query = query.lte('created_at', dateTo + 'T23:59:59');
-
-      const { data: rows } = await query.limit(1000);
-      if (!rows) return { totalGross: 0, totalCommission: 0, totalStripe: 0, totalNet: 0, txCount: 0 };
+      if (error || !row) return { totalGross: 0, totalCommission: 0, totalStripe: 0, totalNet: 0, txCount: 0 };
 
       return {
-        totalGross: rows.reduce((s, r) => s + Number(r.gross_amount || 0), 0),
-        totalCommission: rows.reduce((s, r) => s + Number(r.platform_fee || 0), 0),
-        totalStripe: rows.reduce((s, r) => s + Number(r.stripe_fee || 0), 0),
-        totalNet: rows.reduce((s, r) => s + Number(r.net_amount || 0), 0),
-        txCount: rows.length,
+        totalGross: Number(row.total_gross || 0),
+        totalCommission: Number(row.total_commission || 0),
+        totalStripe: Number(row.total_stripe || 0),
+        totalNet: Number(row.total_net || 0),
+        txCount: Number(row.tx_count || 0),
       };
     },
   });
@@ -91,35 +97,47 @@ export default function PlatformLedger() {
   const transactions = data?.items || [];
   const totalCount = data?.count || 0;
   const totalPages = Math.ceil(totalCount / PER_PAGE);
+  const filtered = transactions;
 
-  const filtered = search
-    ? transactions.filter((t) =>
-        t.description?.toLowerCase().includes(search.toLowerCase()) ||
-        t.id?.includes(search) ||
-        t.order_id?.includes(search))
-    : transactions;
+  const [exporting, setExporting] = useState(false);
 
-  const exportCSV = () => {
-    const headers = ['Date', 'Store', 'Type', 'Description', 'Gross', 'Commission', 'Stripe Fee', 'Seller Net', 'Status'];
-    const rows = filtered.map((t) => [
-      format(new Date(t.created_at!), 'yyyy-MM-dd HH:mm'),
-      (t.stores as any)?.name || 'Unknown',
-      t.type,
-      `"${(t.description || '').replace(/"/g, '""')}"`,
-      Number(t.gross_amount || t.amount || 0).toFixed(2),
-      Number(t.platform_fee || 0).toFixed(2),
-      Number(t.stripe_fee || 0).toFixed(2),
-      Number(t.net_amount || t.amount || 0).toFixed(2),
-      t.refunded_at ? 'Refunded' : t.status || 'completed',
-    ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `platform-ledger-${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportCSV = async () => {
+    setExporting(true);
+    try {
+      let query = supabase
+        .from('seller_transactions')
+        .select('*, stores(name)')
+        .order('created_at', { ascending: false })
+        .limit(50000);
+
+      query = applyFilters(query, { forSearch: true });
+
+      const { data: rows, error } = await query;
+      if (error) throw error;
+
+      const headers = ['Date', 'Store', 'Type', 'Description', 'Gross', 'Commission', 'Stripe Fee', 'Seller Net', 'Status'];
+      const csvRows = (rows || []).map((t) => [
+        format(new Date(t.created_at!), 'yyyy-MM-dd HH:mm'),
+        (t.stores as any)?.name || 'Unknown',
+        t.type,
+        `"${(t.description || '').replace(/"/g, '""')}"`,
+        Number(t.gross_amount || t.amount || 0).toFixed(2),
+        Number(t.platform_fee || 0).toFixed(2),
+        Number(t.stripe_fee || 0).toFixed(2),
+        Number(t.net_amount || t.amount || 0).toFixed(2),
+        t.refunded_at ? 'Refunded' : t.status || 'completed',
+      ]);
+      const csv = [headers.join(','), ...csvRows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `platform-ledger-${format(new Date(), 'yyyy-MM-dd')}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -205,8 +223,8 @@ export default function PlatformLedger() {
                 <span className="text-muted-foreground text-sm">to</span>
                 <Input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1); }} className="w-[140px]" />
               </div>
-              <Button variant="outline" size="sm" onClick={exportCSV} disabled={filtered.length === 0}>
-                <Download className="h-4 w-4 mr-1" /> Export
+              <Button variant="outline" size="sm" onClick={exportCSV} disabled={totalCount === 0 || exporting}>
+                <Download className="h-4 w-4 mr-1" /> {exporting ? 'Exporting…' : 'Export'}
               </Button>
             </div>
           </div>

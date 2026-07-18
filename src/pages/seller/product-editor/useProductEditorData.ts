@@ -13,7 +13,7 @@ import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { performSecurityScan } from '@/lib/secureFileUpload';
 import { validateImageQuality } from '@/lib/imageQuality';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
-import { containsBlockedLinks } from '@/lib/blockedLinks';
+import { containsBlockedLinks, stripBlockedLinks } from '@/lib/blockedLinks';
 import { toast } from 'sonner';
 import type { ProductFormData, ModerationFlags } from './types';
 import { INITIAL_FORM_DATA, MAX_IMAGES } from './types';
@@ -246,7 +246,7 @@ export function useProductEditorData() {
         slug: autoSlug || `product-${crypto.randomUUID().slice(0, 8)}`,
         price: parseFloat(data.price) || 0,
         seller_price: parseFloat(data.seller_price) || parseFloat(data.price) || 0,
-        description: data.description,
+        description: stripBlockedLinks(data.description),
         category_id: data.category_id || null,
         is_active: shouldAutoApprove ? data.is_active : false,
         eclipse_free_eligible: data.eclipse_free_eligible,

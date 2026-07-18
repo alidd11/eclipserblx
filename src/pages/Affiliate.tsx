@@ -142,8 +142,8 @@ export default function Affiliate() {
      {/* Stats Grid */}
      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
       {[
-       { icon: DollarSign, value: `{formatGBP(d.availableBalance)}`, label: 'Available', color: 'bg-primary/10 text-primary' },
-       { icon: TrendingUp, value: `{formatGBP(d.totalEarned)}`, label: 'Total Earned', color: 'bg-muted text-muted-foreground' },
+       { icon: DollarSign, value: `${formatGBP(d.availableBalance)}`, label: 'Available', color: 'bg-primary/10 text-primary' },
+       { icon: TrendingUp, value: `${formatGBP(d.totalEarned)}`, label: 'Total Earned', color: 'bg-muted text-muted-foreground' },
        { icon: MousePointerClick, value: d.totalClicks.toLocaleString(), label: 'Link Clicks', color: 'bg-blue-500/10 text-blue-500' },
        { icon: UserPlus, value: d.totalSignups.toLocaleString(), label: 'Signups', color: 'bg-green-500/10 text-green-500' },
        { icon: BadgePercent, value: `${d.conversionRate}%`, label: 'Conversion', color: 'bg-purple-500/10 text-purple-500' },

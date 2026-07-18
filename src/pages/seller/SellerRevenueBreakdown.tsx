@@ -124,7 +124,7 @@ export default function SellerRevenueBreakdown() {
             series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
             height={256}
             yFormatter={(v) => `£${v}`}
-            tooltipFormatter={(v) => [`{formatGBP(v)}`, 'Revenue']}
+            tooltipFormatter={(v) => [`${formatGBP(v)}`, 'Revenue']}
           />
         </div>
       </div>
@@ -140,7 +140,7 @@ export default function SellerRevenueBreakdown() {
               height={256}
               layout="vertical"
               yFormatter={(v) => `£${v}`}
-              tooltipFormatter={(v) => [`{formatGBP(v)}`, 'Revenue']}
+              tooltipFormatter={(v) => [`${formatGBP(v)}`, 'Revenue']}
             />
           </div>
         </div>

@@ -40,7 +40,7 @@ export function useAdminUsers() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { ip: currentAdminIp } = useCurrentIp();
-  const { isAdmin: isPrimaryAdmin } = useAdminAuth();
+  const { isPrimaryAdmin } = useAdminAuth();
 
   // Cooldown timer for self-ban confirmation
   useEffect(() => {

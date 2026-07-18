@@ -545,7 +545,7 @@ export default function AdminProducts() {
                     <span className="text-muted-foreground text-sm w-8">{massEditForm.price_adjustment_type === 'percentage' ? '%' : '£'}</span>
                   </div>
                   {massEditForm.price_adjustment_value && (
-                    <p className="text-xs text-muted-foreground">Will {massEditForm.price_adjustment_direction} all selected product prices by {massEditForm.price_adjustment_type === 'percentage' ? `${massEditForm.price_adjustment_value}%` : `{formatGBP(parseFloat(massEditForm.price_adjustment_value || '0'))}`}</p>
+                    <p className="text-xs text-muted-foreground">Will {massEditForm.price_adjustment_direction} all selected product prices by {massEditForm.price_adjustment_type === 'percentage' ? `${massEditForm.price_adjustment_value}%` : `${formatGBP(parseFloat(massEditForm.price_adjustment_value || '0'))}`}</p>
                   )}
                 </div>
               )}

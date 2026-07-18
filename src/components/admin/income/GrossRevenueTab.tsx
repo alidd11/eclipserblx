@@ -116,7 +116,7 @@ export function GrossRevenueTab() {
  <AdminStatCard
  key={p.label}
  label={p.label}
- value={`{formatGBP((p.value ?? 0))}`}
+ value={`${formatGBP((p.value ?? 0))}`}
  valueColor={p.color}
  subtitle={`${p.orders ?? 0} order${(p.orders ?? 0) !== 1 ? 's' : ''}`}
  />
@@ -158,7 +158,7 @@ export function GrossRevenueTab() {
  series={[{ dataKey: 'total', color: 'hsl(262 100% 71%)', name: 'Gross Revenue' }]}
  height={300}
  yFormatter={(v) => `£${v}`}
- tooltipFormatter={(v) => [`{formatGBP(Number(v))}`, 'Gross Revenue']}
+ tooltipFormatter={(v) => [`${formatGBP(Number(v))}`, 'Gross Revenue']}
  />
  )}
  </div>
@@ -166,10 +166,10 @@ export function GrossRevenueTab() {
 
  {stats && (
  <div className="flex flex-col gap-4">
- <AdminStatCard label="30-Day Total" value={`{formatGBP(stats.total30d)}`} valueColor="primary" />
- <AdminStatCard label="Daily Average" value={`{formatGBP(stats.avg)}`} subtitle={`${stats.totalOrders30d} orders`} />
- <AdminStatCard label="Avg Order Value" value={`{formatGBP(stats.avgOrderValue)}`} valueColor="blue" />
- <AdminStatCard label="Best Day (30d)" value={`{formatGBP(stats.bestDay)}`} valueColor="green" />
+ <AdminStatCard label="30-Day Total" value={`${formatGBP(stats.total30d)}`} valueColor="primary" />
+ <AdminStatCard label="Daily Average" value={`${formatGBP(stats.avg)}`} subtitle={`${stats.totalOrders30d} orders`} />
+ <AdminStatCard label="Avg Order Value" value={`${formatGBP(stats.avgOrderValue)}`} valueColor="blue" />
+ <AdminStatCard label="Best Day (30d)" value={`${formatGBP(stats.bestDay)}`} valueColor="green" />
  </div>
  )}
  </div>

@@ -53,7 +53,7 @@ export function ActivityFeed() {
  recentOrders.data?.forEach(o => items.push({
  id: `order-${o.id}`,
  type: 'order',
- title: `New order — {formatGBP((o.total || 0))}`,
+ title: `New order — ${formatGBP((o.total || 0))}`,
  subtitle: (o.user_id && orderCustomerMap[o.user_id]) || 'Guest checkout',
  time: o.created_at,
  icon: ShoppingCart,

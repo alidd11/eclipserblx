@@ -83,6 +83,9 @@ export function useAdminAuth() {
   });
 
   const isAdmin = roles?.includes('admin') ?? false;
+  // The platform's sole primary admin — only this account may assign/remove the 'admin' role.
+  // Enforced server-side in can_assign_role(); mirrored here for UI gating only.
+  const isPrimaryAdmin = user?.email === 'alicanimir1@gmail.com';
   const isLeadAdministrator = roles?.includes('lead_administrator') ?? false;
   const isLeadManager = roles?.includes('lead_manager') ?? false;
   const isSupportAgent = roles?.includes('support_agent') ?? false;
@@ -129,6 +132,7 @@ export function useAdminAuth() {
     user,
     roles: roles ?? [],
     isAdmin,
+    isPrimaryAdmin,
     isLeadAdministrator,
     isLeadManager,
     isSupportAgent,

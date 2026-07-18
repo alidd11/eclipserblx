@@ -241,7 +241,7 @@ export default function SellerGoals() {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">
                             {goal.goal_type === 'revenue'
-                              ? `{formatGBP(goal.current_amount)} / {formatGBP(goal.target_amount)}`
+                              ? `${formatGBP(goal.current_amount)} / ${formatGBP(goal.target_amount)}`
                               : `${goal.current_amount} / ${goal.target_amount} orders`}
                           </span>
                           <span className="font-bold">{progress.toFixed(0)}%</span>

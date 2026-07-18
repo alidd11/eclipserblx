@@ -40,6 +40,7 @@ import {
 import { toast } from 'sonner';
 import { format } from '@/lib/dateUtils';
 import { useFormPersistence } from '@/hooks/useFormPersistence';
+import { useAuth } from '@/hooks/useAuth';
 
 type TeamRole = 'manager' | 'editor' | 'viewer';
 
@@ -95,7 +96,9 @@ const INITIAL_INVITE_DATA = {
 export default function SellerSettingsTeam() {
   const queryClient = useQueryClient();
   const { store } = useSellerStatus();
-  
+  const { user } = useAuth();
+  const isOwner = !!store && !!user && store.owner_id === user.id;
+
   const [inviteData, setInviteData, clearInviteData] = useFormPersistence(
     'seller-team-invite',
     INITIAL_INVITE_DATA
@@ -120,12 +123,16 @@ export default function SellerSettingsTeam() {
       // Fetch profiles for each team member
       const membersWithProfiles = await Promise.all(
         (data || []).map(async (member) => {
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('display_name, avatar_url')
             .eq('user_id', member.user_id)
-            .single();
-          
+            .maybeSingle();
+
+          if (profileError) {
+            console.error('Failed to load team member profile:', profileError);
+          }
+
           return {
             ...member,
             profile,
@@ -170,14 +177,14 @@ export default function SellerSettingsTeam() {
         .from('profiles')
         .select('display_name')
         .eq('user_id', user.id)
-        .single();
-      
+        .maybeSingle();
+
       // Check if this email is already a team member
       const { data: existingMember } = await supabase
         .from('profiles')
         .select('user_id')
         .eq('email', email.toLowerCase().trim())
-        .single();
+        .maybeSingle();
       
       if (existingMember) {
         const { data: alreadyMember } = await supabase
@@ -239,59 +246,68 @@ export default function SellerSettingsTeam() {
   // Remove team member mutation
   const removeMember = useMutation({
     mutationFn: async (memberId: string) => {
-      const { error } = await supabase
+      if (!isOwner) throw new Error('Only the store owner can remove team members');
+      const { data, error } = await supabase
         .from('store_team_members')
         .delete()
-        .eq('id', memberId);
-      
+        .eq('id', memberId)
+        .select('id');
+
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error('Team member could not be removed');
     },
     onSuccess: () => {
       toast.success('Team member removed');
       setMemberToRemove(null);
       queryClient.invalidateQueries({ queryKey: ['store-team-members'] });
     },
-    onError: () => {
-      toast.error('Failed to remove team member');
+    onError: (error) => {
+      toast.error(error.message || 'Failed to remove team member');
     },
   });
 
   // Cancel invite mutation
   const cancelInvite = useMutation({
     mutationFn: async (inviteId: string) => {
-      const { error } = await supabase
+      if (!isOwner) throw new Error('Only the store owner can cancel invitations');
+      const { data, error } = await supabase
         .from('store_team_invites')
         .delete()
-        .eq('id', inviteId);
-      
+        .eq('id', inviteId)
+        .select('id');
+
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error('Invitation could not be cancelled');
     },
     onSuccess: () => {
       toast.success('Invitation cancelled');
       setInviteToCancel(null);
       queryClient.invalidateQueries({ queryKey: ['store-team-invites'] });
     },
-    onError: () => {
-      toast.error('Failed to cancel invitation');
+    onError: (error) => {
+      toast.error(error.message || 'Failed to cancel invitation');
     },
   });
 
   // Update member role mutation
   const updateMemberRole = useMutation({
     mutationFn: async ({ memberId, role }: { memberId: string; role: TeamRole }) => {
-      const { error } = await supabase
+      if (!isOwner) throw new Error('Only the store owner can change team member roles');
+      const { data, error } = await supabase
         .from('store_team_members')
         .update({ role, updated_at: new Date().toISOString() })
-        .eq('id', memberId);
-      
+        .eq('id', memberId)
+        .select('id');
+
       if (error) throw error;
+      if (!data || data.length === 0) throw new Error('Role could not be updated');
     },
     onSuccess: () => {
       toast.success('Role updated');
       queryClient.invalidateQueries({ queryKey: ['store-team-members'] });
     },
-    onError: () => {
-      toast.error('Failed to update role');
+    onError: (error) => {
+      toast.error(error.message || 'Failed to update role');
     },
   });
 
@@ -317,6 +333,7 @@ export default function SellerSettingsTeam() {
         </div>
 
         {/* Invite Team Member */}
+        {isOwner ? (
         <div className="border border-border rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <h3 className="font-semibold text-sm">Invite Team Member</h3>
@@ -380,6 +397,11 @@ export default function SellerSettingsTeam() {
             </form>
           </div>
         </div>
+        ) : (
+          <div className="border border-border rounded-xl p-4 text-sm text-muted-foreground bg-muted/30">
+            Only the store owner can invite new team members.
+          </div>
+        )}
 
         {/* Current Team Members */}
         <div className="border border-border rounded-xl overflow-hidden">
@@ -425,36 +447,47 @@ export default function SellerSettingsTeam() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <Select
-                        value={member.role}
-                        onValueChange={(role) => updateMemberRole.mutate({ 
-                          memberId: member.id, 
-                          role: role as TeamRole 
-                        })}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(Object.keys(ROLE_LABELS) as TeamRole[]).map((role) => (
-                            <SelectItem key={role} value={role}>
-                              {ROLE_LABELS[role]}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="ghost"
-                        size="icon" aria-label="Delete"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => setMemberToRemove(member)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {isOwner ? (
+                        <>
+                          <Select
+                            value={member.role}
+                            onValueChange={(role) => updateMemberRole.mutate({
+                              memberId: member.id,
+                              role: role as TeamRole
+                            })}
+                          >
+                            <SelectTrigger className="w-[130px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {(Object.keys(ROLE_LABELS) as TeamRole[]).map((role) => (
+                                <SelectItem key={role} value={role}>
+                                  {ROLE_LABELS[role]}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="icon" aria-label="Delete"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setMemberToRemove(member)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <Badge variant="outline" className={ROLE_COLORS[member.role]}>
+                          {ROLE_LABELS[member.role]}
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
+            )}
+            {!isOwner && teamMembers.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-3">Only the store owner can change roles or remove team members.</p>
             )}
           </div>
         </div>
@@ -489,14 +522,16 @@ export default function SellerSettingsTeam() {
                       <Badge variant="outline" className={ROLE_COLORS[invite.role]}>
                         {ROLE_LABELS[invite.role]}
                       </Badge>
-                      <Button
-                        variant="ghost"
-                        size="icon" aria-label="Delete"
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => setInviteToCancel(invite)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {isOwner && (
+                        <Button
+                          variant="ghost"
+                          size="icon" aria-label="Delete"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setInviteToCancel(invite)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 ))}

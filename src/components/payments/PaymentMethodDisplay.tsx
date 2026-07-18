@@ -99,7 +99,7 @@ export function PaymentMethodDisplay({
             disabled={isProcessing}
           >
             <CreditCard className="h-5 w-5 mr-2" />
-            {isProcessing ? 'Processing...' : `Pay {formatGBP(total)}`}
+            {isProcessing ? 'Processing...' : `Pay ${formatGBP(total)}`}
           </Button>
           <TrustBadge />
         </div>
@@ -205,7 +205,7 @@ export function PaymentMethodDisplay({
                 ? 'Add new card or PayPal'
                 : walletAvailable 
                   ? 'Card or PayPal' 
-                  : `Pay {formatGBP(total)}`
+                  : `Pay ${formatGBP(total)}`
             }
           </Button>
         </div>
