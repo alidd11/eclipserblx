@@ -12204,10 +12204,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      claim_eclipse_plus_credit_bonus: {
-        Args: { p_user_id: string }
-        Returns: boolean
-      }
       claim_payout_for_processing: {
         Args: {
           p_expected_status: string
