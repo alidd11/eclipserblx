@@ -20,7 +20,7 @@ interface StoreWithCommission {
  custom_rate_expires_at: string | null;
  is_active: boolean;
  is_verified: boolean;
- eclipse_plus_discount_enabled: boolean | null;
+ 
  created_at: string;
  profiles?: {
  display_name: string | null;
@@ -43,7 +43,7 @@ export default function SellerCommissions() {
  .from('stores')
  .select(`
  id, name, slug, owner_id, commission_rate, custom_commission_rate, 
- custom_rate_expires_at, is_active, is_verified, eclipse_plus_discount_enabled, created_at,
+ custom_rate_expires_at, is_active, is_verified, created_at,
  profiles:owner_id (display_name, username)
  `)
  .order('name');
@@ -68,7 +68,7 @@ export default function SellerCommissions() {
  
  const ownerIds = stores.map(s => s.owner_id);
  const { data, error } = await supabase
- .from('subscriptions')
+ .from('subscriptions' as any)
  .select('user_id, status')
  .in('user_id', ownerIds)
  .eq('status', 'active');
@@ -76,10 +76,11 @@ export default function SellerCommissions() {
  if (error) throw error;
  
  // Create a map of user_id -> hasEclipsePlus
- return data.reduce((acc, sub) => {
- acc[sub.user_id] = true;
- return acc;
- }, {} as Record<string, boolean>);
+  return (data as unknown as Array<{ user_id: string; status: string }>).reduce((acc, sub) => {
+  acc[sub.user_id] = true;
+  return acc;
+  }, {} as Record<string, boolean>);
+
  },
  enabled: !!stores && stores.length > 0,
  });
@@ -227,7 +228,7 @@ export default function SellerCommissions() {
  Pro+
  </Badge>
  )}
- {store.eclipse_plus_discount_enabled === false ? (
+ {undefined === false ? (
  <Badge variant="outline" className="gap-1 text-xs shrink-0 text-red-400 border-red-400/30">
  <XCircle className="h-3 w-3" />
  Discounts Off

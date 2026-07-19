@@ -28,7 +28,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
 
   if (!displayProduct) return null;
 
-  const isEligible = isEligibleForDiscount(displayProduct.category_id, displayProduct.is_resellable, displayProduct.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(displayProduct.category_id, displayProduct.is_resellable, undefined);
   const memberPrice = isEligible ? getMemberPrice(displayProduct.price, displayProduct.category_id, displayProduct.is_resellable) : displayProduct.price;
   const discountPercent = getDiscountPercent(displayProduct.category_id, displayProduct.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < displayProduct.price;

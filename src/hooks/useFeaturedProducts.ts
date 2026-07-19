@@ -19,7 +19,7 @@ export interface ScoredProduct {
     banner_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
+    
   } | null;
   categories?: {
     name: string;
@@ -118,7 +118,7 @@ export function useFeaturedProducts({
         .select(`
           id, name, slug, price, images, category_id, is_resellable, is_featured, created_at, download_count, product_number,
           categories (name, slug),
-          stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, slug, logo_url, banner_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)

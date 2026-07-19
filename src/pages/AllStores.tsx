@@ -29,7 +29,7 @@ interface StoreData {
   follower_count: number | null;
   average_rating: number | null;
   product_count: number | null;
-  eclipse_plus_discount_enabled: boolean;
+  
 }
 
 type SortOption = 'popular' | 'newest' | 'rating' | 'products' | 'name';

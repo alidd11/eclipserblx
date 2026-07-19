@@ -101,7 +101,7 @@ export default function Products() {
  id, name, slug, product_number, price, images, is_active, is_featured,
  category_id, store_id, created_at, is_resellable, download_count,
  categories (name, slug),
- stores (name, slug, logo_url, is_verified, is_active, eclipse_plus_discount_enabled)
+ stores (name, slug, logo_url, is_verified, is_active)
  `, { count: 'exact' });
 
  if (!isStaff) {
@@ -345,7 +345,7 @@ function ProductsGrid({
  storeSlug={product.stores?.slug}
  storeLogo={product.stores?.logo_url}
  isVerified={product.stores?.is_verified}
- storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+ storeEclipseEnabled={undefined}
  />
  </React.Fragment>
  ))}

@@ -112,9 +112,9 @@ export function useAdminUsers() {
       
       if (role === 'seller') {
         const { data: existingStore } = await supabase.from('stores').select('id').eq('owner_id', userId).maybeSingle();
-        const { data: subscription } = await supabase.from('subscriptions').select('status').eq('user_id', userId).eq('status', 'active').maybeSingle();
-        const hasEclipsePlus = !!subscription;
+        const hasEclipsePlus = false;
         const commissionRate = hasEclipsePlus ? 10 : 15;
+
         
         if (!existingStore) {
           const baseName = displayName || targetEmail.split('@')[0];

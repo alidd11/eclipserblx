@@ -19,7 +19,7 @@ export function RecentReleases() {
         .select(`
           id, name, slug, product_number, price, images, created_at, download_count,
           category_id, categories(name, slug),
-          stores!inner(name, slug, logo_url, is_verified, is_active, eclipse_plus_discount_enabled)
+          stores!inner(name, slug, logo_url, is_verified, is_active)
         `)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
@@ -103,7 +103,7 @@ export function RecentReleases() {
                   storeSlug={store?.slug}
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
-                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                  storeEclipseEnabled={undefined}
                   createdAt={product.created_at}
                   showNewBadge
                   priority={index < 4}

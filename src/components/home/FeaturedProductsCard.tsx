@@ -36,7 +36,7 @@ interface FeaturedProduct {
     is_verified: boolean;
     is_trusted: boolean;
     is_active: boolean;
-    eclipse_plus_discount_enabled: boolean;
+    
   } | null;
 }
 
@@ -56,7 +56,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name), stores (name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled), is_resellable`)
+        .select(`*, categories (name), stores (name, slug, logo_url, is_verified, is_trusted, is_active), is_resellable`)
         .eq('is_featured', true)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
@@ -269,7 +269,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
   const navigate = useNavigate();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images, 400, 300, 'contain');
   const isVideo = isVideoUrl(displayMedia);
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;

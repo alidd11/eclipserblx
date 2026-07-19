@@ -58,7 +58,7 @@ export function useCredits() {
     try {
       // Direct client query instead of edge function
       const [balanceResult, txResult] = await Promise.all([
-        supabase.from('credit_balances').select('balance, total_purchased, total_spent, total_gifted, eclipse_plus_bonus_claimed').eq('user_id', user.id).maybeSingle(),
+        supabase.from('credit_balances').select('balance, total_purchased, total_spent, total_gifted').eq('user_id', user.id).maybeSingle(),
         supabase.from('credit_transactions').select('id, amount, type, description, reference_id, created_at, order_id').eq('user_id', user.id).order('created_at', { ascending: false }).limit(50),
       ]);
 
@@ -71,7 +71,7 @@ export function useCredits() {
         totalPurchased: Number(bal?.total_purchased ?? 0),
         totalGifted: Number(bal?.total_gifted ?? 0),
         totalSpent: Number(bal?.total_spent ?? 0),
-        eclipsePlusBonusClaimed: bal?.eclipse_plus_bonus_claimed ?? false,
+        eclipsePlusBonusClaimed: false,
         transactions: (txResult.data ?? []) as CreditTransaction[],
         isLoading: false,
         error: null,

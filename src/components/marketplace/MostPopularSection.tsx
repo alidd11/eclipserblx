@@ -23,7 +23,7 @@ interface PopularProduct {
     logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
+    
   } | null;
 }
 
@@ -31,7 +31,7 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
@@ -99,7 +99,7 @@ export function MostPopularSection() {
         .select(`
           id, name, slug, product_number, price, images, category_id, is_resellable, download_count,
           categories (name),
-          stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)

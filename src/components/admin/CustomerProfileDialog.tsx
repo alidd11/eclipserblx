@@ -66,22 +66,10 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
     enabled: !!profile?.user_id && open,
   });
 
-  // Fetch subscription
-  const { data: subscription, isLoading: subLoading } = useQuery({
-    queryKey: ['customer-subscription', profile?.user_id],
-    queryFn: async () => {
-      if (!profile?.user_id) return null;
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .eq('status', 'active')
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!profile?.user_id && open,
-  });
+  // Subscriptions system removed
+  const subscription = null as null | { status?: string; created_at?: string };
+  const subLoading = false;
+
 
   // Fetch reviews
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
@@ -451,7 +439,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                     <div>
                       <p className="font-medium text-amber-600 dark:text-amber-400">Subscription Active</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Since {format(new Date(subscription.created_at), 'MMM d, yyyy')}
+                        Since {subscription.created_at ? format(new Date(subscription.created_at), 'MMM d, yyyy') : '—'}
                       </p>
                     </div>
                     <Crown className="h-8 w-8 text-amber-500" />

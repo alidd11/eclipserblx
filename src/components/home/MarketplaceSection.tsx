@@ -145,12 +145,12 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
   );
 });
 
-const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const prefetch = usePrefetchProduct();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
@@ -212,10 +212,10 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
   );
 });
 
-function SpotlightPrice({ product }: { product: { price: number; category_id: string | null; is_resellable: boolean; stores: { eclipse_plus_discount_enabled: boolean } | null } }) {
+function SpotlightPrice({ product }: { product: { price: number; category_id: string | null; is_resellable: boolean; stores: { } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;

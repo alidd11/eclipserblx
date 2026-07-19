@@ -18,7 +18,7 @@ interface PromotedProductCardProps {
       slug: string;
       logo_url: string | null;
       is_verified: boolean;
-      eclipse_plus_discount_enabled: boolean;
+      
     } | null;
   };
   onClickTracked: () => void;
@@ -45,7 +45,7 @@ export function PromotedProductCard({ product, onClickTracked }: PromotedProduct
         storeSlug={product.stores?.slug}
         storeLogo={product.stores?.logo_url}
         isVerified={product.stores?.is_verified}
-        storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+        storeEclipseEnabled={undefined}
       />
     </div>
   );

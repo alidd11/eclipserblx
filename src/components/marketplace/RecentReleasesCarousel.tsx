@@ -27,7 +27,7 @@ interface RecentProduct {
     logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
+    
   } | null;
 }
 
@@ -47,7 +47,7 @@ export function RecentReleasesCarousel() {
         .select(`
           id, name, slug, product_number, price, images, created_at, category_id, is_resellable,
           categories (name, slug),
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)
@@ -139,7 +139,7 @@ export function RecentReleasesCarousel() {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product) => {
-          const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+          const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
           const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
           const hasMemberDiscount = isEligible && memberPrice < product.price;
 

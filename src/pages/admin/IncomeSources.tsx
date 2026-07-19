@@ -104,7 +104,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
@@ -114,12 +114,12 @@ export default function AdminIncomeSources() {
     queryKey: ['income-sources-subscriptions'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('subscriptions')
+        .from('subscriptions' as any)
         .select('id, user_id, status, tier, billing_period, created_at, stripe_subscription_id')
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
@@ -136,7 +136,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
@@ -153,7 +153,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,

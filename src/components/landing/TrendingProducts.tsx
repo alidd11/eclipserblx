@@ -20,7 +20,7 @@ export function TrendingProducts() {
         .select(`
           id, name, slug, price, images, download_count, created_at, category_id,
           categories(name, slug),
-          stores!inner(is_active, name, slug, logo_url, is_verified, eclipse_plus_discount_enabled)
+          stores!inner(is_active, name, slug, logo_url, is_verified)
         `)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
@@ -105,7 +105,7 @@ export function TrendingProducts() {
                   storeSlug={store?.slug}
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
-                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                  storeEclipseEnabled={undefined}
                   createdAt={product.created_at}
                   priority
                 />
