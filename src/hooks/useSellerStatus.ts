@@ -77,8 +77,8 @@ export interface Store {
   payout_method?: string;
   // Pay What You Want
   pwyw_enabled?: boolean;
-  // Member discount
-  ;
+  // Member discount (removed)
+
   // Testing mode
   is_testing?: boolean;
   // Followers
