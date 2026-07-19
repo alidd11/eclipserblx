@@ -13,7 +13,7 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.undefined_removed);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.undefined);
   const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
@@ -68,7 +68,7 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.undefined_removed);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.undefined);
   const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;

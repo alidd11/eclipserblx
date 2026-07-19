@@ -345,7 +345,7 @@ function ProductsGrid({
  storeSlug={product.stores?.slug}
  storeLogo={product.stores?.logo_url}
  isVerified={product.stores?.is_verified}
- storeEclipseEnabled={product.stores?.undefined_removed}
+ storeEclipseEnabled={product.undefined}
  />
  </React.Fragment>
  ))}

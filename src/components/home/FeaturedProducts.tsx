@@ -159,7 +159,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                       categoryId={currentProduct.category_id}
                       isFeatured={currentProduct.is_featured}
                       isResellable={currentProduct.is_resellable}
-                      storeEclipseEnabled={currentProduct.stores?.undefined_removed}
+                      storeEclipseEnabled={currentProduct.undefined}
                     />
                   </div>
                 )}
