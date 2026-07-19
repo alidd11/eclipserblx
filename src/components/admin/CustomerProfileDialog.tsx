@@ -67,7 +67,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
   });
 
   // Subscriptions system removed
-  const subscription: { status?: string; created_at?: string } | null = null;
+  const subscription = null as null | { status?: string; created_at?: string };
   const subLoading = false;
 
 
