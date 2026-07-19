@@ -8,6 +8,7 @@ import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Receipt, Percent, DollarSign, TrendingDown } from 'lucide-react';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function SellerTaxFeeSummary() {
   const isInsideHub = useIsInsideHub();
@@ -119,9 +120,9 @@ export default function SellerTaxFeeSummary() {
                 data={monthlyData}
                 xKey="month"
                 series={[
-                  { dataKey: 'net', name: 'Net Earnings', color: 'hsl(262 100% 71%)' },
-                  { dataKey: 'platformFee', name: 'Commission', color: 'hsl(220 95% 59%)' },
-                  { dataKey: 'stripeFee', name: 'Processing', color: 'hsl(240 90% 65%)' },
+                  { dataKey: 'net', name: 'Net Earnings', color: CHART_COLORS.purple },
+                  { dataKey: 'platformFee', name: 'Commission', color: CHART_COLORS.blue },
+                  { dataKey: 'stripeFee', name: 'Processing', color: CHART_COLORS.indigo },
                 ]}
                 height={288}
                 yFormatter={(v) => `£${v}`}

@@ -10,6 +10,7 @@ import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
 import { format, subDays } from '@/lib/dateUtils';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function SellerRevenueBreakdown() {
   const isInsideHub = useIsInsideHub();
@@ -121,7 +122,7 @@ export default function SellerRevenueBreakdown() {
           <RevolutAreaChart
             data={dailyRevenue}
             xKey="date"
-            series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
+            series={[{ dataKey: 'revenue', color: CHART_COLORS.purple, name: 'Revenue' }]}
             height={256}
             yFormatter={(v) => `£${v}`}
             tooltipFormatter={(v) => [`${formatGBP(v)}`, 'Revenue']}

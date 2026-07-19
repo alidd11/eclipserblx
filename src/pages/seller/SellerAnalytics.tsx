@@ -13,6 +13,7 @@ import { RevolutLineChart, RevolutBarChart, RevolutAreaChart } from '@/component
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from '@/lib/dateUtils';
 import { 
+import { CHART_COLORS } from '@/lib/chartColors';
   Eye, 
   ShoppingCart, 
   CreditCard, 
@@ -352,8 +353,8 @@ export default function SellerAnalytics() {
                       data={processedData.dailyData}
                       xKey="date"
                       series={[
-                        { dataKey: 'views', color: 'hsl(262 100% 71%)', name: 'Views' },
-                        { dataKey: 'uniqueVisitors', color: 'hsl(220 95% 59%)', name: 'Unique Visitors' },
+                        { dataKey: 'views', color: CHART_COLORS.purple, name: 'Views' },
+                        { dataKey: 'uniqueVisitors', color: CHART_COLORS.blue, name: 'Unique Visitors' },
                       ]}
                       height={320}
                     />
@@ -529,9 +530,9 @@ export default function SellerAnalytics() {
                       data={processedData.dailyData}
                       xKey="date"
                       series={[
-                        { dataKey: 'views', color: 'hsl(262 100% 71%)', name: 'Views' },
-                        { dataKey: 'addToCarts', color: 'hsl(220 95% 59%)', name: 'Add to Cart' },
-                        { dataKey: 'purchases', color: 'hsl(240 90% 65%)', name: 'Purchases' },
+                        { dataKey: 'views', color: CHART_COLORS.purple, name: 'Views' },
+                        { dataKey: 'addToCarts', color: CHART_COLORS.blue, name: 'Add to Cart' },
+                        { dataKey: 'purchases', color: CHART_COLORS.indigo, name: 'Purchases' },
                       ]}
                       height={320}
                     />
