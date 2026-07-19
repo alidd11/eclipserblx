@@ -88,6 +88,14 @@ export default function Disputes() {
 
   const updateDispute = useMutation({
     mutationFn: async ({ id, status, response, customerId }: { id: string; status: string; response: string; customerId?: string }) => {
+      if (status === 'approved') {
+        const { data, error } = await supabase.functions.invoke('process-dispute-refund', {
+          body: { refundRequestId: id, adminResponse: response || null },
+        });
+        if (error) throw error;
+        if (!data?.success) throw new Error(data?.error || 'Failed to process refund');
+      }
+
       const updateData: Record<string, unknown> = {
         status,
         admin_response: response || null,
@@ -128,7 +136,7 @@ export default function Disputes() {
       setAdminResponse('');
       setNewStatus('');
     },
-    onError: () => toast.error('Failed to update dispute') });
+    onError: (error) => toast.error(error.message || 'Failed to update dispute') });
 
   const filtered = (disputes as EnrichedDispute[] | undefined)?.filter((d: EnrichedDispute) => {
     if (!search) return true;
