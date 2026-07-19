@@ -439,7 +439,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                     <div>
                       <p className="font-medium text-amber-600 dark:text-amber-400">Subscription Active</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Since {format(new Date(subscription.created_at), 'MMM d, yyyy')}
+                        Since {subscription.created_at ? format(new Date(subscription.created_at), 'MMM d, yyyy') : '—'}
                       </p>
                     </div>
                     <Crown className="h-8 w-8 text-amber-500" />
