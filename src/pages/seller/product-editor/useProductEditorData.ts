@@ -82,7 +82,7 @@ export function useProductEditorData() {
         description: product.description || '',
         category_id: product.category_id || '',
         is_active: product.is_active ?? true,
-        eclipse_free_eligible: product.eclipse_free_eligible ?? false,
+        eclipse_free_eligible: (product as { eclipse_free_eligible?: boolean }).eclipse_free_eligible ?? false,
         images: product.images || [],
         asset_file_url: product.asset_file_url || '',
         schedule_enabled: hasSchedule,
