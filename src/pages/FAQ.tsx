@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { FAQSchema } from '@/components/seo/StructuredData';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
@@ -290,6 +291,7 @@ export default function FAQ() {
 
   return (
     <MainLayout>
+      <FAQSchema faqs={faqCategories.flatMap((c) => c.items)} />
       <div className="container mx-auto px-4 py-6 md:py-12 max-w-4xl">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-display font-bold mb-4">{t('faq.title')}</h1>

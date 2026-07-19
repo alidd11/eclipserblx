@@ -225,6 +225,7 @@ export default function Products() {
  </div>
  </div>
 
+ <h2 className="sr-only">{t('products.allProducts')}</h2>
  <ProductsGrid 
  products={productsData?.products}
  totalCount={productsData?.totalCount ?? 0}
