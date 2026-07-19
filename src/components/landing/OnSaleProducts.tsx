@@ -20,7 +20,7 @@ interface FlashSaleProduct {
   created_at: string;
   category_id: string | null;
   categories: { name: string; slug: string } | null;
-  stores: { name: string; slug: string; logo_url: string | null; is_verified: boolean; is_active: boolean; eclipse_plus_discount_enabled: boolean } | null;
+  stores: { name: string; slug: string; logo_url: string | null; is_verified: boolean; is_active: boolean; } | null;
   discountPercent?: number;
 }
 

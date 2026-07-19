@@ -78,7 +78,7 @@ export interface Store {
   // Pay What You Want
   pwyw_enabled?: boolean;
   // Member discount
-  eclipse_plus_discount_enabled?: boolean;
+  ;
   // Testing mode
   is_testing?: boolean;
   // Followers

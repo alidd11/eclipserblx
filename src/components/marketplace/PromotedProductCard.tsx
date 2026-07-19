@@ -18,7 +18,7 @@ interface PromotedProductCardProps {
       slug: string;
       logo_url: string | null;
       is_verified: boolean;
-      eclipse_plus_discount_enabled: boolean;
+      
     } | null;
   };
   onClickTracked: () => void;

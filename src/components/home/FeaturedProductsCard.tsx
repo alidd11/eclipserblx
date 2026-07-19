@@ -36,7 +36,7 @@ interface FeaturedProduct {
     is_verified: boolean;
     is_trusted: boolean;
     is_active: boolean;
-    eclipse_plus_discount_enabled: boolean;
+    
   } | null;
 }
 

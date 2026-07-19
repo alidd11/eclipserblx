@@ -19,7 +19,7 @@ export interface ScoredProduct {
     banner_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
+    
   } | null;
   categories?: {
     name: string;

@@ -20,7 +20,7 @@ interface StoreWithCommission {
  custom_rate_expires_at: string | null;
  is_active: boolean;
  is_verified: boolean;
- eclipse_plus_discount_enabled: boolean | null;
+ 
  created_at: string;
  profiles?: {
  display_name: string | null;
