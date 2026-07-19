@@ -15,6 +15,7 @@ const NotFound = lazyWithRetry(() => import("@/pages/NotFound"));
 const AuthDiscordCallback = lazyWithRetry(() => import("@/pages/AuthDiscordCallback"));
 const AuthRobloxCallback = lazyWithRetry(() => import("@/pages/AuthRobloxCallback"));
 const CompleteProfile = lazyWithRetry(() => import("@/pages/CompleteProfile"));
+const OAuthConsent = lazyWithRetry(() => import("@/pages/OAuthConsent"));
 
 // Lazy loaded - user pages
 const Account = lazyWithRetry(() => import("@/pages/Account"));
