@@ -9,7 +9,6 @@ Premium Roblox assets for UK roleplay servers.
 ## Features
 
 - Premium digital asset marketplace
-- Eclipse+ subscription membership
 - Seller storefronts with analytics
 - Discord community integration
 - Secure Stripe payments

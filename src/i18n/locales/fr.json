@@ -43,7 +43,6 @@
     "featured": "En Vedette",
     "products": "Produits",
     "categories": "Catégories",
-    "eclipsePlus": "Abonnement",
     "jobs": "Emplois",
     "joinDiscord": "Rejoindre Discord",
     "systemStatus": "État du Système",
@@ -277,25 +276,10 @@
   },
   "offers": {
     "activeOffers": "Offres Actives",
-    "newMemberExclusive": "🎁 Exclusivité Nouveau Membre",
-    "daysEclipsePlusFree": "{{days}} jours bonus GRATUITS",
-    "offerClaimed": "Offre Réclamée !",
-    "claimed": "Réclamé",
-    "signUpToClaim": "Inscrivez-vous pour Réclamer",
-    "claimOffer": "Réclamer l'Offre",
-    "claiming": "Réclamation...",
-    "ends": "Se termine le {{date}}",
     "expires": "Expire le {{date}}",
     "minOrder": "Commande min. £{{amount}}",
-    "off": "RÉDUCTION",
     "percentOff": "{{value}}% RÉDUCTION",
-    "amountOff": "£{{amount}} RÉDUCTION",
-    "benefits": {
-      "discount": "30% de réduction sur tous les achats",
-      "prioritySupport": "Accès prioritaire au support",
-      "earlyAccess": "Accès anticipé aux nouveautés",
-      "memberDiscounts": "Réductions exclusives pour les membres"
-    }
+    "amountOff": "£{{amount}} RÉDUCTION"
   },
   "sidebar": {
     "quickAccess": "Accès Rapide",
