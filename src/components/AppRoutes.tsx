@@ -259,6 +259,7 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
+        <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
         <Route path="/auth/discord/callback" element={<AuthDiscordCallback />} />
         <Route path="/auth/roblox/callback" element={<AuthRobloxCallback />} />
         <Route path="/complete-profile" element={<CompleteProfile />} />
