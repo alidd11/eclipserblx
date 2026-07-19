@@ -225,6 +225,7 @@ export default function Products() {
  </div>
  </div>
 
+ <h2 className="sr-only">{t('products.allProducts')}</h2>
  <ProductsGrid 
  products={productsData?.products}
  totalCount={productsData?.totalCount ?? 0}
@@ -360,8 +361,9 @@ function ProductsGrid({
  disabled={currentPage === 1}
  className="gap-1"
  >
- <ChevronLeft className="h-4 w-4" />
+ <ChevronLeft className="h-4 w-4" aria-hidden="true" />
  <span className="hidden sm:inline">{t('common.previous')}</span>
+ <span className="sr-only sm:hidden">{t('common.previous')}</span>
  </Button>
 
  <div className="flex items-center gap-1">
@@ -407,7 +409,8 @@ function ProductsGrid({
  className="gap-1"
  >
  <span className="hidden sm:inline">{t('common.next')}</span>
- <ChevronRight className="h-4 w-4" />
+ <span className="sr-only sm:hidden">{t('common.next')}</span>
+ <ChevronRight className="h-4 w-4" aria-hidden="true" />
  </Button>
  </div>
  )}
