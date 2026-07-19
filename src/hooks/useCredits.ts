@@ -71,7 +71,7 @@ export function useCredits() {
         totalPurchased: Number(bal?.total_purchased ?? 0),
         totalGifted: Number(bal?.total_gifted ?? 0),
         totalSpent: Number(bal?.total_spent ?? 0),
-        eclipsePlusBonusClaimed: undefined ?? false,
+        eclipsePlusBonusClaimed: false,
         transactions: (txResult.data ?? []) as CreditTransaction[],
         isLoading: false,
         error: null,
