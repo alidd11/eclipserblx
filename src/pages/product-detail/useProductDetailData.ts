@@ -99,7 +99,7 @@ export function useProductDetailData(productNumber: string | undefined) {
   }, [queryClient, productNumber]);
 
   // Subscription pricing helpers
-  const storeEclipseEnabled = product?.undefined;
+  const storeEclipseEnabled = undefined;
   const isEligible = product ? isEligibleForDiscount(product.category_id, product.is_resellable, storeEclipseEnabled) : false;
   const memberPrice = product && isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product?.price ?? 0;
   const discountPercent = product && isEligible ? getDiscountPercent(product.category_id, product.is_resellable) : 0;

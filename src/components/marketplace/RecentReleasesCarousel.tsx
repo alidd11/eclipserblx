@@ -139,7 +139,7 @@ export function RecentReleasesCarousel() {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product) => {
-          const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.undefined);
+          const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
           const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
           const hasMemberDiscount = isEligible && memberPrice < product.price;
 

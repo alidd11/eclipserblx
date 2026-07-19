@@ -53,7 +53,7 @@ function PWASpotlightCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.undefined);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
@@ -130,7 +130,7 @@ function PWAProductCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.undefined);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, undefined);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
