@@ -66,22 +66,10 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
     enabled: !!profile?.user_id && open,
   });
 
-  // Fetch subscription
-  const { data: subscription, isLoading: subLoading } = useQuery({
-    queryKey: ['customer-subscription', profile?.user_id],
-    queryFn: async () => {
-      if (!profile?.user_id) return null;
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .eq('status', 'active')
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!profile?.user_id && open,
-  });
+  // Subscriptions system removed
+  const subscription: { status?: string; created_at?: string } | null = null;
+  const subLoading = false;
+
 
   // Fetch reviews
   const { data: reviews, isLoading: reviewsLoading } = useQuery({
