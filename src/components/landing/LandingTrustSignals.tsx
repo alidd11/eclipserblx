@@ -1,109 +1,41 @@
-import { 
-  Shield, 
-  Zap, 
-  Percent, 
-  CreditCard, 
-  HeadphonesIcon, 
-  RefreshCw,
-  Users,
-  BadgeCheck
-} from 'lucide-react';
+import { Percent, Zap, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 
 export function LandingTrustSignals() {
   const { t } = useTranslation();
 
-  const trustSignals = [
-    {
-      icon: Percent,
-      titleKey: 'landing.industryLowFees',
-      descKey: 'landing.industryLowFeesDesc',
-      highlight: '15%',
-    },
-    {
-      icon: Zap,
-      titleKey: 'landing.instantPayouts',
-      descKey: 'landing.instantPayoutsDesc',
-      highlight: null,
-    },
-    {
-      icon: Shield,
-      titleKey: 'landing.securePayments',
-      descKey: 'landing.securePaymentsDesc',
-      highlight: null,
-    },
-    {
-      icon: BadgeCheck,
-      titleKey: 'landing.verifiedSellers',
-      descKey: 'landing.verifiedSellersDesc',
-      highlight: null,
-    },
-    {
-      icon: CreditCard,
-      titleKey: 'landing.multiplePayments',
-      descKey: 'landing.multiplePaymentsDesc',
-      highlight: null,
-    },
-    {
-      icon: HeadphonesIcon,
-      titleKey: 'landing.dedicatedSupport',
-      descKey: 'landing.dedicatedSupportDesc',
-      highlight: null,
-    },
-    {
-      icon: RefreshCw,
-      titleKey: 'landing.freeUpdates',
-      descKey: 'landing.freeUpdatesDesc',
-      highlight: null,
-    },
-    {
-      icon: Users,
-      titleKey: 'landing.growingCommunity',
-      descKey: 'landing.growingCommunityDesc',
-      highlight: null,
-    },
+  const stats = [
+    { icon: Percent, value: '15%', titleKey: 'landing.industryLowFees', descKey: 'landing.industryLowFeesDesc' },
+    { icon: Zap, value: 'Instant', titleKey: 'landing.instantPayouts', descKey: 'landing.instantPayoutsDesc' },
+    { icon: BadgeCheck, value: '100%', titleKey: 'landing.verifiedSellers', descKey: 'landing.verifiedSellersDesc' },
   ];
 
   return (
-    <section className="py-6 sm:py-8">
+    <section className="py-8 sm:py-10 border-y border-border">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold">
-            {t('landing.whyChoose')}
-          </h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t('landing.whyChooseDesc')}
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {trustSignals.map((signal, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
+          {stats.map((stat, index) => (
             <motion.div
-              key={signal.titleKey}
-              initial={{ opacity: 0, y: 20 }}
+              key={stat.titleKey}
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              className="group"
+              transition={{ duration: 0.4, delay: index * 0.08 }}
+              className="flex items-start gap-4 py-6 sm:py-0 sm:px-8 first:pt-0 sm:first:pl-0 last:pb-0 sm:last:pr-0"
             >
-              <div className="h-full rounded-lg border border-border bg-card p-4 hover:border-primary/30 transition-colors">
-                <div className="flex items-start justify-between mb-2">
-                  <div className="w-8 h-8 rounded-md bg-primary/10 flex items-center justify-center">
-                    <signal.icon className="h-4 w-4 text-primary" />
-                  </div>
-                  {signal.highlight && (
-                    <span className="px-1.5 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-semibold">
-                      {signal.highlight}
-                    </span>
-                  )}
+              <stat.icon className="h-5 w-5 text-primary shrink-0 mt-1" />
+              <div className="min-w-0">
+                <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                  <span className="font-display text-2xl font-bold text-foreground tracking-tight">
+                    {stat.value}
+                  </span>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {t(stat.titleKey)}
+                  </h3>
                 </div>
-
-                <h3 className="text-sm font-semibold text-foreground mb-1">
-                  {t(signal.titleKey)}
-                </h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {t(signal.descKey)}
+                <p className="text-sm text-muted-foreground leading-relaxed max-w-[34ch]">
+                  {t(stat.descKey)}
                 </p>
               </div>
             </motion.div>
