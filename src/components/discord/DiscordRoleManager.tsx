@@ -32,7 +32,6 @@ import {
  Trash2,
  Shield,
  Users,
- Crown,
  ShoppingCart,
  Star,
  Loader2,
@@ -49,7 +48,6 @@ interface DiscordRoleConfig {
  auto_assign_on_purchase: boolean;
  min_order_amount: number | null;
  min_order_count: number | null;
- requires_subscription: boolean;
  created_at: string;
  updated_at: string;
  created_by: string | null;
@@ -67,7 +65,6 @@ interface RoleFormData {
  auto_assign_on_purchase: boolean;
  min_order_amount: string;
  min_order_count: string;
- requires_subscription: boolean;
 }
 
 const defaultFormData: RoleFormData = {
@@ -77,7 +74,6 @@ const defaultFormData: RoleFormData = {
  auto_assign_on_purchase: true,
  min_order_amount: '',
  min_order_count: '',
- requires_subscription: false,
 };
 
 export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleManagerProps) {
@@ -126,7 +122,6 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  auto_assign_on_purchase: data.auto_assign_on_purchase,
  min_order_amount: data.min_order_amount ? parseFloat(data.min_order_amount) : null,
  min_order_count: data.min_order_count ? parseInt(data.min_order_count) : null,
- requires_subscription: data.requires_subscription,
  created_by: user?.id,
  is_global: isGlobal,
  store_id: isGlobal ? null : storeId,
@@ -155,7 +150,6 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  auto_assign_on_purchase: data.auto_assign_on_purchase,
  min_order_amount: data.min_order_amount ? parseFloat(data.min_order_amount) : null,
  min_order_count: data.min_order_count ? parseInt(data.min_order_count) : null,
- requires_subscription: data.requires_subscription,
  })
  .eq('id', id);
 
@@ -211,7 +205,6 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  auto_assign_on_purchase: role.auto_assign_on_purchase,
  min_order_amount: role.min_order_amount?.toString() || '',
  min_order_count: role.min_order_count?.toString() || '',
- requires_subscription: role.requires_subscription,
  });
  setIsDialogOpen(true);
  };
@@ -232,7 +225,6 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  };
 
  const getRoleIcon = (role: DiscordRoleConfig) => {
- if (role.requires_subscription) return Crown;
  if (role.min_order_count) return Star;
  if (role.min_order_amount) return ShoppingCart;
  return Users;
@@ -294,11 +286,6 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  {role.auto_assign_on_purchase && (
  <Badge variant="secondary" className="text-xs">
  Auto-assign
- </Badge>
- )}
- {role.requires_subscription && (
- <Badge variant="outline" className="text-xs">
- Subscribers only
  </Badge>
  )}
  </div>
@@ -409,22 +396,6 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  checked={formData.auto_assign_on_purchase}
  onCheckedChange={(checked) => 
  setFormData({ ...formData, auto_assign_on_purchase: checked })
- }
- />
- </div>
-
- <div className="flex items-center justify-between">
- <div>
- <Label htmlFor="requires_subscription">Requires subscription</Label>
- <p className="text-xs text-muted-foreground">
- Only assign to active subscribers
- </p>
- </div>
- <Switch
- id="requires_subscription"
- checked={formData.requires_subscription}
- onCheckedChange={(checked) => 
- setFormData({ ...formData, requires_subscription: checked })
  }
  />
  </div>

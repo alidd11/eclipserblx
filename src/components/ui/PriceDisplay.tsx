@@ -4,9 +4,6 @@ import { cn } from '@/lib/utils';
 
 interface PriceDisplayProps {
   price: number;
-  categoryId?: string | null;
-  isResellable?: boolean;
-  storeEclipseEnabled?: boolean;
   showBadge?: boolean;
   size?: 'xs' | 'sm' | 'md' | 'lg';
   className?: string;

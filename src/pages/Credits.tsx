@@ -31,9 +31,9 @@ export default function Credits() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [creditAmount, setCreditAmount] = useState(0);
   
-  const { 
+  const {
     balance, totalPurchased, totalGifted, totalSpent,
-    eclipsePlusBonusClaimed, transactions, isLoading, fetchBalance 
+    transactions, isLoading, fetchBalance
   } = useCredits();
 
   const wasSuccess = searchParams.get('success') === 'true';

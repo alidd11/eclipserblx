@@ -253,15 +253,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (e) {
       console.debug('Staff activity log skipped:', e);
     }
-
-    try {
-      const { data: promoResult } = await supabase.functions.invoke('claim-signup-promotion');
-      if (promoResult?.claimed) {
-        console.debug(`Claimed signup promotion: ${promoResult.promotion} (${promoResult.days} bonus days)`);
-      }
-    } catch (e) {
-      // Silent fail
-    }
   };
 
   const signUp = useCallback(async (email: string, password: string, displayName?: string) => {

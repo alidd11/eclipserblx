@@ -1,23 +1,16 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, ShieldCheck, Award, Crown } from 'lucide-react';
+import { ChevronRight, ShieldCheck } from 'lucide-react';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 
 type FeaturedProduct = ScoredProduct;
 
 function ProductCard({ product }: { product: FeaturedProduct }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-  
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
-  
+
   return (
     <Link 
       to={`/products/${(product as any).product_number}`}
@@ -66,24 +59,9 @@ function ProductCard({ product }: { product: FeaturedProduct }) {
           {product.name}
         </h4>
         <div className="flex items-center gap-1.5 flex-wrap">
-          {hasMemberDiscount ? (
-            <>
-              <span className="text-amber-500 font-bold text-sm">
-                {formatPrice(memberPrice)}
-              </span>
-              <span className="text-[10px] text-muted-foreground line-through">
-                {formatPrice(product.price)}
-              </span>
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                <Crown className="h-2 w-2" />
-                {discountPercent}%
-              </span>
-            </>
-          ) : (
-            <span className="text-primary font-bold text-sm">
-              {formatPrice(product.price)}
-            </span>
-          )}
+          <span className="text-primary font-bold text-sm">
+            {formatPrice(product.price)}
+          </span>
         </div>
       </div>
     </Link>

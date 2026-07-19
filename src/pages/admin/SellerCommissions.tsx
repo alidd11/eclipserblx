@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Badge } from '@/components/ui/badge';
 import { format, parseISO } from '@/lib/dateUtils';
-import { Percent, Store, Shield, Eye, EyeOff, ChevronRight, Sparkles, Tag, XCircle } from 'lucide-react';
+import { Percent, Store, Shield, Eye, EyeOff, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -20,7 +20,6 @@ interface StoreWithCommission {
  custom_rate_expires_at: string | null;
  is_active: boolean;
  is_verified: boolean;
- eclipse_plus_discount_enabled: boolean | null;
  created_at: string;
  profiles?: {
  display_name: string | null;
@@ -42,8 +41,8 @@ export default function SellerCommissions() {
  let query = supabase
  .from('stores')
  .select(`
- id, name, slug, owner_id, commission_rate, custom_commission_rate, 
- custom_rate_expires_at, is_active, is_verified, eclipse_plus_discount_enabled, created_at,
+ id, name, slug, owner_id, commission_rate, custom_commission_rate,
+ custom_rate_expires_at, is_active, is_verified, created_at,
  profiles:owner_id (display_name, username)
  `)
  .order('name');
@@ -60,46 +59,21 @@ export default function SellerCommissions() {
  },
  });
 
- // Fetch Pro+ subscriptions for store owners
- const { data: ownerSubscriptions } = useQuery({
- queryKey: ['store-owner-subscriptions', stores?.map(s => s.owner_id)],
- queryFn: async () => {
- if (!stores || stores.length === 0) return {};
- 
- const ownerIds = stores.map(s => s.owner_id);
- const { data, error } = await supabase
- .from('subscriptions')
- .select('user_id, status')
- .in('user_id', ownerIds)
- .eq('status', 'active');
- 
- if (error) throw error;
- 
- // Create a map of user_id -> hasEclipsePlus
- return data.reduce((acc, sub) => {
- acc[sub.user_id] = true;
- return acc;
- }, {} as Record<string, boolean>);
- },
- enabled: !!stores && stores.length > 0,
- });
-
- // Fetch default commission rates
+ // Fetch default commission rate
  const { data: settings } = useQuery({
  queryKey: ['commission-settings'],
  queryFn: async () => {
  const { data, error } = await supabase
  .from('settings')
  .select('key, value')
- .in('key', ['marketplace_default_commission_rate', 'marketplace_eclipse_commission_rate']);
- 
+ .in('key', ['marketplace_default_commission_rate']);
+
  if (error) throw error;
  return data.reduce((acc, s) => ({ ...acc, [s.key]: Number(s.value) || 0 }), {} as Record<string, number>);
  },
  });
 
  const defaultRate = settings?.marketplace_default_commission_rate ?? 15;
- const eclipseRate = settings?.marketplace_eclipse_commission_rate ?? 10;
 
  // Filter stores by search query
  const filteredStores = stores?.filter(store => {
@@ -141,10 +115,6 @@ export default function SellerCommissions() {
  <div className="flex items-center gap-2">
  <Badge variant="secondary">Standard</Badge>
  <span className="font-medium">{defaultRate}%</span>
- </div>
- <div className="flex items-center gap-2">
- <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">Pro+</Badge>
- <span className="font-medium">{eclipseRate}%</span>
  </div>
  </div>
  </div>
@@ -199,8 +169,6 @@ export default function SellerCommissions() {
  ) : filteredStores && filteredStores.length > 0 ? (
  <div className="space-y-3">
  {filteredStores.map((store) => {
- const hasEclipsePlus = ownerSubscriptions?.[store.owner_id] ?? false;
- 
  return (
  <div
  key={store.id}
@@ -219,23 +187,6 @@ export default function SellerCommissions() {
  {store.is_verified && (
  <Badge variant="outline" className="text-xs shrink-0">
  Verified
- </Badge>
- )}
- {hasEclipsePlus && (
- <Badge className="gap-1 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground border-0 text-xs shrink-0">
- <Sparkles className="h-3 w-3" />
- Pro+
- </Badge>
- )}
- {store.eclipse_plus_discount_enabled === false ? (
- <Badge variant="outline" className="gap-1 text-xs shrink-0 text-red-400 border-red-400/30">
- <XCircle className="h-3 w-3" />
- Discounts Off
- </Badge>
- ) : (
- <Badge variant="outline" className="gap-1 text-xs shrink-0 text-green-400 border-green-400/30">
- <Tag className="h-3 w-3" />
- Discounts On
  </Badge>
  )}
  </div>

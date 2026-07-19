@@ -15,7 +15,7 @@ const SAFE_STORE_COLUMNS = `
   font_heading, font_body, announcement_text, announcement_active,
   featured_product_ids, layout_style, show_reviews, show_social_proof,
   follower_count, about_content, payout_method, pwyw_enabled,
-  eclipse_plus_discount_enabled, is_testing,
+  is_testing,
   roblox_group_id, roblox_group_discount_enabled, roblox_group_discount_percent,
   roblox_group_min_rank, roblox_premium_discount_enabled, roblox_premium_discount_percent,
   roblox_gamepass_id, roblox_gamepass_discount_enabled, roblox_gamepass_discount_percent,
@@ -77,8 +77,6 @@ export interface Store {
   payout_method?: string;
   // Pay What You Want
   pwyw_enabled?: boolean;
-  // Member discount
-  eclipse_plus_discount_enabled?: boolean;
   // Testing mode
   is_testing?: boolean;
   // Followers

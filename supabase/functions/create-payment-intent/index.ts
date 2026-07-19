@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
-import { createStripeClient, createAdminSupabase, authenticateUser, getOrCreateStripeCustomer, calculateMemberPrice, logStep } from "../_shared/stripe-helpers.ts";
+import { createStripeClient, createAdminSupabase, authenticateUser, getOrCreateStripeCustomer, logStep } from "../_shared/stripe-helpers.ts";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
 
 const corsHeaders = {
@@ -9,8 +9,6 @@ const corsHeaders = {
 };
 
 const LOG = (step: string, d?: unknown) => logStep("CREATE-PAYMENT-INTENT", step, d);
-
-const ECLIPSE_SAVERS_CATEGORY_ID = "26463de5-38f4-4203-a379-78f6f92be3c7";
 
 interface CartItem {
   id: string;
@@ -24,7 +22,7 @@ interface CartItem {
   custom_price?: number;
 }
 
-type PaymentType = 'checkout' | 'credits' | 'subscription' | 'ad_pings';
+type PaymentType = 'checkout' | 'credits' | 'ad_pings';
 
 interface PaymentIntentRequest {
   type?: PaymentType;
@@ -32,8 +30,6 @@ interface PaymentIntentRequest {
   email?: string;
   discountCodeId?: string;
   amount?: number;
-  tier?: string;
-  billingPeriod?: 'monthly' | 'annual';
   herePings?: number;
   everyonePings?: number;
 }
@@ -54,7 +50,7 @@ serve(async (req) => {
     const supabaseClient = createAdminSupabase();
 
     const requestBody: PaymentIntentRequest = await req.json();
-    const { type = 'checkout', items, email, discountCodeId, amount, tier, billingPeriod, herePings, everyonePings } = requestBody;
+    const { type = 'checkout', items, email, discountCodeId, amount, herePings, everyonePings } = requestBody;
 
     // Auth
     const { userId, email: authEmail } = await authenticateUser(supabaseClient, req);
@@ -77,24 +73,15 @@ serve(async (req) => {
       case 'checkout': {
         if (!items?.length) throw new Error("No items provided");
 
-        let isEclipseMember = false;
-        if (userId) {
-          const { data: sub } = await supabaseClient
-            .from('subscriptions').select('status, current_period_end')
-            .eq('user_id', userId).in('status', ['active', 'trialing']).single();
-          if (sub && new Date(sub.current_period_end) > new Date()) isEclipseMember = true;
-        }
-
         const productIds = items.map(i => i.id);
         const { data: products, error: pErr } = await supabaseClient
           .from('products')
-          .select('id, name, price, category_id, is_resellable, store_id, is_pay_what_you_want, min_price, stores(eclipse_plus_discount_enabled)')
+          .select('id, name, price, category_id, is_resellable, store_id, is_pay_what_you_want, min_price')
           .in('id', productIds);
         if (pErr) throw new Error("Failed to verify product prices");
 
         const productMap = new Map((products || []).map((p: any) => [p.id, p]));
         let serverSubtotal = 0;
-        let serverEclipseDiscount = 0;
         const validatedItems: any[] = [];
 
         for (const item of items) {
@@ -114,19 +101,13 @@ serve(async (req) => {
             finalPrice = customPrice;
           }
 
-          if (isEclipseMember && !product.is_pay_what_you_want) {
-            const storeEclipse = product.stores?.eclipse_plus_discount_enabled;
-            finalPrice = calculateMemberPrice(originalPrice, product.category_id, product.is_resellable, storeEclipse);
-            if (finalPrice < originalPrice) serverEclipseDiscount += (originalPrice - finalPrice);
-          }
-
           validatedItems.push({ id: product.id, name: product.name, finalPrice, originalPrice, category_id: product.category_id, category_slug: item.category_slug });
           serverSubtotal += finalPrice;
         }
 
         // Discount codes
         let discountAmount = 0;
-        if (discountCodeId && !isEclipseMember) {
+        if (discountCodeId) {
           const { data: discount } = await supabaseClient
             .from('discount_codes').select('*').eq('id', discountCodeId).eq('is_active', true).single();
 
@@ -167,8 +148,6 @@ serve(async (req) => {
         metadata.items = itemsJson;
         metadata.discount_code_id = discountCodeId || '';
         metadata.discount_amount = discountAmount.toString();
-        metadata.eclipse_discount = serverEclipseDiscount.toString();
-        metadata.is_eclipse_member = isEclipseMember ? "true" : "false";
         break;
       }
 
@@ -179,25 +158,6 @@ serve(async (req) => {
         description = `Store Credit - £${amountNum.toFixed(2)}`;
         metadata.credit_amount = amountNum.toString();
         break;
-      }
-
-      case 'subscription': {
-        const tierName = tier || 'pro';
-        const period = billingPeriod || 'monthly';
-        const { data: tierData, error: tierError } = await supabaseClient
-          .from('subscription_tiers').select('*').eq('tier', tierName).eq('is_active', true).maybeSingle();
-        if (tierError || !tierData) throw new Error(`Tier '${tierName}' not found`);
-
-        const setupIntent = await stripe.setupIntents.create({
-          customer: customerId,
-          payment_method_types: ['card'],
-          metadata: { ...metadata, tier: tierName, billing_period: period },
-        });
-
-        return new Response(JSON.stringify({
-          clientSecret: setupIntent.client_secret, intentType: 'setup_intent',
-          customerId, tier: tierName, billingPeriod: period,
-        }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
       }
 
       case 'ad_pings': {

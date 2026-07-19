@@ -118,7 +118,7 @@ export default function RolePermissions() {
  const [activeTab, setActiveTab] = useState<'assign' | 'manage'>('assign');
  const [allExpanded, setAllExpanded] = useState(true);
 
- // Fetch custom roles (excluding status roles like seller, customer, eclipse_plus_member)
+ // Fetch custom roles (excluding status roles like seller, customer)
  const { data: customRoles, isLoading: rolesLoading } = useQuery({
  queryKey: ['custom-roles-permissions'],
  queryFn: async () => {

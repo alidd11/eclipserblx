@@ -1,8 +1,7 @@
 import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Award, Crown, Package } from 'lucide-react';
+import { ShieldCheck, Package } from 'lucide-react';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
 import { usePromotedProduct } from '@/hooks/usePromotedProduct';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PromotedBadge } from '@/components/marketplace/PromotedBadge';
@@ -11,7 +10,6 @@ import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedProductCard(_props, ref) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { promotedProduct, isLoading, trackClick } = usePromotedProduct('homepage');
 
   if (isLoading) {
@@ -27,11 +25,6 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
   const isPromoted = !!promotedProduct;
 
   if (!displayProduct) return null;
-
-  const isEligible = isEligibleForDiscount(displayProduct.category_id, displayProduct.is_resellable, displayProduct.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = isEligible ? getMemberPrice(displayProduct.price, displayProduct.category_id, displayProduct.is_resellable) : displayProduct.price;
-  const discountPercent = getDiscountPercent(displayProduct.category_id, displayProduct.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < displayProduct.price;
 
   return (
     <div className="space-y-2">
@@ -82,18 +75,7 @@ export const FeaturedProductCard = forwardRef<HTMLDivElement>(function FeaturedP
                 {displayProduct.name}
               </h3>
               <div className="flex items-center gap-2 mt-1">
-                {hasMemberDiscount ? (
-                  <>
-                    <span className="text-amber-400 font-bold text-xs sm:text-sm">{formatPrice(memberPrice)}</span>
-                    <span className="text-muted-foreground text-[10px] sm:text-xs line-through">{formatPrice(displayProduct.price)}</span>
-                    <span className="inline-flex items-center gap-0.5 px-1 py-px rounded bg-amber-500/15 text-amber-400 text-[9px] sm:text-[10px] font-semibold">
-                      <Crown className="h-2.5 w-2.5" />
-                      -{discountPercent}%
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-foreground font-bold text-xs sm:text-sm">{formatPrice(displayProduct.price)}</span>
-                )}
+                <span className="text-foreground font-bold text-xs sm:text-sm">{formatPrice(displayProduct.price)}</span>
               </div>
             </div>
           </div>

@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, X, Check, Sparkles, Gift } from 'lucide-react';
+import { ChevronLeft, X, Check, Gift } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
 import { useAuth } from '@/hooks/useAuth';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { supabase } from '@/integrations/supabase/client';
 import { showSuccessNotification, showErrorNotification } from '@/lib/nativeNotification';
@@ -33,7 +31,6 @@ export default function Checkout() {
   const { t } = useTranslation();
   const { items, total, clearCart } = useCart();
   const { user, session, loading } = useAuth();
-  const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,32 +40,15 @@ export default function Checkout() {
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
-  // Calculate member pricing
-  const calculateMemberPricing = () => {
-    const itemsWithMemberPricing = items.map(item => {
-      const effectivePrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
-      const eligible = !item.is_pwyw && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
-      const memberPrice = eligible ? getMemberPrice(effectivePrice, item.category_id, item.is_resellable) : effectivePrice;
-      return {
-        ...item,
-        originalPrice: effectivePrice,
-        memberPrice: isSubscribed && eligible ? memberPrice : effectivePrice,
-        hasEclipseDiscount: isSubscribed && eligible,
-        discountPercent: getDiscountPercent(item.category_id, item.is_resellable),
-        potentialMemberPrice: eligible ? memberPrice : effectivePrice,
-      };
-    });
-
-    const memberSubtotal = itemsWithMemberPricing.reduce((sum, item) => sum + item.memberPrice, 0);
-    const originalTotal = items.reduce((sum, item) => sum + (item.is_pwyw ? (item.custom_price ?? item.price) : item.price), 0);
-    const eclipseDiscount = isSubscribed ? originalTotal - memberSubtotal : 0;
-    const potentialMemberSubtotal = itemsWithMemberPricing.reduce((sum, item) => sum + item.potentialMemberPrice, 0);
-    const potentialSavings = !isSubscribed ? originalTotal - potentialMemberSubtotal : 0;
-
-    return { itemsWithMemberPricing, memberSubtotal, eclipseDiscount, potentialSavings };
-  };
-
-  const { itemsWithMemberPricing, memberSubtotal, eclipseDiscount, potentialSavings } = calculateMemberPricing();
+  const checkoutItems = items.map(item => {
+    const effectivePrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
+    return {
+      ...item,
+      originalPrice: effectivePrice,
+      memberPrice: effectivePrice,
+    };
+  });
+  const checkoutSubtotal = checkoutItems.reduce((sum, item) => sum + item.memberPrice, 0);
 
   // Reset processing state when coming back from Stripe
   useEffect(() => {
@@ -92,7 +72,7 @@ export default function Checkout() {
   }, [location.key]);
 
   const discountAmount = appliedDiscount?.amount || 0;
-  const finalTotal = Math.max(0, memberSubtotal - discountAmount);
+  const finalTotal = Math.max(0, checkoutSubtotal - discountAmount);
 
   if (!loading && !user) {
     showErrorNotification(t('checkout.signInRequired'), t('checkout.signInToCheckout'));
@@ -127,7 +107,7 @@ export default function Checkout() {
         .rpc('validate_discount_code_for_checkout', {
           p_code: discountCode.toUpperCase(),
           p_product_ids: productIds,
-          p_subtotal: memberSubtotal,
+          p_subtotal: checkoutSubtotal,
         });
 
       const discount = discountRows?.[0] ?? null;
@@ -142,9 +122,9 @@ export default function Checkout() {
 
       let amount = 0;
       if (discount.discount_type === 'percentage') {
-        amount = (memberSubtotal * discount.discount_value) / 100;
+        amount = (checkoutSubtotal * discount.discount_value) / 100;
       } else {
-        amount = Math.min(discount.discount_value, memberSubtotal);
+        amount = Math.min(discount.discount_value, checkoutSubtotal);
       }
 
       setAppliedDiscount({
@@ -221,7 +201,7 @@ export default function Checkout() {
         open={showPaymentModal}
         onOpenChange={setShowPaymentModal}
         paymentType="checkout"
-        items={itemsWithMemberPricing.map(item => ({
+        items={checkoutItems.map(item => ({
           id: item.id,
           name: item.name,
           price: item.memberPrice,
@@ -251,7 +231,7 @@ export default function Checkout() {
             <h2 className="text-lg font-semibold">{t('checkout.orderSummary')}</h2>
             
             <div className="space-y-3">
-              {itemsWithMemberPricing.map((item) => (
+              {checkoutItems.map((item) => (
                 <div key={item.id} className="flex gap-3">
                   <div className="w-16 h-12 rounded overflow-hidden bg-muted flex-shrink-0">
                     {item.image ? (
@@ -269,19 +249,7 @@ export default function Checkout() {
                     </p>
                   </div>
                   <div className="text-right">
-                    {item.hasEclipseDiscount ? (
-                      <>
-                        <span className="font-medium text-primary">{formatPrice(item.memberPrice)}</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs text-muted-foreground line-through">{formatPrice(item.originalPrice)}</span>
-                          <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-amber-500/20 text-amber-400 border-0">
-                            -{item.discountPercent}%
-                          </Badge>
-                        </div>
-                      </>
-                    ) : (
-                      <span className="font-medium">{formatPrice(item.memberPrice)}</span>
-                    )}
+                    <span className="font-medium">{formatPrice(item.memberPrice)}</span>
                   </div>
                 </div>
               ))}
@@ -292,16 +260,6 @@ export default function Checkout() {
                 <span className="text-muted-foreground">{t('checkout.subtotal')}</span>
                 <span>{formatPrice(total)}</span>
               </div>
-              
-              {isSubscribed && eclipseDiscount > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-amber-400" />
-                    {t('cart.eclipseDiscount')}
-                  </span>
-                  <span className="text-primary">{formatPrice(-eclipseDiscount)}</span>
-                </div>
-              )}
               
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{t('checkout.discountCode')}</span>
@@ -315,12 +273,6 @@ export default function Checkout() {
                 <span>{formatPrice(finalTotal)}</span>
               </div>
               
-              {isSubscribed && eclipseDiscount > 0 && (
-                <p className="text-xs text-amber-400 flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  {t('cart.savingWith', { amount: formatPrice(eclipseDiscount) })}
-                </p>
-              )}
             </div>
 
             <div className="pt-4 border-t border-border">
@@ -332,10 +284,9 @@ export default function Checkout() {
 
           {/* Discount & Payment */}
           <div className="space-y-6 min-w-0 overflow-hidden">
-            {!(isSubscribed && eclipseDiscount > 0) && (
-              <div className="border border-border rounded-xl bg-card p-4 sm:p-6 space-y-4">
+            <div className="border border-border rounded-xl bg-card p-4 sm:p-6 space-y-4">
                 <h2 className="text-lg font-semibold">{t('checkout.discountCode')}</h2>
-                
+
                 {appliedDiscount ? (
                   <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -375,8 +326,7 @@ export default function Checkout() {
                     </Button>
                   </div>
                 )}
-              </div>
-            )}
+            </div>
 
             <div className="border border-border rounded-xl bg-card p-4 sm:p-6 space-y-4">
               <h2 className="text-lg font-semibold">
@@ -399,7 +349,7 @@ export default function Checkout() {
                 </div>
               ) : (
                 <PaymentMethodDisplay
-                  items={itemsWithMemberPricing.map(item => ({
+                  items={checkoutItems.map(item => ({
                     id: item.id,
                     name: item.name,
                     price: item.memberPrice,

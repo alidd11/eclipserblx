@@ -16,7 +16,6 @@ import {
   Check,
   ExternalLink,
   Gamepad2,
-  Sparkles,
   Copy
 } from 'lucide-react';
 
@@ -33,7 +32,6 @@ interface LinkedAccountsCardProps {
   discordUsername: string | null;
   robloxUserId: string | null;
   robloxUsername: string | null;
-  hasEclipsePlus: boolean;
   accountsLocked?: boolean;
   onUpdate: () => void;
 }
@@ -49,7 +47,6 @@ export function LinkedAccountsCard({
   discordUsername,
   robloxUserId,
   robloxUsername,
-  hasEclipsePlus,
   accountsLocked = false,
   onUpdate,
 }: LinkedAccountsCardProps) {
@@ -168,16 +165,6 @@ export function LinkedAccountsCard({
 
           toast.success("Discord Linked!", { description: `Connected as ${data.discord_username || data.discord_global_name || "Discord User"}` });
 
-          if (hasEclipsePlus) {
-            try {
-              await supabase.functions.invoke("send-discord-webhook", {
-                body: { user_id: userId, event: "subscription_activated", granted_by_admin: false },
-              });
-            } catch (webhookError) {
-              console.error("Webhook error:", webhookError);
-            }
-          }
-
           onUpdate();
         } catch (err: unknown) {
           console.error("OAuth callback error:", err);
@@ -189,7 +176,7 @@ export function LinkedAccountsCard({
     };
 
     handleOAuthCallback();
-  }, [userId, discordId, hasEclipsePlus, onUpdate]);
+  }, [userId, discordId, onUpdate]);
 
   const handleLinkDiscord = async () => {
     setIsLinkingDiscord(true);
@@ -212,12 +199,6 @@ export function LinkedAccountsCard({
   const handleUnlinkDiscord = async () => {
     setIsUnlinkingDiscord(true);
     try {
-      if (hasEclipsePlus && discordId) {
-        await supabase.functions.invoke("send-discord-webhook", {
-          body: { user_id: userId, event: "subscription_deactivated", granted_by_admin: false },
-        }).catch(console.error);
-      }
-
       const { error } = await supabase
         .from("profiles")
         .update({ discord_id: null, discord_username: null })
@@ -315,12 +296,6 @@ export function LinkedAccountsCard({
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <DiscordIcon className="h-4 w-4 text-[#5865F2]" />
             Discord
-            {isDiscordLinked && hasEclipsePlus && (
-              <Badge variant="outline" className="ml-auto border-amber-500/50 text-amber-400 text-[10px] px-1.5 py-0">
-                <Sparkles className="w-2.5 h-2.5 mr-0.5" />
-                Role
-              </Badge>
-            )}
           </div>
           
           {isDiscordLinked ? (

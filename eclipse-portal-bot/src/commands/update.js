@@ -24,13 +24,11 @@ export async function handleUpdate(interaction, serverContext) {
     const rolesToRemove = [];
 
     if (serverContext.isMainServer) {
-      const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+      const [ordersResult, storeResult] = await Promise.all([
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-        supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
         supabase.from('stores').select('id, is_verified').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
       ]);
       const purchaseCount = ordersResult.count || 0;
-      const hasSubscription = !!subscriptionResult.data;
       const hasStore = !!storeResult.data;
       const isVerified = storeResult.data?.is_verified === true;
 
@@ -44,8 +42,6 @@ export async function handleUpdate(interaction, serverContext) {
         if (config.customerRoleId) rolesToRemove.push({ id: config.customerRoleId, name: 'Customer' });
         if (config.loyalCustomerRoleId) rolesToRemove.push({ id: config.loyalCustomerRoleId, name: 'Loyal Customer' });
       }
-      if (hasSubscription && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Pro' });
-      else if (config.eclipsePlusRoleId) rolesToRemove.push({ id: config.eclipsePlusRoleId, name: 'Pro' });
       if (hasStore && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       else if (config.storeCreatorRoleId) rolesToRemove.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       if (isVerified && config.verifiedSellerRoleId) rolesToAssign.push({ id: config.verifiedSellerRoleId, name: 'Verified Seller' });

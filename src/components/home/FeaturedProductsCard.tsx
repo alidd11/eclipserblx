@@ -1,7 +1,7 @@
 import { memo, useState, useEffect, useCallback, useRef, useMemo, forwardRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Crown, BadgeCheck, Shield, Store } from 'lucide-react';
+import { Sparkles, ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, BadgeCheck, Shield, Store } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,7 +9,6 @@ import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
-import { useSubscription } from '@/hooks/useSubscription';
 import { getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -36,7 +35,6 @@ interface FeaturedProduct {
     is_verified: boolean;
     is_trusted: boolean;
     is_active: boolean;
-    eclipse_plus_discount_enabled: boolean;
   } | null;
 }
 
@@ -45,7 +43,6 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
   const isMobile = useIsMobile();
 
@@ -56,7 +53,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name), stores (name, slug, logo_url, is_verified, is_trusted, is_active, eclipse_plus_discount_enabled), is_resellable`)
+        .select(`*, categories (name), stores (name, slug, logo_url, is_verified, is_trusted, is_active), is_resellable`)
         .eq('is_featured', true)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
@@ -211,9 +208,6 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
                 key={product.id}
                 product={product}
                 formatPrice={formatPrice}
-                getMemberPrice={getMemberPrice}
-                getDiscountPercent={getDiscountPercent}
-                isEligibleForDiscount={isEligibleForDiscount}
               />
             ))}
           </motion.div>
@@ -254,25 +248,15 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
 interface ProductGridItemProps {
   product: FeaturedProduct;
   formatPrice: (price: number) => string;
-  getMemberPrice: (price: number, categoryId: string | null, isResellable: boolean) => number;
-  getDiscountPercent: (categoryId: string | null, isResellable: boolean) => number;
-  isEligibleForDiscount: (categoryId?: string | null, isResellable?: boolean, storeEclipseEnabled?: boolean) => boolean;
 }
 
 const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>(function ProductGridItem({
   product,
   formatPrice,
-  getMemberPrice,
-  getDiscountPercent,
-  isEligibleForDiscount,
 }, ref) {
   const navigate = useNavigate();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images, 400, 300, 'contain');
   const isVideo = isVideoUrl(displayMedia);
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
     <Link 
@@ -359,24 +343,9 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
         
         {/* Price */}
         <div className="flex items-center gap-2">
-          {hasMemberDiscount ? (
-            <>
-              <span className="font-bold text-sm text-amber-500">
-                {formatPrice(memberPrice)}
-              </span>
-              <span className="text-[10px] text-muted-foreground line-through">
-                {formatPrice(Number(product.price))}
-              </span>
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                <Crown className="h-2 w-2" />
-                {discountPercent}%
-              </span>
-            </>
-          ) : (
-            <span className="font-bold text-sm">
-              {formatPrice(Number(product.price))}
-            </span>
-          )}
+          <span className="font-bold text-sm">
+            {formatPrice(Number(product.price))}
+          </span>
         </div>
       </div>
     </Link>

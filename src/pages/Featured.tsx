@@ -8,7 +8,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { ArrowRight, Play, ShoppingBag, Download } from 'lucide-react';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { getFirstImageUrl, getFirstMediaPrioritizeVideo, isVideoUrl } from '@/lib/mediaUtils';
 import { usePageTracking } from '@/hooks/usePageTracking';
@@ -17,8 +16,6 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 export default function Featured() {
   usePageTracking({ pagePath: '/featured' });
   usePageMeta({ title: 'Featured Products', description: 'Discover featured and trending Roblox assets on Eclipse. Hand-picked premium scripts, vehicles, maps and more.', canonicalPath: '/featured' });
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-  const { formatPrice } = useCurrency();
 
   const { data: featuredProducts, isLoading: loadingFeatured } = useFeaturedProducts({
     limit: 12,
@@ -33,7 +30,7 @@ export default function Featured() {
       weekAgo.setDate(weekAgo.getDate() - 7);
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, eclipse_plus_discount_enabled)`)
+        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified)`)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .gte('created_at', weekAgo.toISOString())
@@ -50,7 +47,7 @@ export default function Featured() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified, eclipse_plus_discount_enabled)`)
+        .select(`*, categories (name, slug), stores (name, slug, is_active, logo_url, is_verified)`)
         .eq('is_active', true)
         .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`)
         .order('download_count', { ascending: false })
@@ -112,7 +109,6 @@ export default function Featured() {
                       storeLogo={product.stores?.logo_url}
                       isVerified={product.stores?.is_verified}
                       isResellable={product.is_resellable}
-                      storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
                     />
                   </div>
                 ))}
@@ -156,7 +152,6 @@ export default function Featured() {
                     storeLogo={product.stores?.logo_url}
                     isVerified={product.stores?.is_verified}
                     isResellable={product.is_resellable}
-                    storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
                   />
                 ))}
               </div>
@@ -215,7 +210,6 @@ export default function Featured() {
                       storeLogo={product.stores?.logo_url}
                       isVerified={product.stores?.is_verified}
                       isResellable={product.is_resellable}
-                      storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
                     />
                   </div>
                 ))}
@@ -272,15 +266,9 @@ function formatDownloads(count: number): string {
 }
 
 function HeroProductCard({ product }: { product: any }) {
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const { formatPrice } = useCurrency();
   const displayMedia = getFirstMediaPrioritizeVideo(product.images, 900, 506, 'contain');
   const isVideo = isVideoUrl(displayMedia);
-
-  const storeEclipseEnabled = product.stores?.eclipse_plus_discount_enabled;
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, storeEclipseEnabled);
-  const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
-  const discount = isEligible ? getDiscountPercent(product.category_id, product.is_resellable) : 0;
 
   return (
     <Link
@@ -343,15 +331,9 @@ function HeroProductCard({ product }: { product: any }) {
 
             <div className="flex items-center gap-3 shrink-0">
               <div className="text-right">
-                {isEligible && (
-                  <p className="text-xs text-foreground/40 line-through">{formatPrice(Number(product.price))}</p>
-                )}
                 <p className="text-xl md:text-2xl font-bold text-foreground">
-                  {isEligible ? formatPrice(memberPrice) : formatPrice(Number(product.price))}
+                  {formatPrice(Number(product.price))}
                 </p>
-                {isEligible && (
-                  <p className="text-[10px] text-primary font-medium">Save {discount}%</p>
-                )}
               </div>
               <Button
                 size="sm"

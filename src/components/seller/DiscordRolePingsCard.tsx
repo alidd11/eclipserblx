@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { AtSign, Loader2, Save, Info, Plus, Trash2, ShieldCheck, ShoppingCart, Crown } from 'lucide-react';
+import { AtSign, Loader2, Save, Info, Plus, Trash2, ShieldCheck, ShoppingCart } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
@@ -28,7 +28,6 @@ interface RoleConfig {
  auto_assign_on_purchase: boolean;
  min_order_count: number | null;
  min_order_amount: number | null;
- requires_subscription: boolean;
 }
 
 interface NewRoleForm {
@@ -38,7 +37,6 @@ interface NewRoleForm {
  auto_assign_on_purchase: boolean;
  min_order_count: string;
  min_order_amount: string;
- requires_subscription: boolean;
 }
 
 const EMPTY_FORM: NewRoleForm = {
@@ -48,7 +46,6 @@ const EMPTY_FORM: NewRoleForm = {
  auto_assign_on_purchase: false,
  min_order_count: '',
  min_order_amount: '',
- requires_subscription: false,
 };
 
 export function DiscordRolePingsCard() {
@@ -120,7 +117,6 @@ export function DiscordRolePingsCard() {
  auto_assign_on_purchase: newRole.auto_assign_on_purchase,
  min_order_count: newRole.min_order_count ? parseInt(newRole.min_order_count) : null,
  min_order_amount: newRole.min_order_amount ? parseFloat(newRole.min_order_amount) : null,
- requires_subscription: newRole.requires_subscription,
  });
  if (error) throw error;
  },
@@ -272,11 +268,6 @@ export function DiscordRolePingsCard() {
  £{role.min_order_amount}+ spent
  </Badge>
  )}
- {role.requires_subscription && (
- <Badge variant="secondary" className="text-[10px]">
- <Crown className="h-3 w-3 mr-0.5" /> Subscriber only
- </Badge>
- )}
  </div>
  </div>
  <Button
@@ -374,17 +365,6 @@ export function DiscordRolePingsCard() {
  className="text-xs"
  />
  </div>
- </div>
-
- <div className="flex items-center justify-between">
- <div>
- <Label className="text-xs">Requires subscription</Label>
- <p className="text-[11px] text-muted-foreground">Only for Pro+ subscribers</p>
- </div>
- <Switch
- checked={newRole.requires_subscription}
- onCheckedChange={(v) => setNewRole({ ...newRole, requires_subscription: v })}
- />
  </div>
  </div>
  <DialogFooter>

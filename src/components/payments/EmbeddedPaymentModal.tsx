@@ -40,7 +40,7 @@ function createStripeAppearance() {
   } as const;
 }
 
-export type PaymentType = 'checkout' | 'credits' | 'subscription' | 'ad_pings';
+export type PaymentType = 'checkout' | 'credits' | 'ad_pings';
 
 interface CartItem {
   id: string;
@@ -63,9 +63,6 @@ interface EmbeddedPaymentModalProps {
   discountCodeId?: string;
   // For credits
   amount?: number;
-  // For subscription
-  tier?: string;
-  billingPeriod?: 'monthly' | 'annual';
   // For ad pings
   herePings?: number;
   everyonePings?: number;
@@ -78,20 +75,16 @@ interface PaymentFormProps {
   clientSecret: string;
   intentType: 'payment_intent' | 'setup_intent';
   paymentType: PaymentType;
-  tier?: string;
-  billingPeriod?: string;
   amount?: number;
   onSuccess?: (result: { paymentIntentId?: string; subscriptionId?: string }) => void;
   onError?: (error: string) => void;
   onClose: () => void;
 }
 
-function PaymentForm({ 
-  clientSecret, 
-  intentType, 
+function PaymentForm({
+  clientSecret,
+  intentType,
   paymentType,
-  tier,
-  billingPeriod,
   amount,
   onSuccess, 
   onError, 
@@ -146,8 +139,6 @@ function PaymentForm({
         
         if (intentType === 'setup_intent' && 'setupIntent' in result) {
           confirmPayload.setupIntentId = result.setupIntent?.id;
-          confirmPayload.tier = tier;
-          confirmPayload.billingPeriod = billingPeriod;
         } else if ('paymentIntent' in result) {
           confirmPayload.paymentIntentId = result.paymentIntent?.id;
         }
@@ -246,8 +237,6 @@ export function EmbeddedPaymentModal({
   items,
   discountCodeId,
   amount,
-  tier,
-  billingPeriod,
   herePings,
   everyonePings,
   onSuccess,
@@ -270,7 +259,7 @@ export function EmbeddedPaymentModal({
       return;
     }
 
-    const requiresAuth = paymentType === 'credits' || paymentType === 'subscription' || paymentType === 'ad_pings';
+    const requiresAuth = paymentType === 'credits' || paymentType === 'ad_pings';
 
     if (!session?.access_token) {
       if (requiresAuth) {
@@ -298,9 +287,6 @@ export function EmbeddedPaymentModal({
         body.discountCodeId = discountCodeId;
       } else if (paymentType === 'credits' && amount) {
         body.amount = amount;
-      } else if (paymentType === 'subscription') {
-        body.tier = tier;
-        body.billingPeriod = billingPeriod;
       } else if (paymentType === 'ad_pings') {
         body.herePings = herePings;
         body.everyonePings = everyonePings;
@@ -341,7 +327,6 @@ export function EmbeddedPaymentModal({
     switch (paymentType) {
       case 'checkout': return 'Complete Purchase';
       case 'credits': return 'Add Credits';
-      case 'subscription': return 'Complete Subscription';
       case 'ad_pings': return 'Purchase Ad Pings';
       default: return 'Payment';
     }
@@ -351,7 +336,6 @@ export function EmbeddedPaymentModal({
     switch (paymentType) {
       case 'checkout': return 'Enter your payment details to complete your order.';
       case 'credits': return `Add ${formatGBP(amount ?? 0)} to your account balance.`;
-      case 'subscription': return `Start subscription ${tier} (${billingPeriod}).`;
       case 'ad_pings': return 'Purchase additional pings for your advertisements.';
       default: return 'Complete your payment securely.';
     }
@@ -400,8 +384,6 @@ export function EmbeddedPaymentModal({
                 clientSecret={clientSecret}
                 intentType={intentType}
                 paymentType={paymentType}
-                tier={tier}
-                billingPeriod={billingPeriod}
                 amount={paymentAmount}
                 onSuccess={onSuccess}
                 onError={onError}

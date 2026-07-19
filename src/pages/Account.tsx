@@ -651,7 +651,6 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                 discordUsername={profile?.discord_username || null}
                 robloxUserId={profile?.roblox_user_id || null}
                 robloxUsername={profile?.roblox_username || null}
-                hasEclipsePlus={false}
                 accountsLocked={(profile as any)?.accounts_locked}
                 onUpdate={() => {
                   queryClient.invalidateQueries({ queryKey: ['profile', user.id] });

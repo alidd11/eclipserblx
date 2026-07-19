@@ -1,22 +1,15 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, ShieldCheck, Award, Package, Crown } from 'lucide-react';
+import { ChevronRight, ShieldCheck, Package } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 
 const SpotlightCard = memo(function SpotlightCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
     <Link to={`/products/${(product as any).product_number}`} className="group block">
@@ -36,18 +29,7 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
           <div className="absolute bottom-0 inset-x-0 p-3 sm:p-4">
             <h4 className="text-foreground font-bold text-sm sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{product.name}</h4>
             <div className="flex items-center gap-2 mt-1">
-              {hasMemberDiscount ? (
-                <>
-                  <span className="text-amber-500 font-bold text-sm">{formatPrice(memberPrice)}</span>
-                  <span className="text-foreground/50 text-xs line-through">{formatPrice(product.price)}</span>
-                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
-                    <Crown className="h-2.5 w-2.5" />
-                    {discountPercent}%
-                  </span>
-                </>
-              ) : (
-                <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
-              )}
+              <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
             </div>
           </div>
         </div>
@@ -66,12 +48,6 @@ const SpotlightCard = memo(function SpotlightCard({ product }: { product: Scored
 
 const GridCard = memo(function GridCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
     <Link to={`/products/${(product as any).product_number}`} className="group block h-full">
@@ -107,18 +83,7 @@ const GridCard = memo(function GridCard({ product }: { product: ScoredProduct })
             {product.name}
           </h3>
           <div className="flex items-center gap-1.5 flex-wrap">
-            {hasMemberDiscount ? (
-              <>
-                <span className="text-xs sm:text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
-                <span className="text-[10px] text-muted-foreground line-through">{formatPrice(product.price)}</span>
-                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
-                  <Crown className="h-2.5 w-2.5" />
-                  {discountPercent}%
-                </span>
-              </>
-            ) : (
-              <span className="text-xs sm:text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
-            )}
+            <span className="text-xs sm:text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
           </div>
         </div>
       </div>

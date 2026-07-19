@@ -11,7 +11,6 @@ interface StoreProductGridProps {
   isLoading: boolean;
   storeId: string;
   accentColor: string;
-  eclipsePlusEnabled?: boolean;
   title?: string;
   emptyTitle?: string;
   emptyDescription?: string;
@@ -26,7 +25,6 @@ export function StoreProductGrid({
   isLoading,
   storeId,
   accentColor,
-  eclipsePlusEnabled,
   title = 'All Products',
   emptyTitle = 'No Products Yet',
   emptyDescription = "This store hasn't listed any products yet.",
@@ -93,7 +91,6 @@ export function StoreProductGrid({
               isResellable={product.is_resellable}
               showNewBadge={isNewProduct}
               createdAt={product.created_at}
-              storeEclipseEnabled={eclipsePlusEnabled}
             />
           );
         })}

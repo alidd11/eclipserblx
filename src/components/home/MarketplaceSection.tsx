@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, memo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Crown, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
+import { Store, ChevronRight, ShieldCheck, Award, Users, Search, Package, FlaskConical, Car, Code, Bot, Layout, Box, Palette, Wrench, Gamepad2, Map, Shirt, Plane, ArrowRight } from 'lucide-react';
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
 import { useTranslation } from 'react-i18next';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
@@ -20,7 +20,6 @@ import { RecentReleasesCarousel } from '@/components/marketplace/RecentReleasesC
 import { FeaturedProductCard } from '@/components/marketplace/FeaturedProductCard';
 import { MostPopularSection } from '@/components/marketplace/MostPopularSection';
 import { useFeaturedProducts } from '@/hooks/useFeaturedProducts';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { CategoriesGrid } from '@/components/marketplace/CategoriesGrid';
 
@@ -145,15 +144,9 @@ const StoreCardSkeleton = forwardRef<HTMLDivElement>(function StoreCardSkeleton(
   );
 });
 
-const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean; eclipse_plus_discount_enabled: boolean } | null } }) {
+const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }: { product: { id: string; name: string; slug: string; product_number?: number; price: number; images: string[] | null; category_id: string | null; is_resellable: boolean; categories?: { name: string } | null; stores: { name: string; logo_url: string | null; is_verified: boolean; is_trusted: boolean } | null } }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const prefetch = usePrefetchProduct();
-
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
     <Link to={`/products/${(product as any).product_number}`} className="group block h-full" onMouseEnter={() => prefetch(String((product as any).product_number))}>
@@ -193,18 +186,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
             {product.name}
           </h3>
           <div className="flex items-center gap-2 flex-wrap">
-            {hasMemberDiscount ? (
-              <>
-                <span className="text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
-                <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
-                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
-                  <Crown className="h-2.5 w-2.5" />
-                  {discountPercent}%
-                </span>
-              </>
-            ) : (
-              <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
-            )}
+            <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
           </div>
         </div>
       </div>
@@ -212,28 +194,12 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
   );
 });
 
-function SpotlightPrice({ product }: { product: { price: number; category_id: string | null; is_resellable: boolean; stores: { eclipse_plus_discount_enabled: boolean } | null } }) {
+function SpotlightPrice({ product }: { product: { price: number } }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
     <div className="flex items-center gap-2 mt-1">
-      {hasMemberDiscount ? (
-        <>
-          <span className="text-amber-500 font-bold text-sm">{formatPrice(memberPrice)}</span>
-          <span className="text-foreground/50 text-xs line-through">{formatPrice(product.price)}</span>
-          <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/20 text-amber-400 text-[10px] font-bold">
-            <Crown className="h-2.5 w-2.5" />
-            {discountPercent}%
-          </span>
-        </>
-      ) : (
-        <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
-      )}
+      <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
     </div>
   );
 }

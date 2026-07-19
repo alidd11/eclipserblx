@@ -91,7 +91,7 @@ export function useAdminAuth() {
   const isSupportAgent = roles?.includes('support_agent') ?? false;
   const isAnalyst = roles?.includes('analyst') ?? false;
   const isSeller = roles?.includes('seller') ?? false;
-  const STATUS_ROLES = ['customer', 'eclipse_plus_member', 'seller'];
+  const STATUS_ROLES = ['customer', 'seller'];
   const isStaff = (roles ?? []).some(role => !STATUS_ROLES.includes(role));
 
   const hasRole = (role: string) => roles?.includes(role as any) ?? false;

@@ -9,9 +9,8 @@ const corsHeaders = {
 };
 
 interface PromotionRequest {
-  type: 'discount_code' | 'special_offer';
+  type: 'discount_code';
   discount_id?: string;
-  offer_id?: string;
   store_id?: string;
   // For manual sending with custom data
   custom?: {
@@ -25,11 +24,11 @@ interface PromotionRequest {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
+
   const _unauth = requireServiceRole(req, corsHeaders);
   if (_unauth) return _unauth;
-);
-  }
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -192,64 +191,6 @@ serve(async (req) => {
       (embed.fields as Array<{ name: string; value: string; inline: boolean }>).push({
         name: "\u200B",
         value: "[**🛒 Shop Now →**](https://eclipserblx.com/products)",
-        inline: false,
-      });
-
-    } else if (body.type === 'special_offer' && body.offer_id) {
-      // Fetch special offer from database
-      const { data: offer, error } = await supabase
-        .from("special_offers")
-        .select("*")
-        .eq("id", body.offer_id)
-        .maybeSingle();
-
-      if (error || !offer) {
-        return new Response(
-          JSON.stringify({ error: "Special offer not found" }),
-          { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      embed = {
-        title: `🎁 ${offer.name || 'Special Offer'}`,
-        description: offer.description || "Don't miss out on this exclusive offer!",
-        color: 0xFFD700, // Gold for special offers
-        fields: [] as Array<{ name: string; value: string; inline: boolean }>,
-        image: { url: defaultBannerUrl },
-        footer: {
-          text: "Eclipse Marketplace • Special Offer",
-        },
-        timestamp: new Date().toISOString(),
-      };
-
-      if (offer.reward_type && offer.reward_value) {
-        let rewardText = '';
-        if (offer.reward_type === 'eclipse_plus_days') {
-          rewardText = `${offer.reward_value} days of Pro free!`;
-        } else if (offer.reward_type === 'discount') {
-          rewardText = `${offer.reward_value}% discount`;
-        } else {
-          rewardText = `${offer.reward_value} ${offer.reward_type}`;
-        }
-        (embed.fields as Array<{ name: string; value: string; inline: boolean }>).push({
-          name: "🎁 Reward",
-          value: rewardText,
-          inline: true,
-        });
-      }
-
-      if (offer.ends_at) {
-        const endDate = new Date(offer.ends_at);
-        (embed.fields as Array<{ name: string; value: string; inline: boolean }>).push({
-          name: "⏰ Ends",
-          value: `<t:${Math.floor(endDate.getTime() / 1000)}:R>`,
-          inline: true,
-        });
-      }
-
-      (embed.fields as Array<{ name: string; value: string; inline: boolean }>).push({
-        name: "\u200B",
-        value: "[**🚀 Claim Now →**](https://eclipserblx.com)",
         inline: false,
       });
 

@@ -28,7 +28,6 @@ export async function handleProfile(interaction, serverContext) {
     return publicReplyWithDM(interaction, channelEmbed, [dmEmbed]);
   }
 
-  let subscription = null;
   let orderCount = 0;
   let totalSpent = 0;
 
@@ -54,15 +53,12 @@ export async function handleProfile(interaction, serverContext) {
       }
     }
   } else {
-    const [subscriptionResult, orderCountResult, ordersTotalsResult] = await Promise.all([
-      supabase.from('subscriptions').select('tier, current_period_end, status')
-        .eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
+    const [orderCountResult, ordersTotalsResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true })
         .eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('orders').select('total')
         .eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
     ]);
-    subscription = subscriptionResult.data;
     orderCount = orderCountResult.count || 0;
     totalSpent = ordersTotalsResult.data?.reduce((sum, o) => sum + Number(o.total || 0), 0) || 0;
   }
@@ -72,7 +68,6 @@ export async function handleProfile(interaction, serverContext) {
     { name: '🆔 Customer ID', value: profile.customer_id || 'N/A', inline: true },
   ];
   if (!serverContext.store) {
-    fields.push({ name: '⭐ Membership', value: subscription ? 'Pro (Active)' : 'Free', inline: true });
     fields.push({ name: '💷 Total Spent', value: `£${totalSpent.toFixed(2)}`, inline: true });
   }
   fields.push({

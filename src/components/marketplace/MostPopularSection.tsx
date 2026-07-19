@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, ShieldCheck, Award, Crown, Package } from 'lucide-react';
+import { TrendingUp, ShieldCheck, Award, Package } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 
@@ -23,18 +22,11 @@ interface PopularProduct {
     logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
   } | null;
 }
 
 function PopularProductCard({ product, rank }: { product: PopularProduct; rank: number }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
 
   return (
     <Link to={`/products/${(product as any).product_number}`} className="group block">
@@ -75,14 +67,7 @@ function PopularProductCard({ product, rank }: { product: PopularProduct; rank: 
 
         {/* Price */}
         <div className="flex-shrink-0 text-right">
-          {hasMemberDiscount ? (
-            <div className="space-y-0.5">
-              <span className="text-xs font-bold text-amber-500 block">{formatPrice(memberPrice)}</span>
-              <span className="text-[10px] text-muted-foreground line-through block">{formatPrice(product.price)}</span>
-            </div>
-          ) : (
-            <span className="text-xs font-bold text-foreground">{formatPrice(product.price)}</span>
-          )}
+          <span className="text-xs font-bold text-foreground">{formatPrice(product.price)}</span>
         </div>
       </div>
     </Link>
@@ -99,7 +84,7 @@ export function MostPopularSection() {
         .select(`
           id, name, slug, product_number, price, images, category_id, is_resellable, download_count,
           categories (name),
-          stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)

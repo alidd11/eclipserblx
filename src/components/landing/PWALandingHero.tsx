@@ -10,8 +10,7 @@ import { PWADiscordBanner } from './PWADiscordBanner';
 import { useTranslation } from 'react-i18next';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
-import { ShieldCheck, Award, Crown, Tag } from 'lucide-react';
+import { ShieldCheck, Award, Tag } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
@@ -51,12 +50,6 @@ function StoreBannerStrip({ product, textSize = 'text-[11px]' }: { product: Scor
 
 function PWASpotlightCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
   const isNew = isNewProduct(product.created_at);
 
   return (
@@ -109,17 +102,7 @@ function PWASpotlightCard({ product }: { product: ScoredProduct }) {
         </div>
         <h4 className="font-medium text-base text-foreground line-clamp-1 mb-1">{product.name}</h4>
         <div className="flex items-center gap-1.5 flex-wrap">
-          {hasMemberDiscount ? (
-            <>
-              <span className="text-amber-500 font-bold text-base">{formatPrice(memberPrice)}</span>
-              <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                <Crown className="h-2 w-2" />{discountPercent}%
-              </span>
-            </>
-          ) : (
-            <span className="text-foreground font-bold text-base">{formatPrice(product.price)}</span>
-          )}
+          <span className="text-foreground font-bold text-base">{formatPrice(product.price)}</span>
         </div>
       </div>
     </Link>
@@ -128,12 +111,6 @@ function PWASpotlightCard({ product }: { product: ScoredProduct }) {
 
 function PWAProductCard({ product }: { product: ScoredProduct }) {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-  const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-  const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-  const hasMemberDiscount = isEligible && memberPrice < product.price;
   const isNew = isNewProduct(product.created_at);
 
   return (
@@ -181,17 +158,7 @@ function PWAProductCard({ product }: { product: ScoredProduct }) {
         </div>
         <h4 className="font-medium text-sm text-foreground line-clamp-1 mb-1">{product.name}</h4>
         <div className="flex items-center gap-1.5 flex-wrap">
-          {hasMemberDiscount ? (
-            <>
-              <span className="text-amber-500 font-bold text-sm">{formatPrice(memberPrice)}</span>
-              <span className="text-[10px] text-muted-foreground line-through">{formatPrice(product.price)}</span>
-              <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[9px] font-bold">
-                <Crown className="h-2 w-2" />{discountPercent}%
-              </span>
-            </>
-          ) : (
-            <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
-          )}
+          <span className="text-foreground font-bold text-sm">{formatPrice(product.price)}</span>
         </div>
       </div>
     </Link>

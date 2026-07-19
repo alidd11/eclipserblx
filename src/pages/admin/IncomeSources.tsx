@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
-  DollarSign, ShoppingCart, CreditCard, Crown, Percent,
+  DollarSign, ShoppingCart, CreditCard, Percent,
   ArrowUpRight, ArrowDownRight, Search, Filter, Download,
   TrendingUp, Calendar
 } from 'lucide-react';
@@ -23,7 +23,7 @@ import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { formatGBP } from '@/lib/formatters';
 
-type IncomeSource = 'all' | 'orders' | 'subscriptions' | 'credits' | 'commission';
+type IncomeSource = 'all' | 'orders' | 'credits' | 'commission';
 type TimePeriod = '7d' | '30d' | 'month' | 'year' | 'all';
 
 interface UnifiedTransaction {
@@ -39,8 +39,6 @@ interface UnifiedTransaction {
 
 const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: typeof ShoppingCart; color: string; chartColor: string; badgeVariant: string }> = {
   orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-emerald-500', chartColor: 'hsl(152, 69%, 53%)', badgeVariant: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  subscriptions: { label: 'Subscriptions', icon: Crown, color: 'text-amber-500', chartColor: 'hsl(38, 92%, 50%)', badgeVariant: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  
   credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: 'hsl(262, 100%, 71%)', badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
   commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', chartColor: 'hsl(25, 95%, 53%)', badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
 };
@@ -110,22 +108,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const { data: subsData, isLoading: subsLoading } = useQuery({
-    queryKey: ['income-sources-subscriptions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('id, user_id, status, tier, billing_period, created_at, stripe_subscription_id')
-        .order('created_at', { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data ?? [];
-    },
-    staleTime: 60000,
-    retry: 2,
-  });
-
-
   const { data: creditsData, isLoading: creditsLoading } = useQuery({
     queryKey: ['income-sources-credits'],
     queryFn: async () => {
@@ -159,8 +141,6 @@ export default function AdminIncomeSources() {
     retry: 2,
   });
 
-  const eclipsePricing = { monthly: 4.99, annual: 49.99 };
-
   // Build unified transaction list
   const allTransactions = useMemo<UnifiedTransaction[]>(() => {
     const txns: UnifiedTransaction[] = [];
@@ -173,17 +153,6 @@ export default function AdminIncomeSources() {
         metadata: o.user_id ? o.user_id.slice(0, 8) : undefined,
       });
     });
-
-    (subsData ?? []).forEach(s => {
-      const price = s.billing_period === 'annual' ? eclipsePricing.annual : eclipsePricing.monthly;
-      txns.push({
-        id: s.id, source: 'subscriptions',
-        description: `Subscription ${(s.tier ?? 'plus')} (${s.billing_period ?? 'monthly'})`,
-        amount: price, currency: '£', status: s.status, date: s.created_at,
-        metadata: s.stripe_subscription_id ?? undefined,
-      });
-    });
-
 
     (creditsData ?? []).forEach(c => {
       txns.push({
@@ -208,7 +177,7 @@ export default function AdminIncomeSources() {
     });
 
     return txns.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [ordersData, subsData, creditsData, commissionData]);
+  }, [ordersData, creditsData, commissionData]);
 
   // Filter by period, source, and search
   const filteredTransactions = useMemo(() => {
@@ -229,8 +198,6 @@ export default function AdminIncomeSources() {
   const summaryBySource = useMemo(() => {
     const summary: Record<Exclude<IncomeSource, 'all'>, { total: number; count: number; prev: number; prevCount: number; maxTxn: number; sparkline: number[] }> = {
       orders: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
-      subscriptions: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
-      
       credits: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
       
       commission: { total: 0, count: 0, prev: 0, prevCount: 0, maxTxn: 0, sparkline: [] },
@@ -291,7 +258,7 @@ export default function AdminIncomeSources() {
   }, [allTransactions, periodStart, periodDays]);
 
   const grandTotal = Object.values(summaryBySource).reduce((sum, s) => sum + s.total, 0);
-  const isLoading = ordersLoading || subsLoading || creditsLoading || commissionLoading;
+  const isLoading = ordersLoading || creditsLoading || commissionLoading;
 
   const exportCSV = () => {
     const headers = ['Date', 'Source', 'Description', 'Amount (£)', 'Status', 'ID'];

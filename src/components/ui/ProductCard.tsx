@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Store, Star } from 'lucide-react';
 import { BackgroundVideo } from '@/components/ui/BackgroundVideo';
 import { useCart } from '@/hooks/useCart';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { cn } from '@/lib/utils';
 import { getCardMediaChain, isVideoUrl } from '@/lib/mediaUtils';
@@ -32,16 +31,14 @@ interface ProductCardProps {
   showBestSellerBadge?: boolean;
   showNewBadge?: boolean;
   averageRating?: number;
-  storeEclipseEnabled?: boolean | null;
   isPayWhatYouWant?: boolean | null;
   minPrice?: number | null;
   /** When true, loads image eagerly with high fetch priority */
   priority?: boolean;
 }
 
-export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isResellable, showBestSellerBadge, showNewBadge, averageRating, storeEclipseEnabled, isPayWhatYouWant, minPrice, priority = false }, ref) {
+export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(function ProductCard({ id, name, slug, price, image, images, category, categorySlug, categoryId, isFeatured, createdAt, storeName, storeSlug, storeLogo, isVerified, isResellable, showBestSellerBadge, showNewBadge, averageRating, isPayWhatYouWant, minPrice, priority = false }, ref) {
   const { addItem, isInCart } = useCart();
-  const { isEligibleForDiscount, getMemberPrice, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
   const navigate = useNavigate();
   const prefetchProduct = usePrefetchProduct();
@@ -67,11 +64,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
     ? showNewBadge 
     : createdAt ? (Date.now() - new Date(createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000 : false;
   
-  const isEligible = isEligibleForDiscount(categoryId, isResellable ?? undefined, storeEclipseEnabled ?? undefined);
-  const memberPrice = isEligible ? getMemberPrice(price, categoryId, isResellable ?? undefined) : price;
-  const discountPercent = isEligible ? getDiscountPercent(categoryId, isResellable ?? undefined) : 0;
-  const hasMemberDiscount = isEligible && memberPrice < price;
-
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -85,11 +77,10 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
         category_slug: categorySlug ?? undefined,
         category_id: categoryId ?? undefined,
         is_resellable: isResellable ?? undefined,
-        store_eclipse_enabled: storeEclipseEnabled ?? undefined,
         store_name: storeName ?? undefined,
       });
     }
-  }, [inCart, addItem, id, name, price, currentMedia, slug, categorySlug, categoryId, isResellable, storeEclipseEnabled, storeName]);
+  }, [inCart, addItem, id, name, price, currentMedia, slug, categorySlug, categoryId, isResellable, storeName]);
 
   const hoverTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -187,17 +178,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
             {/* Status badges (top-left) */}
             <div className="absolute top-2 left-2 flex items-center gap-1 flex-wrap z-[3]">
-              {hasMemberDiscount && (
-                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-destructive text-destructive-foreground rounded-md shadow-sm">
-                  −{discountPercent}%
-                </span>
-              )}
               {showBestSellerBadge && (
                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-amber-500 text-black rounded-md shadow-sm">
                   Bestseller
                 </span>
               )}
-              {isNew && !showBestSellerBadge && !hasMemberDiscount && (
+              {isNew && !showBestSellerBadge && (
                 <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] bg-emerald-500 text-black rounded-md shadow-sm">
                   New
                 </span>
@@ -255,15 +241,6 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 <span className="block text-emerald-400 text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
                   {minPrice === 0 ? 'Free+' : formatPrice(minPrice || 0)}
                 </span>
-              ) : hasMemberDiscount ? (
-                <>
-                  <span className="block text-foreground text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
-                    {formatPrice(memberPrice)}
-                  </span>
-                  <span className="block text-[10px] text-muted-foreground line-through mt-1">
-                    {formatPrice(price)}
-                  </span>
-                </>
               ) : (
                 <span className="block text-foreground text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
                   {formatPrice(price)}

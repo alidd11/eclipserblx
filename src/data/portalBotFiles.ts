@@ -28,7 +28,6 @@ DISCORD_GUILD_ID=your_main_guild_id
 DISCORD_CUSTOMER_ROLE_ID=
 DISCORD_LOYAL_CUSTOMER_ROLE_ID=
 DISCORD_STORE_CREATOR_ROLE_ID=
-DISCORD_ROLE_ID=
 DISCORD_VERIFIED_SELLER_ROLE_ID=
 
 # Supabase
@@ -168,7 +167,6 @@ export const config = {
   customerRoleId: process.env.DISCORD_CUSTOMER_ROLE_ID || '',
   loyalCustomerRoleId: process.env.DISCORD_LOYAL_CUSTOMER_ROLE_ID || '',
   storeCreatorRoleId: process.env.DISCORD_STORE_CREATOR_ROLE_ID || '',
-  eclipsePlusRoleId: process.env.DISCORD_ROLE_ID || '',
   verifiedSellerRoleId: process.env.DISCORD_VERIFIED_SELLER_ROLE_ID || '',
 
   // Supabase
@@ -811,7 +809,6 @@ export async function handleProfile(interaction, serverContext) {
     return publicReplyWithDM(interaction, channelEmbed, [dmEmbed]);
   }
 
-  let subscription = null;
   let orderCount = 0;
   let totalSpent = 0;
 
@@ -836,15 +833,12 @@ export async function handleProfile(interaction, serverContext) {
       }
     }
   } else {
-    const [subscriptionResult, orderCountResult, ordersTotalsResult] = await Promise.all([
-      supabase.from('subscriptions').select('tier, current_period_end, status')
-        .eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
+    const [orderCountResult, ordersTotalsResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true })
         .eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
       supabase.from('orders').select('total')
         .eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
     ]);
-    subscription = subscriptionResult.data;
     orderCount = orderCountResult.count || 0;
     totalSpent = ordersTotalsResult.data?.reduce((sum, o) => sum + Number(o.total || 0), 0) || 0;
   }
@@ -854,7 +848,6 @@ export async function handleProfile(interaction, serverContext) {
     { name: '🆔 Customer ID', value: profile.customer_id || 'N/A', inline: true },
   ];
   if (!serverContext.store) {
-    fields.push({ name: '⭐ Membership', value: subscription ? 'Subscription Active' : 'Free', inline: true });
     fields.push({ name: '💷 Total Spent', value: \`£\${totalSpent.toFixed(2)}\`, inline: true });
   }
   fields.push({
@@ -1151,9 +1144,8 @@ export async function handleGetRole(interaction, serverContext) {
   const rolesToRemove = [];
 
   if (serverContext.isMainServer) {
-    const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+    const [ordersResult, storeResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-      supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
 
@@ -1164,7 +1156,6 @@ export async function handleGetRole(interaction, serverContext) {
     } else if (purchaseCount >= 1 && config.customerRoleId) {
       rolesToAssign.push({ id: config.customerRoleId, name: 'Customer' });
     }
-    if (subscriptionResult.data && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Subscriber' });
     if (storeResult.data && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
   } else if (serverContext.store) {
     const [roleConfigsResult, ordersResult] = await Promise.all([
@@ -1191,10 +1182,6 @@ export async function handleGetRole(interaction, serverContext) {
       let eligible = true;
       if (cfg.min_order_count && orderCount < cfg.min_order_count) eligible = false;
       if (cfg.min_order_amount && totalSpent < cfg.min_order_amount) eligible = false;
-      if (cfg.requires_subscription) {
-        const { data: sub } = await supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle();
-        if (!sub) eligible = false;
-      }
       if (eligible) rolesToAssign.push({ id: cfg.role_id, name: cfg.role_name });
     }
   } else {
@@ -1244,16 +1231,14 @@ export async function handleGetRole(interaction, serverContext) {
 
   // Build eligibility hints
   if (serverContext.isMainServer && rolesAssigned.length === 0) {
-    const [ordersRes, subRes, storeRes] = await Promise.all([
+    const [ordersRes, storeRes] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-      supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
     const eligibility = [];
     const count = ordersRes.count || 0;
     if (count === 0) eligibility.push('\\u2022 Make a purchase → **Customer**');
     if (count > 0 && count < 5) eligibility.push(\`\\u2022 \${5 - count} more purchases → **Loyal Customer**\`);
-    if (!subRes.data) eligibility.push('\\u2022 Subscribe → **Subscriber**');
     if (!storeRes.data) eligibility.push('\\u2022 Create a store → **Store Creator**');
     if (eligibility.length > 0) fields.push({ name: '📋 How to Earn Roles', value: eligibility.join('\\n') });
   }
@@ -1686,13 +1671,11 @@ export async function handleUpdate(interaction, serverContext) {
     const rolesToRemove = [];
 
     if (serverContext.isMainServer) {
-      const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+      const [ordersResult, storeResult] = await Promise.all([
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-        supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
         supabase.from('stores').select('id, is_verified').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
       ]);
       const purchaseCount = ordersResult.count || 0;
-      const hasSubscription = !!subscriptionResult.data;
       const hasStore = !!storeResult.data;
       const isVerified = storeResult.data?.is_verified === true;
 
@@ -1706,8 +1689,6 @@ export async function handleUpdate(interaction, serverContext) {
         if (config.customerRoleId) rolesToRemove.push({ id: config.customerRoleId, name: 'Customer' });
         if (config.loyalCustomerRoleId) rolesToRemove.push({ id: config.loyalCustomerRoleId, name: 'Loyal Customer' });
       }
-      if (hasSubscription && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Subscriber' });
-      else if (config.eclipsePlusRoleId) rolesToRemove.push({ id: config.eclipsePlusRoleId, name: 'Subscriber' });
       if (hasStore && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       else if (config.storeCreatorRoleId) rolesToRemove.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
       if (isVerified && config.verifiedSellerRoleId) rolesToAssign.push({ id: config.verifiedSellerRoleId, name: 'Verified Seller' });

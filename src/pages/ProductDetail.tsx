@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Check, ChevronLeft, Sparkles, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -66,8 +66,7 @@ export default function ProductDetail() {
   product, isLoading, adminLoading, isStaff, user,
   relatedProducts, hasPurchased, existingReview, productReviews,
   averageRating, reviewCount, getTranslatedName, getTranslatedDescription,
-  addToRecentlyViewed, isEligible, memberPrice, discountPercent,
-  storeEclipseEnabled,
+  addToRecentlyViewed,
  } = useProductDetailData(productNumber);
 
  // Hide swipe hint after first interaction or after 3 seconds
@@ -201,7 +200,6 @@ export default function ProductDetail() {
 
  const inCart = isInCart(product.id);
  const images = product.images?.length ? sortMediaVideosFirst(product.images) : [null];
- const hasMemberDiscount = isEligible && memberPrice < product.price;
  const isBotProduct = product.categories?.slug === 'bots';
 
  const getPwywCartPrice = () => {
@@ -224,7 +222,6 @@ export default function ProductDetail() {
  category_slug: product.categories?.slug ?? undefined,
  category_id: product.category_id ?? undefined,
  is_resellable: product.is_resellable,
- store_eclipse_enabled: storeEclipseEnabled,
  store_name: product.stores?.name,
  is_pwyw: isPWYW || undefined,
  custom_price: isPWYW ? effectivePrice : undefined,
@@ -481,28 +478,9 @@ export default function ProductDetail() {
  )}
  </div>
  ) : (
- <>
- {!isEligible ? (
  <span className="text-3xl font-bold">
  {formatPrice(Number(product.price))}
  </span>
- ) : (
- <>
- <p className="text-lg text-muted-foreground line-through">
- {formatPrice(Number(product.price))}
- </p>
- <div className="flex items-center gap-3 flex-wrap">
- <span className="text-3xl font-bold flex items-center gap-2 text-amber-400">
- <Sparkles className="h-6 w-6" />
- {formatPrice(memberPrice)}
- </span>
- <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20">
- {discountPercent}% off
- </Badge>
- </div>
- </>
- )}
- </>
  )}
  </div>
 

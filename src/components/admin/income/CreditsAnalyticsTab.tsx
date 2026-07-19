@@ -52,10 +52,10 @@ export function CreditsAnalyticsTab() {
  queryFn: async () => {
  const { data, error } = await supabase
  .from('credit_balances')
- .select('balance, total_purchased, total_gifted, total_spent, eclipse_plus_bonus_claimed');
+ .select('balance, total_purchased, total_gifted, total_spent');
 
  if (error) throw error;
- 
+
  const balances = data ?? [];
  return {
  totalActiveBalance: balances.reduce((sum, b) => sum + Number(b.balance), 0),
@@ -63,7 +63,6 @@ export function CreditsAnalyticsTab() {
  totalGifted: balances.reduce((sum, b) => sum + Number(b.total_gifted), 0),
  totalSpent: balances.reduce((sum, b) => sum + Number(b.total_spent), 0),
  usersWithBalance: balances.filter(b => Number(b.balance) > 0).length,
- eclipseBonusesClaimed: balances.filter(b => b.eclipse_plus_bonus_claimed).length,
  };
  },
  });
@@ -239,9 +238,6 @@ export function CreditsAnalyticsTab() {
  {formatGBP((balancesSummary?.totalGifted ?? 0))}
  </p>
  )}
- <p className="text-xs text-muted-foreground mt-1">
- Inc. {balancesSummary?.eclipseBonusesClaimed ?? 0} signup bonuses
- </p>
  </div>
  </div>
 

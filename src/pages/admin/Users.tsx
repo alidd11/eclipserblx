@@ -72,7 +72,6 @@ export default function AdminUsers() {
         <div className="flex items-center gap-4 text-sm flex-wrap">
           <span className="text-muted-foreground"><span className="font-semibold text-foreground">{stats.total}</span> customers</span>
           <span className="text-muted-foreground"><span className="font-semibold text-foreground">{stats.staff}</span> staff</span>
-          <span className="text-muted-foreground"><span className="font-semibold text-foreground">{stats.eclipsePlus}</span> Subscribers</span>
         </div>
 
         {/* Search */}

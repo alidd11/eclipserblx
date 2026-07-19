@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import {
   User,
@@ -20,7 +19,6 @@ import {
   Star,
   MessageSquare,
   Heart,
-  Crown,
   Clock,
   AtSign,
   Globe,
@@ -62,23 +60,6 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
         .limit(10);
       if (error) throw error;
       return data || [];
-    },
-    enabled: !!profile?.user_id && open,
-  });
-
-  // Fetch subscription
-  const { data: subscription, isLoading: subLoading } = useQuery({
-    queryKey: ['customer-subscription', profile?.user_id],
-    queryFn: async () => {
-      if (!profile?.user_id) return null;
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', profile.user_id)
-        .eq('status', 'active')
-        .maybeSingle();
-      if (error) throw error;
-      return data;
     },
     enabled: !!profile?.user_id && open,
   });
@@ -236,9 +217,6 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-xl truncate flex items-center gap-2">
                 {profile.display_name || 'Unnamed User'}
-                {subscription && (
-                  <Crown className="h-5 w-5 text-amber-500" />
-                )}
               </DialogTitle>
               {profile.username && (
                 <p className="text-sm text-muted-foreground flex items-center gap-1">
@@ -431,35 +409,6 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
               ) : (
                 <p className="text-sm text-muted-foreground p-3 bg-muted/50 rounded-lg">
                   Not a seller
-                </p>
-              )}
-            </section>
-
-            <Separator />
-
-            {/* Subscription Status */}
-            <section>
-              <h3 className="text-sm font-medium text-muted-foreground mb-3 flex items-center gap-2">
-                <Crown className="h-4 w-4" />
-                Subscription
-              </h3>
-              {subLoading ? (
-                <Skeleton className="h-16 w-full" />
-              ) : subscription ? (
-                <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-amber-600 dark:text-amber-400">Subscription Active</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Since {format(new Date(subscription.created_at), 'MMM d, yyyy')}
-                      </p>
-                    </div>
-                    <Crown className="h-8 w-8 text-amber-500" />
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground p-3 bg-muted/50 rounded-lg">
-                  No active subscription
                 </p>
               )}
             </section>

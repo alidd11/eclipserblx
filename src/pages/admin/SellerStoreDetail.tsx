@@ -75,7 +75,7 @@ export default function SellerStoreDetail() {
   const { data: settings } = useQuery({
     queryKey: ['commission-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('settings').select('key, value').in('key', ['marketplace_default_commission_rate', 'marketplace_eclipse_commission_rate']);
+      const { data, error } = await supabase.from('settings').select('key, value').in('key', ['marketplace_default_commission_rate']);
       if (error) throw error;
       return data.reduce((acc, s) => ({ ...acc, [s.key]: Number(s.value) || 0 }), {} as Record<string, number>);
     },

@@ -16,7 +16,6 @@ export interface ProductFormData {
   description: string;
   category_id: string;
   is_active: boolean;
-  eclipse_free_eligible: boolean;
   images: string[];
   asset_file_url: string;
   schedule_enabled: boolean;
@@ -40,7 +39,6 @@ export const INITIAL_FORM_DATA: ProductFormData = {
   description: '',
   category_id: '',
   is_active: true,
-  eclipse_free_eligible: false,
   images: [],
   asset_file_url: '',
   schedule_enabled: false,

@@ -27,9 +27,8 @@ export async function handleGetRole(interaction, serverContext) {
   const rolesToRemove = [];
 
   if (serverContext.isMainServer) {
-    const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
+    const [ordersResult, storeResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-      supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
 
@@ -40,7 +39,6 @@ export async function handleGetRole(interaction, serverContext) {
     } else if (purchaseCount >= 1 && config.customerRoleId) {
       rolesToAssign.push({ id: config.customerRoleId, name: 'Customer' });
     }
-    if (subscriptionResult.data && config.eclipsePlusRoleId) rolesToAssign.push({ id: config.eclipsePlusRoleId, name: 'Pro' });
     if (storeResult.data && config.storeCreatorRoleId) rolesToAssign.push({ id: config.storeCreatorRoleId, name: 'Store Creator' });
   } else if (serverContext.store) {
     const [roleConfigsResult, ordersResult] = await Promise.all([
@@ -67,10 +65,6 @@ export async function handleGetRole(interaction, serverContext) {
       let eligible = true;
       if (cfg.min_order_count && orderCount < cfg.min_order_count) eligible = false;
       if (cfg.min_order_amount && totalSpent < cfg.min_order_amount) eligible = false;
-      if (cfg.requires_subscription) {
-        const { data: sub } = await supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle();
-        if (!sub) eligible = false;
-      }
       if (eligible) rolesToAssign.push({ id: cfg.role_id, name: cfg.role_name });
     }
   } else {
@@ -120,16 +114,14 @@ export async function handleGetRole(interaction, serverContext) {
 
   // Build eligibility hints
   if (serverContext.isMainServer && rolesAssigned.length === 0) {
-    const [ordersRes, subRes, storeRes] = await Promise.all([
+    const [ordersRes, storeRes] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-      supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
     const eligibility = [];
     const count = ordersRes.count || 0;
     if (count === 0) eligibility.push('• Make a purchase → **Customer**');
     if (count > 0 && count < 5) eligibility.push(`• ${5 - count} more purchases → **Loyal Customer**`);
-    if (!subRes.data) eligibility.push('• Subscribe to Pro → **Pro**');
     if (!storeRes.data) eligibility.push('• Create a store → **Store Creator**');
     if (eligibility.length > 0) fields.push({ name: '📋 How to Earn Roles', value: eligibility.join('\n') });
   }

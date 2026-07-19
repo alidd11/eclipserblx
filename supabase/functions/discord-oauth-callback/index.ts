@@ -288,7 +288,6 @@ Deno.serve(async (req) => {
     const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");
     const guildId = Deno.env.get("DISCORD_GUILD_ID");
     const storeCreatorRoleId = Deno.env.get("DISCORD_STORE_CREATOR_ROLE_ID");
-    const eclipsePlusRoleId = Deno.env.get("DISCORD_ROLE_ID");
 
     const rolesAssigned: string[] = [];
 
@@ -313,21 +312,6 @@ Deno.serve(async (req) => {
               if (vResult.success) rolesAssigned.push("Verified Seller");
             }
           }
-        }
-      }
-
-      // Check if user has active subscription
-      if (eclipsePlusRoleId) {
-        const { data: subscription } = await supabase
-          .from("subscriptions")
-          .select("id, status")
-          .eq("user_id", user_id)
-          .eq("status", "active")
-          .maybeSingle();
-
-        if (subscription) {
-          const result = await assignDiscordRole(botToken, guildId, eclipsePlusRoleId, discordUser.id, "Pro");
-          if (result.success) rolesAssigned.push("Pro");
         }
       }
 

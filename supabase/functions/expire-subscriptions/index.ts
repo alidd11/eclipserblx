@@ -8,11 +8,11 @@ const corsHeaders = {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
+
   const _unauth = requireServiceRole(req, corsHeaders);
   if (_unauth) return _unauth;
-);
-  }
 
   try {
     const supabase = createClient(
@@ -22,22 +22,6 @@ Deno.serve(async (req) => {
     );
 
     console.log("[expire-subscriptions] Running scheduled cleanup...");
-
-    // Expire admin-granted subscriptions (no stripe_subscription_id) past their end date
-    const { data: adminExpired, error: adminError } = await supabase
-      .from("subscriptions")
-      .update({ status: "inactive" })
-      .eq("status", "active")
-      .is("stripe_subscription_id", null)
-      .lt("current_period_end", new Date().toISOString())
-      .select("id");
-
-    if (adminError) {
-      console.error("[expire-subscriptions] Admin grants error:", adminError.message);
-    }
-
-    const adminCount = adminExpired?.length ?? 0;
-    console.log(`[expire-subscriptions] Expired ${adminCount} admin-granted subscriptions`);
 
     // Expire seller subscriptions past their grace period
     const { data: sellerExpired, error: sellerError } = await supabase
@@ -62,7 +46,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, expired_admin_grants: adminCount, expired_seller_grace: sellerCount }),
+      JSON.stringify({ success: true, expired_seller_grace: sellerCount }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {

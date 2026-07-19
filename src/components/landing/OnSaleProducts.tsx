@@ -20,7 +20,7 @@ interface FlashSaleProduct {
   created_at: string;
   category_id: string | null;
   categories: { name: string; slug: string } | null;
-  stores: { name: string; slug: string; logo_url: string | null; is_verified: boolean; is_active: boolean; eclipse_plus_discount_enabled: boolean } | null;
+  stores: { name: string; slug: string; logo_url: string | null; is_verified: boolean; is_active: boolean } | null;
   discountPercent?: number;
 }
 
@@ -63,7 +63,7 @@ export function OnSaleProducts() {
         .select(`
           id, name, slug, product_number, price, images, created_at,
           category_id, categories(name, slug),
-          stores!inner(name, slug, logo_url, is_verified, is_active, eclipse_plus_discount_enabled)
+          stores!inner(name, slug, logo_url, is_verified, is_active)
         `)
         .in('id', Array.from(productIds))
         .eq('is_active', true)
@@ -160,7 +160,6 @@ export function OnSaleProducts() {
                   storeSlug={store?.slug}
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
-                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
                   createdAt={product.created_at}
                   priority={index < 4}
                 />

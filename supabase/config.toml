@@ -39,11 +39,7 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.check-nsfw]
     verify_jwt = false
-  [functions.check-subscription]
-    verify_jwt = false
   [functions.check-vpn]
-    verify_jwt = false
-  [functions.claim-signup-promotion]
     verify_jwt = false
   [functions.cleanup-tracking-data]
     verify_jwt = false
@@ -158,8 +154,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
   [functions.send-discord-poll]
     verify_jwt = false
   [functions.send-discord-qotd]
-    verify_jwt = false
-  [functions.send-discord-webhook]
     verify_jwt = false
   [functions.send-marketplace-announcement]
     verify_jwt = false

@@ -83,7 +83,7 @@ export default function StaffDirectory() {
 
  // Filter to only include users who have at least one staff role
  // Exclude status-based/baseline roles - these users are customers, not staff
- const subscriptionOnlyRoles = ['eclipse_plus_member', 'seller', 'customer'];
+ const subscriptionOnlyRoles = ['seller', 'customer'];
  
  // Group roles by user
  const userRolesMap = new Map<string, string[]>();

@@ -3,7 +3,6 @@ import { useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminAuth } from '@/hooks/useAdminAuth';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useProductTranslation } from '@/hooks/useProductTranslation';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { usePublicProduct } from '@/hooks/usePublicProduct';
@@ -13,7 +12,6 @@ export function useProductDetailData(productNumber: string | undefined) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const { isStaff, loading: adminLoading } = useAdminAuth();
-  const { isSubscribed, isEligibleForDiscount, isEligibleForFreeClaim, getMemberPrice, getDiscountPercent, canClaimFree } = useSubscription();
 
   // Centralised product fetching with resilient lookup chain
   const { product, isLoading } = usePublicProduct(productNumber, {
@@ -98,14 +96,6 @@ export function useProductDetailData(productNumber: string | undefined) {
     await queryClient.invalidateQueries({ queryKey: ['user-has-purchased'] });
   }, [queryClient, productNumber]);
 
-  // Subscription pricing helpers
-  const storeEclipseEnabled = product?.stores?.eclipse_plus_discount_enabled;
-  const isEligible = product ? isEligibleForDiscount(product.category_id, product.is_resellable, storeEclipseEnabled) : false;
-  const memberPrice = product && isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product?.price ?? 0;
-  const discountPercent = product && isEligible ? getDiscountPercent(product.category_id, product.is_resellable) : 0;
-  const hasMemberDiscount = isEligible && memberPrice < (product?.price ?? 0);
-  const canClaimThisProduct = product ? isSubscribed && canClaimFree && isEligibleForFreeClaim(product.category_id, product.is_resellable, product.eclipse_free_eligible) : false;
-
   return {
     product,
     isLoading,
@@ -122,12 +112,5 @@ export function useProductDetailData(productNumber: string | undefined) {
     getTranslatedName,
     getTranslatedDescription,
     addToRecentlyViewed,
-    // Pricing
-    isEligible,
-    memberPrice,
-    discountPercent,
-    hasMemberDiscount,
-    canClaimThisProduct,
-    storeEclipseEnabled,
   };
 }

@@ -6,7 +6,6 @@ import { ChevronLeft, ChevronRight, ShieldCheck, Award, Tag } from 'lucide-react
 import { useRef, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
@@ -27,13 +26,11 @@ interface RecentProduct {
     logo_url: string | null;
     is_verified: boolean;
     is_trusted: boolean;
-    eclipse_plus_discount_enabled: boolean;
   } | null;
 }
 
 export function RecentReleasesCarousel() {
   const { formatPrice } = useCurrency();
-  const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -47,7 +44,7 @@ export function RecentReleasesCarousel() {
         .select(`
           id, name, slug, product_number, price, images, created_at, category_id, is_resellable,
           categories (name, slug),
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)
@@ -139,10 +136,6 @@ export function RecentReleasesCarousel() {
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {products.map((product) => {
-          const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-          const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
-          const hasMemberDiscount = isEligible && memberPrice < product.price;
-
           return (
             <Link
               key={product.id}
@@ -194,14 +187,7 @@ export function RecentReleasesCarousel() {
                   <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
                     {product.name}
                   </h3>
-                  {hasMemberDiscount ? (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-bold text-amber-500">{formatPrice(memberPrice)}</span>
-                      <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
-                    </div>
-                  ) : (
-                    <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
-                  )}
+                  <span className="text-sm font-bold text-foreground">{formatPrice(product.price)}</span>
                 </div>
               </div>
             </Link>

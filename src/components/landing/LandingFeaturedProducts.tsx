@@ -1,11 +1,10 @@
 import { forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Award, Crown } from 'lucide-react';
+import { ArrowRight, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFeaturedProducts, ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { useCurrency } from '@/hooks/useCurrency';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
 
@@ -14,13 +13,7 @@ type FeaturedProduct = ScoredProduct;
 const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; featured?: boolean }>(
   function ProductCard({ product, featured = false }, ref) {
     const { formatPrice } = useCurrency();
-    const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-    
-    const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
-    const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
-    const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
-    const hasMemberDiscount = isEligible && memberPrice < product.price;
-    
+
     return (
       <Link ref={ref} to={`/products/${(product as any).product_number}`} className="group block h-full">
         <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
@@ -69,24 +62,9 @@ const ProductCard = forwardRef<HTMLAnchorElement, { product: FeaturedProduct; fe
             </h3>
             
             <div className="flex items-center gap-2 flex-wrap relative z-10">
-              {hasMemberDiscount ? (
-                <>
-                  <span className={`font-bold text-amber-500 ${featured ? 'text-base' : 'text-sm'}`}>
-                    {formatPrice(memberPrice)}
-                  </span>
-                  <span className="text-xs text-muted-foreground line-through">
-                    {formatPrice(product.price)}
-                  </span>
-                  <span className="inline-flex items-center gap-0.5 px-1 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">
-                    <Crown className="h-2.5 w-2.5" />
-                    {discountPercent}%
-                  </span>
-                </>
-              ) : (
-                <span className={`font-bold text-foreground ${featured ? 'text-base' : 'text-sm'}`}>
-                  {formatPrice(product.price)}
-                </span>
-              )}
+              <span className={`font-bold text-foreground ${featured ? 'text-base' : 'text-sm'}`}>
+                {formatPrice(product.price)}
+              </span>
             </div>
           </div>
         </div>

@@ -22,7 +22,6 @@ export const config = {
   customerRoleId: process.env.DISCORD_CUSTOMER_ROLE_ID || '',
   loyalCustomerRoleId: process.env.DISCORD_LOYAL_CUSTOMER_ROLE_ID || '',
   storeCreatorRoleId: process.env.DISCORD_STORE_CREATOR_ROLE_ID || '',
-  eclipsePlusRoleId: process.env.DISCORD_ROLE_ID || '',
   verifiedSellerRoleId: process.env.DISCORD_VERIFIED_SELLER_ROLE_ID || '',
 
   // Supabase

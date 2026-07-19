@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Shield, Zap, Sparkles } from 'lucide-react';
+import { ShoppingBag, Shield, Zap } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
-import { useSubscription } from '@/hooks/useSubscription';
 import { useCurrency } from '@/hooks/useCurrency';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
@@ -19,21 +17,7 @@ export default function Cart() {
   usePageMeta({ title: 'Your Cart', description: 'Review items in your Eclipse cart before checkout. Secure payments, instant delivery.', canonicalPath: '/cart' });
   const { t } = useTranslation();
   const { items, removeItem, clearCart, total } = useCart();
-  const { isSubscribed, getMemberPrice, isEligibleForDiscount, getDiscountPercent } = useSubscription();
   const { formatPrice } = useCurrency();
-
-  // Calculate member discount (only for eligible items)
-  const calculateMemberTotal = () => {
-    if (!isSubscribed) return total;
-    return items.reduce((sum, item) => {
-      const eligible = isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
-      const price = eligible ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
-      return sum + price;
-    }, 0);
-  };
-
-  const memberTotal = calculateMemberTotal();
-  const eclipseDiscount = isSubscribed ? total - memberTotal : 0;
 
   if (items.length === 0) {
     return (
@@ -90,10 +74,7 @@ export default function Cart() {
           <div className="lg:col-span-8">
             <div className="space-y-px bg-border rounded-xl overflow-hidden border border-border">
               {items.map((item) => {
-                const hasDiscount = isSubscribed && isEligibleForDiscount(item.category_id, item.is_resellable, item.store_eclipse_enabled);
-                const memberPrice = hasDiscount ? getMemberPrice(item.price, item.category_id, item.is_resellable) : item.price;
                 const displayPrice = item.is_pwyw ? (item.custom_price ?? item.price) : item.price;
-                const discountPercent = getDiscountPercent(item.category_id, item.is_resellable);
 
                 return (
                   <div key={item.id} className="bg-background p-5 sm:p-6 flex items-start gap-4 sm:gap-6">
@@ -121,19 +102,7 @@ export default function Cart() {
                           {item.name}
                         </Link>
                         <div className="text-right shrink-0">
-                          {hasDiscount ? (
-                            <>
-                              <div className="text-foreground font-medium">{formatPrice(memberPrice)}</div>
-                              <div className="flex items-center justify-end gap-1.5 mt-0.5">
-                                <span className="text-[11px] text-muted-foreground line-through">{formatPrice(displayPrice)}</span>
-                                <Badge variant="secondary" className="text-[10px] px-1 py-0 border-0">
-                                  -{discountPercent}%
-                                </Badge>
-                              </div>
-                            </>
-                          ) : (
-                            <span className="text-foreground font-medium">{formatPrice(displayPrice)}</span>
-                          )}
+                          <span className="text-foreground font-medium">{formatPrice(displayPrice)}</span>
                         </div>
                       </div>
                       <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">
@@ -163,26 +132,10 @@ export default function Cart() {
                   <span className="text-foreground">{formatPrice(total)}</span>
                 </div>
 
-                {isSubscribed && eclipseDiscount > 0 && (
-                  <div className="flex justify-between items-center py-2 px-3 bg-muted/30 rounded-lg border border-border">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Sparkles className="h-3 w-3 text-amber-400" />
-                      <span>{t('cart.eclipseDiscount')}</span>
-                    </div>
-                    <span className="text-foreground">-{formatPrice(eclipseDiscount)}</span>
-                  </div>
-                )}
-
                 <div className="pt-4 border-t border-border flex justify-between items-baseline">
                   <span className="text-foreground font-medium">{t('cart.total')}</span>
-                  <span className="text-foreground font-semibold text-lg">{formatPrice(memberTotal)}</span>
+                  <span className="text-foreground font-semibold text-lg">{formatPrice(total)}</span>
                 </div>
-                {isSubscribed && eclipseDiscount > 0 && (
-                  <p className="text-xs text-amber-400 flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    {t('cart.savingWith', { amount: formatPrice(eclipseDiscount) })}
-                  </p>
-                )}
               </div>
 
               <Button

@@ -394,7 +394,6 @@ export default function StorePage() {
               isLoading={productsLoading || tabProductsLoading}
               storeId={store.id}
               accentColor={accentColor}
-              eclipsePlusEnabled={store?.eclipse_plus_discount_enabled}
               title={storeTabs?.find(t => t.slug === activeTab)?.name || 'Products'}
               emptyTitle="No Products in This Category"
               emptyDescription="There are no products in this category yet."
@@ -462,8 +461,7 @@ export default function StorePage() {
                         isLoading={productsLoading}
                         storeId={store.id}
                         accentColor={accentColor}
-                        eclipsePlusEnabled={store?.eclipse_plus_discount_enabled}
-                      />
+                                />
                     );
 
                   case 'trust_signals':
