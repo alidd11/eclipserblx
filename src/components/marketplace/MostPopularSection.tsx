@@ -99,7 +99,7 @@ export function MostPopularSection() {
         .select(`
           id, name, slug, product_number, price, images, category_id, is_resellable, download_count,
           categories (name),
-          stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)

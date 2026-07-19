@@ -47,7 +47,7 @@ export function RecentReleasesCarousel() {
         .select(`
           id, name, slug, product_number, price, images, created_at, category_id, is_resellable,
           categories (name, slug),
-          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, slug, logo_url, is_verified, is_trusted, is_active, is_testing)
         `)
         .eq('is_active', true)
         .eq('stores.is_active', true)

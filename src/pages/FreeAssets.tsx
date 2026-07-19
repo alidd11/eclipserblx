@@ -43,7 +43,7 @@ export default function FreeAssets() {
         .select(`
           id, name, slug, price, images, description, created_at, download_count,
           category_id, categories(name, slug),
-          store_id, stores!inner(name, slug, logo_url, is_verified, is_active, eclipse_plus_discount_enabled)
+          store_id, stores!inner(name, slug, logo_url, is_verified, is_active)
         `)
         .eq('is_active', true)
         .eq('moderation_status', 'approved')

@@ -25,7 +25,7 @@ export function usePrefetchProduct() {
             .select(
                `id, name, slug, description, price, images, category_id, is_resellable, is_active,
                download_count, product_number,
-               stores!inner(id, name, slug, logo_url, is_verified, accent_color, eclipse_plus_discount_enabled),
+               stores!inner(id, name, slug, logo_url, is_verified, accent_color),
                categories(name, slug)`
             )
             .eq('product_number' as any, Number(productNumber))

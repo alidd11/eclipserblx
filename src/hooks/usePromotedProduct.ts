@@ -53,7 +53,7 @@ export function usePromotedProduct(zone: string, categoryId?: string) {
           id, name, slug, product_number, price, images, description, category_id,
           is_resellable, download_count,
           categories (name, slug),
-          stores!inner (name, slug, logo_url, is_verified, is_active, is_testing, eclipse_plus_discount_enabled)
+          stores!inner (name, slug, logo_url, is_verified, is_active, is_testing)
         `)
         .eq('id', promo.product_id)
         .eq('is_active', true)

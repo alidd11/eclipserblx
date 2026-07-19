@@ -52,7 +52,7 @@ export function CreditsAnalyticsTab() {
  queryFn: async () => {
  const { data, error } = await supabase
  .from('credit_balances')
- .select('balance, total_purchased, total_gifted, total_spent, eclipse_plus_bonus_claimed');
+ .select('balance, total_purchased, total_gifted, total_spent');
 
  if (error) throw error;
  

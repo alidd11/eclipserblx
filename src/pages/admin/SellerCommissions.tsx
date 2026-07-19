@@ -43,7 +43,7 @@ export default function SellerCommissions() {
  .from('stores')
  .select(`
  id, name, slug, owner_id, commission_rate, custom_commission_rate, 
- custom_rate_expires_at, is_active, is_verified, eclipse_plus_discount_enabled, created_at,
+ custom_rate_expires_at, is_active, is_verified, created_at,
  profiles:owner_id (display_name, username)
  `)
  .order('name');

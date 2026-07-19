@@ -63,7 +63,7 @@ export function OnSaleProducts() {
         .select(`
           id, name, slug, product_number, price, images, created_at,
           category_id, categories(name, slug),
-          stores!inner(name, slug, logo_url, is_verified, is_active, eclipse_plus_discount_enabled)
+          stores!inner(name, slug, logo_url, is_verified, is_active)
         `)
         .in('id', Array.from(productIds))
         .eq('is_active', true)
