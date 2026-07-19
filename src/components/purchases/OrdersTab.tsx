@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { InlineLoading } from '@/components/ui/InlineLoading';
+import { OrdersListSkeleton } from '@/components/purchases/PurchasesSkeletons';
 import {
   Package, Search, Calendar, Filter, X, AlertTriangle, ShieldAlert, Clock, Shield, Check, ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -129,7 +129,7 @@ export function OrdersTab({
 
       {/* Orders List */}
       {isLoading ? (
-        <InlineLoading message="Loading orders…" />
+        <OrdersListSkeleton />
       ) : filteredOrders.length === 0 ? (
         <div className="border border-border rounded-xl overflow-hidden border-border bg-card">
           <div className="p-4 py-12 text-center space-y-4">

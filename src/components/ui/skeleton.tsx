@@ -10,7 +10,7 @@ const Skeleton = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
           "relative overflow-hidden rounded-md bg-muted",
           "before:absolute before:inset-0 before:-translate-x-full",
           "before:animate-[shimmer_1.6s_infinite]",
-          "before:bg-gradient-to-r before:from-transparent before:via-white/8 before:to-transparent",
+          "before:bg-gradient-to-r before:from-transparent before:via-foreground/[0.06] before:to-transparent",
           className
         )}
         {...props}

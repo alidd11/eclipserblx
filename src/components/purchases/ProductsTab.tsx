@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { InlineLoading } from '@/components/ui/InlineLoading';
+import { ProductsListSkeleton } from '@/components/purchases/PurchasesSkeletons';
 import {
   Download, Package, FileDown, CheckCircle, Loader2, Bot, Star, Receipt, ChevronLeft, ChevronRight
 } from 'lucide-react';
@@ -68,7 +68,7 @@ export function ProductsTab({
   handleDownloadSelected,
   setProductsPage,
 }: ProductsTabProps) {
-  if (isLoading) return <InlineLoading message="Loading products…" />;
+  if (isLoading) return <ProductsListSkeleton />;
 
   if (downloadableItems.length === 0) {
     return (
