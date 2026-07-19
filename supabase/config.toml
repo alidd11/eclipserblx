@@ -223,4 +223,6 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.orion-change-decide]
     verify_jwt = false
+  [functions.process-dispute-refund]
+    verify_jwt = false
 
