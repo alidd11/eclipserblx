@@ -35,6 +35,8 @@
 
   /* Dark theme - ClearlyDev-inspired near-black with subtle contrast */
   .dark {
+    --radius: 0.5rem;
+
     --background: 220 8% 6%;
     --foreground: 210 8% 93%;
     
