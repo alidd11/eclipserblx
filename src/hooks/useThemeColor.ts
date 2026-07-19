@@ -1,53 +1,11 @@
 import { useEffect } from 'react';
 
-// Theme colors per mode — mirrors the --background token in index.css
-const THEME_COLORS_DARK: Record<string, string> = {
-  default: '#0a0a0f',
-  purple: '#0a0a0f',
-  ocean: '#0a1214',
-  ember: '#140d0a',
-  forest: '#0a120b',
-  mono: '#0d0d0d',
-};
-
-const THEME_COLORS_LIGHT: Record<string, string> = {
-  default: '#fbfbfc',
-  purple: '#fbfbfc',
-  ocean: '#f4fafb',
-  ember: '#fbf7f4',
-  forest: '#f4faf5',
-  mono: '#fafafa',
-};
-
-const THEME_CLASS_MAP: Record<string, string> = {
-  'theme-ocean': 'ocean',
-  'theme-ember': 'ember',
-  'theme-forest': 'forest',
-  'theme-mono': 'mono',
-};
-
-let themeCssLoaded = false;
-
-function loadThemeCSS() {
-  if (themeCssLoaded) return;
-  themeCssLoaded = true;
-  import('../styles/themes.css');
-}
-
-function getActiveStaffTheme(html: HTMLElement): string | null {
-  for (const [cls, theme] of Object.entries(THEME_CLASS_MAP)) {
-    if (html.classList.contains(cls)) {
-      return theme;
-    }
-  }
-  return null;
-}
+// Mirrors the --background token in index.css for each mode
+export const THEME_COLOR_DARK = '#0a0a0f';
+export const THEME_COLOR_LIGHT = '#fbfbfc';
 
 function getResolvedThemeColor(html: HTMLElement): string {
-  const staffTheme = getActiveStaffTheme(html);
-  const colorTheme = staffTheme || 'default';
-  const palette = html.classList.contains('dark') ? THEME_COLORS_DARK : THEME_COLORS_LIGHT;
-  return palette[colorTheme] || palette.default;
+  return html.classList.contains('dark') ? THEME_COLOR_DARK : THEME_COLOR_LIGHT;
 }
 
 function upsertMetaTag(name: string, content: string) {
@@ -61,13 +19,6 @@ function upsertMetaTag(name: string, content: string) {
 }
 
 function syncBrowserTheme(html: HTMLElement) {
-  const staffTheme = getActiveStaffTheme(html);
-  
-  // Lazy-load theme CSS only when a non-default theme is active
-  if (staffTheme) {
-    loadThemeCSS();
-  }
-
   const themeColor = getResolvedThemeColor(html);
 
   upsertMetaTag('theme-color', themeColor);

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import { THEME_COLOR_DARK, THEME_COLOR_LIGHT } from './useThemeColor';
 
 /**
  * Dynamically injects and switches the PWA manifest based on the current route.
@@ -35,7 +36,7 @@ export function useAdminManifest() {
     // default for customer routes (mirrors useThemeColor's default palette)
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      const customerColor = document.documentElement.classList.contains('dark') ? '#0a0a0f' : '#fbfbfc';
+      const customerColor = document.documentElement.classList.contains('dark') ? THEME_COLOR_DARK : THEME_COLOR_LIGHT;
       themeColorMeta.setAttribute('content', isAdminRoute ? '#7c3aed' : customerColor);
     }
 

@@ -194,7 +194,6 @@
     animation: hero-shimmer 4s ease-in-out infinite;
   }
 
-  /* Theme variants are lazy-loaded from src/styles/themes.css */
 }
 
 @layer base {
