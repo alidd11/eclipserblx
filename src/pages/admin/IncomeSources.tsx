@@ -104,7 +104,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
@@ -119,7 +119,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
@@ -136,7 +136,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
@@ -153,7 +153,7 @@ export default function AdminIncomeSources() {
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []) as any[];
     },
     staleTime: 60000,
     retry: 2,
