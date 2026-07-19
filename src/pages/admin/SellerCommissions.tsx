@@ -68,7 +68,7 @@ export default function SellerCommissions() {
  
  const ownerIds = stores.map(s => s.owner_id);
  const { data, error } = await supabase
- .from('subscriptions')
+ .from('subscriptions' as any)
  .select('user_id, status')
  .in('user_id', ownerIds)
  .eq('status', 'active');
