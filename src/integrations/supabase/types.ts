@@ -2243,7 +2243,6 @@ export type Database = {
         Row: {
           balance: number
           created_at: string
-          eclipse_plus_bonus_claimed: boolean
           total_gifted: number
           total_purchased: number
           total_spent: number
@@ -2253,7 +2252,6 @@ export type Database = {
         Insert: {
           balance?: number
           created_at?: string
-          eclipse_plus_bonus_claimed?: boolean
           total_gifted?: number
           total_purchased?: number
           total_spent?: number
@@ -2263,7 +2261,6 @@ export type Database = {
         Update: {
           balance?: number
           created_at?: string
-          eclipse_plus_bonus_claimed?: boolean
           total_gifted?: number
           total_purchased?: number
           total_spent?: number
@@ -3145,7 +3142,6 @@ export type Database = {
           is_global: boolean
           min_order_amount: number | null
           min_order_count: number | null
-          requires_subscription: boolean
           role_id: string
           role_name: string
           store_id: string | null
@@ -3160,7 +3156,6 @@ export type Database = {
           is_global?: boolean
           min_order_amount?: number | null
           min_order_count?: number | null
-          requires_subscription?: boolean
           role_id: string
           role_name: string
           store_id?: string | null
@@ -3175,7 +3170,6 @@ export type Database = {
           is_global?: boolean
           min_order_amount?: number | null
           min_order_count?: number | null
-          requires_subscription?: boolean
           role_id?: string
           role_name?: string
           store_id?: string | null
@@ -6225,7 +6219,6 @@ export type Database = {
           early_access_link_token: string | null
           early_access_min_orders: number | null
           early_access_strategy: string
-          eclipse_free_eligible: boolean
           external_link: string | null
           feed_notified_at: string | null
           file_review_consented_at: string | null
@@ -6272,7 +6265,6 @@ export type Database = {
           early_access_link_token?: string | null
           early_access_min_orders?: number | null
           early_access_strategy?: string
-          eclipse_free_eligible?: boolean
           external_link?: string | null
           feed_notified_at?: string | null
           file_review_consented_at?: string | null
@@ -6319,7 +6311,6 @@ export type Database = {
           early_access_link_token?: string | null
           early_access_min_orders?: number | null
           early_access_strategy?: string
-          eclipse_free_eligible?: boolean
           external_link?: string | null
           feed_notified_at?: string | null
           file_review_consented_at?: string | null
@@ -6452,120 +6443,6 @@ export type Database = {
           username?: string
         }
         Relationships: []
-      }
-      promotion_claims: {
-        Row: {
-          claimed_at: string | null
-          discount_code_id: string | null
-          id: string
-          promotion_id: string
-          subscription_id: string | null
-          user_id: string
-        }
-        Insert: {
-          claimed_at?: string | null
-          discount_code_id?: string | null
-          id?: string
-          promotion_id: string
-          subscription_id?: string | null
-          user_id: string
-        }
-        Update: {
-          claimed_at?: string | null
-          discount_code_id?: string | null
-          id?: string
-          promotion_id?: string
-          subscription_id?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "promotion_claims_discount_code_id_fkey"
-            columns: ["discount_code_id"]
-            isOneToOne: false
-            referencedRelation: "discount_codes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "promotion_claims_promotion_id_fkey"
-            columns: ["promotion_id"]
-            isOneToOne: false
-            referencedRelation: "promotions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "promotion_claims_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "subscriptions"
-            referencedColumns: ["user_id"]
-          },
-        ]
-      }
-      promotions: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          current_claims: number | null
-          description: string | null
-          discount_code_id: string | null
-          eclipse_plus_days: number | null
-          ends_at: string | null
-          id: string
-          is_active: boolean | null
-          max_claims: number | null
-          name: string
-          new_users_only: boolean | null
-          promotion_type: string
-          require_email_verified: boolean | null
-          starts_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          current_claims?: number | null
-          description?: string | null
-          discount_code_id?: string | null
-          eclipse_plus_days?: number | null
-          ends_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          max_claims?: number | null
-          name: string
-          new_users_only?: boolean | null
-          promotion_type: string
-          require_email_verified?: boolean | null
-          starts_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          current_claims?: number | null
-          description?: string | null
-          discount_code_id?: string | null
-          eclipse_plus_days?: number | null
-          ends_at?: string | null
-          id?: string
-          is_active?: boolean | null
-          max_claims?: number | null
-          name?: string
-          new_users_only?: boolean | null
-          promotion_type?: string
-          require_email_verified?: boolean | null
-          starts_at?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "promotions_discount_code_id_fkey"
-            columns: ["discount_code_id"]
-            isOneToOne: false
-            referencedRelation: "discount_codes"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       push_subscriptions: {
         Row: {
@@ -10038,7 +9915,6 @@ export type Database = {
           discord_guild_id: string | null
           discord_showcase_thread_id: string | null
           discord_url: string | null
-          eclipse_plus_discount_enabled: boolean
           favicon_url: string | null
           featured_product_ids: string[] | null
           follower_count: number | null
@@ -10113,7 +9989,6 @@ export type Database = {
           discord_guild_id?: string | null
           discord_showcase_thread_id?: string | null
           discord_url?: string | null
-          eclipse_plus_discount_enabled?: boolean
           favicon_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
@@ -10188,7 +10063,6 @@ export type Database = {
           discord_guild_id?: string | null
           discord_showcase_thread_id?: string | null
           discord_url?: string | null
-          eclipse_plus_discount_enabled?: boolean
           favicon_url?: string | null
           featured_product_ids?: string[] | null
           follower_count?: number | null
@@ -10313,117 +10187,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      subscription_tiers: {
-        Row: {
-          annual_price_gbp: number
-          created_at: string | null
-          description: string | null
-          discount_percentage: number
-          display_order: number | null
-          features: Json | null
-          free_products_per_month: number
-          id: string
-          is_active: boolean | null
-          monthly_price_gbp: number
-          name: string
-          stripe_annual_price_id: string | null
-          stripe_monthly_price_id: string | null
-          tier: Database["public"]["Enums"]["subscription_tier"]
-          updated_at: string | null
-        }
-        Insert: {
-          annual_price_gbp: number
-          created_at?: string | null
-          description?: string | null
-          discount_percentage?: number
-          display_order?: number | null
-          features?: Json | null
-          free_products_per_month?: number
-          id?: string
-          is_active?: boolean | null
-          monthly_price_gbp: number
-          name: string
-          stripe_annual_price_id?: string | null
-          stripe_monthly_price_id?: string | null
-          tier: Database["public"]["Enums"]["subscription_tier"]
-          updated_at?: string | null
-        }
-        Update: {
-          annual_price_gbp?: number
-          created_at?: string | null
-          description?: string | null
-          discount_percentage?: number
-          display_order?: number | null
-          features?: Json | null
-          free_products_per_month?: number
-          id?: string
-          is_active?: boolean | null
-          monthly_price_gbp?: number
-          name?: string
-          stripe_annual_price_id?: string | null
-          stripe_monthly_price_id?: string | null
-          tier?: Database["public"]["Enums"]["subscription_tier"]
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      subscriptions: {
-        Row: {
-          billing_period:
-            | Database["public"]["Enums"]["subscription_billing_period"]
-            | null
-          created_at: string
-          current_period_end: string | null
-          current_period_start: string | null
-          grant_reason: string | null
-          granted_at: string | null
-          granted_by: string | null
-          id: string
-          status: string
-          stripe_customer_id: string | null
-          stripe_subscription_id: string | null
-          tier: Database["public"]["Enums"]["subscription_tier"] | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          billing_period?:
-            | Database["public"]["Enums"]["subscription_billing_period"]
-            | null
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          grant_reason?: string | null
-          granted_at?: string | null
-          granted_by?: string | null
-          id?: string
-          status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          tier?: Database["public"]["Enums"]["subscription_tier"] | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          billing_period?:
-            | Database["public"]["Enums"]["subscription_billing_period"]
-            | null
-          created_at?: string
-          current_period_end?: string | null
-          current_period_start?: string | null
-          grant_reason?: string | null
-          granted_at?: string | null
-          granted_by?: string | null
-          id?: string
-          status?: string
-          stripe_customer_id?: string | null
-          stripe_subscription_id?: string | null
-          tier?: Database["public"]["Enums"]["subscription_tier"] | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
       }
       support_tickets: {
         Row: {
@@ -11528,7 +11291,6 @@ export type Database = {
           description: string | null
           download_count: number | null
           early_access_hours: number | null
-          eclipse_free_eligible: boolean | null
           external_link: string | null
           id: string | null
           images: string[] | null
@@ -11557,7 +11319,6 @@ export type Database = {
           description?: string | null
           download_count?: number | null
           early_access_hours?: number | null
-          eclipse_free_eligible?: boolean | null
           external_link?: string | null
           id?: string | null
           images?: string[] | null
@@ -11586,7 +11347,6 @@ export type Database = {
           description?: string | null
           download_count?: number | null
           early_access_hours?: number | null
-          eclipse_free_eligible?: boolean | null
           external_link?: string | null
           id?: string | null
           images?: string[] | null
@@ -11643,7 +11403,6 @@ export type Database = {
           early_access_hours: number | null
           early_access_min_orders: number | null
           early_access_strategy: string | null
-          eclipse_free_eligible: boolean | null
           external_link: string | null
           id: string | null
           images: string[] | null
@@ -11677,7 +11436,6 @@ export type Database = {
           early_access_hours?: number | null
           early_access_min_orders?: number | null
           early_access_strategy?: string | null
-          eclipse_free_eligible?: boolean | null
           external_link?: string | null
           id?: string | null
           images?: string[] | null
@@ -11711,7 +11469,6 @@ export type Database = {
           early_access_hours?: number | null
           early_access_min_orders?: number | null
           early_access_strategy?: string | null
-          eclipse_free_eligible?: boolean | null
           external_link?: string | null
           id?: string | null
           images?: string[] | null
@@ -12941,8 +12698,6 @@ export type Database = {
         | "decision"
         | "note"
       store_team_role: "manager" | "editor" | "viewer"
-      subscription_billing_period: "monthly" | "annual"
-      subscription_tier: "basic" | "pro" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -13104,8 +12859,6 @@ export const Constants = {
         "note",
       ],
       store_team_role: ["manager", "editor", "viewer"],
-      subscription_billing_period: ["monthly", "annual"],
-      subscription_tier: ["basic", "pro", "premium"],
     },
   },
 } as const
