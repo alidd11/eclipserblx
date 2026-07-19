@@ -837,7 +837,7 @@ export async function handleProfile(interaction, serverContext) {
     }
   } else {
     const [subscriptionResult, orderCountResult, ordersTotalsResult] = await Promise.all([
-      supabase.from('subscriptions').select('tier, current_period_end, status')
+      (supabase.from as any)('subscriptions').select('tier, current_period_end, status')
         .eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('orders').select('id', { count: 'exact', head: true })
         .eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
@@ -1153,7 +1153,7 @@ export async function handleGetRole(interaction, serverContext) {
   if (serverContext.isMainServer) {
     const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-      supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
+      (supabase.from as any)('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
 
@@ -1192,7 +1192,7 @@ export async function handleGetRole(interaction, serverContext) {
       if (cfg.min_order_count && orderCount < cfg.min_order_count) eligible = false;
       if (cfg.min_order_amount && totalSpent < cfg.min_order_amount) eligible = false;
       if (cfg.requires_subscription) {
-        const { data: sub } = await supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle();
+        const { data: sub } = await (supabase.from as any)('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle();
         if (!sub) eligible = false;
       }
       if (eligible) rolesToAssign.push({ id: cfg.role_id, name: cfg.role_name });
@@ -1246,7 +1246,7 @@ export async function handleGetRole(interaction, serverContext) {
   if (serverContext.isMainServer && rolesAssigned.length === 0) {
     const [ordersRes, subRes, storeRes] = await Promise.all([
       supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-      supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
+      (supabase.from as any)('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
       supabase.from('stores').select('id').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
     ]);
     const eligibility = [];
@@ -1688,7 +1688,7 @@ export async function handleUpdate(interaction, serverContext) {
     if (serverContext.isMainServer) {
       const [ordersResult, subscriptionResult, storeResult] = await Promise.all([
         supabase.from('orders').select('id', { count: 'exact', head: true }).eq('user_id', profile.user_id).in('status', ['paid', 'completed']),
-        supabase.from('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
+        (supabase.from as any)('subscriptions').select('id').eq('user_id', profile.user_id).eq('status', 'active').maybeSingle(),
         supabase.from('stores').select('id, is_verified').eq('owner_id', profile.user_id).eq('status', 'approved').maybeSingle(),
       ]);
       const purchaseCount = ordersResult.count || 0;

@@ -45,7 +45,7 @@ export function SpecialOffersTab() {
   const { data: promotions, isLoading } = useQuery({
     queryKey: ['admin-promotions'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('promotions').select('*').order('created_at', { ascending: false });
+      const { data, error } = await (supabase.from as any)('promotions').select('*').order('created_at', { ascending: false });
       if (error) throw error;
       return data as any[];
     },
@@ -60,10 +60,10 @@ export function SpecialOffersTab() {
         max_claims: data.max_claims, new_users_only: data.new_users_only,
       };
       if (data.id) {
-        const { error } = await supabase.from('promotions').update(payload).eq('id', data.id);
+        const { error } = await (supabase.from as any)('promotions').update(payload).eq('id', data.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('promotions').insert({ ...payload, created_by: user?.id } as any);
+        const { error } = await (supabase.from as any)('promotions').insert({ ...payload, created_by: user?.id } as any);
         if (error) throw error;
       }
     },
@@ -73,7 +73,7 @@ export function SpecialOffersTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('promotions').delete().eq('id', id);
+      const { error } = await (supabase.from as any)('promotions').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => { toast.success('Deleted'); queryClient.invalidateQueries({ queryKey: ['admin-promotions'] }); setDeleteDialogOpen(false); },
