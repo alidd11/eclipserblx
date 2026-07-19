@@ -76,10 +76,11 @@ export default function SellerCommissions() {
  if (error) throw error;
  
  // Create a map of user_id -> hasEclipsePlus
- return data.reduce((acc, sub) => {
- acc[sub.user_id] = true;
- return acc;
- }, {} as Record<string, boolean>);
+  return (data as Array<{ user_id: string; status: string }>).reduce((acc, sub) => {
+  acc[sub.user_id] = true;
+  return acc;
+  }, {} as Record<string, boolean>);
+
  },
  enabled: !!stores && stores.length > 0,
  });
