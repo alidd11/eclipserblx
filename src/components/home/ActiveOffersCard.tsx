@@ -56,44 +56,12 @@ export const ActiveOffersCard = forwardRef<HTMLDivElement>(function ActiveOffers
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch active promotions
-  const { data: promotions = [], isLoading: promotionsLoading } = useQuery({
-    queryKey: ['active-promotions', user?.id ?? 'anon'],
-    queryFn: async () => {
-      const nowIso = new Date().toISOString();
-      const { data, error } = await supabase
-        .from('promotions')
-        .select('id, name, description, promotion_type, eclipse_plus_days, ends_at, new_users_only')
-        .eq('is_active', true)
-        .or(`ends_at.is.null,ends_at.gt.${nowIso}`)
-        .order('created_at', { ascending: false })
-        .limit(3);
-      
-      if (error) throw error;
-      return data as Promotion[];
-    },
-    enabled: !authLoading,
-    staleTime: 1000 * 60 * 5, // 5 min — promotions rarely change mid-session
-    refetchOnWindowFocus: false,
-  });
+  // Promotions system removed — return empty arrays
+  const promotions: Promotion[] = [];
+  const promotionsLoading = false;
+  const claimedPromotionIds: string[] = [];
+  const claimsLoading = false;
 
-  // Fetch user's claimed promotions
-  const { data: claimedPromotionIds = [], isLoading: claimsLoading } = useQuery({
-    queryKey: ['user-promotion-claims', user?.id],
-    queryFn: async () => {
-      if (!user) return [];
-      const { data, error } = await supabase
-        .from('promotion_claims')
-        .select('promotion_id')
-        .eq('user_id', user.id);
-      
-      if (error) throw error;
-      return data.map(claim => claim.promotion_id);
-    },
-    enabled: !authLoading && !!user,
-    staleTime: 1000 * 60 * 5,
-    refetchOnWindowFocus: false,
-  });
 
   // Fetch active discount codes
   const { data: discountCodes = [], isLoading: discountCodesLoading } = useQuery({
