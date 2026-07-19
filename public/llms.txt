@@ -1,0 +1,31 @@
+# Eclipse
+
+> Eclipse is a UK-based Roblox asset marketplace where creators buy and sell premium scripts, vehicles, maps, and game assets with instant delivery and low fees.
+
+Eclipse is a marketplace for Roblox developers. Buyers get instant downloads of premium roleplay scripts, vehicle packs, map builds, and other game assets. Sellers list products, manage stores, and receive payouts via Stripe Connect.
+
+## Pages
+
+- [Home](/): Overview of the Eclipse marketplace.
+- [Browse products](/products): All Roblox assets currently for sale.
+- [Featured](/featured): Curated featured products.
+- [Categories](/categories): Category-level browsing (scripts, vehicles, maps, UI, models).
+- [Free assets](/free): Free downloadable Roblox assets.
+- [Stores](/stores): Directory of seller storefronts.
+- [Sell on Eclipse](/sell): Information for creators who want to sell.
+- [Affiliate programme](/affiliate): Earn commission by referring buyers.
+- [FAQ](/faq): Common questions about orders, downloads, refunds and accounts.
+- [Help center](/help-center): Guides for buyers and sellers.
+- [Support](/support): Contact the support team.
+- [Contact](/contact): Business and press enquiries.
+- [Status](/status): Real-time platform status.
+- [Security](/security): Security practices and disclosure policy.
+- [Brand](/brand): Logos and brand assets.
+- [Changelog](/changelog): Product updates.
+
+## Legal
+
+- [Terms of service](/terms): Marketplace terms.
+- [Privacy policy](/privacy): How Eclipse handles user data.
+- [Refund policy](/refunds): Refund eligibility and process.
+- [DMCA](/dmca): Copyright and takedown policy.

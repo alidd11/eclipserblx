@@ -56,8 +56,13 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
   }, [searchParams]);
 
   useEffect(() => {
-    if (user && mode !== 'reset') navigate('/');
-  }, [user, navigate, mode]);
+    if (user && mode !== 'reset') {
+      // Honor ?next=<same-origin-path> so OAuth consent (and other flows) return the user to the original URL.
+      const rawNext = searchParams.get('next');
+      const safeNext = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
+      navigate(safeNext, { replace: true });
+    }
+  }, [user, navigate, mode, searchParams]);
 
   const getTitle = () => {
     switch (mode) {

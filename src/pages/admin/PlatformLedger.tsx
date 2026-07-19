@@ -77,9 +77,9 @@ export default function PlatformLedger() {
     queryKey: ['admin-ledger-summary', storeFilter, dateFrom, dateTo],
     queryFn: async () => {
       const { data: row, error } = await supabase.rpc('platform_ledger_summary', {
-        _store_id: storeFilter !== 'all' ? storeFilter : null,
-        _date_from: dateFrom || null,
-        _date_to: dateTo ? dateTo + 'T23:59:59' : null,
+        _store_id: storeFilter !== 'all' ? storeFilter : undefined,
+        _date_from: dateFrom || undefined,
+        _date_to: dateTo ? dateTo + 'T23:59:59' : undefined,
       }).single();
 
       if (error || !row) return { totalGross: 0, totalCommission: 0, totalStripe: 0, totalNet: 0, txCount: 0 };

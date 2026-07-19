@@ -97,7 +97,7 @@ export function DiscordRolePingsCard() {
  .eq('store_id', store.id)
  .order('created_at', { ascending: true });
  if (error) throw error;
- return data as RoleConfig[];
+ return data as unknown as RoleConfig[];
  },
  enabled: !!store?.id,
  });

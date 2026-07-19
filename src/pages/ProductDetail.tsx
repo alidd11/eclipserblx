@@ -107,9 +107,10 @@ export default function ProductDetail() {
  : product?.name
  ? `Buy ${product.name} on Eclipse marketplace`
  : undefined,
- canonicalPath: productNumber ? `/products/${productNumber}` : undefined,
- ogImage: product?.images?.[0] || undefined,
- });
+  canonicalPath: productNumber ? `/products/${productNumber}` : undefined,
+  ogImage: product?.images?.[0] || undefined,
+  ogType: 'product',
+  });
 
  const breadcrumbItems = useMemo(() => {
  const items = [{ name: 'Home', url: 'https://eclipserblx.com/' }];
