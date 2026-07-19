@@ -6919,10 +6919,12 @@ export type Database = {
           order_id: string
           order_item_id: string | null
           reason: string
+          refund_processed_at: string | null
           seller_responded_at: string | null
           seller_response: string | null
           status: string
           store_id: string
+          stripe_refund_id: string | null
           updated_at: string
         }
         Insert: {
@@ -6940,10 +6942,12 @@ export type Database = {
           order_id: string
           order_item_id?: string | null
           reason: string
+          refund_processed_at?: string | null
           seller_responded_at?: string | null
           seller_response?: string | null
           status?: string
           store_id: string
+          stripe_refund_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -6961,10 +6965,12 @@ export type Database = {
           order_id?: string
           order_item_id?: string | null
           reason?: string
+          refund_processed_at?: string | null
           seller_responded_at?: string | null
           seller_response?: string | null
           status?: string
           store_id?: string
+          stripe_refund_id?: string | null
           updated_at?: string
         }
         Relationships: [
