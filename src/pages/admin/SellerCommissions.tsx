@@ -227,7 +227,7 @@ export default function SellerCommissions() {
  Pro+
  </Badge>
  )}
- {store.eclipse_plus_discount_enabled === false ? (
+ {store.undefined === false ? (
  <Badge variant="outline" className="gap-1 text-xs shrink-0 text-red-400 border-red-400/30">
  <XCircle className="h-3 w-3" />
  Discounts Off

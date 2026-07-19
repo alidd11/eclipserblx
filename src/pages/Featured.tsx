@@ -112,7 +112,7 @@ export default function Featured() {
                       storeLogo={product.stores?.logo_url}
                       isVerified={product.stores?.is_verified}
                       isResellable={product.is_resellable}
-                      storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+                      storeEclipseEnabled={product.stores?.undefined_removed}
                     />
                   </div>
                 ))}
@@ -156,7 +156,7 @@ export default function Featured() {
                     storeLogo={product.stores?.logo_url}
                     isVerified={product.stores?.is_verified}
                     isResellable={product.is_resellable}
-                    storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+                    storeEclipseEnabled={product.stores?.undefined_removed}
                   />
                 ))}
               </div>
@@ -215,7 +215,7 @@ export default function Featured() {
                       storeLogo={product.stores?.logo_url}
                       isVerified={product.stores?.is_verified}
                       isResellable={product.is_resellable}
-                      storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+                      storeEclipseEnabled={product.stores?.undefined_removed}
                     />
                   </div>
                 ))}
@@ -277,7 +277,7 @@ function HeroProductCard({ product }: { product: any }) {
   const displayMedia = getFirstMediaPrioritizeVideo(product.images, 900, 506, 'contain');
   const isVideo = isVideoUrl(displayMedia);
 
-  const storeEclipseEnabled = product.stores?.eclipse_plus_discount_enabled;
+  const storeEclipseEnabled = product.stores?.undefined_removed;
   const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, storeEclipseEnabled);
   const memberPrice = isEligible ? getMemberPrice(product.price, product.category_id, product.is_resellable) : product.price;
   const discount = isEligible ? getDiscountPercent(product.category_id, product.is_resellable) : 0;

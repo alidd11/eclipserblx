@@ -150,7 +150,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
   const prefetch = usePrefetchProduct();
 
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.undefined_removed);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;
@@ -215,7 +215,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
 function SpotlightPrice({ product }: { product: { price: number; category_id: string | null; is_resellable: boolean; stores: { eclipse_plus_discount_enabled: boolean } | null } }) {
   const { formatPrice } = useCurrency();
   const { getMemberPrice, getDiscountPercent, isEligibleForDiscount } = useSubscription();
-  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.eclipse_plus_discount_enabled);
+  const isEligible = isEligibleForDiscount(product.category_id, product.is_resellable, product.stores?.undefined_removed);
   const memberPrice = getMemberPrice(product.price, product.category_id, product.is_resellable);
   const discountPercent = getDiscountPercent(product.category_id, product.is_resellable);
   const hasMemberDiscount = isEligible && memberPrice < product.price;

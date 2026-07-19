@@ -105,7 +105,7 @@ export function TrendingProducts() {
                   storeSlug={store?.slug}
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
-                  storeEclipseEnabled={store?.eclipse_plus_discount_enabled}
+                  storeEclipseEnabled={undefined}
                   createdAt={product.created_at}
                   priority
                 />

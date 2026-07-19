@@ -45,7 +45,7 @@ export function PromotedProductCard({ product, onClickTracked }: PromotedProduct
         storeSlug={product.stores?.slug}
         storeLogo={product.stores?.logo_url}
         isVerified={product.stores?.is_verified}
-        storeEclipseEnabled={product.stores?.eclipse_plus_discount_enabled}
+        storeEclipseEnabled={product.stores?.undefined_removed}
       />
     </div>
   );
