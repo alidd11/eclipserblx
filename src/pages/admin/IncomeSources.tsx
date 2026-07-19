@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { Area, AreaChart, ResponsiveContainer } from 'recharts';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 type IncomeSource = 'all' | 'orders' | 'credits' | 'commission';
 type TimePeriod = '7d' | '30d' | 'month' | 'year' | 'all';
@@ -38,9 +39,9 @@ interface UnifiedTransaction {
 }
 
 const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: typeof ShoppingCart; color: string; chartColor: string; badgeVariant: string }> = {
-  orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-emerald-500', chartColor: 'hsl(152, 69%, 53%)', badgeVariant: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: 'hsl(262, 100%, 71%)', badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
-  commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', chartColor: 'hsl(25, 95%, 53%)', badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+  orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-emerald-500', chartColor: CHART_COLORS.green2, badgeVariant: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
+  credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: CHART_COLORS.purple, badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+  commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', chartColor: CHART_COLORS.orange, badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
 };
 
 const sourceKeys = Object.keys(sourceConfig) as Exclude<IncomeSource, 'all'>[];

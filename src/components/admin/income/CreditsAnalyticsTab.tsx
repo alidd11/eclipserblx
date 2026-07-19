@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, format } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export function CreditsAnalyticsTab() {
  // Fetch all credit transactions
@@ -350,9 +351,9 @@ export function CreditsAnalyticsTab() {
  data={trendData}
  xKey="displayDate"
  series={[
- { dataKey: 'purchases', color: 'hsl(262 100% 71%)', name: 'Purchased' },
- { dataKey: 'spends', color: 'hsl(220 95% 59%)', name: 'Spent' },
- { dataKey: 'gifts', color: 'hsl(240 90% 65%)', name: 'Gifted' },
+ { dataKey: 'purchases', color: CHART_COLORS.purple, name: 'Purchased' },
+ { dataKey: 'spends', color: CHART_COLORS.blue, name: 'Spent' },
+ { dataKey: 'gifts', color: CHART_COLORS.indigo, name: 'Gifted' },
  ]}
  height={300}
  yFormatter={(v) => `£${v}`}

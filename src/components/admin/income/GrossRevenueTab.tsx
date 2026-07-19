@@ -9,6 +9,7 @@ import { startOfDay, startOfWeek, startOfMonth, startOfYear, isAfter, subDays, f
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { cn } from '@/lib/utils';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export function GrossRevenueTab() {
  const { data: incomeBreakdown, isLoading: breakdownLoading, isError: breakdownError, refetch: refetchBreakdown } = useQuery({
@@ -155,7 +156,7 @@ export function GrossRevenueTab() {
  <RevolutLineChart
  data={incomeTrend ?? []}
  xKey="displayDate"
- series={[{ dataKey: 'total', color: 'hsl(262 100% 71%)', name: 'Gross Revenue' }]}
+ series={[{ dataKey: 'total', color: CHART_COLORS.purple, name: 'Gross Revenue' }]}
  height={300}
  yFormatter={(v) => `£${v}`}
  tooltipFormatter={(v) => [`${formatGBP(Number(v))}`, 'Gross Revenue']}

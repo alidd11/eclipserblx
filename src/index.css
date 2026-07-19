@@ -94,6 +94,18 @@
     --sidebar-accent-foreground: 220 20% 12%;
     --sidebar-border: 220 14% 89%;
     --sidebar-ring: 235 80% 56%;
+
+    /* Chart categorical palette — lightness reduced vs. dark mode for contrast on light backgrounds */
+    --chart-1: 262 75% 55%;
+    --chart-2: 220 85% 48%;
+    --chart-3: 40 85% 42%;
+    --chart-4: 330 70% 45%;
+    --chart-5: 240 75% 50%;
+    --chart-6: 185 75% 38%;
+    --chart-7: 130 55% 34%;
+    --chart-8: 22 85% 42%;
+    --chart-9: 160 65% 34%;
+    --chart-10: 152 60% 34%;
   }
 
   /* Dark theme - ClearlyDev-inspired near-black with subtle contrast */
@@ -159,6 +171,18 @@
     --sidebar-accent-foreground: 210 8% 93%;
     --sidebar-border: 220 5% 15%;
     --sidebar-ring: 235 86% 65%;
+
+    /* Chart categorical palette — original vivid values, tuned for the near-black background */
+    --chart-1: 262 100% 71%;
+    --chart-2: 220 95% 59%;
+    --chart-3: 45 93% 58%;
+    --chart-4: 330 80% 60%;
+    --chart-5: 240 90% 65%;
+    --chart-6: 185 85% 50%;
+    --chart-7: 130 60% 50%;
+    --chart-8: 25 95% 53%;
+    --chart-9: 160 70% 50%;
+    --chart-10: 152 69% 53%;
   }
 
   /* ── Homepage hero utilities ── */

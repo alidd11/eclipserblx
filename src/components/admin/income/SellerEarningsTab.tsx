@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { subDays, format, isAfter, startOfDay, startOfWeek, startOfMonth } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export function SellerEarningsTab() {
  // 1. Seller transactions aggregate
@@ -316,8 +317,8 @@ export function SellerEarningsTab() {
  data={trendData}
  xKey="displayDate"
  series={[
- { dataKey: 'commission', color: 'hsl(262 100% 71%)', name: 'Platform Commission' },
- { dataKey: 'sellerNet', color: 'hsl(220 95% 59%)', name: 'Seller Net' },
+ { dataKey: 'commission', color: CHART_COLORS.purple, name: 'Platform Commission' },
+ { dataKey: 'sellerNet', color: CHART_COLORS.blue, name: 'Seller Net' },
  ]}
  height={256}
  yFormatter={(v) => `£${v}`}

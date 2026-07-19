@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format } from '@/lib/dateUtils';
 import { RevolutLineChart } from '@/components/ui/revolut-chart';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 interface StripeBalanceData {
  balance: { available: number; pending: number; currency: string };
@@ -165,8 +166,8 @@ export function StripeBalanceTab() {
  data={chartData}
  xKey="displayDate"
  series={[
- { dataKey: 'gross', color: 'hsl(262 100% 71%)', name: 'Gross Revenue' },
- { dataKey: 'net', color: 'hsl(220 95% 59%)', name: 'Net Revenue' },
+ { dataKey: 'gross', color: CHART_COLORS.purple, name: 'Gross Revenue' },
+ { dataKey: 'net', color: CHART_COLORS.blue, name: 'Net Revenue' },
  ]}
  height={300}
  yFormatter={(v) => `£${v}`}

@@ -14,6 +14,7 @@ import { PercentChange } from '@/components/admin/analytics/PercentChange';
 import { exportToCSV } from '@/lib/export-csv';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 export default function AdminAnalytics() {
  const [activeTab, setActiveTab] = useState('overview');
@@ -185,18 +186,18 @@ export default function AdminAnalytics() {
  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Downloads (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={downloadTrend || []} xKey="date" series={[{ dataKey: 'downloads', color: 'hsl(262 100% 71%)', name: 'Downloads', gradientId: 'dlGrad' }]} height={250} /></div>
+ <div className="p-4"><RevolutAreaChart data={downloadTrend || []} xKey="date" series={[{ dataKey: 'downloads', color: CHART_COLORS.purple, name: 'Downloads', gradientId: 'dlGrad' }]} height={250} /></div>
  </div>
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><ShoppingCart className="h-4 w-4" />Orders (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={orderTrend || []} xKey="date" series={[{ dataKey: 'orders', color: 'hsl(220 95% 59%)', name: 'Orders', gradientId: 'ordGrad' }]} height={250} /></div>
+ <div className="p-4"><RevolutAreaChart data={orderTrend || []} xKey="date" series={[{ dataKey: 'orders', color: CHART_COLORS.blue, name: 'Orders', gradientId: 'ordGrad' }]} height={250} /></div>
  </div>
  </div>
 
  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Users className="h-4 w-4" />New Users (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={userTrend || []} xKey="date" series={[{ dataKey: 'users', color: 'hsl(240 90% 65%)', name: 'Users', gradientId: 'usrGrad' }]} height={250} /></div>
+ <div className="p-4"><RevolutAreaChart data={userTrend || []} xKey="date" series={[{ dataKey: 'users', color: CHART_COLORS.indigo, name: 'Users', gradientId: 'usrGrad' }]} height={250} /></div>
  </div>
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" />Products by Category</h3></div>
@@ -254,8 +255,8 @@ export default function AdminAnalytics() {
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Visitor Trend (Last {rangeLabel})</h3></div>
  <div className="p-4">
  <RevolutAreaChart data={visitTrend || []} xKey="date" series={[
- { dataKey: 'new', color: 'hsl(262 100% 71%)', name: 'New' },
- { dataKey: 'returning', color: 'hsl(220 95% 59%)', name: 'Returning' },
+ { dataKey: 'new', color: CHART_COLORS.purple, name: 'New' },
+ { dataKey: 'returning', color: CHART_COLORS.blue, name: 'Returning' },
  ]} height={250} />
  </div>
  </div>
@@ -388,8 +389,8 @@ export default function AdminAnalytics() {
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Seller Activity (Last {rangeLabel})</h3></div>
  <div className="p-4">
  <RevolutAreaChart data={sellerAnalyticsTrend || []} xKey="date" series={[
- { dataKey: 'storeViews', color: 'hsl(262 100% 71%)', name: 'Store Views' },
- { dataKey: 'productViews', color: 'hsl(220 95% 59%)', name: 'Product Views' },
+ { dataKey: 'storeViews', color: CHART_COLORS.purple, name: 'Store Views' },
+ { dataKey: 'productViews', color: CHART_COLORS.blue, name: 'Product Views' },
  ]} height={250} />
  </div>
  </div>
@@ -450,7 +451,7 @@ export default function AdminAnalytics() {
 
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Referral Clicks (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={referralTrend || []} xKey="date" series={[{ dataKey: 'clicks', color: 'hsl(262 100% 71%)', name: 'Clicks' }]} height={250} /></div>
+ <div className="p-4"><RevolutAreaChart data={referralTrend || []} xKey="date" series={[{ dataKey: 'clicks', color: CHART_COLORS.purple, name: 'Clicks' }]} height={250} /></div>
  </div>
 
  <div className="border border-border rounded-xl overflow-hidden">

@@ -20,6 +20,7 @@ import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { IncomeErrorState } from './IncomeErrorState';
 import { cn } from '@/lib/utils';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 const AdminIncomeSources = lazy(() => import('@/pages/admin/IncomeSources').then(m => ({ default: m.default })));
 
@@ -254,8 +255,8 @@ export function RevenueDashboard() {
  }, [ordersData, commissionData, subsData, creditPurchases, stripeBalance, selectedPeriod]);
 
  const COMPOSITION_COLORS = [
- 'hsl(262 100% 71%)', 'hsl(220 95% 59%)', 'hsl(185 85% 50%)',
- 'hsl(45 93% 58%)', 'hsl(330 80% 60%)', 'hsl(130 60% 50%)',
+ CHART_COLORS.purple, CHART_COLORS.blue, CHART_COLORS.teal,
+ CHART_COLORS.gold, CHART_COLORS.pink, CHART_COLORS.green,
  ];
 
  return (
@@ -384,7 +385,7 @@ export function RevenueDashboard() {
  <RevolutAreaChart
  data={metrics.trendData}
  xKey="displayDate"
- series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
+ series={[{ dataKey: 'revenue', color: CHART_COLORS.purple, name: 'Revenue' }]}
  height={220}
  yFormatter={(v) => `£${v}`}
  />
@@ -411,8 +412,8 @@ export function RevenueDashboard() {
  }))}
  xKey="displayDate"
  series={[
- { dataKey: 'gross', color: 'hsl(262 100% 71%)', name: 'Gross' },
- { dataKey: 'net', color: 'hsl(160 70% 50%)', name: 'Net' },
+ { dataKey: 'gross', color: CHART_COLORS.purple, name: 'Gross' },
+ { dataKey: 'net', color: CHART_COLORS.emerald, name: 'Net' },
  ]}
  height={200}
  yFormatter={(v) => `£${v}`}

@@ -9,6 +9,7 @@ import { RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { cn } from '@/lib/utils';
 import { IncomeErrorState } from './IncomeErrorState';
 import { formatGBP } from '@/lib/formatters';
+import { CHART_COLORS } from '@/lib/chartColors';
 
 
 
@@ -384,7 +385,7 @@ export function FinancialOverview() {
  <RevolutAreaChart
  data={metrics.trendData}
  xKey="displayDate"
- series={[{ dataKey: 'revenue', color: 'hsl(262 100% 71%)', name: 'Revenue' }]}
+ series={[{ dataKey: 'revenue', color: CHART_COLORS.purple, name: 'Revenue' }]}
  height={200}
  yFormatter={(v) => `£${v}`}
  />
@@ -416,12 +417,12 @@ export function FinancialOverview() {
  className="h-2.5 w-2.5 rounded-full shrink-0"
  style={{
  backgroundColor: [
- 'hsl(262 100% 71%)',
- 'hsl(220 95% 59%)',
- 'hsl(185 85% 50%)',
- 'hsl(45 93% 58%)',
- 'hsl(330 80% 60%)',
- 'hsl(130 60% 50%)',
+ CHART_COLORS.purple,
+ CHART_COLORS.blue,
+ CHART_COLORS.teal,
+ CHART_COLORS.gold,
+ CHART_COLORS.pink,
+ CHART_COLORS.green,
  ][i % 6],
  }}
  />
