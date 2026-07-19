@@ -19,7 +19,7 @@ export function LandingTrustSignals() {
       icon: Percent,
       titleKey: 'landing.industryLowFees',
       descKey: 'landing.industryLowFeesDesc',
-      highlight: '10%',
+      highlight: '15%',
     },
     {
       icon: Zap,

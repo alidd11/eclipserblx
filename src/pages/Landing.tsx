@@ -5,6 +5,7 @@ import { LandingHero } from '@/components/landing/LandingHero';
 // Eager-load above-the-fold sections (no lazy)
 import { TrendingProducts } from '@/components/landing/TrendingProducts';
 
+const LandingTrustSignals = lazy(() => import('@/components/landing/LandingTrustSignals').then(m => ({ default: m.LandingTrustSignals })));
 const ActiveOffersCard = lazy(() => import('@/components/home/ActiveOffersCard').then(m => ({ default: m.ActiveOffersCard })));
 const ForYouSection = lazy(() => import('@/components/home/ForYouSection').then(m => ({ default: m.ForYouSection })));
 const AbandonedCartBanner = lazy(() => import('@/components/marketplace/AbandonedCartBanner').then(m => ({ default: m.AbandonedCartBanner })));
@@ -39,6 +40,15 @@ export default function Landing() {
       <SectionErrorBoundary section="trending" compact>
         <TrendingProducts />
       </SectionErrorBoundary>
+
+      {/* Why Choose Eclipse — trust signals */}
+      <LazySection minHeight="150px" rootMargin="300px">
+        <SectionErrorBoundary section="trust-signals" compact>
+          <Suspense fallback={null}>
+            <LandingTrustSignals />
+          </Suspense>
+        </SectionErrorBoundary>
+      </LazySection>
 
       {/* Promotions */}
       <SectionErrorBoundary section="promotions" compact>

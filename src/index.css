@@ -300,6 +300,16 @@
   .glass-effect {
     @apply bg-card/90;
   }
+
+  /* Signature hover glow — used sparingly on hero/featured moments only */
+  .glow-primary-hover {
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .glow-primary-hover:hover {
+    box-shadow: var(--glow-primary);
+    border-color: hsl(var(--primary) / 0.4);
+  }
   
   .scanline {
     /* Removed — no scanline effect */

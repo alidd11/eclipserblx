@@ -88,7 +88,7 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
   return (
     <Link
       to={`/products/${hero.slug}`}
-      className="group relative lg:col-span-2 overflow-hidden border border-border bg-card"
+      className="group relative lg:col-span-2 overflow-hidden border border-border bg-card glow-primary-hover"
     >
       <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] bg-muted overflow-hidden">
         <img
