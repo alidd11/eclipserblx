@@ -1,6 +1,6 @@
 /**
  * GlobalBackground - Fixed subtle texture background layer
- * Renders behind all content for a premium, immersive dark aesthetic
+ * Renders behind all content; fully theme-aware (light/dark via CSS vars)
  */
 export function GlobalBackground() {
   return (

@@ -31,7 +31,70 @@
 /* Fonts loaded via <link> in index.html for faster FCP */
 
 @layer base {
-  /* App is dark-only — no light theme variables needed */
+  /* Light theme (default) — follows system prefers-color-scheme, no manual toggle */
+  :root {
+    --radius: 0.5rem;
+
+    --background: 220 20% 99%;
+    --foreground: 220 20% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 220 20% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+
+    --primary: 235 80% 56%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 215 65% 42%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 220 16% 95%;
+    --muted-foreground: 220 9% 40%;
+
+    --accent: 235 65% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 74% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 145 65% 30%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 42 90% 42%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 14% 89%;
+    --input: 220 16% 94%;
+    --ring: 235 80% 56%;
+
+    /* Accent tokens */
+    --neon-purple: 235 75% 48%;
+    --neon-blue: 215 75% 40%;
+    --neon-pink: 340 60% 45%;
+    --neon-green: 145 65% 34%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(235 80% 56%), hsl(215 75% 42%));
+    --gradient-accent: linear-gradient(135deg, hsl(235 65% 50%), hsl(250 55% 52%));
+    --gradient-success: linear-gradient(135deg, hsl(145 65% 30%), hsl(170 65% 30%));
+    --gradient-gaming: linear-gradient(135deg, hsl(235 80% 56%), hsl(280 60% 48%), hsl(340 60% 45%));
+
+    --glow-purple: 0 4px 16px hsl(235 80% 56% / 0.14);
+    --glow-blue: 0 4px 16px hsl(215 75% 42% / 0.14);
+    --glow-pink: 0 4px 16px hsl(340 60% 45% / 0.14);
+    --glow-primary: 0 4px 20px hsl(235 80% 56% / 0.16);
+
+    /* Sidebar - harmonized with card/background for cohesive feel */
+    --sidebar-background: 220 18% 97%;
+    --sidebar-foreground: 220 20% 12%;
+    --sidebar-primary: 235 80% 56%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 16% 93%;
+    --sidebar-accent-foreground: 220 20% 12%;
+    --sidebar-border: 220 14% 89%;
+    --sidebar-ring: 235 80% 56%;
+  }
 
   /* Dark theme - ClearlyDev-inspired near-black with subtle contrast */
   .dark {
@@ -100,14 +163,14 @@
 
   /* ── Homepage hero utilities ── */
   .text-gradient-hero {
-    background: linear-gradient(135deg, hsl(235 86% 65%), hsl(215 85% 55%), hsl(250 60% 60%));
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .section-band {
-    background-color: hsl(220 8% 7%);
+    background-color: hsl(var(--muted));
   }
 
   @keyframes hero-shimmer {
@@ -127,7 +190,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(90deg, transparent, hsl(235 86% 65% / 0.3), transparent);
+    background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3), transparent);
     animation: hero-shimmer 4s ease-in-out infinite;
   }
 
@@ -256,11 +319,7 @@
   .gaming-card {
     @apply bg-card border border-border rounded-lg;
   }
-  
-  .dark .gaming-card {
-    background: hsl(220 7% 10%);
-  }
-  
+
   .gaming-card-hover {
     @apply gaming-card transition-colors duration-200;
   }

@@ -8,9 +8,6 @@ import "./index.css";
 import "@fontsource/jetbrains-mono/500.css";
 import "./i18n";
 
-// Lock to dark mode permanently
-document.documentElement.classList.add("dark");
-
 // ── Enterprise PWA: schedule non-critical work after first paint ──
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);

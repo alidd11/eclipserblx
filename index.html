@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
-    
+    <!-- Apply dark/light class before first paint, strictly from the OS setting — no toggle, no persistence -->
+    <script>document.documentElement.classList.toggle('dark', window.matchMedia('(prefers-color-scheme: dark)').matches);</script>
+
     <!-- CSP enforced via HTTP headers in production; meta tag removed to prevent iframe/preview blocking -->
     
     <!-- Security Headers (X-Frame-Options removed — only valid as HTTP header; frame-ancestors in CSP handles it) -->
@@ -47,7 +49,8 @@
       @font-face{font-family:'Source Sans 3';font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/source-sans-3-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
       *,*::before,*::after{box-sizing:border-box;border-width:0;border-style:solid}
       html{line-height:1.5;-webkit-text-size-adjust:100%;tab-size:4;font-family:'Source Sans 3',ui-sans-serif,system-ui,sans-serif}
-      body{margin:0;line-height:inherit;background-color:#0f1012;color:#edeeef;overscroll-behavior:none}
+      body{margin:0;line-height:inherit;background-color:hsl(var(--background));color:hsl(var(--foreground));overscroll-behavior:none}
+      :root{--background:220 20% 99%;--foreground:220 20% 12%;--card:0 0% 100%;--card-foreground:220 20% 12%;--primary:235 80% 56%;--primary-foreground:0 0% 100%}
       .dark{--background:220 8% 6%;--foreground:210 8% 93%;--card:220 7% 10%;--card-foreground:210 8% 93%;--primary:235 86% 65%;--primary-foreground:0 0% 100%}
       #root{min-height:100dvh;display:flex;flex-direction:column}
       img,video{max-width:100%;height:auto}
@@ -100,27 +103,26 @@
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none">Skip to main content</a>
     <!-- Static HTML shell: visible to crawlers & users before JS boots -->
     <div id="root">
-      <div id="static-shell" style="max-width:1200px;margin:0 auto;padding:16px 20px;font-family:'Source Sans 3',system-ui,sans-serif;color:#edeeef">
-        <header style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08)">
-          <a href="/" aria-label="Eclipse home" style="font-family:'Sora',sans-serif;font-size:1.25rem;font-weight:700;color:#edeeef;text-decoration:none">Eclipse</a>
+      <div id="static-shell" style="max-width:1200px;margin:0 auto;padding:16px 20px;font-family:'Source Sans 3',system-ui,sans-serif;color:hsl(var(--foreground));background-color:hsl(var(--background))">
+        <header style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid hsl(var(--border))">
+          <a href="/" aria-label="Eclipse home" style="font-family:'Sora',sans-serif;font-size:1.25rem;font-weight:700;color:hsl(var(--foreground));text-decoration:none">Eclipse</a>
           <nav aria-label="Main navigation" style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.875rem">
-            <a href="/products" style="color:#a0a8c0">Products</a>
-            <a href="/stores" style="color:#a0a8c0">Stores</a>
-            <a href="/categories" style="color:#a0a8c0">Categories</a>
-            <a href="/featured" style="color:#a0a8c0">Featured</a>
-            <a href="/eclipse-plus" style="color:#a0a8c0">Eclipse+</a>
-            <a href="/sell" style="color:#a0a8c0">Sell</a>
+            <a href="/products" style="color:hsl(var(--muted-foreground))">Products</a>
+            <a href="/stores" style="color:hsl(var(--muted-foreground))">Stores</a>
+            <a href="/categories" style="color:hsl(var(--muted-foreground))">Categories</a>
+            <a href="/featured" style="color:hsl(var(--muted-foreground))">Featured</a>
+            <a href="/sell" style="color:hsl(var(--muted-foreground))">Sell</a>
           </nav>
         </header>
         <main id="static-main" style="padding:40px 0;text-align:center">
           <h1 style="font-family:'Sora',sans-serif;font-size:1.75rem;font-weight:700;margin:0 0 12px">The Roblox Asset Marketplace</h1>
-          <p style="color:#a0a8c0;max-width:600px;margin:0 auto 24px;line-height:1.6">Browse premium roleplay scripts, vehicles, maps and game assets. Lower fees than competitors, instant delivery.</p>
+          <p style="color:hsl(var(--muted-foreground));max-width:600px;margin:0 auto 24px;line-height:1.6">Browse premium roleplay scripts, vehicles, maps and game assets. Lower fees than competitors, instant delivery.</p>
         </main>
-        <script>!function(){var p=location.pathname,m=document.getElementById('static-main');if(!m)return;var h=m.querySelector('h1'),d=m.querySelector('p');if(!h||!d)return;var r={'/products':['Browse Products','Discover hundreds of premium Roblox assets including scripts, vehicles, maps and more.'],'/categories':['Categories','Browse Roblox assets by category \u2014 scripts, vehicles, maps, tools and more.'],'/featured':['Featured Products','Hand-picked featured Roblox assets and top sellers on Eclipse.'],'/stores':['Browse Stores','Discover verified Roblox asset stores on Eclipse marketplace.'],'/eclipse-plus':['Eclipse+ Membership','Get exclusive perks, early access and discounts with Eclipse+ membership.'],'/sell':['Start Selling on Eclipse','Sell your Roblox creations \u2014 lower fees, fast payouts, and a growing community.']};var v=r[p];if(v){h.textContent=v[0];d.textContent=v[1]}}()</script>
+        <script>!function(){var p=location.pathname,m=document.getElementById('static-main');if(!m)return;var h=m.querySelector('h1'),d=m.querySelector('p');if(!h||!d)return;var r={'/products':['Browse Products','Discover hundreds of premium Roblox assets including scripts, vehicles, maps and more.'],'/categories':['Categories','Browse Roblox assets by category \u2014 scripts, vehicles, maps, tools and more.'],'/featured':['Featured Products','Hand-picked featured Roblox assets and top sellers on Eclipse.'],'/stores':['Browse Stores','Discover verified Roblox asset stores on Eclipse marketplace.'],'/sell':['Start Selling on Eclipse','Sell your Roblox creations \u2014 lower fees, fast payouts, and a growing community.']};var v=r[p];if(v){h.textContent=v[0];d.textContent=v[1]}}()</script>
       </div>
     </div>
     <noscript>
-      <div style="max-width:800px;margin:40px auto;padding:0 20px;font-family:system-ui,sans-serif;color:#edeeef">
+      <div style="max-width:800px;margin:40px auto;padding:0 20px;font-family:system-ui,sans-serif;color:#101114;background-color:#fff">
         <h1>Eclipse — Roblox Asset Marketplace</h1>
         <p>Eclipse is the best Roblox asset marketplace. Buy premium roleplay scripts, vehicles, maps and game assets with lower fees and instant delivery.</p>
         <nav>
@@ -129,7 +131,6 @@
             <li><a href="/stores">Browse Stores</a></li>
             <li><a href="/categories">Categories</a></li>
             <li><a href="/featured">Featured</a></li>
-            <li><a href="/eclipse-plus">Eclipse+</a></li>
             <li><a href="/sell">Start Selling</a></li>
             <li><a href="/help-center">Help Centre</a></li>
             <li><a href="/contact">Contact</a></li>
@@ -149,7 +150,7 @@
               var s=document.getElementById('static-shell');
               if(s){
                 var m=s.querySelector('#static-main');
-                if(m) m.innerHTML='<div style="padding:40px 0;text-align:center"><p style="color:#a0a8c0;margin-bottom:20px">This page works best in your browser.</p><a href="'+location.href+'" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">Open in Browser</a></div>';
+                if(m) m.innerHTML='<div style="padding:40px 0;text-align:center"><p style="color:hsl(var(--muted-foreground));margin-bottom:20px">This page works best in your browser.</p><a href="'+location.href+'" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;background:#4f46e5;color:#fff;border-radius:8px;text-decoration:none;font-weight:600">Open in Browser</a></div>';
               }
             }
           }

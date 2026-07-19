@@ -1,13 +1,22 @@
 import { useEffect } from 'react';
 
-// Theme colors for dark mode (app is dark-only)
-const THEME_COLORS: Record<string, string> = {
+// Theme colors per mode — mirrors the --background token in index.css
+const THEME_COLORS_DARK: Record<string, string> = {
   default: '#0a0a0f',
   purple: '#0a0a0f',
   ocean: '#0a1214',
   ember: '#140d0a',
   forest: '#0a120b',
   mono: '#0d0d0d',
+};
+
+const THEME_COLORS_LIGHT: Record<string, string> = {
+  default: '#fbfbfc',
+  purple: '#fbfbfc',
+  ocean: '#f4fafb',
+  ember: '#fbf7f4',
+  forest: '#f4faf5',
+  mono: '#fafafa',
 };
 
 const THEME_CLASS_MAP: Record<string, string> = {
@@ -37,7 +46,8 @@ function getActiveStaffTheme(html: HTMLElement): string | null {
 function getResolvedThemeColor(html: HTMLElement): string {
   const staffTheme = getActiveStaffTheme(html);
   const colorTheme = staffTheme || 'default';
-  return THEME_COLORS[colorTheme] || THEME_COLORS.default;
+  const palette = html.classList.contains('dark') ? THEME_COLORS_DARK : THEME_COLORS_LIGHT;
+  return palette[colorTheme] || palette.default;
 }
 
 function upsertMetaTag(name: string, content: string) {
@@ -63,10 +73,11 @@ function syncBrowserTheme(html: HTMLElement) {
   upsertMetaTag('theme-color', themeColor);
   upsertMetaTag('msapplication-TileColor', themeColor);
 
+  const colorScheme = html.classList.contains('dark') ? 'dark' : 'light';
   html.style.backgroundColor = themeColor;
-  html.style.colorScheme = 'dark';
+  html.style.colorScheme = colorScheme;
   document.body.style.setProperty('background-color', themeColor);
-  document.body.style.colorScheme = 'dark';
+  document.body.style.colorScheme = colorScheme;
   document.getElementById('root')?.style.setProperty('background-color', themeColor);
 }
 

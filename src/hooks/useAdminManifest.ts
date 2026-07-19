@@ -31,10 +31,12 @@ export function useAdminManifest() {
       manifestLink.setAttribute('href', targetManifest);
     }
 
-    // Update theme-color for admin
+    // Update theme-color: fixed purple for admin, or the resolved light/dark
+    // default for customer routes (mirrors useThemeColor's default palette)
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute('content', isAdminRoute ? '#7c3aed' : '#0e0f11');
+      const customerColor = document.documentElement.classList.contains('dark') ? '#0a0a0f' : '#fbfbfc';
+      themeColorMeta.setAttribute('content', isAdminRoute ? '#7c3aed' : customerColor);
     }
 
     // Update apple-mobile-web-app-title

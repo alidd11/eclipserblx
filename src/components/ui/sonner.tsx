@@ -9,7 +9,7 @@ const Toaster = React.forwardRef<React.ElementRef<typeof Sonner>, ToasterProps>(
     return (
       <Sonner
         ref={ref}
-        theme="dark"
+        theme="system"
         className="toaster group"
         toastOptions={{
           classNames: {

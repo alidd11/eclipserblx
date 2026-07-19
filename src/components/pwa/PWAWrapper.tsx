@@ -4,6 +4,7 @@ import { useServiceWorkerUpdate } from '@/hooks/useServiceWorkerUpdate';
 import { useAppVersionCheck } from '@/hooks/useAppVersionCheck';
 import { useSystemStatus } from '@/hooks/useSystemStatus';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useSystemTheme } from '@/hooks/useSystemTheme';
 import { toast } from 'sonner';
 
 interface PWAWrapperProps {
@@ -26,6 +27,9 @@ export function PWAWrapper({ children }: PWAWrapperProps) {
 
   // Dynamic theme color for PWA
   useThemeColor();
+
+  // Keep dark/light in sync with the OS setting — no manual toggle exists
+  useSystemTheme();
 
   useEffect(() => {
     const root = document.documentElement;

@@ -22,7 +22,7 @@ export function HeroBanner() {
       <div
         className="absolute inset-0"
         style={{
-          background: 'radial-gradient(ellipse at 50% 40%, hsl(235 86% 65% / 0.08), transparent 70%), hsl(220 8% 6% / 0.55)',
+          background: 'radial-gradient(ellipse at 50% 40%, hsl(var(--primary) / 0.08), transparent 70%), hsl(var(--background) / 0.55)',
         }}
       />
 

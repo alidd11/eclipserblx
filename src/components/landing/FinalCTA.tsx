@@ -13,7 +13,7 @@ export function FinalCTA() {
             className="absolute inset-0 rounded-2xl pointer-events-none"
             style={{
               padding: '1px',
-              background: 'linear-gradient(135deg, hsl(235 86% 65% / 0.4), hsl(215 85% 55% / 0.2), hsl(220 5% 15% / 0.6))',
+              background: 'linear-gradient(135deg, hsl(var(--primary) / 0.4), hsl(var(--secondary) / 0.2), hsl(var(--border) / 0.6))',
               WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
               WebkitMaskComposite: 'xor',
               maskComposite: 'exclude',
