@@ -289,9 +289,10 @@ export default function StoreReviewsPage() {
  {[1, 2, 3, 4, 5].map((star) => (
  <Star
  key={star}
- className="h-3.5 w-3.5"
- fill={star <= review.rating ? '#facc15' : 'transparent'}
- stroke={star <= review.rating ? '#facc15' : 'currentColor'}
+ className={cn(
+ 'h-3.5 w-3.5',
+ star <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'
+ )}
  />
  ))}
  </div>
