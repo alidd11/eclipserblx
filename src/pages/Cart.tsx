@@ -11,6 +11,8 @@ import { useTranslation } from 'react-i18next';
 import { CartUpsells } from '@/components/marketplace/CartUpsells';
 import { LoyaltyBadge } from '@/components/marketplace/LoyaltyBadge';
 import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
+import { CartTrendingFallback } from '@/components/marketplace/CartTrendingFallback';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 export default function Cart() {
@@ -19,6 +21,7 @@ export default function Cart() {
   const { t } = useTranslation();
   const { items, removeItem, clearCart, total } = useCart();
   const { formatPrice } = useCurrency();
+  const { recentlyViewed } = useRecentlyViewed();
 
   if (items.length === 0) {
     return (
@@ -36,7 +39,7 @@ export default function Cart() {
               <Link to="/products">{t('common.browseProducts')}</Link>
             </Button>
           </div>
-          <RecentlyViewedProducts />
+          {recentlyViewed.length > 0 ? <RecentlyViewedProducts /> : <CartTrendingFallback />}
         </div>
       </MainLayout>
     );
