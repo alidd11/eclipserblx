@@ -1,5 +1,5 @@
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Button } from '@/components/ui/button';
+
 import { Input } from '@/components/ui/input';
 import { SITE_NAME } from '@/lib/constants';
 import { 
@@ -31,14 +31,16 @@ interface FAQItem {
 }
 
 interface FAQCategory {
+  id: string;
   icon: React.ElementType;
   titleKey: string;
   color: string;
   items: FAQItem[];
 }
 
-const faqCategories: FAQCategory[] = [
+const faqCategories: (FAQCategory & { id: string })[] = [
   {
+    id: 'orders',
     icon: ShoppingBag,
     titleKey: 'faq.ordersAndPurchases',
     color: 'text-secondary',
@@ -58,6 +60,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'downloads',
     icon: Download,
     titleKey: 'faq.downloads',
     color: 'text-success',
@@ -81,6 +84,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'payments',
     icon: CreditCard,
     titleKey: 'faq.paymentsBilling',
     color: 'text-accent',
@@ -104,6 +108,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'refunds',
     icon: RefreshCw,
     titleKey: 'faq.refundsReturns',
     color: 'text-warning',
@@ -123,9 +128,10 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'bots',
     icon: Bot,
     titleKey: 'faq.discordBots',
-    color: 'text-indigo-500',
+    color: 'text-primary',
     items: [
       {
         question: 'How do I set up a Discord bot?',
@@ -146,6 +152,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'security',
     icon: Shield,
     titleKey: 'faq.accountSecurity',
     color: 'text-destructive',
@@ -169,6 +176,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'selling',
     icon: ShoppingBag,
     titleKey: 'faq.sellingOnEclipse',
     color: 'text-primary',
@@ -247,12 +255,15 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
   const Icon = category.icon;
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
+    <section id={category.id} className="scroll-mt-24 bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-3 p-5 border-b border-border bg-muted/30">
         <div className={cn("p-2.5 rounded-lg bg-background", category.color)}>
           <Icon className="h-5 w-5" />
         </div>
         <h2 className="text-lg font-semibold">{t(category.titleKey)}</h2>
+        <span className="ml-auto text-xs font-mono text-muted-foreground">
+          {filteredItems.length.toString().padStart(2, '0')}
+        </span>
       </div>
       <div className="px-5">
         {filteredItems.map((item, index) => (
@@ -264,7 +275,39 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
           />
         ))}
       </div>
-    </div>
+    </section>
+  );
+}
+
+function CategoryQuickNav({ searchQuery }: { searchQuery: string }) {
+  const { t } = useTranslation();
+  const visible = faqCategories.filter((c) =>
+    c.items.some(
+      (i) =>
+        i.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.answer.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+  if (visible.length === 0) return null;
+  return (
+    <nav className="hidden lg:block sticky top-24 space-y-1" aria-label="FAQ categories">
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+        Categories
+      </p>
+      {visible.map((c) => {
+        const Icon = c.icon;
+        return (
+          <a
+            key={c.id}
+            href={`#${c.id}`}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Icon className="h-4 w-4" />
+            {t(c.titleKey)}
+          </a>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -292,95 +335,118 @@ export default function FAQ() {
   return (
     <MainLayout>
       <FAQSchema faqs={faqCategories.flatMap((c) => c.items)} />
-      <div className="container mx-auto px-4 py-6 md:py-12 max-w-4xl">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-display font-bold mb-4">{t('faq.title')}</h1>
-          <p className="text-muted-foreground text-lg mb-8">
-            {t('faq.subtitle', { siteName: SITE_NAME })}
-          </p>
-          
-          <div className="relative max-w-xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder={t('faq.searchQuestions')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 text-base bg-muted/50 border-border"
-            />
-          </div>
-          
-          {searchQuery && (
-            <p className="mt-4 text-sm text-muted-foreground">
-              {t('faq.showingResults', { filtered: filteredCount, total: totalQuestions })}
+      <div className="container mx-auto px-4 py-10 md:py-16 max-w-6xl">
+        {/* Editorial hero */}
+        <div className="grid md:grid-cols-[1.15fr_1fr] gap-10 items-end mb-12">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-4">
+              Frequently asked
             </p>
-          )}
-        </div>
-
-        <div className="space-y-6 mb-12">
-          {faqCategories.map((category, index) => (
-            <FAQCategorySection 
-              key={index} 
-              category={category} 
-              searchQuery={searchQuery}
-            />
-          ))}
-          
-          {searchQuery && filteredCount === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="text-lg">{t('faq.noResults', { query: searchQuery })}</p>
-              <p className="text-sm mt-2">{t('faq.noResultsHint')}</p>
+            <h1 className="font-display font-bold text-4xl md:text-5xl leading-[1.05] tracking-tight text-foreground">
+              {t('faq.title')}
+            </h1>
+            <p className="mt-5 text-muted-foreground text-base md:text-lg max-w-lg leading-relaxed">
+              {t('faq.subtitle', { siteName: SITE_NAME })}
+            </p>
+          </div>
+          <div>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder={t('faq.searchQuestions')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-11 h-12 text-base bg-card border-border"
+              />
             </div>
-          )}
+            {searchQuery && (
+              <p className="mt-3 text-xs text-muted-foreground">
+                {t('faq.showingResults', { filtered: filteredCount, total: totalQuestions })}
+              </p>
+            )}
+          </div>
         </div>
 
-        <div className="bg-muted/30 rounded-xl p-8">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-display font-semibold mb-2">{t('faq.stillHaveQuestions')}</h2>
-            <p className="text-muted-foreground">
-              {t('faq.supportReady')}
-            </p>
+        {/* Sidebar nav + accordions */}
+        <div className="lg:grid lg:grid-cols-[200px_1fr] lg:gap-10">
+          <CategoryQuickNav searchQuery={searchQuery} />
+
+          <div className="space-y-5 mb-16">
+            {faqCategories.map((category, index) => (
+              <FAQCategorySection
+                key={index}
+                category={category}
+                searchQuery={searchQuery}
+              />
+            ))}
+
+            {searchQuery && filteredCount === 0 && (
+              <div className="text-center py-12 border border-dashed border-border rounded-xl">
+                <p className="text-base text-foreground">{t('faq.noResults', { query: searchQuery })}</p>
+                <p className="text-sm text-muted-foreground mt-2">{t('faq.noResultsHint')}</p>
+              </div>
+            )}
           </div>
-          
-          <div className="grid sm:grid-cols-3 gap-4">
-            <Button
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              onClick={() => {
-                const chatButton = document.querySelector('[data-chat-widget]');
-                if (chatButton instanceof HTMLElement) chatButton.click();
-              }}
-            >
-              <MessageCircle className="h-5 w-5" />
-              <span className="font-medium">{t('faq.liveChat')}</span>
-              <span className="text-xs text-muted-foreground">{t('faq.liveChatHours')}</span>
-            </Button>
-            
-            <Button
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              asChild
-            >
-              <a href={discordUrl} target="_blank" rel="noopener noreferrer">
-                <Users className="h-5 w-5" />
-                <span className="font-medium">{t('faq.discord')}</span>
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  {t('faq.communitySupport')} <ExternalLink className="h-3 w-3" />
+        </div>
+
+        {/* Closing: primary CTA + secondary channels */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden">
+          <div className="grid md:grid-cols-[1.3fr_1fr]">
+            <div className="p-7 md:p-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+                Didn't find it?
+              </p>
+              <h2 className="font-display text-2xl md:text-3xl font-semibold text-foreground leading-tight tracking-tight">
+                {t('faq.stillHaveQuestions')}
+              </h2>
+              <p className="mt-3 text-muted-foreground max-w-md leading-relaxed">
+                {t('faq.supportReady')}
+              </p>
+              <button
+                onClick={() => {
+                  const btn = document.querySelector('[data-chat-widget]');
+                  if (btn instanceof HTMLElement) btn.click();
+                }}
+                className="inline-flex items-center gap-2 h-11 px-5 mt-5 rounded-lg bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity"
+              >
+                <MessageCircle className="h-4 w-4" />
+                {t('faq.liveChat')}
+                <span className="text-xs opacity-70 font-normal ml-1">
+                  · {t('faq.liveChatHours')}
                 </span>
+              </button>
+            </div>
+
+            <div className="border-t md:border-t-0 md:border-l border-border bg-muted/30 p-6 md:p-8 grid content-center gap-1">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+                Other channels
+              </p>
+              <a
+                href={discordUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center justify-between py-2.5 border-b border-border/60 last:border-0"
+              >
+                <span className="flex items-center gap-3 text-sm text-foreground">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  {t('faq.discord')}
+                </span>
+                <ExternalLink className="h-3.5 w-3.5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </a>
-            </Button>
-            
-            <Button
-              variant="outline"
-              className="h-auto py-4 flex flex-col items-center gap-2"
-              asChild
-            >
-              <Link to="/support">
-                <ChevronRight className="h-5 w-5" />
-                <span className="font-medium">{t('faq.supportCentre')}</span>
-                <span className="text-xs text-muted-foreground">{t('faq.browseHelp')}</span>
+              <Link
+                to="/support"
+                className="group flex items-center justify-between py-2.5 border-b border-border/60 last:border-0"
+              >
+                <span className="flex items-center gap-3 text-sm text-foreground">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  {t('faq.supportCentre')}
+                </span>
+                <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                  {t('faq.browseHelp')}
+                </span>
               </Link>
-            </Button>
+            </div>
           </div>
         </div>
       </div>

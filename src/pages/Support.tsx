@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { SITE_NAME } from '@/lib/constants';
 import { useDiscordUrl } from '@/hooks/useDiscordUrl';
 import { CreateTicketDialog } from '@/components/support/CreateTicketDialog';
 import { GuestSupportForm } from '@/components/support/GuestSupportForm';
@@ -15,16 +14,18 @@ import {
   CreditCard,
   ShieldCheck,
   MessageCircle,
-  
   Package,
   ChevronDown,
+  ArrowRight,
+  Users,
+  Clock,
 } from 'lucide-react';
 
-const supportCategories = [
+const helpTopics = [
   {
     icon: Download,
     title: 'Downloads & Products',
-    description: 'Issues with downloading products, accessing your purchases, or product-related questions.',
+    description: 'Accessing purchases, cooldowns, compatibility, re-downloads.',
     articles: [
       'How to access your downloads',
       'Understanding the 48-hour download cooldown',
@@ -35,7 +36,7 @@ const supportCategories = [
   {
     icon: CreditCard,
     title: 'Payments & Orders',
-    description: 'Payment issues, order status, invoices, and billing questions.',
+    description: 'Methods, invoices, discounts, order history, recovery.',
     articles: [
       'Accepted payment methods',
       'How to apply discount codes',
@@ -47,7 +48,7 @@ const supportCategories = [
   {
     icon: ShieldCheck,
     title: 'Account & Security',
-    description: 'Account settings, password resets, and security-related help.',
+    description: 'Sign-in, passwords, profile, two-factor.',
     articles: [
       'Creating your account',
       'Resetting your password',
@@ -58,7 +59,7 @@ const supportCategories = [
   {
     icon: FileQuestion,
     title: 'Refunds & Returns',
-    description: 'Information about our refund policy and how to request a refund.',
+    description: 'Policy, eligibility, requesting, processing times.',
     articles: [
       'Understanding our refund policy',
       'Eligibility for refunds',
@@ -70,188 +71,197 @@ const supportCategories = [
 
 export default function Support() {
   const { discordUrl } = useDiscordUrl();
-  usePageMeta({ title: 'Support', description: 'Get help with Eclipse marketplace. Browse support articles, open a ticket or contact our team.', canonicalPath: '/support' });
+  usePageMeta({
+    title: 'Support',
+    description: 'Get help with Eclipse. Open a ticket, chat with our team, or browse help topics.',
+    canonicalPath: '/support',
+  });
   const { user } = useAuth();
   const navigate = useNavigate();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [guestFormOpen, setGuestFormOpen] = useState(false);
 
-  const quickLinks = [
-    { icon: Ticket, label: 'Submit a Ticket', description: 'Get help from our team', action: 'ticket' },
-    { icon: MessageCircle, label: 'Live Chat', description: 'Real-time support', action: 'chat' },
-    { icon: FileQuestion, label: 'FAQ', description: 'Browse common questions', href: '/faq' },
-  ];
+  const openTicket = () => {
+    if (user) setCreateDialogOpen(true);
+    else navigate('/auth');
+  };
+  const openLiveChat = () => {
+    const btn = document.querySelector('[data-chat-widget]');
+    if (btn instanceof HTMLElement) btn.click();
+  };
 
   return (
     <MainLayout>
-      <div className="container mx-auto px-4 py-6 md:py-12">
-        {/* Header */}
-        <div className="mb-10">
-          <h1 className="text-2xl font-display font-bold">Support Centre</h1>
-          <p className="text-muted-foreground mt-1">
-            Find help articles, contact support, or browse our FAQ.
-          </p>
-        </div>
-
-        {/* Quick Links */}
-        <div className="grid md:grid-cols-3 gap-4 mb-12">
-          {quickLinks.map((link, index) => (
-            <div key={index} className="border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors">
-              <div className="p-6">
-                {link.action === 'chat' ? (
-                  <button
-                    onClick={() => {
-                      const chatButton = document.querySelector('[data-chat-widget]');
-                      if (chatButton instanceof HTMLElement) chatButton.click();
-                    }}
-                    className="w-full text-left"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10">
-                        <link.icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{link.label}</h3>
-                        <p className="text-sm text-muted-foreground">{link.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                ) : link.action === 'ticket' ? (
-                  <button
-                    onClick={() => {
-                      if (user) {
-                        setCreateDialogOpen(true);
-                      } else {
-                        navigate('/auth');
-                      }
-                    }}
-                    className="w-full text-left"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 rounded-lg bg-primary/10">
-                        <link.icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{link.label}</h3>
-                        <p className="text-sm text-muted-foreground">{link.description}</p>
-                      </div>
-                    </div>
-                  </button>
-                ) : (
-                  <Link to={link.href!} className="flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-primary/10">
-                      <link.icon className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{link.label}</h3>
-                      <p className="text-sm text-muted-foreground">{link.description}</p>
-                    </div>
-                  </Link>
-                )}
+      <div className="container mx-auto px-4 py-10 md:py-16 max-w-5xl">
+        {/* Hero + primary action panel */}
+        <div className="rounded-2xl border border-border bg-card overflow-hidden mb-12">
+          <div className="grid md:grid-cols-[1.3fr_1fr]">
+            <div className="p-7 md:p-10">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-3">
+                Support Centre
+              </p>
+              <h1 className="font-display font-bold text-3xl md:text-4xl leading-[1.1] tracking-tight text-foreground">
+                Get help, fast.
+              </h1>
+              <p className="mt-4 text-muted-foreground text-base leading-relaxed max-w-md">
+                Open a ticket and a human on our team will pick it up. Or jump into live chat if it's urgent.
+              </p>
+              <div className="flex flex-wrap gap-2 mt-6">
+                <button
+                  onClick={openTicket}
+                  className="inline-flex items-center gap-2 h-11 px-5 rounded-lg bg-foreground text-background text-sm font-semibold hover:opacity-90 transition-opacity"
+                >
+                  <Ticket className="h-4 w-4" /> Submit a ticket
+                </button>
+                <button
+                  onClick={openLiveChat}
+                  className="inline-flex items-center gap-2 h-11 px-5 rounded-lg border border-border text-sm font-semibold text-foreground hover:bg-muted transition-colors"
+                >
+                  <MessageCircle className="h-4 w-4" /> Live chat
+                </button>
               </div>
             </div>
-          ))}
+
+            {/* Response-time / channel rail */}
+            <div className="border-t md:border-t-0 md:border-l border-border bg-muted/30 p-7 md:p-8 grid content-center gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    Typical reply
+                  </span>
+                </div>
+                <p className="text-foreground text-sm">
+                  Live chat: minutes. Tickets: within a business day.
+                </p>
+              </div>
+              <div className="h-px bg-border" />
+              <div className="flex items-center gap-3 text-sm">
+                <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                <a
+                  href={discordUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-foreground hover:underline"
+                >
+                  Ask the Discord community
+                </a>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <FileQuestion className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Link to="/faq" className="text-foreground hover:underline">
+                  Browse the FAQ
+                </Link>
+              </div>
+              {user && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Ticket className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Link to="/support/tickets" className="text-foreground hover:underline">
+                    My open tickets
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Support Categories */}
+        {/* Help topics */}
         <div className="mb-12">
-          <h2 className="text-2xl font-display font-bold mb-6">Help Topics</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {supportCategories.map((category, index) => (
-              <div key={index} className="border border-border rounded-xl overflow-hidden">
-                <div className="px-6 py-4 bg-muted/30 border-b border-border">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <category.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold">{category.title}</h3>
-                      <p className="text-xs text-muted-foreground">{category.description}</p>
-                    </div>
+          <div className="flex items-baseline justify-between mb-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-1">
+                Help topics
+              </p>
+              <h2 className="font-display text-2xl font-semibold text-foreground">
+                Browse by category
+              </h2>
+            </div>
+            <Link to="/faq" className="text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
+              All FAQs <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {helpTopics.map((cat, i) => (
+              <div
+                key={cat.title}
+                className="group rounded-xl border border-border bg-card p-6 transition-colors hover:border-foreground/20"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                  <div className="h-8 w-8 rounded-lg border border-border bg-background flex items-center justify-center">
+                    <cat.icon className="h-4 w-4 text-foreground" />
                   </div>
+                  <h3 className="font-semibold text-foreground">{cat.title}</h3>
                 </div>
-                <div className="p-6">
-                  <ul className="space-y-2">
-                    {category.articles.map((article, articleIndex) => {
-                      const isRecoverLink = article === 'Recover a missing order';
-                      return (
-                        <li key={articleIndex}>
-                          <Link
-                            to={isRecoverLink ? '/recover-order' : `/faq?search=${encodeURIComponent(article)}`}
-                            className="text-sm text-muted-foreground hover:text-primary flex items-center gap-2 transition-colors"
-                          >
-                            <div className="w-1.5 h-1.5 rounded-full bg-primary/50" />
-                            {article}
-                          </Link>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+                <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                  {cat.description}
+                </p>
+                <ul className="space-y-1.5">
+                  {cat.articles.map((a) => {
+                    const recover = a === 'Recover a missing order';
+                    return (
+                      <li key={a}>
+                        <Link
+                          to={recover ? '/recover-order' : `/faq?search=${encodeURIComponent(a)}`}
+                          className="group/link text-sm text-foreground/80 hover:text-foreground inline-flex items-center gap-2"
+                        >
+                          <span className="h-px w-3 bg-border transition-all group-hover/link:w-5 group-hover/link:bg-foreground" />
+                          {a}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Order Recovery Banner */}
-        <div className="mb-8 border border-border rounded-xl overflow-hidden border-l-4 border-l-primary/40">
-          <div className="p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-muted/30">
-            <Package className="w-6 h-6 text-primary flex-shrink-0" />
+        {/* Order recovery + guest form as a two-up utility row */}
+        <div className="grid md:grid-cols-2 gap-4 mb-4">
+          <div className="rounded-xl border border-border bg-card p-6 flex items-start gap-4">
+            <Package className="h-5 w-5 text-foreground mt-0.5 shrink-0" />
             <div className="flex-1">
-              <h3 className="font-semibold">Missing an order?</h3>
-              <p className="text-sm text-muted-foreground">If you completed a payment but can't see your purchase, you can recover it instantly.</p>
+              <h3 className="font-semibold text-foreground">Missing an order?</h3>
+              <p className="text-sm text-muted-foreground mt-1 mb-3 leading-relaxed">
+                Completed a payment but can't see your purchase? Recover it instantly.
+              </p>
+              <Button asChild variant="outline" size="sm">
+                <Link to="/recover-order">Recover order</Link>
+              </Button>
             </div>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/recover-order">Recover Order</Link>
-            </Button>
           </div>
-        </div>
 
-        {/* Guest Support Form — always available */}
-        <div className="mb-8 border border-border rounded-xl overflow-hidden">
-          <button
-            onClick={() => setGuestFormOpen(!guestFormOpen)}
-            className="w-full px-6 py-4 flex items-center justify-between bg-muted/30 hover:bg-muted/40 transition-colors text-left"
-          >
-            <div>
-              <h3 className="font-semibold text-sm">Having trouble signing in?</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">Submit a support ticket without an account</p>
-            </div>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${guestFormOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {guestFormOpen && (
-            <div className="p-6 border-t border-border">
-              <GuestSupportForm />
-            </div>
-          )}
-        </div>
-
-        {/* Contact Section */}
-        <div className="bg-muted/50 rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-display font-bold mb-4">Need More Help?</h2>
-          <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            Can't find what you're looking for? Our support team is available to help you with any questions or issues.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/contact">
-              <Button>Contact Us</Button>
-            </Link>
-            <Link to="/faq">
-              <Button variant="outline">Browse FAQ</Button>
-            </Link>
-            {user && (
-              <Link to="/support/tickets">
-                <Button variant="outline">My Tickets</Button>
-              </Link>
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            <button
+              onClick={() => setGuestFormOpen((v) => !v)}
+              className="w-full p-6 flex items-start gap-4 text-left hover:bg-muted/30 transition-colors"
+            >
+              <ShieldCheck className="h-5 w-5 text-foreground mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-foreground">Can't sign in?</h3>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                  Submit a support ticket without an account.
+                </p>
+              </div>
+              <ChevronDown
+                className={`h-4 w-4 text-muted-foreground mt-1 transition-transform ${
+                  guestFormOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+            {guestFormOpen && (
+              <div className="p-6 border-t border-border">
+                <GuestSupportForm />
+              </div>
             )}
           </div>
         </div>
 
-        {/* Create Ticket Dialog */}
-        <CreateTicketDialog
-          open={createDialogOpen}
-          onOpenChange={setCreateDialogOpen}
-        />
+        <CreateTicketDialog open={createDialogOpen} onOpenChange={setCreateDialogOpen} />
       </div>
     </MainLayout>
   );
