@@ -37,8 +37,9 @@ interface FAQCategory {
   items: FAQItem[];
 }
 
-const faqCategories: FAQCategory[] = [
+const faqCategories: (FAQCategory & { id: string })[] = [
   {
+    id: 'orders',
     icon: ShoppingBag,
     titleKey: 'faq.ordersAndPurchases',
     color: 'text-secondary',
@@ -58,6 +59,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'downloads',
     icon: Download,
     titleKey: 'faq.downloads',
     color: 'text-success',
@@ -81,6 +83,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'payments',
     icon: CreditCard,
     titleKey: 'faq.paymentsBilling',
     color: 'text-accent',
@@ -104,6 +107,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'refunds',
     icon: RefreshCw,
     titleKey: 'faq.refundsReturns',
     color: 'text-warning',
@@ -123,9 +127,10 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'bots',
     icon: Bot,
     titleKey: 'faq.discordBots',
-    color: 'text-indigo-500',
+    color: 'text-primary',
     items: [
       {
         question: 'How do I set up a Discord bot?',
@@ -146,6 +151,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'security',
     icon: Shield,
     titleKey: 'faq.accountSecurity',
     color: 'text-destructive',
@@ -169,6 +175,7 @@ const faqCategories: FAQCategory[] = [
     ],
   },
   {
+    id: 'selling',
     icon: ShoppingBag,
     titleKey: 'faq.sellingOnEclipse',
     color: 'text-primary',
