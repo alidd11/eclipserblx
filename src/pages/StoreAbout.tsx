@@ -20,6 +20,9 @@ export default function StoreAbout() {
     ogImage: store?.logo_url || undefined,
   });
 
+  // Must run every render — keep above any early returns to obey Rules of Hooks
+  const { accentColor, isDarkTheme, mutedTextClass } = useStoreTheme(store);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
@@ -31,8 +34,6 @@ export default function StoreAbout() {
   if (notFound || !store) {
     return <StoreNotFound />;
   }
-
-  const { accentColor, isDarkTheme, mutedTextClass } = useStoreTheme(store);
 
   return (
     <StoreLayout
