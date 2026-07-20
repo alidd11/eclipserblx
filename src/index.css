@@ -259,10 +259,11 @@
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
-    /* Promote body to its own compositing layer for smoother scroll */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+    /* NOTE: no `transform` on body — see html rule above. A transformed body
+       becomes the containing block for fixed children, so the mobile tab bar
+       would scroll with the page instead of staying pinned to the viewport. */
   }
+
 
   #root {
     width: 100%;
