@@ -72,19 +72,17 @@ export function ProductsTab({
 
   if (downloadableItems.length === 0) {
     return (
-      <div className="border border-border rounded-xl overflow-hidden border-border bg-card">
-        <div className="p-4 py-12 text-center space-y-4">
-          <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
-            <FileDown className="h-8 w-8 text-muted-foreground" />
-          </div>
-          <div>
-            <p className="font-medium">No products yet</p>
-            <p className="text-sm text-muted-foreground mt-1">Your purchased products will appear here</p>
-          </div>
-          <Button asChild variant="outline">
-            <Link to="/products">Browse Products</Link>
-          </Button>
+      <div className="border border-dashed border-border rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <FileDown className="h-6 w-6 text-primary" />
         </div>
+        <div className="flex-1">
+          <p className="font-medium">Nothing downloaded yet</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Everything you buy shows up here, ready to download.</p>
+        </div>
+        <Button asChild size="sm" className="shrink-0">
+          <Link to="/featured">See what's featured</Link>
+        </Button>
       </div>
     );
   }

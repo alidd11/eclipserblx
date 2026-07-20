@@ -10,6 +10,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 import { CartUpsells } from '@/components/marketplace/CartUpsells';
 import { LoyaltyBadge } from '@/components/marketplace/LoyaltyBadge';
+import { RecentlyViewedProducts } from '@/components/product/RecentlyViewedProducts';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 export default function Cart() {
@@ -22,8 +23,8 @@ export default function Cart() {
   if (items.length === 0) {
     return (
       <MainLayout>
-        <div className="container py-16 md:py-24 flex justify-center">
-          <div className="w-full max-w-lg border border-border rounded-2xl p-10 md:p-16 flex flex-col items-center text-center bg-card/40">
+        <div className="container py-12 md:py-16 max-w-3xl">
+          <div className="border border-border rounded-2xl p-10 md:p-16 flex flex-col items-center text-center bg-card/40">
             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted/40 border border-border flex items-center justify-center mb-6 md:mb-8">
               <ShoppingBag className="h-7 w-7 md:h-8 md:w-8 text-muted-foreground" />
             </div>
@@ -35,6 +36,7 @@ export default function Cart() {
               <Link to="/products">{t('common.browseProducts')}</Link>
             </Button>
           </div>
+          <RecentlyViewedProducts />
         </div>
       </MainLayout>
     );

@@ -131,22 +131,33 @@ export function OrdersTab({
       {isLoading ? (
         <OrdersListSkeleton />
       ) : filteredOrders.length === 0 ? (
-        <div className="border border-border rounded-xl overflow-hidden border-border bg-card">
-          <div className="p-4 py-12 text-center space-y-4">
-            <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
-              <Package className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="font-medium">{hasActiveFilters ? 'No orders match your filters' : 'No orders yet'}</p>
-              <p className="text-sm text-muted-foreground mt-1">{hasActiveFilters ? 'Try adjusting your search or filters' : 'Your orders will appear here after purchase'}</p>
-            </div>
-            {hasActiveFilters ? (
+        hasActiveFilters ? (
+          <div className="border border-border rounded-xl overflow-hidden bg-card">
+            <div className="p-4 py-12 text-center space-y-4">
+              <div className="mx-auto w-16 h-16 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center">
+                <Package className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="font-medium">No orders match your filters</p>
+                <p className="text-sm text-muted-foreground mt-1">Try adjusting your search or filters</p>
+              </div>
               <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
-            ) : (
-              <Button asChild variant="outline"><Link to="/products">Browse Products</Link></Button>
-            )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="border border-dashed border-border rounded-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Package className="h-6 w-6 text-primary" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium">No orders yet</p>
+              <p className="text-sm text-muted-foreground mt-0.5">Your order history and receipts will show up here.</p>
+            </div>
+            <Button asChild size="sm" className="shrink-0">
+              <Link to="/products">Start browsing</Link>
+            </Button>
+          </div>
+        )
       ) : (
         <>
           <div className="space-y-3">

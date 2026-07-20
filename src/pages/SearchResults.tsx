@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { Search, SlidersHorizontal, X, Loader2, Package } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { ProductCard } from '@/components/ui/ProductCard';
 import { ProductGridSkeleton } from '@/components/ui/ProductCardSkeleton';
 import { SearchCategoryFilters } from '@/components/search/SearchCategoryFilters';
 import { SearchFilters } from '@/components/search/SearchFilters';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
@@ -312,19 +311,14 @@ export default function SearchResults() {
             )}
           </>
         ) : showResults ? (
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center">
-              <Package className="h-8 w-8 text-muted-foreground/50" />
-            </div>
-            <div className="text-center space-y-1">
-              <h3 className="font-semibold">No products found</h3>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                We couldn't find anything matching your criteria. Try different keywords.
-              </p>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/products">Browse all products</Link>
-            </Button>
+          <div className="py-16 border-t border-border">
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto text-center">
+              <span className="text-foreground font-medium">Nothing matched{debouncedQuery.length >= 2 && <> "{debouncedQuery}"</>}.</span>
+              {' '}Try a category above, different keywords, or{' '}
+              <Link to="/products" className="text-primary font-medium hover:underline">
+                browse everything
+              </Link>.
+            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 space-y-4">
