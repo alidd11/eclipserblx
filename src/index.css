@@ -238,9 +238,11 @@
     min-height: 100%;
     min-height: -webkit-fill-available;
     background-color: hsl(var(--background));
-    /* GPU-accelerate the root to eliminate initial compositing stutter */
-    -webkit-transform: translateZ(0);
+    /* NOTE: do NOT set `transform` here — it creates a containing block for
+       position:fixed descendants, which breaks the mobile tab bar (it would
+       stick to the page bottom instead of the viewport). */
   }
+
   
   body {
     @apply bg-background text-foreground antialiased;
@@ -257,10 +259,11 @@
     background-color: hsl(var(--background));
     padding-bottom: 0;
     box-sizing: border-box;
-    /* Promote body to its own compositing layer for smoother scroll */
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
+    /* NOTE: no `transform` on body — see html rule above. A transformed body
+       becomes the containing block for fixed children, so the mobile tab bar
+       would scroll with the page instead of staying pinned to the viewport. */
   }
+
 
   #root {
     width: 100%;
