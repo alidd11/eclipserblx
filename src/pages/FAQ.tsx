@@ -31,6 +31,7 @@ interface FAQItem {
 }
 
 interface FAQCategory {
+  id: string;
   icon: React.ElementType;
   titleKey: string;
   color: string;
