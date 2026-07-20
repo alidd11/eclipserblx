@@ -1,6 +1,6 @@
 import { useState, useMemo, forwardRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, BadgeCheck } from 'lucide-react';
+import { Star, BadgeCheck, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ReviewForm } from '@/components/reviews/ReviewForm';
 import { VerifiedPurchaseBadge } from '@/components/reviews/VerifiedPurchaseBadge';
@@ -170,9 +170,13 @@ export const ProductReviewsSection = forwardRef<HTMLElement, ProductReviewsSecti
           ) : showVerifiedOnly && reviews.length > 0 ? (
             <p className="text-center text-muted-foreground py-4">No verified purchase reviews yet.</p>
           ) : (
-            <p className="text-center text-muted-foreground py-4">
-              No reviews yet. Be the first to share your experience!
-            </p>
+            <div className="border border-dashed border-border rounded-xl p-6 flex flex-col items-center text-center gap-2">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                <MessageSquare className="h-6 w-6 text-primary" />
+              </div>
+              <p className="font-medium">No reviews yet</p>
+              <p className="text-sm text-muted-foreground max-w-[32ch]">Be the first to share your experience with this product.</p>
+            </div>
           )}
         </div>
       </section>

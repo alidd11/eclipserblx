@@ -23,24 +23,37 @@ export function useProductDetailData(productNumber: string | undefined) {
   const { addProduct: addToRecentlyViewed } = useRecentlyViewed();
 
   const { data: relatedProducts } = useQuery({
-    queryKey: ['related-products', product?.category_id, isStaff],
+    queryKey: ['related-products', product?.id, product?.category_id, isStaff],
     queryFn: async () => {
       if (!product?.category_id) return [];
-      let query = supabase
-        .from('products')
-        .select(`*, categories(name, slug)`)
+      const RELATED_LIMIT = 4;
+      const buildBaseQuery = () => {
+        let query = supabase.from('products').select(`*, categories(name, slug)`).neq('id', product.id);
+        if (!isStaff) {
+          query = query
+            .eq('is_active', true)
+            .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
+        }
+        return query;
+      };
+
+      const { data: sameCategory, error } = await buildBaseQuery()
         .eq('category_id', product.category_id)
-        .neq('id', product.id);
-
-      if (!isStaff) {
-        query = query
-          .eq('is_active', true)
-          .or(`release_at.is.null,release_at.lte.${new Date().toISOString()}`);
-      }
-
-      const { data, error } = await query.limit(4);
+        .limit(RELATED_LIMIT);
       if (error) throw error;
-      return data;
+
+      // Same-category inventory can be thin — backfill with popular products
+      // elsewhere so the related-products rail doesn't look sparse.
+      const results = sameCategory ?? [];
+      if (results.length < RELATED_LIMIT) {
+        const excludeIds = [product.id, ...results.map((p) => p.id)];
+        const { data: backfill } = await buildBaseQuery()
+          .not('id', 'in', `(${excludeIds.join(',')})`)
+          .order('download_count', { ascending: false })
+          .limit(RELATED_LIMIT - results.length);
+        if (backfill) results.push(...backfill);
+      }
+      return results;
     },
     enabled: !!product?.category_id,
   });

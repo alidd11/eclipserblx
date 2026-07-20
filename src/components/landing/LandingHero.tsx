@@ -159,7 +159,7 @@ function RailPick({ pick }: { pick: HeroPick }) {
       to={`/products/${pick.slug}`}
       className="group flex items-stretch gap-3 border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors flex-1 min-h-0"
     >
-      <div className="relative w-28 sm:w-32 shrink-0 bg-muted overflow-hidden self-stretch">
+      <div className="relative w-28 sm:w-32 shrink-0 bg-gradient-to-br from-muted via-muted/70 to-muted overflow-hidden self-stretch">
         {pick.image ? (
           <img
             src={optimizeImageUrl(pick.image, 320, 240, 'contain')}
@@ -170,7 +170,13 @@ function RailPick({ pick }: { pick: HeroPick }) {
             decoding="async"
             className="w-full h-full object-contain object-center"
           />
-        ) : null}
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-2xl font-display font-semibold text-primary/20">
+              {pick.name.charAt(0)}
+            </span>
+          </div>
+        )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col justify-center p-3 pr-4">
         {pick.category && (
