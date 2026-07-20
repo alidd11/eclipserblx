@@ -254,12 +254,15 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
   const Icon = category.icon;
 
   return (
-    <div className="bg-card border border-border rounded-xl overflow-hidden">
+    <section id={category.id} className="scroll-mt-24 bg-card border border-border rounded-xl overflow-hidden">
       <div className="flex items-center gap-3 p-5 border-b border-border bg-muted/30">
         <div className={cn("p-2.5 rounded-lg bg-background", category.color)}>
           <Icon className="h-5 w-5" />
         </div>
         <h2 className="text-lg font-semibold">{t(category.titleKey)}</h2>
+        <span className="ml-auto text-xs font-mono text-muted-foreground">
+          {filteredItems.length.toString().padStart(2, '0')}
+        </span>
       </div>
       <div className="px-5">
         {filteredItems.map((item, index) => (
@@ -271,7 +274,39 @@ function FAQCategorySection({ category, searchQuery }: { category: FAQCategory; 
           />
         ))}
       </div>
-    </div>
+    </section>
+  );
+}
+
+function CategoryQuickNav({ searchQuery }: { searchQuery: string }) {
+  const { t } = useTranslation();
+  const visible = faqCategories.filter((c) =>
+    c.items.some(
+      (i) =>
+        i.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.answer.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+  if (visible.length === 0) return null;
+  return (
+    <nav className="hidden lg:block sticky top-24 space-y-1" aria-label="FAQ categories">
+      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-widest mb-3">
+        Categories
+      </p>
+      {visible.map((c) => {
+        const Icon = c.icon;
+        return (
+          <a
+            key={c.id}
+            href={`#${c.id}`}
+            className="flex items-center gap-2 px-3 py-2 text-sm rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <Icon className="h-4 w-4" />
+            {t(c.titleKey)}
+          </a>
+        );
+      })}
+    </nav>
   );
 }
 
