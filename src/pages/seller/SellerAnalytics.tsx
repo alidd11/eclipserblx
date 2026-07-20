@@ -12,8 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { RevolutLineChart, RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { format, subDays, startOfDay, endOfDay, eachDayOfInterval } from '@/lib/dateUtils';
-import { 
 import { CHART_COLORS } from '@/lib/chartColors';
+import { 
   Eye, 
   ShoppingCart, 
   CreditCard, 
