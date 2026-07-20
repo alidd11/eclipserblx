@@ -16,11 +16,10 @@ const GUILD_ID = "1485822444404080831";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const _unauth = requireServiceRole(req, corsHeaders);
   if (_unauth) return _unauth;
-);
-  }
 
   try {
     const botToken = Deno.env.get("DISCORD_CUSTOMER_BOT_TOKEN");

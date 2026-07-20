@@ -20,11 +20,10 @@ interface NewProductRequest {
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders }
+    return new Response(null, { headers: corsHeaders });
+  }
   const _unauth = requireServiceRole(req, corsHeaders);
   if (_unauth) return _unauth;
-);
-  }
 
   // Rate limiting: 10 requests per minute (expensive operation - sends to many users)
   const clientIp = getClientIp(req);

@@ -91,11 +91,10 @@ async function getWiseGBPBalance(wiseApiKey: string, profileId: string): Promise
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders }
+    return new Response('ok', { headers: corsHeaders });
+  }
   const _unauth = requireServiceRole(req, corsHeaders);
   if (_unauth) return _unauth;
-);
-  }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;

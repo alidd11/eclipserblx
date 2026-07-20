@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
@@ -105,6 +106,8 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
 
   try {
     const { seller_name, seller_email, store_name, status, rejection_reason }: SellerStatusRequest = await req.json();

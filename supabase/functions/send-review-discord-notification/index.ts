@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
- import { sendBotMessage, addReaction, buildSettingsMap } from "../_shared/discord-bot.ts";
+import { sendBotMessage, addReaction, buildSettingsMap } from "../_shared/discord-bot.ts";
+import { requireStaff } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,6 +22,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  const _authCheck = await requireStaff(req, corsHeaders);
+  if ("error" in _authCheck) return _authCheck.error;
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
