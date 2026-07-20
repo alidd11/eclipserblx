@@ -137,7 +137,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
           </div>
         )}
 
-        {/* Image — full product image, no cropping */}
+        {/* Image — fills the card frame edge-to-edge, no letterboxing */}
         <div className="relative p-2 pb-0 flex-shrink-0">
           <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-muted via-muted/70 to-muted rounded-lg overflow-hidden ring-1 ring-border/40">
             {showMedia ? (
@@ -146,7 +146,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                   ref={videoRef}
                   src={currentMedia!}
                   onError={handleMediaError}
-                  className="w-full h-full object-contain object-center"
+                  className="w-full h-full object-cover object-center"
                 />
               ) : (
                 <img
@@ -162,7 +162,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                     const img = e.currentTarget;
                     if (img.naturalWidth === 0) handleMediaError();
                   }}
-                  className="w-full h-full object-contain object-center transition-transform duration-500 group-hover:scale-[1.02]"
+                  className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
                 />
               )
             ) : (
