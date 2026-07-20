@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Bell, Award, Tag, ShoppingCart, MessageCircle, Trophy, Percent, CheckCheck, Inbox, Filter, ChevronRight, Shield } from 'lucide-react';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -204,11 +205,16 @@ export default function Messages() {
 
         {/* Notification List */}
         {isLoading ? (
-          <div className="border border-border rounded-xl">
-            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
-              <p className="text-sm">Loading notifications...</p>
-            </div>
+          <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-start gap-3 p-4">
+                <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-3 w-1/3" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <div className="border border-border rounded-xl">

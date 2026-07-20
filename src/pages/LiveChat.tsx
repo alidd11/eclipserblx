@@ -1,4 +1,5 @@
 import { Loader2, ArrowLeft, Send, Paperclip, ShieldCheck, CheckCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,8 +16,16 @@ const LiveChatPage = () => {
   if (chat.authLoading || chat.isLoading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="container max-w-3xl py-4 sm:py-8">
+          <div className="flex items-center gap-3 mb-4">
+            <Skeleton className="h-9 w-9 rounded-md" />
+            <div className="space-y-1.5"><Skeleton className="h-5 w-32" /><Skeleton className="h-3 w-40" /></div>
+          </div>
+          <div className="border rounded-lg bg-card p-6 space-y-4 min-h-[40vh]">
+            <div className="flex gap-2"><Skeleton className="h-16 w-2/3 rounded-lg" /></div>
+            <div className="flex gap-2 justify-end"><Skeleton className="h-12 w-1/2 rounded-lg" /></div>
+            <div className="flex gap-2"><Skeleton className="h-10 w-3/5 rounded-lg" /></div>
+          </div>
         </div>
       </MainLayout>
     );

@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { format } from '@/lib/dateUtils';
@@ -77,7 +78,40 @@ export default function Affiliate() {
  }
 
  if (d.isLoading) {
-  return <MainLayout><div className="container py-8 flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></MainLayout>;
+  return (
+   <MainLayout>
+    <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-6xl mx-auto space-y-6">
+     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="space-y-2"><Skeleton className="h-8 w-56" /><Skeleton className="h-4 w-64" /></div>
+      <Skeleton className="h-6 w-32 rounded-full" />
+     </div>
+     <div className="border border-border rounded-xl overflow-hidden bg-muted/30 p-4 pt-6 pb-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+       <div className="flex items-center gap-5">
+        <Skeleton className="h-16 w-16 rounded-2xl" />
+        <div className="space-y-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-10 w-40" /></div>
+       </div>
+       <Skeleton className="h-12 w-40 rounded-xl" />
+      </div>
+     </div>
+     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      {Array.from({ length: 5 }).map((_, i) => (
+       <Skeleton key={i} className="h-24 rounded-xl" />
+      ))}
+     </div>
+     <div className="grid md:grid-cols-2 gap-6">
+      {Array.from({ length: 2 }).map((_, i) => (
+       <div key={i} className="border border-border rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-border bg-muted/30"><Skeleton className="h-5 w-32" /></div>
+        <div className="p-4 space-y-2">
+         {Array.from({ length: 3 }).map((_, j) => <Skeleton key={j} className="h-14 rounded-lg" />)}
+        </div>
+       </div>
+      ))}
+     </div>
+    </div>
+   </MainLayout>
+  );
  }
 
  return (

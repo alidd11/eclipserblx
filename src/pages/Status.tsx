@@ -19,6 +19,7 @@ import {
  ChevronUp
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -466,8 +467,13 @@ export default function Status() {
  </div>
  <div className="p-4">
  {incidentsLoading ? (
- <div className="flex items-center justify-center py-8">
- <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+ <div className="space-y-3">
+ {Array.from({ length: 3 }).map((_, i) => (
+ <div key={i} className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
+ <div className="flex items-center gap-2"><Skeleton className="h-4 w-4 rounded-full" /><Skeleton className="h-4 w-40" /><Skeleton className="h-5 w-16 rounded-full" /></div>
+ <Skeleton className="h-3 w-32" />
+ </div>
+ ))}
  </div>
  ) : pastIncidents.length === 0 ? (
  <div className="text-center py-8 text-muted-foreground">

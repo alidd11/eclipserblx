@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -190,10 +191,23 @@ export default function NotificationPreferences() {
  </div>
 
  {isLoading ? (
- <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
- <div className="p-4 py-12 flex items-center justify-center">
- <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+ <div className="space-y-6">
+ {Array.from({ length: 2 }).map((_, i) => (
+ <div key={i} className="border border-border rounded-xl overflow-hidden bg-card">
+ <div className="px-4 py-3 border-b border-border bg-muted/30 space-y-2">
+ <Skeleton className="h-5 w-40" />
+ <Skeleton className="h-3 w-56" />
  </div>
+ <div className="p-4 space-y-3">
+ {Array.from({ length: 2 }).map((_, j) => (
+ <div key={j} className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
+ <div className="space-y-2"><Skeleton className="h-4 w-40" /><Skeleton className="h-3 w-56" /></div>
+ <Skeleton className="h-6 w-10 rounded-full" />
+ </div>
+ ))}
+ </div>
+ </div>
+ ))}
  </div>
  ) : (
  <div className="space-y-6">

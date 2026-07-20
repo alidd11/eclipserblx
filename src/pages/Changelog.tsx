@@ -2,10 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Sparkles, Wrench, Zap } from 'lucide-react';
+import { Sparkles, Wrench, Zap, History } from 'lucide-react';
 import { format } from '@/lib/dateUtils';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const categoryConfig: Record<string, { label: string; icon: typeof Sparkles; className: string }> = {
   feature: { label: 'Feature', icon: Sparkles, className: 'bg-primary/10 text-primary border-primary/20' },
@@ -44,11 +45,32 @@ export default function Changelog() {
         <PageHeader title="Changelog" description="Latest updates, fixes, and improvements to the platform." />
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="space-y-8">
+            {Array.from({ length: 2 }).map((_, i) => (
+              <section key={i} className="space-y-4">
+                <Skeleton className="h-4 w-28" />
+                <div className="space-y-3">
+                  {Array.from({ length: 2 }).map((_, j) => (
+                    <div key={j} className="border border-border rounded-xl p-4 space-y-3">
+                      <div className="flex items-center gap-2"><Skeleton className="h-5 w-20 rounded-full" /><Skeleton className="h-3 w-24" /></div>
+                      <Skeleton className="h-4 w-2/3" />
+                      <Skeleton className="h-3 w-full" />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         ) : Object.keys(grouped).length === 0 ? (
-          <p className="text-center text-muted-foreground py-16">No updates yet — check back soon.</p>
+          <div className="border border-dashed border-border rounded-xl p-8 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
+            <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <History className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium">No updates yet</p>
+              <p className="text-sm text-muted-foreground mt-0.5">We'll post new features, fixes, and improvements here as they ship.</p>
+            </div>
+          </div>
         ) : (
           Object.entries(grouped).map(([month, items]) => (
             <section key={month} className="space-y-4">
