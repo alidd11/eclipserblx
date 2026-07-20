@@ -156,15 +156,15 @@ export default function RecoverOrder() {
             </form>
 
             {result && (
-              <div className={`mt-4 p-4 rounded-lg border ${result.success ? 'border-green-500/20 bg-green-500/5' : 'border-destructive/20 bg-destructive/5'}`}>
+              <div className={`mt-4 p-4 rounded-lg border ${result.success ? 'border-success/20 bg-success/5' : 'border-destructive/20 bg-destructive/5'}`}>
                 <div className="flex items-start gap-3">
                   {result.success ? (
-                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
                   ) : (
                     <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                   )}
                   <div className="space-y-2">
-                    <p className={`text-sm font-medium ${result.success ? 'text-green-500' : 'text-destructive'}`}>{result.message}</p>
+                    <p className={`text-sm font-medium ${result.success ? 'text-success' : 'text-destructive'}`}>{result.message}</p>
                     {result.success && result.orderId && (
                       <Button asChild variant="outline" size="sm">
                         <Link to="/account?tab=downloads">View My Downloads</Link>

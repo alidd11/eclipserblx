@@ -26,10 +26,10 @@ interface Notification {
 type FilterType = 'all' | 'unread' | 'orders' | 'system';
 
 const NOTIFICATION_CONFIG: Record<string, { icon: React.ReactNode; label: string }> = {
-  badge_earned: { icon: <Award className="h-4 w-4 text-yellow-500" />, label: 'Achievement' },
-  discount_code: { icon: <Percent className="h-4 w-4 text-green-500" />, label: 'Promotion' },
-  milestone: { icon: <Trophy className="h-4 w-4 text-purple-500" />, label: 'Milestone' },
-  order_update: { icon: <ShoppingCart className="h-4 w-4 text-blue-500" />, label: 'Order' },
+  badge_earned: { icon: <Award className="h-4 w-4 text-warning" />, label: 'Achievement' },
+  discount_code: { icon: <Percent className="h-4 w-4 text-success" />, label: 'Promotion' },
+  milestone: { icon: <Trophy className="h-4 w-4 text-accent" />, label: 'Milestone' },
+  order_update: { icon: <ShoppingCart className="h-4 w-4 text-primary" />, label: 'Order' },
   new_product: { icon: <Tag className="h-4 w-4 text-primary" />, label: 'Product' },
   leak_detected: { icon: <Shield className="h-4 w-4 text-destructive" />, label: 'Security' },
   system: { icon: <MessageCircle className="h-4 w-4 text-muted-foreground" />, label: 'System' },

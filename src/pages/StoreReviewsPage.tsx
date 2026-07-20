@@ -195,7 +195,7 @@ export default function StoreReviewsPage() {
  aria-pressed={isActive}
  >
  <span className="w-3">{rating}</span>
- <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+ <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
  <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
  <div 
  className="h-full rounded-full transition-all duration-500"

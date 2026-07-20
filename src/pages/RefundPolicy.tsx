@@ -83,7 +83,7 @@ export default function RefundPolicy() {
           {/* When We Will Refund */}
           <section>
             <h2 className="font-display text-2xl font-bold mb-4">
-              <CheckCircle className="h-6 w-6 text-green-500" />
+              <CheckCircle className="h-6 w-6 text-success" />
               When You Are Entitled to a Refund
             </h2>
             <p className="text-muted-foreground mb-4">

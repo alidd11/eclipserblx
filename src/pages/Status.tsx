@@ -57,45 +57,45 @@ interface ServiceStatus {
 }
 
 const statusConfig = {
- operational: { 
- label: 'Operational', 
- color: 'text-green-500', 
- bg: 'bg-green-500/10', 
- border: 'border-green-500/30',
- icon: <CheckCircle2 className="h-5 w-5 text-green-500" />
+ operational: {
+ label: 'Operational',
+ color: 'text-success',
+ bg: 'bg-success/10',
+ border: 'border-success/30',
+ icon: <CheckCircle2 className="h-5 w-5 text-success" />
  },
- degraded: { 
- label: 'Degraded', 
- color: 'text-yellow-500', 
- bg: 'bg-yellow-500/10', 
- border: 'border-yellow-500/30',
- icon: <AlertTriangle className="h-5 w-5 text-yellow-500" />
+ degraded: {
+ label: 'Degraded',
+ color: 'text-warning',
+ bg: 'bg-warning/10',
+ border: 'border-warning/30',
+ icon: <AlertTriangle className="h-5 w-5 text-warning" />
  },
- outage: { 
- label: 'Outage', 
- color: 'text-red-500', 
- bg: 'bg-red-500/10', 
- border: 'border-red-500/30',
- icon: <XCircle className="h-5 w-5 text-red-500" />
+ outage: {
+ label: 'Outage',
+ color: 'text-destructive',
+ bg: 'bg-destructive/10',
+ border: 'border-destructive/30',
+ icon: <XCircle className="h-5 w-5 text-destructive" />
  },
- checking: { 
- label: 'Checking...', 
- color: 'text-muted-foreground', 
- bg: 'bg-muted/50', 
+ checking: {
+ label: 'Checking...',
+ color: 'text-muted-foreground',
+ bg: 'bg-muted/50',
  border: 'border-border',
  icon: <Loader2 className="h-5 w-5 text-muted-foreground animate-spin" />
  } };
 
 const incidentStatusConfig = {
- investigating: { label: 'Investigating', color: 'text-red-500', bg: 'bg-red-500/10', border: 'border-red-500/30' },
+ investigating: { label: 'Investigating', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/30' },
  identified: { label: 'Identified', color: 'text-orange-500', bg: 'bg-orange-500/10', border: 'border-orange-500/30' },
- monitoring: { label: 'Monitoring', color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' },
- resolved: { label: 'Resolved', color: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30' } };
+ monitoring: { label: 'Monitoring', color: 'text-warning', bg: 'bg-warning/10', border: 'border-warning/30' },
+ resolved: { label: 'Resolved', color: 'text-success', bg: 'bg-success/10', border: 'border-success/30' } };
 
 const severityConfig = {
- minor: { label: 'Minor', color: 'text-yellow-500' },
+ minor: { label: 'Minor', color: 'text-warning' },
  major: { label: 'Major', color: 'text-orange-500' },
- critical: { label: 'Critical', color: 'text-red-500' } };
+ critical: { label: 'Critical', color: 'text-destructive' } };
 
 export default function Status() {
  usePageMeta({ title: 'System Status', description: 'Check the current status of Eclipse services including payments, authentication, database and CDN.', canonicalPath: '/status' });
@@ -373,9 +373,9 @@ export default function Status() {
 
  {/* Active Incidents */}
  {activeIncidents.length > 0 && (
- <div className="border border-border rounded-xl overflow-hidden border-red-500/30 bg-red-500/5">
+ <div className="border border-border rounded-xl overflow-hidden border-destructive/30 bg-destructive/5">
  <div className="px-4 py-3 border-b border-border bg-muted/30">
- <h3 className="font-semibold text-sm flex items-center gap-2 text-red-500">
+ <h3 className="font-semibold text-sm flex items-center gap-2 text-destructive">
  <AlertTriangle className="h-5 w-5" />
  Active Incidents
  </h3>
@@ -385,12 +385,12 @@ export default function Status() {
  const statusConf = incidentStatusConfig[incident.status as keyof typeof incidentStatusConfig] || incidentStatusConfig.investigating;
  const sevConf = severityConfig[incident.severity as keyof typeof severityConfig] || severityConfig.minor;
  const isExpanded = expandedIncidents.has(incident.id);
- const updates = incident.incident_updates?.sort((a, b) => 
+ const updates = incident.incident_updates?.sort((a, b) =>
  new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
  ) || [];
 
  return (
- <div key={incident.id} className="rounded-lg border border-red-500/20 bg-background p-4">
+ <div key={incident.id} className="rounded-lg border border-destructive/20 bg-background p-4">
  <div 
  className="flex items-start justify-between cursor-pointer"
  onClick={() => toggleIncident(incident.id)}
@@ -471,7 +471,7 @@ export default function Status() {
  </div>
  ) : pastIncidents.length === 0 ? (
  <div className="text-center py-8 text-muted-foreground">
- <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-green-500/50" />
+ <CheckCircle2 className="h-12 w-12 mx-auto mb-3 text-success/50" />
  <p className="font-medium">No past incidents</p>
  <p className="text-sm">All systems have been running smoothly!</p>
  </div>
@@ -498,7 +498,7 @@ export default function Status() {
  >
  <div className="space-y-1 flex-1">
  <div className="flex items-center gap-2 flex-wrap">
- <CheckCircle2 className="h-4 w-4 text-green-500" />
+ <CheckCircle2 className="h-4 w-4 text-success" />
  <h3 className="font-medium">{incident.title}</h3>
  <Badge variant="outline" className={cn(sevConf.color, 'border-current/30')}>
  {sevConf.label}
@@ -570,25 +570,25 @@ export default function Status() {
  <div className="p-4">
  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
  <div className="flex items-center gap-2">
- <CheckCircle2 className="h-4 w-4 text-green-500" />
+ <CheckCircle2 className="h-4 w-4 text-success" />
  <span className="text-sm">
- <span className="font-medium text-green-500">Operational</span>
+ <span className="font-medium text-success">Operational</span>
  {' - '}
  <span className="text-muted-foreground">Working normally</span>
  </span>
  </div>
  <div className="flex items-center gap-2">
- <AlertTriangle className="h-4 w-4 text-yellow-500" />
+ <AlertTriangle className="h-4 w-4 text-warning" />
  <span className="text-sm">
- <span className="font-medium text-yellow-500">Degraded</span>
+ <span className="font-medium text-warning">Degraded</span>
  {' - '}
  <span className="text-muted-foreground">Slower than usual</span>
  </span>
  </div>
  <div className="flex items-center gap-2">
- <XCircle className="h-4 w-4 text-red-500" />
+ <XCircle className="h-4 w-4 text-destructive" />
  <span className="text-sm">
- <span className="font-medium text-red-500">Outage</span>
+ <span className="font-medium text-destructive">Outage</span>
  {' - '}
  <span className="text-muted-foreground">Service unavailable</span>
  </span>
@@ -605,15 +605,15 @@ export default function Status() {
  <div className="p-4">
  <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 text-sm">
  <div>
- <span className="text-green-500 font-medium">&lt; 100ms</span>
+ <span className="text-success font-medium">&lt; 100ms</span>
  <p className="text-muted-foreground">Excellent</p>
  </div>
  <div>
- <span className="text-green-400 font-medium">100-500ms</span>
+ <span className="text-success/80 font-medium">100-500ms</span>
  <p className="text-muted-foreground">Good</p>
  </div>
  <div>
- <span className="text-yellow-500 font-medium">500ms-1s</span>
+ <span className="text-warning font-medium">500ms-1s</span>
  <p className="text-muted-foreground">Fair</p>
  </div>
  <div>
@@ -621,7 +621,7 @@ export default function Status() {
  <p className="text-muted-foreground">Slow</p>
  </div>
  <div>
- <span className="text-red-500 font-medium">&gt; 2s</span>
+ <span className="text-destructive font-medium">&gt; 2s</span>
  <p className="text-muted-foreground">Very Slow</p>
  </div>
  </div>

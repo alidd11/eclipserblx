@@ -41,7 +41,7 @@ const faqCategories: FAQCategory[] = [
   {
     icon: ShoppingBag,
     titleKey: 'faq.ordersAndPurchases',
-    color: 'text-blue-500',
+    color: 'text-secondary',
     items: [
       {
         question: 'How do I view my order history?',
@@ -60,7 +60,7 @@ const faqCategories: FAQCategory[] = [
   {
     icon: Download,
     titleKey: 'faq.downloads',
-    color: 'text-green-500',
+    color: 'text-success',
     items: [
       {
         question: 'How do I download my purchased products?',
@@ -83,7 +83,7 @@ const faqCategories: FAQCategory[] = [
   {
     icon: CreditCard,
     titleKey: 'faq.paymentsBilling',
-    color: 'text-purple-500',
+    color: 'text-accent',
     items: [
       {
         question: 'What payment methods are accepted?',
@@ -106,7 +106,7 @@ const faqCategories: FAQCategory[] = [
   {
     icon: RefreshCw,
     titleKey: 'faq.refundsReturns',
-    color: 'text-orange-500',
+    color: 'text-warning',
     items: [
       {
         question: 'Can I get a refund?',
@@ -148,7 +148,7 @@ const faqCategories: FAQCategory[] = [
   {
     icon: Shield,
     titleKey: 'faq.accountSecurity',
-    color: 'text-red-500',
+    color: 'text-destructive',
     items: [
       {
         question: 'How do I reset my password?',

@@ -37,7 +37,7 @@ export default function HelpCenter() {
             to="/help-center/buyers"
             className="group bg-card border border-border rounded-xl p-8 hover:border-primary/50 transition-all"
           >
-            <div className="p-3 rounded-lg bg-blue-500/10 text-blue-500 w-fit mb-5">
+            <div className="p-3 rounded-lg bg-secondary/10 text-secondary w-fit mb-5">
               <ShoppingCart className="h-7 w-7" />
             </div>
             <h2 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">

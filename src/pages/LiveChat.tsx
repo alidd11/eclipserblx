@@ -74,8 +74,8 @@ const LiveChatPage = () => {
             </div>
           ) : chat.isChatClosed ? (
             <div className="flex flex-col items-center justify-center p-8 text-center min-h-[40vh]">
-              <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center mb-4">
+                <CheckCircle className="h-8 w-8 text-success" />
               </div>
               <h3 className="font-semibold text-xl mb-2">Chat Ended</h3>
               <p className="text-muted-foreground mb-6">Thanks for chatting with us! We hope we were able to help.</p>

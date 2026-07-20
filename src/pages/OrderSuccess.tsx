@@ -139,7 +139,7 @@ export default function OrderSuccess() {
           </div>
         ) : (
           <>
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-500/10 text-green-500">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success">
               <CheckCircle className="h-7 w-7" />
             </div>
 
@@ -173,7 +173,7 @@ export default function OrderSuccess() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Status</span>
-                  <span className="text-green-500 font-medium">Paid</span>
+                  <span className="text-success font-medium">Paid</span>
                 </div>
               </div>
             )}

@@ -55,7 +55,7 @@ export default function HelpCenterBuyers() {
         </Link>
 
         <header className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 text-sm font-medium mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-medium mb-4">
             <HelpCircle className="h-4 w-4" />
             Buyer Help Center
           </div>

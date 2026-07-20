@@ -156,8 +156,8 @@ export default function DMCA() {
  <div className="p-4">
  <div className="space-y-4">
  <div className="flex gap-4 items-center">
- <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
- <span className="text-blue-500 font-semibold">1</span>
+ <div className="h-10 w-10 rounded-full bg-secondary/10 flex items-center justify-center flex-shrink-0">
+ <span className="text-secondary font-semibold">1</span>
  </div>
  <div>
  <h4 className="font-semibold">Report Received</h4>
@@ -167,8 +167,8 @@ export default function DMCA() {
  </div>
  </div>
  <div className="flex gap-4 items-center">
- <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0">
- <span className="text-amber-500 font-semibold">2</span>
+ <div className="h-10 w-10 rounded-full bg-warning/10 flex items-center justify-center flex-shrink-0">
+ <span className="text-warning font-semibold">2</span>
  </div>
  <div>
  <h4 className="font-semibold">Investigation</h4>
@@ -189,8 +189,8 @@ export default function DMCA() {
  </div>
  </div>
  <div className="flex gap-4 items-center">
- <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
- <CheckCircle className="h-5 w-5 text-green-500" />
+ <div className="h-10 w-10 rounded-full bg-success/10 flex items-center justify-center flex-shrink-0">
+ <CheckCircle className="h-5 w-5 text-success" />
  </div>
  <div>
  <h4 className="font-semibold">Resolution</h4>

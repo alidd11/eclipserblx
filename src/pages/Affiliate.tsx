@@ -87,7 +87,7 @@ export default function Affiliate() {
      {/* Header */}
      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div><h1 className="text-2xl md:text-3xl font-display font-bold">Affiliate Dashboard</h1><p className="text-muted-foreground">Track your earnings and referrals</p></div>
-      <Badge className="bg-green-500/20 text-green-400 border-green-500/30 w-fit"><CheckCircle className="h-3 w-3 mr-1" />Active Affiliate</Badge>
+      <Badge className="bg-success/20 text-success border-success/30 w-fit"><CheckCircle className="h-3 w-3 mr-1" />Active Affiliate</Badge>
      </div>
 
      {/* Stripe Connect Banner */}
@@ -115,7 +115,7 @@ export default function Affiliate() {
        </div>
        <div className="flex flex-col gap-3 md:items-end">
         {d.hasPendingPayout ? (
-         <div className="flex items-center gap-2 px-4 py-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg"><Clock className="h-5 w-5 text-yellow-500" /><span className="text-sm font-medium text-yellow-500">Payout request pending</span></div>
+         <div className="flex items-center gap-2 px-4 py-3 bg-warning/10 border border-warning/20 rounded-lg"><Clock className="h-5 w-5 text-warning" /><span className="text-sm font-medium text-warning">Payout request pending</span></div>
         ) : (
          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
           <div className="relative">
@@ -132,7 +132,7 @@ export default function Affiliate() {
          {d.availableBalance < d.affiliateSettings.minimumPayout && !d.hasPendingPayout && <p className="text-xs text-muted-foreground">Minimum balance for payout: £{d.affiliateSettings.minimumPayout}</p>}
          <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span>{d.affiliateSettings.commissionRate}% commission on all referred sales</span>
-          {d.canUseStripe && <Badge variant="outline" className="text-green-500 border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Stripe Connected</Badge>}
+          {d.canUseStripe && <Badge variant="outline" className="text-success border-success/30"><CheckCircle className="h-3 w-3 mr-1" />Stripe Connected</Badge>}
          </div>
         </div>
        </div>
@@ -144,9 +144,9 @@ export default function Affiliate() {
       {[
        { icon: DollarSign, value: `${formatGBP(d.availableBalance)}`, label: 'Available', color: 'bg-primary/10 text-primary' },
        { icon: TrendingUp, value: `${formatGBP(d.totalEarned)}`, label: 'Total Earned', color: 'bg-muted text-muted-foreground' },
-       { icon: MousePointerClick, value: d.totalClicks.toLocaleString(), label: 'Link Clicks', color: 'bg-blue-500/10 text-blue-500' },
-       { icon: UserPlus, value: d.totalSignups.toLocaleString(), label: 'Signups', color: 'bg-green-500/10 text-green-500' },
-       { icon: BadgePercent, value: `${d.conversionRate}%`, label: 'Conversion', color: 'bg-purple-500/10 text-purple-500' },
+       { icon: MousePointerClick, value: d.totalClicks.toLocaleString(), label: 'Link Clicks', color: 'bg-primary/10 text-primary' },
+       { icon: UserPlus, value: d.totalSignups.toLocaleString(), label: 'Signups', color: 'bg-success/10 text-success' },
+       { icon: BadgePercent, value: `${d.conversionRate}%`, label: 'Conversion', color: 'bg-accent/10 text-accent' },
       ].map(stat => (
        <div key={stat.label} className="border border-border rounded-xl overflow-hidden bg-card border-border">
         <div className="p-4 pt-5 pb-4"><div className="flex items-center gap-3">
@@ -197,7 +197,7 @@ export default function Affiliate() {
           {d.commissions.map(c => (
            <div key={c.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div><p className="font-medium">{formatGBP((c.commission_amount / 100))}</p><p className="text-xs text-muted-foreground">{format(new Date(c.created_at), 'dd MMM yyyy, HH:mm')}</p></div>
-            <Badge variant="outline" className={c.status === 'paid' ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'}>{c.status}</Badge>
+            <Badge variant="outline" className={c.status === 'paid' ? 'bg-success/10 text-success border-success/30' : 'bg-warning/10 text-warning border-warning/30'}>{c.status}</Badge>
            </div>
           ))}
          </div>
@@ -218,7 +218,7 @@ export default function Affiliate() {
              <p className="font-medium flex items-center gap-2">{formatGBP((p.amount / 100))}<Badge variant="outline" className="text-xs">{p.payout_method === 'stripe' ? 'Stripe' : p.payout_method === 'bank_transfer' ? 'Bank' : 'PayPal'}</Badge></p>
              <p className="text-xs text-muted-foreground">{format(new Date(p.created_at), 'dd MMM yyyy')}</p>
             </div>
-            <Badge variant="outline" className={p.status === 'completed' ? 'bg-green-500/10 text-green-500 border-green-500/30' : p.status === 'pending' ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}>{p.status}</Badge>
+            <Badge variant="outline" className={p.status === 'completed' ? 'bg-success/10 text-success border-success/30' : p.status === 'pending' ? 'bg-warning/10 text-warning border-warning/30' : 'bg-destructive/10 text-destructive border-destructive/30'}>{p.status}</Badge>
            </div>
           ))}
          </div>

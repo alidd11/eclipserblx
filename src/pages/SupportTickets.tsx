@@ -81,19 +81,19 @@ import { Plus, Ticket, MessageSquare, Clock, CheckCircle } from 'lucide-react';
         {/* Stats strip */}
         <div className="flex items-center gap-5 border border-border rounded-xl p-3 mb-5">
           <div className="flex items-center gap-1.5 px-2">
-            <MessageSquare className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
+            <MessageSquare className="h-3.5 w-3.5 text-warning shrink-0" />
             <span className="text-base font-bold">{openCount}</span>
             <span className="text-xs text-muted-foreground">Open</span>
           </div>
           <div className="w-px h-5 bg-border" />
           <div className="flex items-center gap-1.5 px-2">
-            <Clock className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+            <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
             <span className="text-base font-bold">{inProgressCount}</span>
             <span className="text-xs text-muted-foreground">In Progress</span>
           </div>
           <div className="w-px h-5 bg-border" />
           <div className="flex items-center gap-1.5 px-2">
-            <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0" />
+            <CheckCircle className="h-3.5 w-3.5 text-success shrink-0" />
             <span className="text-base font-bold">{resolvedCount}</span>
             <span className="text-xs text-muted-foreground">Resolved</span>
           </div>

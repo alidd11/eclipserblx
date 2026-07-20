@@ -9,8 +9,8 @@ import { PageHeader } from '@/components/ui/PageHeader';
 
 const categoryConfig: Record<string, { label: string; icon: typeof Sparkles; className: string }> = {
   feature: { label: 'Feature', icon: Sparkles, className: 'bg-primary/10 text-primary border-primary/20' },
-  fix: { label: 'Fix', icon: Wrench, className: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
-  improvement: { label: 'Improvement', icon: Zap, className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  fix: { label: 'Fix', icon: Wrench, className: 'bg-warning/10 text-warning border-warning/20' },
+  improvement: { label: 'Improvement', icon: Zap, className: 'bg-secondary/10 text-secondary border-secondary/20' },
 };
 
 export default function Changelog() {
