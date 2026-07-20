@@ -178,7 +178,7 @@ export default function Brand() {
         </section>
 
         <div className="border-t border-border pt-6 text-xs text-muted-foreground">
-          For press enquiries, contact press@eclipserblx.com
+          For press enquiries, contact support@eclipserblx.com
         </div>
       </div>
     </MainLayout>

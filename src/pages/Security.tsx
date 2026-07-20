@@ -189,10 +189,10 @@ export default function Security() {
                 critical issues within 7 days. We do not pursue legal action against researchers acting in good faith.
               </p>
               <a
-                href="mailto:security@eclipserblx.com"
+                href="mailto:support@eclipserblx.com"
                 className="inline-flex items-center gap-2 h-10 px-4 rounded-lg bg-foreground text-background text-sm font-medium hover:opacity-90 transition-opacity"
               >
-                security@eclipserblx.com
+                support@eclipserblx.com
               </a>
             </div>
           </div>
