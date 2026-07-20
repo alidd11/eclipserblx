@@ -1,5 +1,6 @@
 import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { requireServiceRole } from '../_shared/auth-guard.ts'
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -38,8 +39,10 @@ Deno.serve(async (req) => {
     )
   }
 
-  // Auth: verify_jwt = true in config.toml — Supabase gateway validates the
-  // service role JWT from the pg_cron Authorization header before this runs.
+  // Auth: verify_jwt = false in config.toml (pg_cron's Authorization header isn't
+  // a standard user JWT), so the service-role check happens here instead.
+  const _unauth = requireServiceRole(req)
+  if (_unauth) return _unauth
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
