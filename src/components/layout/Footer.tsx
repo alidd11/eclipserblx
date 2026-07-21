@@ -24,8 +24,6 @@ export function Footer() {
       links: [
         { href: '/products?category=civilian-vehicles', label: 'Civilian Vehicles' },
         { href: '/products?category=police-vehicles', label: 'Police Vehicles' },
-        { href: '/products?category=marked-police-vehicles', label: 'Marked Police' },
-        { href: '/products?category=unmarked-police-vehicles', label: 'Unmarked Police' },
         { href: '/products?category=scripts', label: 'Scripts' },
         { href: '/products?category=maps', label: 'Maps' },
       ],

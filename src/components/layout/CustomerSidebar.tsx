@@ -184,9 +184,9 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
   }, [location.pathname]);
 
   const statusConfig = {
-    online: { color: 'text-green-500', bg: 'bg-green-500' },
-    degraded: { color: 'text-yellow-500', bg: 'bg-yellow-500' },
-    offline: { color: 'text-red-500', bg: 'bg-red-500' },
+    online: { color: 'text-success', bg: 'bg-success' },
+    degraded: { color: 'text-warning', bg: 'bg-warning' },
+    offline: { color: 'text-destructive', bg: 'bg-destructive' },
     checking: { color: 'text-muted-foreground', bg: 'bg-muted-foreground' },
   };
 
@@ -223,7 +223,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
             isActive ? ICON_STROKE_ACTIVE : ICON_STROKE_DEFAULT
           )} />
           {item.showNotificationDot && unreadNotifications > 0 && (
-            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-red-500" />
+            <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-destructive" />
           )}
         </div>
         {!isCollapsed && (
@@ -233,7 +233,7 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
           <Circle className={cn('h-2.5 w-2.5 fill-current shrink-0', statusConfig[systemStatus].color)} />
         )}
         {!isCollapsed && item.showNotificationDot && unreadNotifications > 0 && (
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-foreground px-1.5">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground px-1.5">
             {unreadNotifications > 99 ? '99+' : unreadNotifications}
           </span>
         )}
