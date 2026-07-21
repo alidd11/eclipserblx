@@ -27,7 +27,7 @@ export default function Cart() {
     return (
       <MainLayout>
         <div className="container py-12 md:py-16 max-w-3xl">
-          <div className="border border-border rounded-2xl p-10 md:p-16 flex flex-col items-center text-center bg-card/40">
+          <div className="border border-border rounded-2xl p-8 md:p-12 flex flex-col items-center text-center bg-card/40">
             <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-muted/40 border border-border flex items-center justify-center mb-6 md:mb-8">
               <ShoppingBag className="h-7 w-7 md:h-8 md:w-8 text-muted-foreground" />
             </div>

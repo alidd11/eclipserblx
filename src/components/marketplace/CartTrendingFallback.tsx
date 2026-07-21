@@ -15,8 +15,8 @@ export function CartTrendingFallback() {
   if (!products || products.length === 0) return null;
 
   return (
-    <section aria-label="Trending products" className="mt-10">
-      <div className="flex items-center gap-2 mb-4">
+    <section aria-label="Trending products" className="mt-8">
+      <div className="flex items-center justify-center gap-2 mb-4">
         <TrendingUp className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
         <h2 className="text-sm font-semibold text-foreground">Trending Now</h2>
       </div>
