@@ -85,7 +85,7 @@ export function StoreProductGrid({
               id={product.id}
               name={product.name}
               price={product.price}
-              image={product.images?.[0] || '/placeholder.svg'}
+              image={product.images?.[0]}
               slug={String(product.product_number)}
               category={(product.categories as any)?.name}
               isResellable={product.is_resellable}

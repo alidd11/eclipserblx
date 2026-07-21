@@ -166,9 +166,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 />
               )
             ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-4xl font-display font-semibold text-primary/20">
-                  {name.charAt(0)}
+              /* Intentional cover for imageless products — a branded monogram
+                 tile, not a flat grey box that reads as a stuck skeleton. */
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/15 via-card to-card relative overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_25%,hsl(var(--primary)/0.12),transparent_55%)]" />
+                <span className="relative text-5xl font-display font-bold text-primary/40 select-none">
+                  {name.charAt(0).toUpperCase()}
                 </span>
               </div>
             )}

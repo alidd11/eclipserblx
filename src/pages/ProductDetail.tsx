@@ -171,7 +171,15 @@ export default function ProductDetail() {
  <div className="container py-8 space-y-8" aria-busy="true" aria-label="Loading product details">
  <Skeleton className="h-6 w-48" />
  <div className="grid lg:grid-cols-2 gap-8">
+ <div className="space-y-4">
  <Skeleton className="aspect-[16/10] lg:aspect-[16/9] w-full rounded-xl" />
+ {/* Thumbnail strip */}
+ <div className="flex gap-2">
+ {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 w-16 rounded-lg shrink-0" />)}
+ </div>
+ {/* Store card (matches the seller banner shown below the gallery once loaded) */}
+ <Skeleton className="h-24 w-full rounded-xl" />
+ </div>
  <div className="space-y-4">
  <Skeleton className="h-8 w-3/4" />
  <Skeleton className="h-6 w-1/4" />
@@ -470,7 +478,7 @@ export default function ProductDetail() {
  />
  {selectedBundle && (
  <div className="pt-2">
- <span className="text-3xl font-bold">
+ <span className="text-3xl md:text-4xl font-display font-bold tracking-tight">
  {formatPrice(selectedBundle.price_gbp)}
  </span>
  {selectedBundle.quantity > 1 && (
@@ -482,7 +490,7 @@ export default function ProductDetail() {
  )}
  </div>
  ) : (
- <span className="text-3xl font-bold">
+ <span className="text-3xl md:text-4xl font-display font-bold tracking-tight">
  {formatPrice(Number(product.price))}
  </span>
  )}
