@@ -285,7 +285,7 @@ export default function SearchResults() {
           <ProductGridSkeleton count={8} />
         ) : displayProducts.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {displayProducts.map((product) => (
                 <ProductCard
                   key={product.id}

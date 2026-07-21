@@ -9,6 +9,7 @@ import {
   Copy, Hash, Heart,
 } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -467,8 +468,21 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
   if (authLoading) {
     return (
       <MainLayout>
-        <div className="container py-16 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="container py-4 space-y-3 max-w-lg mx-auto">
+          {/* Profile header skeleton — mirrors the loaded layout */}
+          <div className="border border-border rounded-xl p-5 flex flex-col items-center text-center gap-3">
+            <Skeleton className="h-20 w-20 rounded-full" />
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          {/* Section card skeletons */}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="border border-border rounded-xl p-5 space-y-3">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+              <Skeleton className="h-10 w-full rounded-lg" />
+            </div>
+          ))}
         </div>
       </MainLayout>
     );

@@ -171,7 +171,7 @@ export default function ProductDetail() {
  <div className="container py-8 space-y-8" aria-busy="true" aria-label="Loading product details">
  <Skeleton className="h-6 w-48" />
  <div className="grid lg:grid-cols-2 gap-8">
- <Skeleton className="aspect-video w-full rounded-xl" />
+ <Skeleton className="aspect-[16/10] lg:aspect-[16/9] w-full rounded-xl" />
  <div className="space-y-4">
  <Skeleton className="h-8 w-3/4" />
  <Skeleton className="h-6 w-1/4" />
