@@ -121,7 +121,7 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
 
         <h1
           id={id}
-          className="font-display font-black tracking-tight leading-[1.05] text-foreground text-[clamp(1.5rem,2.6vw,2.25rem)] max-w-[14ch] line-clamp-3 group-hover:text-primary transition-colors"
+          className="font-display font-black tracking-tight leading-[1.05] text-foreground text-[clamp(1.35rem,2.6vw,2.25rem)] max-w-[14ch] line-clamp-3 group-hover:text-primary transition-colors"
         >
           {hero.name}
         </h1>

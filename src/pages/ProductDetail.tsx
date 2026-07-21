@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Check, ChevronLeft, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield, Zap, BadgeCheck } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -546,10 +546,10 @@ export default function ProductDetail() {
  <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card overflow-hidden">
  {[
  { icon: Shield, label: 'Buyer Protection' },
- { icon: Check, label: 'Instant Delivery' },
+ { icon: Zap, label: 'Instant Delivery' },
  product.stores.is_verified
- ? { icon: Check, label: 'Verified Seller' }
- : { icon: Shield, label: 'Secure Checkout' },
+ ? { icon: BadgeCheck, label: 'Verified Seller' }
+ : { icon: Check, label: 'Secure Checkout' },
  ].map(({ icon: Icon, label }) => (
  <div key={label} className="flex flex-col items-center justify-center gap-1.5 px-2 py-3.5 text-center">
  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
