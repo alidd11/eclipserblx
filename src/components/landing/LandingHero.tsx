@@ -93,14 +93,14 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
       {/* Image side — art fills its own panel, never sits under the title text */}
       <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] lg:w-[56%] shrink-0 bg-gradient-to-br from-muted via-muted/70 to-muted overflow-hidden">
         <img
-          src={optimizeImageUrl(hero.image, 1200, 750, 'cover')}
+          src={optimizeImageUrl(hero.image, 1200, 750, 'contain')}
           alt={hero.name}
           width={1200}
           height={750}
           loading="eager"
           decoding="sync"
           {...({ fetchpriority: 'high' } as Record<string, string>)}
-          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+          className="w-full h-full object-contain object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
         {/* Seam gradient — blends the image edge into the content panel on desktop */}
         <div className="hidden lg:block absolute inset-y-0 right-0 w-24 bg-gradient-to-r from-transparent to-card" />
@@ -121,7 +121,7 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
 
         <h1
           id={id}
-          className="font-display font-black tracking-tight leading-[1.03] text-foreground text-[clamp(1.6rem,3.4vw,2.75rem)] max-w-[16ch] group-hover:text-primary transition-colors"
+          className="font-display font-black tracking-tight leading-[1.05] text-foreground text-[clamp(1.5rem,2.6vw,2.25rem)] max-w-[14ch] line-clamp-3 group-hover:text-primary transition-colors"
         >
           {hero.name}
         </h1>
