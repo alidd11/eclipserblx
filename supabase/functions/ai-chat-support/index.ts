@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rateLimit.ts";
+import { requireAuth } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -138,16 +139,15 @@ async function executeTool(
       if (error) return JSON.stringify({ error: error.message });
       if (!data) return JSON.stringify({ error: "Order item not found" });
 
-      // Verify ownership
-      if (customerUserId) {
-        const { data: ownerCheck } = await supabase
-          .from("orders")
-          .select("id")
-          .eq("id", data.order_id)
-          .eq("user_id", customerUserId)
-          .maybeSingle();
-        if (!ownerCheck) return JSON.stringify({ error: "Item not found for this customer" });
-      }
+      // Verify ownership — fail closed if the customer isn't identified
+      if (!customerUserId) return JSON.stringify({ error: "Customer not identified" });
+      const { data: ownerCheck } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("id", data.order_id)
+        .eq("user_id", customerUserId)
+        .maybeSingle();
+      if (!ownerCheck) return JSON.stringify({ error: "Item not found for this customer" });
 
       return JSON.stringify({
         product_name: data.product_name,
@@ -169,15 +169,15 @@ async function executeTool(
 
       if (!item) return JSON.stringify({ error: "Order item not found" });
 
-      if (customerUserId) {
-        const { data: ownerCheck } = await supabase
-          .from("orders")
-          .select("id")
-          .eq("id", item.order_id)
-          .eq("user_id", customerUserId)
-          .maybeSingle();
-        if (!ownerCheck) return JSON.stringify({ error: "Item not found for this customer" });
-      }
+      // Verify ownership — fail closed if the customer isn't identified
+      if (!customerUserId) return JSON.stringify({ error: "Customer not identified" });
+      const { data: ownerCheck } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("id", item.order_id)
+        .eq("user_id", customerUserId)
+        .maybeSingle();
+      if (!ownerCheck) return JSON.stringify({ error: "Item not found for this customer" });
 
       const { error } = await supabase
         .from("order_items")
@@ -289,15 +289,17 @@ Deno.serve(async (req) => {
     return rateLimitResponse(rateLimitResult, corsHeaders);
   }
 
+  const auth = await requireAuth(req, corsHeaders);
+  if ("error" in auth) return auth.error;
+  const customerUserId = auth.user.id;
+
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = auth.supabase;
 
-    const { conversationId, userMessage, issueCategory, userId } = await req.json();
+    const { conversationId, userMessage, issueCategory } = await req.json();
 
     if (!conversationId || !userMessage) {
       return new Response(
@@ -322,15 +324,18 @@ Deno.serve(async (req) => {
 
     console.log("[AI-CHAT] Processing message for conversation:", conversationId);
 
-    // Resolve userId from conversation if not provided
-    let customerUserId = userId || null;
-    if (!customerUserId) {
-      const { data: conv } = await supabase
-        .from("chat_conversations")
-        .select("user_id")
-        .eq("id", conversationId)
-        .maybeSingle();
-      customerUserId = conv?.user_id || null;
+    // Confirm the authenticated caller actually owns this conversation
+    const { data: conv } = await supabase
+      .from("chat_conversations")
+      .select("user_id")
+      .eq("id", conversationId)
+      .maybeSingle();
+
+    if (!conv || conv.user_id !== customerUserId) {
+      return new Response(
+        JSON.stringify({ error: "Conversation not found for this customer" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Check escalation

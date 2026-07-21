@@ -182,7 +182,7 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
         </div>
         <div className="relative">
           <Input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="bg-input pr-10" required />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" aria-label={showPassword ? 'Hide password' : 'Show password'}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.span key={showPassword ? 'eye-off' : 'eye'} initial={{ opacity: 0, scale: 0.8, rotate: -90 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} exit={{ opacity: 0, scale: 0.8, rotate: 90 }} transition={{ duration: 0.15 }} className="block">
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -203,7 +203,7 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
               {confirmPassword.length > 0 && password.length > 0 && (
                 confirmPassword === password ? <Check className="h-4 w-4 text-emerald-500" /> : <X className="h-4 w-4 text-destructive" />
               )}
-              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-muted-foreground hover:text-foreground transition-colors" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span key={showConfirmPassword ? 'eye-off' : 'eye'} initial={{ opacity: 0, scale: 0.8, rotate: -90 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} exit={{ opacity: 0, scale: 0.8, rotate: 90 }} transition={{ duration: 0.15 }} className="block">
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

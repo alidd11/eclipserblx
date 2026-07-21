@@ -44,7 +44,7 @@ export function ForgotPasswordForm({ email, setEmail, onBack, onCodeSent }: Forg
         toast.error(t('common.error'), { description: 'Failed to send reset email. Please try again.' });
       } else {
         onCodeSent();
-        toast.success(t('auth.checkYourEmail'), { description: 'We sent you a 4-digit verification code.' });
+        toast.success(t('auth.checkYourEmail'), { description: 'We sent you a 6-digit verification code.' });
       }
     } finally {
       setLoading(false);

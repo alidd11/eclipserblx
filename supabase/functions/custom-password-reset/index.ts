@@ -14,8 +14,8 @@ const MAX_VERIFY_ATTEMPTS = 5; // Lock after 5 failed attempts
 
 // Generate Eclipse branded HTML email template for password reset
 function generatePasswordResetEmailHtml(token: string): string {
-  // Validate token is exactly 4 digits before rendering
-  if (!/^\d{4}$/.test(token)) return '';
+  // Validate token is exactly 6 digits before rendering (must match generateCode())
+  if (!/^\d{6}$/.test(token)) return '';
   
   const digitCells = token.split('').map(digit => `
     <td style="width: 48px; height: 56px; background: #1a1520; border: 2px solid #a855f7; border-radius: 8px; text-align: center; vertical-align: middle; margin: 0 4px;">

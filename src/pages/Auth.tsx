@@ -80,7 +80,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
       case 'signup': return t('auth.signUpDescription');
       case 'forgot': return t('auth.forgotDescription');
       case 'reset': return t('auth.resetDescription');
-      case 'reset-verify': return `Enter the 4-digit code sent to ${email} and choose a new password`;
+      case 'reset-verify': return `Enter the 6-digit code sent to ${email} and choose a new password`;
       case 'verify': return `Enter the 6-digit code sent to ${email}`;
       default: return t('auth.signInDescription');
     }

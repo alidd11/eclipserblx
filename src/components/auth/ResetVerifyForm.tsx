@@ -29,8 +29,8 @@ export function ResetVerifyForm({ email, onSuccess, onChangeEmail }: ResetVerify
     e.preventDefault();
     setErrors({});
 
-    if (otpCode.length !== 4) {
-      setErrors({ otp: 'Please enter the complete 4-digit code' });
+    if (otpCode.length !== 6) {
+      setErrors({ otp: 'Please enter the complete 6-digit code' });
       return;
     }
     if (password.length < 6) {
@@ -97,12 +97,14 @@ export function ResetVerifyForm({ email, onSuccess, onChangeEmail }: ResetVerify
 
       <div className="space-y-4">
         <div className="flex justify-center">
-          <InputOTP maxLength={4} value={otpCode} onChange={setOtpCode}>
+          <InputOTP maxLength={6} value={otpCode} onChange={setOtpCode}>
             <InputOTPGroup>
               <InputOTPSlot index={0} />
               <InputOTPSlot index={1} />
               <InputOTPSlot index={2} />
               <InputOTPSlot index={3} />
+              <InputOTPSlot index={4} />
+              <InputOTPSlot index={5} />
             </InputOTPGroup>
           </InputOTP>
         </div>
@@ -121,7 +123,7 @@ export function ResetVerifyForm({ email, onSuccess, onChangeEmail }: ResetVerify
             className="bg-input pr-10"
             required
           />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" aria-label={showPassword ? 'Hide password' : 'Show password'}>
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
@@ -141,14 +143,14 @@ export function ResetVerifyForm({ email, onSuccess, onChangeEmail }: ResetVerify
             className="bg-input pr-10"
             required
           />
-          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" tabIndex={-1}>
+          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
             {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
         {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading || otpCode.length !== 4}>
+      <Button type="submit" className="w-full" disabled={loading || otpCode.length !== 6}>
         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         {t('auth.resetPassword')}
       </Button>
