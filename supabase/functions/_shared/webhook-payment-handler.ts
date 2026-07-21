@@ -120,7 +120,7 @@ export async function processPayment(
   const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
   if (items.length > 0) {
     const productIds = items.map(i => i.id).filter(Boolean);
-    let productCategories: Record<string, string> = {};
+    const productCategories: Record<string, string> = {};
     if (productIds.length > 0) {
       const { data: products } = await supabase.from("products").select("id, category_id, categories(slug)").in("id", productIds);
       if (products) {

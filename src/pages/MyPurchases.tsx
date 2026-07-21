@@ -188,7 +188,7 @@ export default function MyPurchases() {
   };
 
   const toggleItemSelection = (itemId: string) => {
-    setSelectedItems(prev => { const next = new Set(prev); next.has(itemId) ? next.delete(itemId) : next.add(itemId); return next; });
+    setSelectedItems(prev => { const next = new Set(prev); if (next.has(itemId)) next.delete(itemId); else next.add(itemId); return next; });
   };
   const toggleSelectAll = () => {
     const ids = selectableItems.map(item => item.id);

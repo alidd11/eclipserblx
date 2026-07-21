@@ -108,7 +108,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
     if (touchStartX.current && touchEndX.current) {
       const distance = touchStartX.current - touchEndX.current;
       if (Math.abs(distance) > 50) {
-        distance > 0 ? goToNext() : goToPrev();
+        if (distance > 0) goToNext(); else goToPrev();
       }
     }
     touchStartX.current = null;

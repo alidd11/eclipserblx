@@ -250,7 +250,7 @@ function extractEmail(from: string): string {
 // Clean up email content to remove quoted replies and signatures
 function cleanEmailContent(content: string): string {
   // Remove HTML tags if present
-  let cleaned = content.replace(/<[^>]*>/g, " ").trim();
+  const cleaned = content.replace(/<[^>]*>/g, " ").trim();
   
   // Remove common quote markers
   const lines = cleaned.split("\n");

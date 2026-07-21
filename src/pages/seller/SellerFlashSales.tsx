@@ -140,7 +140,7 @@ export default function SellerFlashSales() {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
     if (!form.starts_at || !form.ends_at) { toast.error('Start and end dates required'); return; }
     if (new Date(form.ends_at) <= new Date(form.starts_at)) { toast.error('End must be after start'); return; }
-    editing ? updateMutation.mutate() : createMutation.mutate();
+    if (editing) updateMutation.mutate(); else createMutation.mutate();
   };
 
   const isActive = (sale: FlashSale) => sale.is_active && new Date(sale.starts_at) <= new Date() && new Date(sale.ends_at) > new Date();

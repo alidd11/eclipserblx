@@ -26,10 +26,8 @@ export function GlobalCategoryBar() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const activeCategory = searchParams.get('category');
-  // Only show on homepage and categories page — other pages use breadcrumbs
-  const showOnPaths = ['/', '/categories'];
-  if (!showOnPaths.includes(location.pathname)) return null;
 
+  // Must run every render — keep above any early returns to obey Rules of Hooks
   const { data: categories } = useQuery({
     queryKey: ['global-categories-bar'],
     queryFn: async () => {
@@ -43,6 +41,10 @@ export function GlobalCategoryBar() {
     staleTime: 10 * 60 * 1000,
   });
 
+  // Only show on homepage and categories page — other pages use breadcrumbs
+  const showOnPaths = ['/', '/categories'];
+  if (!showOnPaths.includes(location.pathname)) return null;
+
   if (!categories?.length) return null;
 
   return (
@@ -53,7 +55,7 @@ export function GlobalCategoryBar() {
             to="/products"
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 lg:px-4 lg:py-2 rounded-md text-xs lg:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0",
-              false
+              !activeCategory
                 ? "bg-primary/15 text-primary border-b-2 border-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
             )}

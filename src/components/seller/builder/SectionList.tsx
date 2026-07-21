@@ -81,10 +81,7 @@ function SortableSectionItem({ section, isSelected, onSelect, onToggleVisibility
 
       <Switch
         checked={section.visible}
-        onCheckedChange={(e) => {
-          e; // prevent bubbling
-          onToggleVisibility(section.id);
-        }}
+        onCheckedChange={() => onToggleVisibility(section.id)}
         onClick={(e) => e.stopPropagation()}
         className="scale-75"
       />

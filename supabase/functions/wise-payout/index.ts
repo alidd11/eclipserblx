@@ -383,7 +383,7 @@ Deno.serve(async (req) => {
         // Get payout details if payoutId provided
         let payoutData: any = null;
         let payoutAmount = amount;
-        let payoutCurrency = currency || 'GBP';
+        const payoutCurrency = currency || 'GBP';
         
         if (payoutId) {
           const { data: payout, error: payoutError } = await supabase

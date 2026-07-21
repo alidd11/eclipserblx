@@ -29,7 +29,7 @@ export function MyPurchasesCard() {
  if (!user?.id && !user?.email) return [];
 
  // Get all order items from paid/completed orders
- let allItems: any[] = [];
+ const allItems: any[] = [];
 
  // Query by user_id
  const { data: userOrders, error: userError } = await supabase

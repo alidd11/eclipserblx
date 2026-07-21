@@ -418,7 +418,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  value={pricingModel === 'cpc' ? cpcBid : cpmBid}
  onChange={e => {
  const val = Math.max(0.01, parseFloat(e.target.value) || 0.01);
- pricingModel === 'cpc' ? setCpcBid(val) : setCpmBid(val);
+ if (pricingModel === 'cpc') setCpcBid(val); else setCpmBid(val);
  }}
  />
  <p className="text-[11px] text-muted-foreground">

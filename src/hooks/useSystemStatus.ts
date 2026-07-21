@@ -7,7 +7,7 @@ let sharedStatus: SystemStatus = typeof navigator !== 'undefined'
   ? (navigator.onLine ? 'online' : 'offline')
   : 'checking';
 
-let listeners = new Set<() => void>();
+const listeners = new Set<() => void>();
 
 function notify() {
   listeners.forEach(fn => fn());

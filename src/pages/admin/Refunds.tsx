@@ -110,7 +110,7 @@ export default function AdminRefunds() {
 
       // Resolve customer_ids from profiles
       const userIds = data?.map(o => o.user_id).filter(Boolean) as string[] || [];
-      let customerMap: Record<string, string> = {};
+      const customerMap: Record<string, string> = {};
       if (userIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')

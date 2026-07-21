@@ -20,7 +20,7 @@ interface NotificationState {
 }
 
 // Singleton-like: all consumers share the same realtime channel via this hook + React Query-like dedup
-let globalChannelActive = false;
+const globalChannelActive = false;
 
 export function useNotifications() {
   const { user } = useAuth();

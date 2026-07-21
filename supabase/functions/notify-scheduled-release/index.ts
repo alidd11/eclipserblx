@@ -129,7 +129,7 @@ serve(async (req) => {
     console.log(`[notify-scheduled-release] Found ${releasedProducts.length} products just released`);
 
     let totalNotified = 0;
-    let discordWebhooksSent = 0;
+    const discordWebhooksSent = 0;
 
     for (const product of releasedProducts) {
       console.log(`[notify-scheduled-release] Processing product: ${product.name} (${product.id})`);

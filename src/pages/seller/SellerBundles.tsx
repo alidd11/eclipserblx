@@ -164,7 +164,7 @@ export default function SellerBundles() {
   const handleSubmit = () => {
     if (!form.name.trim()) { toast.error('Name is required'); return; }
     if (form.bundle_price <= 0) { toast.error('Bundle price must be greater than 0'); return; }
-    editing ? updateMutation.mutate() : createMutation.mutate();
+    if (editing) updateMutation.mutate(); else createMutation.mutate();
   };
 
   return (

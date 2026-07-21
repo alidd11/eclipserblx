@@ -183,7 +183,7 @@ export function SellerTicketDrawer({ ticket, onClose, getStatusBadge, getPriorit
     mutationFn: async (newStatus: string) => {
       if (!ticket?.id) throw new Error('No ticket selected');
       const updateData: Record<string, string> = { status: newStatus };
-      if (newStatus === 'in_progress' && !ticket.assigned_to) updateData.assigned_to = user?.id!;
+      if (newStatus === 'in_progress' && !ticket.assigned_to && user?.id) updateData.assigned_to = user.id;
       const { error } = await supabase.from('seller_support_tickets').update(updateData).eq('id', ticket.id);
       if (error) throw error;
     },

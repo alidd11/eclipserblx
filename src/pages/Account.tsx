@@ -379,7 +379,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
     queryKey: ['user-orders', user?.id, user?.email],
     queryFn: async () => {
       if (!user?.id && !user?.email) return [];
-      let { data, error } = await supabase
+      const { data, error } = await supabase
         .from('orders')
         .select('id, status, total, created_at, discount_amount')
         .eq('user_id', user!.id)

@@ -66,7 +66,7 @@ export function CategorySection({ category, searchQuery }: { category: HelpCateg
   const toggleItem = (i: number) => {
     setOpenItems((prev) => {
       const s = new Set(prev);
-      s.has(i) ? s.delete(i) : s.add(i);
+      if (s.has(i)) s.delete(i); else s.add(i);
       return s;
     });
   };

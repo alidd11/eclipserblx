@@ -84,7 +84,7 @@ export default function SellerGoals() {
       if (!store?.id) throw new Error('No store');
       
       const now = new Date();
-      let starts_at = now;
+      const starts_at = now;
       let ends_at: Date;
 
       if (newGoal.period === 'weekly') {

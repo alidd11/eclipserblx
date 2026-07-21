@@ -55,7 +55,7 @@ export default function Subscribers() {
 
  // Fetch profiles to get display names
  const userIds = (subscriptions?.filter(s => s.user_id).map(s => s.user_id) || []) as string[];
- let profilesMap: Record<string, string> = {};
+ const profilesMap: Record<string, string> = {};
 
  if (userIds.length > 0) {
  const { data: profiles } = await supabase

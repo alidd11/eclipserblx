@@ -7,7 +7,7 @@ import { auth, defineMcp } from "npm:@lovable.dev/mcp-js@0.23.0";
 
 // src/lib/mcp/tools/whoami.ts
 import { defineTool } from "npm:@lovable.dev/mcp-js@0.23.0";
-var whoami_default = defineTool({
+const whoami_default = defineTool({
   name: "whoami",
   title: "Who am I",
   description: "Return the currently authenticated Eclipse user's id and email.",
@@ -36,7 +36,7 @@ function anonClient() {
     { auth: { persistSession: false, autoRefreshToken: false } }
   );
 }
-var search_products_default = defineTool2({
+const search_products_default = defineTool2({
   name: "search_products",
   title: "Search products",
   description: "Search Eclipse's public Roblox marketplace catalog by keyword. Returns id, title, price (GBP), category and slug.",
@@ -73,7 +73,7 @@ function supabaseForUser(ctx) {
     }
   );
 }
-var get_my_orders_default = defineTool3({
+const get_my_orders_default = defineTool3({
   name: "get_my_orders",
   title: "Get my orders",
   description: "List the signed-in user's recent Eclipse orders. RLS scopes results to the caller.",
@@ -111,7 +111,7 @@ function supabaseForUser2(ctx) {
     }
   );
 }
-var get_my_wishlist_default = defineTool4({
+const get_my_wishlist_default = defineTool4({
   name: "get_my_wishlist",
   title: "Get my wishlist",
   description: "List the signed-in user's wishlisted products.",
@@ -136,8 +136,8 @@ var get_my_wishlist_default = defineTool4({
 });
 
 // src/lib/mcp/index.ts
-var projectRef = "qlnbergwjfrmgkjhrbkj";
-var mcp_default = defineMcp({
+const projectRef = "qlnbergwjfrmgkjhrbkj";
+const mcp_default = defineMcp({
   name: "eclipse-mcp",
   title: "Eclipse Marketplace",
   version: "0.1.0",
