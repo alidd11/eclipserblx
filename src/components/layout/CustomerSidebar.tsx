@@ -100,20 +100,22 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
   const { unreadCount: unreadNotifications } = useNotifications();
   const isCollapsed = false; // Always expanded in drawer mode
 
-  // Build browse items: explore + resource categories merged
+  // Browse: primary navigation entry points
   const browseItems: NavItem[] = [
     { title: t('sidebar.allProducts'), icon: Grid3X3, href: '/products' },
     { title: t('sidebar.allStores'), icon: Store, href: '/stores' },
     { title: t('sidebar.featured'), icon: Star, href: '/featured' },
-    ...(parentCategories?.map((cat) => {
-      const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
-      return {
-        title: cat.name,
-        icon: CatIcon as unknown as LucideIcon,
-        href: `/products?category=${cat.slug}`,
-      };
-    }) ?? []),
   ];
+
+  // Categories: resource categories in their own group so the menu stays sorted
+  const categoryItems: NavItem[] = (parentCategories ?? []).map((cat) => {
+    const CatIcon = categoryIconMap[cat.slug] || PackageIcon;
+    return {
+      title: cat.name,
+      icon: CatIcon as unknown as LucideIcon,
+      href: `/products?category=${cat.slug}`,
+    };
+  });
 
   const navGroups: NavGroup[] = [
     // Quick access — rendered without header
@@ -143,6 +145,14 @@ export function CustomerSidebar({ onNavigate, className }: CustomerSidebarProps)
       icon: Grid3X3,
       items: browseItems,
     },
+    ...(categoryItems.length > 0
+      ? [{
+          id: 'categories',
+          title: t('sidebar.categories', 'Categories'),
+          icon: LayoutGrid,
+          items: categoryItems,
+        }]
+      : []),
     {
       id: 'support',
       title: t('sidebar.support'),
