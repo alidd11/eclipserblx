@@ -113,6 +113,9 @@ serve(async (req) => {
 
           if (discount) {
             if (discount.restricted_to_user_id && discount.restricted_to_user_id !== userId) { /* skip */ }
+            else if (discount.expires_at && new Date(discount.expires_at) < new Date()) { /* expired */ }
+            else if (discount.max_uses && (discount.current_uses || 0) >= discount.max_uses) { /* max uses reached */ }
+            else if (discount.min_order_amount && serverSubtotal < discount.min_order_amount) { /* min order not met */ }
             else {
               const isBoost = discount.code?.startsWith('BOOST-');
               const ADMIN_STORES = ['83b5dde6-ce72-4f1b-a9f9-ff1eb5cbc23a', '9b842052-e1fd-4dfe-99bf-c7625df3e17d'];

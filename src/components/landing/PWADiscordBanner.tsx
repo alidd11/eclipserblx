@@ -26,13 +26,13 @@ export function PWADiscordBanner() {
       href={discordUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block border border-[#5865F2]/20 bg-card hover:border-[#5865F2]/50 transition-all duration-300 rounded-lg overflow-hidden shadow-sm h-full"
+      className="group block border border-[hsl(var(--brand-discord))]/20 bg-card hover:border-[hsl(var(--brand-discord))]/50 transition-all duration-300 rounded-lg overflow-hidden shadow-sm h-full"
     >
-      <div className="px-5 py-5 bg-gradient-to-r from-[#5865F2]/10 to-transparent h-full flex flex-col justify-center gap-4">
+      <div className="px-5 py-5 bg-gradient-to-r from-[hsl(var(--brand-discord))]/10 to-transparent h-full flex flex-col justify-center gap-4">
         {/* Header */}
         <div className="flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-[#5865F2]/15 flex items-center justify-center shrink-0 transition-transform duration-300">
-            <DiscordLogo className="h-5 w-5 text-[#5865F2]" />
+          <div className="w-10 h-10 rounded-xl bg-[hsl(var(--brand-discord))]/15 flex items-center justify-center shrink-0 transition-transform duration-300">
+            <DiscordLogo className="h-5 w-5 text-[hsl(var(--brand-discord))]" />
           </div>
           <div className="min-w-0">
             <h3 className="font-semibold text-[13px] text-foreground tracking-wide uppercase">
@@ -66,7 +66,7 @@ export function PWADiscordBanner() {
             </div>
           </div>
 
-          <Button size="sm" variant="outline" className="text-[10px] font-semibold uppercase tracking-wider text-[#5865F2] border-[#5865F2]/30 hover:bg-[#5865F2]/10 shrink-0 h-7 px-3">
+          <Button size="sm" variant="outline" className="text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--brand-discord))] border-[hsl(var(--brand-discord))]/30 hover:bg-[hsl(var(--brand-discord))]/10 shrink-0 h-7 px-3">
             Join →
           </Button>
         </div>

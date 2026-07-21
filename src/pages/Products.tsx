@@ -204,6 +204,7 @@ export default function Products() {
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
  <Input
  placeholder={t('products.searchProducts')}
+ aria-label={t('products.searchProducts')}
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  className="pl-9 h-9 text-sm bg-muted/30 border-border/50 focus:border-primary/50 w-full rounded-lg"

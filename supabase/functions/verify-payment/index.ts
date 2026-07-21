@@ -247,6 +247,22 @@ Deno.serve(async (req) => {
       .single();
 
     if (orderError) {
+      // Unique violation on payment_id means the Stripe webhook won the race and
+      // already created (and is fulfilling) this order — defer to it instead of
+      // creating a duplicate order or double-crediting the seller.
+      if (orderError.code === "23505") {
+        logStep("Order already created by the webhook, deferring to it", { paymentId });
+        const { data: raceOrder } = await supabaseClient
+          .from("orders").select("id").eq("payment_id", paymentId).single();
+        return new Response(JSON.stringify({
+          success: true,
+          orderId: raceOrder?.id ?? null,
+          alreadyProcessed: true,
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
       logStep("Order creation error", orderError);
       throw orderError;
     }
@@ -320,10 +336,10 @@ Deno.serve(async (req) => {
           const discordRoleId = credentials?.discord_role_id;
           
           if (sellerId) {
-            // Calculate net-based seller earnings
-            // Use full product price so sellers earn the same regardless of membership discounts
-            // The platform absorbs the membership discount
-            const grossAmount = product.price;
+            // Calculate net-based seller earnings using the price actually charged
+            // at checkout (item.price), not the product's current catalog price —
+            // these can diverge for pay-what-you-want products or a mid-flight price edit.
+            const grossAmount = item.price;
             // Allocate Stripe fee proportionally (for record-keeping only)
             const proportionalStripeFee = sellerProductCount > 0 
               ? stripeProcessingFee / sellerProductCount 

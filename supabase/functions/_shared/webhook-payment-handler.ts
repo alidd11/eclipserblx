@@ -104,7 +104,15 @@ export async function processPayment(
     .insert({ customer_email: customerEmail, user_id: userId, payment_id: paymentId, payment_method: paymentMethod, status: "paid", subtotal, total })
     .select().single();
 
-  if (orderError) throw new Error(`Failed to create order: ${orderError.message}`);
+  if (orderError) {
+    // Unique violation on payment_id means the other fulfillment path (verify-payment)
+    // won the race and already created this order — treat as already-processed, not an error.
+    if (orderError.code === "23505") {
+      LOG("Order already created by a concurrent request, skipping", { paymentId });
+      return;
+    }
+    throw new Error(`Failed to create order: ${orderError.message}`);
+  }
   const orderId = (order as any).id;
   LOG("Order created", { orderId });
 
@@ -219,7 +227,10 @@ async function processSellerEarnings(
     const { data: existingTx } = await supabase.from("seller_transactions").select("id").eq("order_id", orderId).eq("order_item_id", orderItemId).limit(1);
     if (existingTx && existingTx.length > 0) continue;
 
-    const gross = product.price;
+    // Use the price actually charged at checkout, not the product's current
+    // catalog price — these can diverge for pay-what-you-want products or if
+    // the seller edits the price between checkout and (delayed/retried) webhook delivery.
+    const gross = item.price;
     const fee = count > 0 ? stripeProcessingFee / count : 0;
     // Platform absorbs Stripe fees — seller earnings based on gross price
     const earnings = Math.max(0, gross * (1 - rate / 100));

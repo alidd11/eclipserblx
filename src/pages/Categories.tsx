@@ -70,19 +70,27 @@ function useCategoriesWithProducts(sourceFilter: string | null) {
         childMap[c.parent_id!].push(c.id);
       });
 
+      // Single batched query for all category counts instead of one count
+      // query per parent category.
+      let countsQ = supabase
+        .from('products')
+        .select('category_id')
+        .eq('is_active', true)
+        .eq('moderation_status', 'approved')
+        .or(`release_at.is.null,release_at.lte.${now}`);
+      if (isMarketplace) countsQ = countsQ.not('store_id', 'is', null);
+      const { data: activeProducts } = await countsQ;
+
+      const countsByCategory = new Map<string, number>();
+      for (const product of activeProducts || []) {
+        if (!product.category_id) continue;
+        countsByCategory.set(product.category_id, (countsByCategory.get(product.category_id) || 0) + 1);
+      }
+
       const results: CategoryData[] = await Promise.all(
         (parents || []).map(async (parent) => {
           const catIds = [parent.id, ...(childMap[parent.id] || [])];
-
-          let countQ = supabase
-            .from('products')
-            .select('id', { count: 'exact', head: true })
-            .in('category_id', catIds)
-            .eq('is_active', true)
-            .eq('moderation_status', 'approved')
-            .or(`release_at.is.null,release_at.lte.${now}`);
-          if (isMarketplace) countQ = countQ.not('store_id', 'is', null);
-          const { count } = await countQ;
+          const count = catIds.reduce((sum, id) => sum + (countsByCategory.get(id) || 0), 0);
 
           let topQ = supabase
             .from('products')
@@ -151,7 +159,7 @@ function CategoryCard({ category, sourceParam, index }: { category: CategoryData
         <div className="relative overflow-hidden h-40 sm:h-48 lg:h-56">
           {isCustomBanner && category.slug === 'bots' ? (
             <>
-              <div className="absolute inset-0 bg-[#5865F2]" />
+              <div className="absolute inset-0 bg-[hsl(var(--brand-discord))]" />
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]" />
               <div className="absolute inset-0 flex items-center justify-center gap-3">
                 <svg viewBox="0 0 127.14 96.36" className="h-12 w-12 sm:h-14 sm:w-14 text-foreground/90 fill-current drop-shadow-lg">
@@ -286,7 +294,7 @@ export default function Categories() {
   const { data: categories, isLoading } = useCategoriesWithProducts(sourceFilter);
 
   const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ['categories-with-products'] });
+    await queryClient.invalidateQueries({ queryKey: ['categories-grid'] });
   }, [queryClient]);
 
   return (

@@ -105,17 +105,24 @@ export function useStoreMessages() {
         .order('last_message_at', { ascending: false });
       if (error) throw error;
 
-      const conversationsWithUnread = await Promise.all(
-        (data || []).map(async (conv) => {
-          const { count } = await supabase
-            .from('store_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('sender_type', 'seller')
-            .eq('is_read', false);
-          return { ...conv, unread_count: count || 0 };
-        })
-      );
+      const conversationIds = (data || []).map((conv) => conv.id);
+      const unreadByConversation = new Map<string, number>();
+      if (conversationIds.length > 0) {
+        const { data: unreadMessages } = await supabase
+          .from('store_messages')
+          .select('conversation_id')
+          .in('conversation_id', conversationIds)
+          .eq('sender_type', 'seller')
+          .eq('is_read', false);
+        for (const msg of unreadMessages || []) {
+          unreadByConversation.set(msg.conversation_id, (unreadByConversation.get(msg.conversation_id) || 0) + 1);
+        }
+      }
+
+      const conversationsWithUnread = (data || []).map((conv) => ({
+        ...conv,
+        unread_count: unreadByConversation.get(conv.id) || 0,
+      }));
       return conversationsWithUnread as StoreConversation[];
     },
     enabled: !!user,

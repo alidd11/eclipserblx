@@ -49,29 +49,56 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     const token = authHeader?.replace("Bearer ", "");
     const isServiceRole = token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    let callingUserId: string | null = null;
 
     if (!isServiceRole) {
       if (!token) {
         return new Response(JSON.stringify({ error: "Unauthorized" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
       const { data: { user } } = await supabase.auth.getUser(token);
       if (!user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }),
           { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      callingUserId = user.id;
     }
 
-    const { email, store_name, inviter_name, role, invite_token } = await req.json();
+    const { invite_token, inviter_name } = await req.json();
 
-    if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email) || email.length > 255) {
-      return new Response(JSON.stringify({ error: "Invalid email" }),
+    if (!invite_token || typeof invite_token !== 'string' || invite_token.length > 500) {
+      return new Response(JSON.stringify({ error: "Invalid invite_token" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    if (!store_name || typeof store_name !== 'string' || store_name.length > 200) {
-      return new Response(JSON.stringify({ error: "Invalid store_name" }),
+    // Look up the invite server-side — email, role, and store_name come from
+    // this verified row, never from the client, and we confirm the caller
+    // actually owns the store the invite belongs to (service-role callers,
+    // e.g. automated resends, skip the ownership check).
+    const { data: invite } = await supabase
+      .from("store_team_invites")
+      .select("email, role, store_id, stores(name, owner_id)")
+      .eq("token", invite_token)
+      .maybeSingle();
+
+    if (!invite) {
+      return new Response(JSON.stringify({ error: "Invite not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const store = (invite.stores as any)?.[0] ?? invite.stores;
+    if (!isServiceRole && store?.owner_id !== callingUserId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    const email = invite.email;
+    const role = invite.role;
+    const store_name = store?.name || "this store";
+
+    if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email) || email.length > 255) {
+      return new Response(JSON.stringify({ error: "Invalid email" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -80,13 +107,8 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    if (!invite_token || typeof invite_token !== 'string' || invite_token.length > 500) {
-      return new Response(JSON.stringify({ error: "Invalid invite_token" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    const safeStoreName = escapeHtml(store_name.substring(0, 200));
-    const safeInviterName = escapeHtml((inviter_name || 'A store owner').substring(0, 100));
+    const safeStoreName = escapeHtml(String(store_name).substring(0, 200));
+    const safeInviterName = escapeHtml((typeof inviter_name === 'string' ? inviter_name : 'A store owner').substring(0, 100));
     const roleLabel = getRoleLabel(role);
     const acceptUrl = `https://eclipserblx.com/seller/team/accept?token=${encodeURIComponent(invite_token)}`;
 

@@ -33,12 +33,25 @@ export default function AuthRobloxCallback() {
       // Check if this is an account linking callback (vs sign-in)
       const linkCodeVerifier = sessionStorage.getItem('roblox_link_code_verifier');
       const codeVerifier = sessionStorage.getItem('roblox_code_verifier');
+      const storedState = sessionStorage.getItem('roblox_oauth_state');
       const isLinking = !!linkCodeVerifier;
-      
+
       // Clean up session storage
       sessionStorage.removeItem('roblox_code_verifier');
       sessionStorage.removeItem('roblox_link_code_verifier');
       sessionStorage.removeItem('roblox_link_state');
+      sessionStorage.removeItem('roblox_oauth_state');
+
+      // CSRF check for the sign-in flow (linking has its own separate state check)
+      if (!isLinking) {
+        const returnedState = searchParams.get('state');
+        if (!storedState || !returnedState || returnedState !== storedState) {
+          setError('This sign-in link is invalid or has expired. Please try again.');
+          toast.error('Authentication Failed', { description: 'This sign-in link is invalid or has expired.' });
+          setTimeout(() => navigate('/auth'), 3000);
+          return;
+        }
+      }
 
       const productionDomain = 'https://eclipserblx.com';
       const redirectUri = `${productionDomain}/auth/roblox/callback`;

@@ -109,10 +109,10 @@ export default function MyPurchases() {
     queryFn: async () => {
       if (!user?.id && !user?.email) return [];
       let allOrders: Order[] = [];
-      const { data, error } = await supabase.from('orders').select(`id, status, created_at, total, payment_method, order_items (id, product_name, price, product_id, product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id))`).eq('user_id', user.id).order('created_at', { ascending: false });
+      const { data, error } = await supabase.from('orders').select(`id, status, created_at, total, payment_method, order_items (id, product_name, price, product_id, product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id))`).eq('user_id', user.id).order('created_at', { ascending: false }).limit(200);
       if (!error && data) allOrders = [...allOrders, ...(data as Order[])];
       if (user?.email) {
-        const { data: emailOrders, error: emailError } = await supabase.from('orders').select(`id, status, created_at, total, payment_method, order_items (id, product_name, price, product_id, product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id))`).eq('customer_email', user.email).is('user_id', null).order('created_at', { ascending: false });
+        const { data: emailOrders, error: emailError } = await supabase.from('orders').select(`id, status, created_at, total, payment_method, order_items (id, product_name, price, product_id, product:products (id, name, slug, images, asset_file_url, additional_asset_files, category_id))`).eq('customer_email', user.email).is('user_id', null).order('created_at', { ascending: false }).limit(200);
         if (!emailError && emailOrders) allOrders = [...allOrders, ...(emailOrders as Order[])];
       }
       return allOrders.filter((order, index, self) => index === self.findIndex((o) => o.id === order.id));

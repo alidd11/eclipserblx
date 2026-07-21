@@ -228,9 +228,9 @@ export default function Contact() {
  rel="noopener noreferrer"
  className="flex items-start gap-3"
  >
- <div className="p-2 rounded-lg bg-[#5865F2]/10 shrink-0">
+ <div className="p-2 rounded-lg bg-[hsl(var(--brand-discord))]/10 shrink-0">
  <svg
- className="w-5 h-5 text-[#5865F2]"
+ className="w-5 h-5 text-[hsl(var(--brand-discord))]"
  viewBox="0 0 24 24"
  fill="currentColor"
  >
@@ -243,7 +243,7 @@ export default function Contact() {
  <ExternalLink className="w-3 h-3" />
  </h3>
  <p className="text-sm text-muted-foreground">Join for quick support</p>
- <p className="text-sm font-medium text-[#5865F2] mt-1">Join our Discord</p>
+ <p className="text-sm font-medium text-[hsl(var(--brand-discord))] mt-1">Join our Discord</p>
  </div>
  </a>
  </div>

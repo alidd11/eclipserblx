@@ -46,6 +46,7 @@ export function SocialLoginButtons({ loading, onError }: SocialLoginButtonsProps
         setSocialLoading(null);
         return;
       }
+      if (data.state) sessionStorage.setItem('discord_oauth_state', data.state);
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
@@ -68,6 +69,7 @@ export function SocialLoginButtons({ loading, onError }: SocialLoginButtonsProps
         return;
       }
       if (data.code_verifier) sessionStorage.setItem('roblox_code_verifier', data.code_verifier);
+      if (data.state) sessionStorage.setItem('roblox_oauth_state', data.state);
       window.location.href = data.url;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';

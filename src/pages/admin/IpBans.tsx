@@ -39,41 +39,30 @@ export default function IpBans() {
  const { data, error } = await supabase
  .from('ip_bans')
  .select('*')
- .order('created_at', { ascending: false });
+ .order('created_at', { ascending: false })
+ .limit(200);
 
  if (error) throw error;
 
- // Fetch profiles for banned_by and user_id
- const bansWithProfiles: IpBan[] = await Promise.all(
- (data || []).map(async (ban) => {
- let banned_by_profile = null;
- let banned_user_profile = null;
+ const rows = data || [];
+ const profileIds = Array.from(new Set(
+ rows.flatMap((ban) => [ban.banned_by, ban.user_id]).filter((id): id is string => Boolean(id))
+ ));
 
- if (ban.banned_by) {
- const { data: profile } = await supabase
+ let profilesById = new Map<string, { display_name: string | null; customer_id: string | null }>();
+ if (profileIds.length > 0) {
+ const { data: profiles } = await supabase
  .from('profiles')
- .select('display_name, customer_id')
- .eq('user_id', ban.banned_by)
- .single();
- banned_by_profile = profile;
+ .select('user_id, display_name, customer_id')
+ .in('user_id', profileIds);
+ profilesById = new Map((profiles || []).map((p) => [p.user_id, p]));
  }
 
- if (ban.user_id) {
- const { data: profile } = await supabase
- .from('profiles')
- .select('display_name, customer_id')
- .eq('user_id', ban.user_id)
- .single();
- banned_user_profile = profile;
- }
-
- return {
+ const bansWithProfiles: IpBan[] = rows.map((ban) => ({
  ...ban,
- banned_by_profile,
- banned_user_profile,
- };
- })
- );
+ banned_by_profile: ban.banned_by ? profilesById.get(ban.banned_by) ?? null : null,
+ banned_user_profile: ban.user_id ? profilesById.get(ban.user_id) ?? null : null,
+ }));
 
  return bansWithProfiles;
  },

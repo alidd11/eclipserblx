@@ -125,6 +125,8 @@ export default function AdminReviews() {
  query = query.eq('is_featured', true);
  }
 
+ query = query.limit(200);
+
  const { data: reviewsData, error } = await query;
  if (error) throw error;
 

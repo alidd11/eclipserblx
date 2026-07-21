@@ -47,6 +47,16 @@ Deno.serve(async (req) => {
       });
     }
 
+    // This function exists solely to let OAuth signups without a real email
+    // (Discord/Roblox) complete their profile once — it must never be usable
+    // to change an already-verified account's email, since it skips the
+    // normal confirm-the-new-address flow entirely.
+    if (!callingUser.email?.endsWith(".placeholder.local")) {
+      return new Response(JSON.stringify({ error: "This account already has a verified email" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { email } = await req.json();
 
     if (!email || typeof email !== "string") {

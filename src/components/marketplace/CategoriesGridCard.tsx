@@ -21,28 +21,29 @@ export function CategoriesGridCard() {
         .from('categories')
         .select('id, name, slug')
         .order('name');
-      
+
       if (error) throw error;
-      
+
       const now = new Date().toISOString();
-      const categoriesWithCounts = await Promise.all(
-        (data || []).map(async (category) => {
-          const { count } = await supabase
-            .from('products')
-            .select('id', { count: 'exact', head: true })
-            .eq('category_id', category.id)
-            .eq('is_active', true)
-            .not('store_id', 'is', null)
-            .or(`release_at.is.null,release_at.lte.${now}`);
-          
-          return {
-            ...category,
-            icon: null as string | null,
-            product_count: count || 0,
-          };
-        })
-      );
-      
+      const { data: activeProducts } = await supabase
+        .from('products')
+        .select('category_id')
+        .eq('is_active', true)
+        .not('store_id', 'is', null)
+        .or(`release_at.is.null,release_at.lte.${now}`);
+
+      const countsByCategory = new Map<string, number>();
+      for (const product of activeProducts || []) {
+        if (!product.category_id) continue;
+        countsByCategory.set(product.category_id, (countsByCategory.get(product.category_id) || 0) + 1);
+      }
+
+      const categoriesWithCounts = (data || []).map((category) => ({
+        ...category,
+        icon: null as string | null,
+        product_count: countsByCategory.get(category.id) || 0,
+      }));
+
       return categoriesWithCounts.filter(c => c.product_count > 0) as Category[];
     },
   });

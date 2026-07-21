@@ -191,6 +191,9 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Search"
       className={cn(
         "fixed inset-0 z-50 bg-background flex flex-col",
         "transition-all duration-200 ease-out",
@@ -220,6 +223,7 @@ export function SearchCommandPalette({ open, onOpenChange }: SearchCommandPalett
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter' && hasQuery) handleViewAllResults(); }}
               placeholder="Search assets..."
+              aria-label="Search assets"
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="off"

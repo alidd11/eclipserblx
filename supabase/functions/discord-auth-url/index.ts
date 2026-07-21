@@ -63,14 +63,17 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Generate CSRF state
+    const state = crypto.randomUUID();
+
     const scope = encodeURIComponent('identify');
     const encodedRedirectUri = encodeURIComponent(redirect_uri);
 
-    const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodedRedirectUri}&response_type=code&scope=${scope}`;
+    const authUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodedRedirectUri}&response_type=code&scope=${scope}&state=${state}`;
 
     console.log('[discord-auth-url] authUrl generated');
 
-    return new Response(JSON.stringify({ url: authUrl, redirect_uri }), {
+    return new Response(JSON.stringify({ url: authUrl, redirect_uri, state }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

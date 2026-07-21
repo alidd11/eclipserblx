@@ -84,11 +84,19 @@ export function checkRateLimit(options: RateLimitOptions): RateLimitResult {
   };
 }
 
-// Helper to get client IP from request headers
+// Helper to get client IP from request headers.
+// cf-connecting-ip is set directly by Cloudflare's edge and cannot be
+// spoofed by the client, so it's the most trustworthy signal when present.
+// x-forwarded-for is attacker-controllable at the *client* end — a request
+// can arrive with an arbitrary list of fake IPs already prepended — so the
+// only entry worth any trust is the last one, appended by the nearest
+// proxy hop, not split(',')[0] which is whatever the client sent.
 export function getClientIp(req: Request): string {
-  return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const lastForwardedIp = forwardedFor?.split(',').map(ip => ip.trim()).filter(Boolean).pop();
+  return req.headers.get('cf-connecting-ip')
     || req.headers.get('x-real-ip')
-    || req.headers.get('cf-connecting-ip')
+    || lastForwardedIp
     || 'unknown';
 }
 

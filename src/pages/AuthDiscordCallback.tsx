@@ -30,6 +30,17 @@ export default function AuthDiscordCallback() {
         return;
       }
 
+      // CSRF check
+      const storedState = sessionStorage.getItem('discord_oauth_state');
+      sessionStorage.removeItem('discord_oauth_state');
+      const returnedState = searchParams.get('state');
+      if (!storedState || !returnedState || returnedState !== storedState) {
+        setError('This sign-in link is invalid or has expired. Please try again.');
+        toast.error('Authentication Failed', { description: 'This sign-in link is invalid or has expired.' });
+        setTimeout(() => navigate('/auth'), 3000);
+        return;
+      }
+
       try {
         // Exchange code for session via edge function
         const { data, error: fnError } = await supabase.functions.invoke('discord-auth-login', {
@@ -131,8 +142,8 @@ export default function AuthDiscordCallback() {
           </>
         ) : (
           <>
-            <div className="h-16 w-16 mx-auto rounded-full bg-[#5865F2]/10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 text-[#5865F2] animate-spin" />
+            <div className="h-16 w-16 mx-auto rounded-full bg-[hsl(var(--brand-discord))]/10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-[hsl(var(--brand-discord))] animate-spin" />
             </div>
             <h1 className="text-xl font-semibold text-foreground">Signing in with Discord</h1>
             <p className="text-muted-foreground">Please wait...</p>

@@ -89,12 +89,15 @@ export function ReviewForm({ productId, productName, isVerifiedPurchase = false,
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <Label className="mb-2 block">Rating</Label>
-        <div className="flex items-center gap-1">
+        <Label id="rating-label" className="mb-2 block">Rating</Label>
+        <div role="radiogroup" aria-labelledby="rating-label" className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
+              role="radio"
+              aria-checked={formData.rating === star}
+              aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
               onClick={() => setFormData({ rating: star })}
               onMouseEnter={() => setHoveredRating(star)}
               onMouseLeave={() => setHoveredRating(0)}

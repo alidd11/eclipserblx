@@ -371,6 +371,8 @@ export default function ProductDetail() {
  <button
  key={i}
  onClick={() => setSelectedImage(i)}
+ aria-label={`View image ${i + 1} of ${images.length}`}
+ aria-current={selectedImage === i}
  className={cn(
  "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
  selectedImage === i ? "border-primary ring-1 ring-primary/30" : "border-border/40 opacity-50 hover:opacity-90"
@@ -438,7 +440,8 @@ export default function ProductDetail() {
  min={pwywMinPrice}
  value={pwywAmount}
  onChange={(e) => setPwywAmount(e.target.value)}
- className="text-3xl font-bold bg-transparent border-b-2 border-border focus:border-primary outline-none w-32 text-foreground"
+ aria-label="Your price in GBP"
+ className="text-3xl font-bold bg-transparent border-b-2 border-border focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 outline-none w-32 text-foreground rounded-sm"
  placeholder="0.00"
  />
  </div>
