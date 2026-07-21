@@ -541,14 +541,23 @@ export default function ProductDetail() {
  
  </div>
 
- {/* Trust signals near CTA */}
+ {/* Trust signals near CTA — composed panel, not loose text */}
  {product.stores && (
- <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1 flex-wrap">
- <span className="flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Buyer Protection</span>
- <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5" /> Instant Delivery</span>
- {product.stores.is_verified && (
- <span className="flex items-center gap-1"><Check className="h-3.5 w-3.5 text-primary" /> Verified Seller</span>
- )}
+ <div className="grid grid-cols-3 gap-px rounded-xl border border-border/60 bg-border/40 overflow-hidden">
+ {[
+ { icon: Shield, label: 'Buyer Protection' },
+ { icon: Check, label: 'Instant Delivery' },
+ product.stores.is_verified
+ ? { icon: Check, label: 'Verified Seller' }
+ : { icon: Shield, label: 'Secure Checkout' },
+ ].map(({ icon: Icon, label }) => (
+ <div key={label} className="flex flex-col items-center justify-center gap-1.5 bg-card px-2 py-3 text-center">
+ <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+ <Icon className="h-3.5 w-3.5 text-primary" />
+ </span>
+ <span className="text-[11px] font-medium leading-tight text-muted-foreground">{label}</span>
+ </div>
+ ))}
  </div>
  )}
 

@@ -81,72 +81,76 @@ export function LandingHero() {
 function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
   if (!hero) {
     return (
-      <div className="lg:col-span-2 aspect-[16/10] lg:aspect-auto lg:min-h-[360px] bg-muted/30 border border-border animate-pulse" />
+      <div className="lg:col-span-2 aspect-[16/10] lg:aspect-auto lg:min-h-[360px] bg-muted/30 border border-border rounded-xl animate-pulse" />
     );
   }
 
   return (
     <Link
       to={`/products/${hero.slug}`}
-      className="group relative lg:col-span-2 overflow-hidden border border-border bg-card glow-primary-hover"
+      className="group relative lg:col-span-2 flex flex-col lg:flex-row overflow-hidden border border-border bg-card rounded-xl glow-primary-hover"
     >
-      <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] bg-muted overflow-hidden">
+      {/* Image side — art fills its own panel, never sits under the title text */}
+      <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] lg:w-[56%] shrink-0 bg-gradient-to-br from-muted via-muted/70 to-muted overflow-hidden">
         <img
-          src={optimizeImageUrl(hero.image, 1200, 750, 'contain')}
+          src={optimizeImageUrl(hero.image, 1200, 750, 'cover')}
           alt={hero.name}
           width={1200}
           height={750}
           loading="eager"
           decoding="sync"
           {...({ fetchpriority: 'high' } as Record<string, string>)}
-          className="w-full h-full object-contain object-center"
+          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
-        {/* Bottom gradient for legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        {/* Seam gradient — blends the image edge into the content panel on desktop */}
+        <div className="hidden lg:block absolute inset-y-0 right-0 w-24 bg-gradient-to-r from-transparent to-card" />
+      </div>
 
-        {/* Content overlay */}
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 lg:p-8">
-          <div className="flex flex-wrap items-center gap-2 mb-3">
-            <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] bg-primary text-primary-foreground">
-              Featured
+      {/* Content panel — solid surface, clear hierarchy, real CTA */}
+      <div className="flex-1 flex flex-col justify-center gap-4 p-5 sm:p-7 lg:p-8">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.2em] bg-primary text-primary-foreground rounded-sm">
+            Featured
+          </span>
+          {hero.category && (
+            <span className="text-primary text-[10px] font-semibold tracking-[0.2em] uppercase">
+              {hero.category}
             </span>
-            {hero.category && (
-              <span className="text-primary text-[10px] font-semibold tracking-[0.2em] uppercase">
-                {hero.category}
+          )}
+        </div>
+
+        <h1
+          id={id}
+          className="font-display font-black tracking-tight leading-[1.03] text-foreground text-[clamp(1.6rem,3.4vw,2.75rem)] max-w-[16ch] group-hover:text-primary transition-colors"
+        >
+          {hero.name}
+        </h1>
+
+        <div className="flex items-center gap-3">
+          {hero.storeName && (
+            <div className="flex items-center gap-2 min-w-0">
+              {hero.storeLogo ? (
+                <img
+                  src={hero.storeLogo}
+                  alt=""
+                  className="w-6 h-6 rounded-full object-cover border border-border shrink-0"
+                />
+              ) : null}
+              <span className="text-xs font-medium text-muted-foreground truncate">
+                {hero.storeName}
               </span>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
-          <h1
-            id={id}
-            className="font-display font-black tracking-tight leading-[1.02] text-foreground text-[clamp(1.75rem,4.2vw,3rem)] max-w-[18ch]"
-          >
-            {hero.name}
-          </h1>
-
-          <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-            {hero.storeName && (
-              <div className="flex items-center gap-2">
-                {hero.storeLogo ? (
-                  <img
-                    src={hero.storeLogo}
-                    alt=""
-                    className="w-6 h-6 rounded-full object-cover border border-border"
-                  />
-                ) : null}
-                <span className="text-xs font-medium text-muted-foreground">
-                  {hero.storeName}
-                </span>
-              </div>
-            )}
-            <span className="text-foreground text-base font-semibold tracking-tight">
-              {formatGBP(hero.price)}
-            </span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary group-hover:gap-2.5 transition-all">
-              View drop
-              <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          </div>
+        <div className="flex items-center justify-between gap-4 pt-1">
+          <span className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            {formatGBP(hero.price)}
+          </span>
+          <span className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-[0_4px_14px_-4px_hsl(var(--primary)/0.5)] group-hover:gap-3 transition-all">
+            View drop
+            <ArrowRight className="h-4 w-4" />
+          </span>
         </div>
       </div>
     </Link>
