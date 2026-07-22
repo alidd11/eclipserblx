@@ -5,7 +5,10 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  // "dist" is the build output; mcp/index.ts is an auto-generated bundle that
+  // the Lovable Vite plugin re-emits (with var) on every build — linting it is
+  // pointless and its fixes never stick.
+  { ignores: ["dist", "supabase/functions/mcp/index.ts"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
