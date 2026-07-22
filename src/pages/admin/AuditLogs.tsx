@@ -48,8 +48,10 @@ export default function AdminAuditLogs() {
     staleTime: 3 * 60_000, // 3 minutes
   });
 
-  // Get profiles only for users in the current logs (optimized)
-  const logUserIds = [...new Set(allLogs?.map(log => log.user_id) || [])];
+  // Get profiles only for users in the current logs (optimized).
+  // Filter out null/empty actor ids (system/automated log entries) — a literal
+  // `null` inside a PostgREST in.(...) filter is rejected with a 400.
+  const logUserIds = [...new Set((allLogs?.map(log => log.user_id) || []).filter((id): id is string => Boolean(id)))];
   const { data: profiles } = useQuery({
     queryKey: ['admin-profiles-for-logs', logUserIds.join(',')],
     queryFn: async () => {

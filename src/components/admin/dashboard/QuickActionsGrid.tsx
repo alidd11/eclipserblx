@@ -22,7 +22,7 @@ const allLinks: QuickLink[] = [
   { title: 'Messages', href: '/admin/messages', icon: Headphones, permissions: [] },
   { title: 'Roles', href: '/admin/role-permissions', icon: UserCheck, permissions: ['manage_roles'] },
   { title: 'Settings', href: '/admin/settings', icon: Settings, permissions: ['manage_settings'] },
-  { title: 'Moderation', href: '/admin/moderation', icon: Shield, permissions: ['view_products', 'manage_products'] },
+  { title: 'Moderation', href: '/admin/moderation-queue', icon: Shield, permissions: ['view_products', 'manage_products'] },
   { title: 'Audit Logs', href: '/admin/audit-logs', icon: BookOpen, permissions: ['view_analytics'] },
   { title: 'Affiliates', href: '/admin/affiliates', icon: TrendingUp, permissions: ['view_applications', 'manage_applications'] },
   { title: 'Staff Activity', href: '/admin/staff-activity', icon: Timer, permissions: ['view_analytics'] },
