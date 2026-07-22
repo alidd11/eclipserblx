@@ -22,7 +22,7 @@ const Command = React.forwardRef<
 ));
 Command.displayName = CommandPrimitive.displayName;
 
-interface CommandDialogProps extends DialogProps {}
+type CommandDialogProps = DialogProps;
 
 function CommandDialog({ children, open, onOpenChange, defaultOpen, modal }: CommandDialogProps) {
   return (

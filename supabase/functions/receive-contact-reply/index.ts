@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Looking for contact message with email:", senderEmail, "and subject:", originalSubject);
 
     // First try exact subject match
-    let { data: contactMessage, error: fetchError } = await supabaseAdmin
+    const { data: firstMatch } = await supabaseAdmin
       .from("contact_messages")
       .select("*")
       .eq("email", senderEmail)
@@ -145,6 +145,7 @@ const handler = async (req: Request): Promise<Response> => {
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
+    let contactMessage = firstMatch;
 
     // If not found, try by email thread ID
     if (!contactMessage && emailData.in_reply_to) {

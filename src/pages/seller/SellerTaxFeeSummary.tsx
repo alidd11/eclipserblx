@@ -32,7 +32,7 @@ export default function SellerTaxFeeSummary() {
   });
 
   const summary = useMemo(() => {
-    let totalGross = 0, totalPlatformFee = 0, totalStripeFee = 0, totalNet = 0, refundCount = 0;
+    let totalGross = 0, totalPlatformFee = 0, totalStripeFee = 0, totalNet = 0;
     transactions.forEach((t) => {
       totalGross += Number(t.gross_amount || t.amount || 0);
       totalPlatformFee += Number(t.platform_fee || 0);

@@ -21,6 +21,23 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      // Intentional fire-and-forget empty catch blocks are used deliberately
+      // throughout (localStorage writes, best-effort notifications, etc.).
+      "no-empty": ["error", { allowEmptyCatch: true }],
+      // Large pre-existing `any` surface — mostly untyped Supabase result rows.
+      // Tracked as a warning and migrated incrementally rather than batch-typed
+      // (see CLAUDE.md: batch-fixing this was deemed too risky).
+      "@typescript-eslint/no-explicit-any": "warn",
+    },
+  },
+  {
+    // Supabase Edge Functions run on Deno, not in the browser bundle. Their
+    // input-sanitisation regexes intentionally match control characters, and
+    // the flagged regex char-class escapes there are harmless.
+    files: ["supabase/functions/**/*.ts"],
+    rules: {
+      "no-control-regex": "off",
+      "no-useless-escape": "off",
     },
   },
 );

@@ -36,7 +36,7 @@ export const BackgroundVideo = forwardRef<HTMLVideoElement, BackgroundVideoProps
           loop
           playsInline
           disablePictureInPicture
-          // @ts-ignore - disableRemotePlayback is valid but not in React types
+          // @ts-expect-error disableRemotePlayback is valid but not in React types
           disableRemotePlayback
           {...videoProps}
           className={cn(
