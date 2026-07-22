@@ -30,7 +30,7 @@ function Sparkline({ points, positive }: { points: number[]; positive: boolean }
         d={path}
         fill="none"
         strokeWidth={1.5}
-        className={positive ? 'stroke-emerald-500/80' : 'stroke-muted-foreground/50'}
+        className={positive ? 'stroke-success/80' : 'stroke-muted-foreground/50'}
       />
     </svg>
   );
@@ -42,7 +42,7 @@ function Delta({ pct }: { pct: number }) {
     <span
       className={cn(
         'text-[11px] font-medium tabular-nums',
-        positive ? 'text-emerald-500' : 'text-destructive',
+        positive ? 'text-success' : 'text-destructive',
       )}
     >
       {positive ? '▲' : '▼'} {Math.abs(pct).toFixed(0)}%

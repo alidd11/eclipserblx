@@ -91,15 +91,15 @@ export function DutyClockWidget() {
       <div className="p-4">
         {activeSession ? (
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-              <Timer className="h-4 w-4 text-green-500 shrink-0" />
+            <div className="flex items-center gap-3 flex-1 min-w-0 p-3 rounded-lg bg-success/10 border border-success/20">
+              <Timer className="h-4 w-4 text-success shrink-0" />
               <div className="flex-1 min-w-0">
-                <span className="font-medium text-green-500 text-sm">On Duty</span>
+                <span className="font-medium text-success text-sm">On Duty</span>
                 <span className="text-xs text-muted-foreground ml-2 hidden sm:inline">
                   since {format(new Date(activeSession.clock_in), 'h:mm a')}
                 </span>
               </div>
-              <span className="text-lg font-mono font-bold text-green-500 shrink-0">{elapsedTime}</span>
+              <span className="text-lg font-mono font-bold text-success shrink-0">{elapsedTime}</span>
             </div>
             <div className="flex items-center gap-2 sm:flex-col sm:gap-1.5">
               <Textarea
