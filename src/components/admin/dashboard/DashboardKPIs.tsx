@@ -71,9 +71,9 @@ export function DashboardKPIs() {
       spark: revenueSeries,
     },
     {
-      label: 'Active orders',
-      value: String(data?.active_orders ?? 0),
-      raw: data?.active_orders ?? 0,
+      label: 'Orders today',
+      value: String(data?.today_orders ?? 0),
+      raw: data?.today_orders ?? 0,
       icon: ShoppingCart,
     },
     {
