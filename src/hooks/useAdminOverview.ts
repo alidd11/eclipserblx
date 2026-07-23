@@ -31,5 +31,10 @@ export function useAdminOverview() {
     staleTime: 60_000,
     refetchInterval: 5 * 60_000,
     refetchOnWindowFocus: false,
+    // Safety net against stale dashboard counts: always refetch when a dashboard
+    // mounts, so an admin who acts on a queue elsewhere (approve a product, close
+    // a ticket, resolve a refund) sees the count update on return — even if that
+    // mutation didn't explicitly invalidate this snapshot. See CLAUDE.md.
+    refetchOnMount: 'always',
   });
 }

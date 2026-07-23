@@ -47,7 +47,9 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000 });
+ // Always refetch when the queue mounts so an item acted on elsewhere
+ // (approved/rejected on the review page) never lingers here. See CLAUDE.md.
+ staleTime: 30_000, refetchOnMount: 'always' });
 
  const pendingStoreApps: Array<{ id: string; store_name: string | null; created_at: string | null; status: string; profiles: unknown }> = [];
  const loadingStores = false;
@@ -64,7 +66,7 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000 });
+ staleTime: 30_000, refetchOnMount: 'always' });
 
  const { data: pendingSubmissions = [], isLoading: loadingSubmissions } = useQuery({
  queryKey: ['mod-queue-submissions'],
@@ -78,7 +80,7 @@ export default function ModerationQueue() {
  if (error) throw error;
  return data || [];
  },
- staleTime: 30_000 });
+ staleTime: 30_000, refetchOnMount: 'always' });
 
  const isLoading = loadingProducts || loadingStores || loadingReviews || loadingSubmissions;
 

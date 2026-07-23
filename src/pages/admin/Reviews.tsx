@@ -161,6 +161,7 @@ export default function AdminReviews() {
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
  queryClient.invalidateQueries({ queryKey: ['featured-reviews'] });
+ queryClient.invalidateQueries({ queryKey: ['mod-queue-reviews'] });
  toast.success('Review updated');
  },
  onError: () => {
@@ -176,6 +177,7 @@ export default function AdminReviews() {
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['admin-reviews'] });
  queryClient.invalidateQueries({ queryKey: ['featured-reviews'] });
+ queryClient.invalidateQueries({ queryKey: ['mod-queue-reviews'] });
  toast.success('Review deleted');
  },
  onError: () => {

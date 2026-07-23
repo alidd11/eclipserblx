@@ -135,6 +135,7 @@ import { formatGBP } from '@/lib/formatters';
      },
      onSuccess: () => {
        queryClient.invalidateQueries({ queryKey: ['developer-submissions'] });
+       queryClient.invalidateQueries({ queryKey: ['mod-queue-submissions'] });
        toast.success('Submission updated');
        setIsReviewOpen(false);
        setSelectedSubmission(null);

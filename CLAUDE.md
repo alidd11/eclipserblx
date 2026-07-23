@@ -20,6 +20,12 @@ A Roblox UK-roleplay marketplace: buyers browse and purchase digital assets (veh
 - Public-facing "safe" views over sensitive tables (`*_public`, `*_safe`, `*_storefront`) must set `security_invoker = on` and mirror the same row filters the underlying table's RLS would apply — don't rely on the view's default definer privileges.
 - Before trusting a "this is unauthenticated" finding as new, check whether the fix actually reached `main` — this repo's designated dev branch and `main` can diverge, and Lovable's own scanner/build only sees `main`.
 
+## Data freshness (React Query)
+
+- **A mutation must invalidate every query key that displays the data it changed — not just the list it was triggered from.** The bug class to watch for: an admin approves/rejects/closes an item on a detail page, but a *different* surface (a dashboard count, a moderation queue) reads the same underlying data under its own query key and keeps showing the stale "pending" state. Approving a product must invalidate `seller-products-moderation` **and** `mod-queue-products` **and** `admin-overview-snapshot`.
+- **Shared aggregate/read surfaces** (know these keys, invalidate them when their source data changes): `admin-overview-snapshot` (`useAdminOverview` — powers the dashboard KPIs + Today's Queue counts: `products_awaiting_review`, `pending_refunds`, `open_tickets`, orders), and the moderation queue's `mod-queue-products` / `mod-queue-reviews` / `mod-queue-submissions`.
+- **Safety net, already in place:** those aggregate surfaces set `refetchOnMount: 'always'`, so navigating to the dashboard or moderation queue always refetches even if a mutation forgot to invalidate. Keep that option when editing those queries — it's the backstop against "it still shows as pending after I approved it." Explicit invalidation on the mutation is still required for the instant, no-navigation update.
+
 ## Workflow
 
 - Designated dev branch: `claude/repo-overview-lx4wyo`. Commit there, push, then fast-forward/merge into `main` so Lovable's connected GitHub sync and its security scanner actually see the change.
