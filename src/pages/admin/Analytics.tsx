@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Package, ShoppingCart, Users, Download, TrendingUp, BarChart3, Eye, UserPlus, UserCheck, Monitor, Smartphone, Tablet, Globe, Clock, ArrowRight, Store, Link2, MousePointerClick, FileDown, MapPin } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
 import { RevolutBarChart, RevolutAreaChart } from '@/components/ui/revolut-chart';
@@ -15,6 +16,22 @@ import { exportToCSV } from '@/lib/export-csv';
 import { useAnalyticsData } from '@/hooks/useAnalyticsData';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 import { CHART_COLORS } from '@/lib/chartColors';
+
+// Daily event counts (downloads / orders / signups) are discrete and usually
+// sparse — a smoothed area chart invents values between days, so a single event
+// renders as a phantom bell curve. Bars show one column per day at its true
+// height; an all-zero window gets a purposeful empty state, not a flat baseline.
+const trendHasData = (rows: Array<Record<string, unknown>> | undefined, key: string) =>
+  (rows ?? []).some((r) => Number(r[key]) > 0);
+
+function TrendEmptyState({ icon: Icon, message }: { icon: LucideIcon; message: string }) {
+  return (
+    <div className="h-[250px] flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border px-6 text-center">
+      <Icon className="h-6 w-6 text-muted-foreground/60" />
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  );
+}
 
 export default function AdminAnalytics() {
  const [activeTab, setActiveTab] = useState('overview');
@@ -186,18 +203,18 @@ export default function AdminAnalytics() {
  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><TrendingUp className="h-4 w-4" />Downloads (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={downloadTrend || []} xKey="date" series={[{ dataKey: 'downloads', color: CHART_COLORS.purple, name: 'Downloads', gradientId: 'dlGrad' }]} height={250} /></div>
+ <div className="p-4">{trendHasData(downloadTrend, 'downloads') ? <RevolutBarChart data={downloadTrend || []} xKey="date" series={[{ dataKey: 'downloads', color: CHART_COLORS.purple, name: 'Downloads' }]} height={250} /> : <TrendEmptyState icon={Download} message={`No downloads in the last ${rangeLabel.toLowerCase()}`} />}</div>
  </div>
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><ShoppingCart className="h-4 w-4" />Orders (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={orderTrend || []} xKey="date" series={[{ dataKey: 'orders', color: CHART_COLORS.blue, name: 'Orders', gradientId: 'ordGrad' }]} height={250} /></div>
+ <div className="p-4">{trendHasData(orderTrend, 'orders') ? <RevolutBarChart data={orderTrend || []} xKey="date" series={[{ dataKey: 'orders', color: CHART_COLORS.blue, name: 'Orders' }]} height={250} /> : <TrendEmptyState icon={ShoppingCart} message={`No orders in the last ${rangeLabel.toLowerCase()}`} />}</div>
  </div>
  </div>
 
  <div className="grid gap-3 grid-cols-1 lg:grid-cols-2">
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><Users className="h-4 w-4" />New Users (Last {rangeLabel})</h3></div>
- <div className="p-4"><RevolutAreaChart data={userTrend || []} xKey="date" series={[{ dataKey: 'users', color: CHART_COLORS.indigo, name: 'Users', gradientId: 'usrGrad' }]} height={250} /></div>
+ <div className="p-4">{trendHasData(userTrend, 'users') ? <RevolutBarChart data={userTrend || []} xKey="date" series={[{ dataKey: 'users', color: CHART_COLORS.indigo, name: 'New Users' }]} height={250} /> : <TrendEmptyState icon={Users} message={`No new users in the last ${rangeLabel.toLowerCase()}`} />}</div>
  </div>
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm flex items-center gap-2"><BarChart3 className="h-4 w-4" />Products by Category</h3></div>
