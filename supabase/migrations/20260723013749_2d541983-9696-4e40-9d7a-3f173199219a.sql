@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.mask_bank_account(text) TO authenticated;

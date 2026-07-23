@@ -75,7 +75,7 @@ export default function SellerReviews() {
 
       let query = supabase
         .from('reviews')
-        .select('*, profiles(display_name, avatar_url)', { count: 'exact' })
+        .select('*', { count: 'exact' })
         .in('product_id', productIds)
         .eq('is_approved', true);
 
@@ -96,9 +96,22 @@ export default function SellerReviews() {
       const { data, count, error } = await query.range(from, to);
       if (error) throw error;
 
-      const reviews: EnrichedReview[] = (data || []).map((r) => ({
+      // Fetch profiles separately — reviews has no FK to profiles so PostgREST embed 400s
+      const rows = (data || []) as Array<Record<string, unknown> & { user_id?: string | null; product_id: string }>;
+      const userIds = Array.from(new Set(rows.map(r => r.user_id).filter((v): v is string => !!v)));
+      let profileMap: Record<string, { display_name: string | null; avatar_url: string | null }> = {};
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', userIds);
+        profileMap = Object.fromEntries((profs || []).map(p => [p.id, { display_name: p.display_name, avatar_url: p.avatar_url }]));
+      }
+
+      const reviews: EnrichedReview[] = rows.map((r) => ({
         ...(r as unknown as EnrichedReview),
-        product_name: productMap[(r as unknown as EnrichedReview).product_id] || 'Unknown Product',
+        profiles: r.user_id ? (profileMap[r.user_id] ?? null) : null,
+        product_name: productMap[r.product_id] || 'Unknown Product',
       }));
 
       return { reviews, totalCount: count || 0 };
