@@ -322,6 +322,7 @@ export function SellerEarningsTab() {
  ]}
  height={256}
  yFormatter={(v) => `£${v}`}
+ emptyMessage="No earnings in this period yet"
  />
  )}
  </div>

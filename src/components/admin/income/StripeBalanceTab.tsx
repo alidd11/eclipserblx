@@ -170,6 +170,7 @@ export function StripeBalanceTab() {
  { dataKey: 'net', color: CHART_COLORS.blue, name: 'Net Revenue' },
  ]}
  height={300}
+ emptyMessage="No Stripe activity in this period yet"
  yFormatter={(v) => `£${v}`}
  tooltipContent={({ active, payload }: { active?: boolean; payload?: { payload: Record<string, number | string> }[] }) => {
  if (!active || !payload?.length) return null;

@@ -388,6 +388,7 @@ export function RevenueDashboard() {
  series={[{ dataKey: 'revenue', color: CHART_COLORS.purple, name: 'Revenue' }]}
  height={220}
  yFormatter={(v) => `£${v}`}
+ emptyMessage="No revenue in this period yet"
  />
  )}
  </div>
@@ -416,6 +417,7 @@ export function RevenueDashboard() {
  { dataKey: 'net', color: CHART_COLORS.emerald, name: 'Net' },
  ]}
  height={200}
+ emptyMessage="No Stripe activity in this period yet"
  yFormatter={(v) => `£${v}`}
  tooltipContent={({ active, payload }: { active?: boolean; payload?: { payload: Record<string, number | string> }[] }) => {
  if (!active || !payload?.length) return null;

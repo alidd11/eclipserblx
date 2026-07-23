@@ -388,6 +388,7 @@ export function FinancialOverview() {
  series={[{ dataKey: 'revenue', color: CHART_COLORS.purple, name: 'Revenue' }]}
  height={200}
  yFormatter={(v) => `£${v}`}
+ emptyMessage="No revenue in this period yet"
  />
  )}
  </div>

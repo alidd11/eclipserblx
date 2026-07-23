@@ -8,6 +8,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer,
 } from 'recharts';
 import { ReactNode, useMemo } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 /* ── Shared style constants ── */
 
@@ -93,6 +94,30 @@ function ChartGradients({ gradients }: { gradients: GradientDef[] }) {
   );
 }
 
+/* ── Shared empty state ── */
+
+// A chart with no rows — or one whose every series is entirely zero — should not
+// render a bare axis or a flat baseline (which reads as "broken"). Every chart
+// primitive falls back to this purposeful dashed state so the whole site is
+// consistent. Callers pass an `emptyMessage`/`emptyIcon` for context.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isChartEmpty(data: any[] | undefined, seriesKeys: string[]): boolean {
+  if (!data || data.length === 0) return true;
+  return seriesKeys.every((k) => data.every((d) => !Number(d[k])));
+}
+
+function ChartEmptyState({ height, message, icon: Icon }: { height: number; message: string; icon?: LucideIcon }) {
+  return (
+    <div
+      style={{ height }}
+      className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border px-6 text-center"
+    >
+      {Icon && <Icon className="h-6 w-6 text-muted-foreground/60" />}
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  );
+}
+
 /* ── RevolutAreaChart ── */
 
 export interface RevolutAreaSeries {
@@ -114,12 +139,14 @@ interface RevolutAreaChartProps {
   tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
+  emptyMessage?: string;
+  emptyIcon?: LucideIcon;
 }
 
 export function RevolutAreaChart({
   data, xKey, series, height = 240,
   yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
-  showYAxis = true, className,
+  showYAxis = true, className, emptyMessage, emptyIcon,
 }: RevolutAreaChartProps) {
   const gradients: GradientDef[] = series.map((s, i) => ({
     id: s.gradientId || `revGrad-${i}`,
@@ -130,6 +157,14 @@ export function RevolutAreaChart({
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
   const animationActive = useChartAnimationEnabled();
+
+  if (isChartEmpty(data, seriesKeys)) {
+    return (
+      <div className={className}>
+        <ChartEmptyState height={height} message={emptyMessage ?? 'No data yet'} icon={emptyIcon} />
+      </div>
+    );
+  }
 
   return (
     <div className={className} style={{ height }}>
@@ -188,17 +223,27 @@ interface RevolutLineChartProps {
   tooltipContent?: ReactNode | ((props: any) => ReactNode);
   showYAxis?: boolean;
   className?: string;
+  emptyMessage?: string;
+  emptyIcon?: LucideIcon;
 }
 
 export function RevolutLineChart({
   data, xKey, series, height = 240,
   yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
-  showYAxis = true, className,
+  showYAxis = true, className, emptyMessage, emptyIcon,
 }: RevolutLineChartProps) {
   const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
   const animationActive = useChartAnimationEnabled();
+
+  if (isChartEmpty(data, seriesKeys)) {
+    return (
+      <div className={className}>
+        <ChartEmptyState height={height} message={emptyMessage ?? 'No data yet'} icon={emptyIcon} />
+      </div>
+    );
+  }
 
   return (
     <div className={className} style={{ height }}>
@@ -256,18 +301,28 @@ interface RevolutBarChartProps {
   showYAxis?: boolean;
   layout?: 'horizontal' | 'vertical';
   className?: string;
+  emptyMessage?: string;
+  emptyIcon?: LucideIcon;
 }
 
 export function RevolutBarChart({
   data, xKey, series, height = 240,
   yFormatter = (v: number) => `${Math.round(v)}`, tooltipFormatter, tooltipContent,
-  showYAxis = true, layout = 'horizontal', className,
+  showYAxis = true, layout = 'horizontal', className, emptyMessage, emptyIcon,
 }: RevolutBarChartProps) {
   const isVertical = layout === 'vertical';
   const seriesKeys = useMemo(() => series.map(s => s.dataKey), [series]);
   const intTicks = useIntegerTicks(data, seriesKeys);
   const yDomain: [number, number] = [0, intTicks[intTicks.length - 1] || 1];
   const animationActive = useChartAnimationEnabled();
+
+  if (isChartEmpty(data, seriesKeys)) {
+    return (
+      <div className={className}>
+        <ChartEmptyState height={height} message={emptyMessage ?? 'No data yet'} icon={emptyIcon} />
+      </div>
+    );
+  }
 
   return (
     <div className={className} style={{ height }}>

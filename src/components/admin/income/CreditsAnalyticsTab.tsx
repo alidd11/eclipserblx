@@ -357,6 +357,7 @@ export function CreditsAnalyticsTab() {
  ]}
  height={300}
  yFormatter={(v) => `£${v}`}
+ emptyMessage="No credit activity in this period yet"
  />
  )}
  </div>

@@ -126,6 +126,7 @@ export default function SellerRevenueBreakdown() {
             height={256}
             yFormatter={(v) => `£${v}`}
             tooltipFormatter={(v) => [`${formatGBP(v)}`, 'Revenue']}
+            emptyMessage="No revenue in this period yet"
           />
         </div>
       </div>
@@ -142,6 +143,7 @@ export default function SellerRevenueBreakdown() {
               layout="vertical"
               yFormatter={(v) => `£${v}`}
               tooltipFormatter={(v) => [`${formatGBP(v)}`, 'Revenue']}
+              emptyMessage="No product sales yet"
             />
           </div>
         </div>

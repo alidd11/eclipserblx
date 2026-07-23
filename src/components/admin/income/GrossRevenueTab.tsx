@@ -160,6 +160,7 @@ export function GrossRevenueTab() {
  height={300}
  yFormatter={(v) => `£${v}`}
  tooltipFormatter={(v) => [`${formatGBP(Number(v))}`, 'Gross Revenue']}
+ emptyMessage="No revenue in this period yet"
  />
  )}
  </div>

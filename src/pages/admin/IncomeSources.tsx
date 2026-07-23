@@ -454,6 +454,7 @@ export default function AdminIncomeSources() {
                     height={320}
                     yFormatter={(v) => `£${v}`}
                     tooltipFormatter={(v) => [`${formatGBP(Number(v))}`, 'Revenue']}
+                    emptyMessage="No revenue in this period yet"
                   />
                 )}
               </div>

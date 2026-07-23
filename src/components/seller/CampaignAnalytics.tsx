@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
-import { RevolutLineChart } from '@/components/ui/revolut-chart';
+import { RevolutBarChart } from '@/components/ui/revolut-chart';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format, subDays, eachDayOfInterval, parseISO } from '@/lib/dateUtils';
 
@@ -99,12 +99,13 @@ export function CampaignAnalytics({ campaignId, productSlug, startedAt, expiresA
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="p-4 p-3">
  <p className="text-xs font-semibold text-muted-foreground mb-2">Daily Traffic</p>
- <RevolutLineChart
+ <RevolutBarChart
  data={dailyData}
  xKey="date"
  series={[{ dataKey: 'visits', color: 'hsl(var(--primary))' }]}
  height={160}
  showYAxis={false}
+ emptyMessage="No traffic yet"
  />
  </div>
  </div>

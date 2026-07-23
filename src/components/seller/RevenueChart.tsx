@@ -77,6 +77,7 @@ export function RevenueChart() {
             height={180}
             yFormatter={(v) => formatPrice(v)}
             tooltipFormatter={(v) => [formatPrice(v), 'Revenue']}
+            emptyMessage="No revenue in this period yet"
           />
         )}
       </div>

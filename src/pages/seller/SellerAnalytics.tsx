@@ -357,6 +357,8 @@ export default function SellerAnalytics() {
                         { dataKey: 'uniqueVisitors', color: CHART_COLORS.blue, name: 'Unique Visitors' },
                       ]}
                       height={320}
+                      emptyIcon={Eye}
+                      emptyMessage="No views in this period yet"
                     />
                   </div>
                 </div>
@@ -535,6 +537,8 @@ export default function SellerAnalytics() {
                         { dataKey: 'purchases', color: CHART_COLORS.indigo, name: 'Purchases' },
                       ]}
                       height={320}
+                      emptyIcon={ShoppingCart}
+                      emptyMessage="No activity in this period yet"
                     />
                   </div>
                 </div>

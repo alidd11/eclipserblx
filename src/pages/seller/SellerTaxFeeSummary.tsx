@@ -115,24 +115,19 @@ export default function SellerTaxFeeSummary() {
         <div className="px-4 py-3 border-b border-border bg-muted/30"><h3 className="font-semibold text-sm text-base">Monthly Fee Breakdown</h3></div>
         <div className="p-4">
           <div className="h-72">
-            {monthlyData.length > 0 ? (
-              <RevolutBarChart
-                data={monthlyData}
-                xKey="month"
-                series={[
-                  { dataKey: 'net', name: 'Net Earnings', color: CHART_COLORS.purple },
-                  { dataKey: 'platformFee', name: 'Commission', color: CHART_COLORS.blue },
-                  { dataKey: 'stripeFee', name: 'Processing', color: CHART_COLORS.indigo },
-                ]}
-                height={288}
-                yFormatter={(v) => `£${v}`}
-                tooltipFormatter={(v) => [`${formatGBP(v)}`, '']}
-              />
-            ) : (
-              <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
-                No transaction data available yet
-              </div>
-            )}
+            <RevolutBarChart
+              data={monthlyData}
+              xKey="month"
+              series={[
+                { dataKey: 'net', name: 'Net Earnings', color: CHART_COLORS.purple },
+                { dataKey: 'platformFee', name: 'Commission', color: CHART_COLORS.blue },
+                { dataKey: 'stripeFee', name: 'Processing', color: CHART_COLORS.indigo },
+              ]}
+              height={288}
+              yFormatter={(v) => `£${v}`}
+              tooltipFormatter={(v) => [`${formatGBP(v)}`, '']}
+              emptyMessage="No transaction data yet"
+            />
           </div>
         </div>
       </div>
