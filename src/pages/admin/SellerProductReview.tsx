@@ -76,7 +76,12 @@ export default function SellerProducts() {
       return { productId, status };
     },
     onSuccess: async (result, variables) => {
+      // Approving/rejecting changes what's pending — refresh this list AND the
+      // moderation queue + dashboard "Products awaiting review" count, which read
+      // their own query keys and would otherwise keep showing the product as pending.
       queryClient.invalidateQueries({ queryKey: ["seller-products-moderation"] });
+      queryClient.invalidateQueries({ queryKey: ["mod-queue-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-overview-snapshot"] });
       toast.success(`Product ${variables.status === "approved" ? "approved" : "rejected"}`);
       setSelectedProduct(null);
       setModerationNotes("");
@@ -131,6 +136,8 @@ export default function SellerProducts() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seller-products-moderation"] });
+      queryClient.invalidateQueries({ queryKey: ["mod-queue-products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-overview-snapshot"] });
       toast.success("Product deleted successfully");
       setProductToDelete(null);
       setDeleteStep(1);
