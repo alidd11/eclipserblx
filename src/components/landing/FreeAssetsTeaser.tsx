@@ -13,7 +13,7 @@ export function FreeAssetsTeaser() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, images, download_count, stores!inner(is_active)')
+        .select('id, name, slug, product_number, images, download_count, stores!inner(is_active)')
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
         .eq('stores.is_active', true)
@@ -63,7 +63,7 @@ export function FreeAssetsTeaser() {
             {products.map((product) => {
               const imageUrl = getFirstImageUrl(product.images, 360, 360, 'contain');
               return (
-                <Link key={product.id} to={`/product/${product.slug}`} className="block min-w-[160px] lg:min-w-0 group">
+                <Link key={product.id} to={`/products/${(product as any).product_number ?? product.slug}`} className="block min-w-[160px] lg:min-w-0 group">
                   <div className="aspect-[4/5] sm:aspect-square rounded-lg overflow-hidden bg-muted border border-border">
                     {imageUrl ? (
                       <img
