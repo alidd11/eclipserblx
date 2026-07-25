@@ -274,7 +274,7 @@ export function AppRoutes() {
         <Route path="/featured" element={<Featured />} />
         <Route path="/categories" element={<Categories />} />
         
-        <Route path="/product/:productNumber" element={<ProductDetail />} />
+        <Route path="/product/:productNumber" element={<Navigate to="/products/:productNumber" replace />} />
         <Route path="/products/:productNumber" element={<ProductDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/checkout" element={<Checkout />} />
