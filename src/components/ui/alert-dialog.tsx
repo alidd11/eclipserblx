@@ -37,17 +37,12 @@ const AlertDialogContent = React.forwardRef<
     AlertDialogDescription,
     AlertDialogPrimitive.Description,
   ]);
-  const describedByProps =
-    hasDescription || "aria-describedby" in props
-      ? {}
-      : { "aria-describedby": undefined as string | undefined };
 
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Content
         ref={ref}
-        {...describedByProps}
         className={cn(
           // Base styles
           "fixed z-50 grid w-full gap-4 border bg-background p-6 shadow-lg duration-300",
