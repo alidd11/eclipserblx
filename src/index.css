@@ -199,7 +199,7 @@
   }
 
   .section-band {
-    background-color: hsl(var(--muted));
+    background-color: hsl(var(--muted) / 0.4);
   }
 
   @keyframes hero-shimmer {
