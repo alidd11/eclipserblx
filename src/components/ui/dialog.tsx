@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { containsComponent } from "@/components/ui/_dialogA11y";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -48,23 +49,6 @@ const DialogDescription = React.forwardRef<
 ));
 DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
-// Recursively check whether children include an element of any given component type.
-// Used to auto-inject an accessible fallback title/description when a consumer omits it.
-function containsComponent(children: React.ReactNode, types: readonly React.ElementType[]): boolean {
-  let found = false;
-  React.Children.forEach(children, (child) => {
-    if (found || !React.isValidElement(child)) return;
-    if (types.includes(child.type as React.ElementType)) {
-      found = true;
-      return;
-    }
-    const nested = (child.props as { children?: React.ReactNode })?.children;
-    if (nested && containsComponent(nested, types)) {
-      found = true;
-    }
-  });
-  return found;
-}
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
