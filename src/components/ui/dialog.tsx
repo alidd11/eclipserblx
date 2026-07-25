@@ -28,17 +28,66 @@ const DialogOverlay = React.forwardRef<
 ));
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
+const DialogTitle = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Title>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Title
+    ref={ref}
+    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+    {...props}
+  />
+));
+DialogTitle.displayName = DialogPrimitive.Title.displayName;
+
+const DialogDescription = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Description>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+>(({ className, ...props }, ref) => (
+  <DialogPrimitive.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
+));
+DialogDescription.displayName = DialogPrimitive.Description.displayName;
+
+// Recursively check whether children include an element of any given component type.
+// Used to auto-inject an accessible fallback title/description when a consumer omits it.
+function containsComponent(children: React.ReactNode, types: readonly React.ElementType[]): boolean {
+  let found = false;
+  React.Children.forEach(children, (child) => {
+    if (found || !React.isValidElement(child)) return;
+    if (types.includes(child.type as React.ElementType)) {
+      found = true;
+      return;
+    }
+    const nested = (child.props as { children?: React.ReactNode })?.children;
+    if (nested && containsComponent(nested, types)) {
+      found = true;
+    }
+  });
+  return found;
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, ...props }, ref) => {
   const isMobile = useIsMobile();
-  
+
+  const hasTitle = containsComponent(children, [DialogTitle, DialogPrimitive.Title]);
+  const hasDescription = containsComponent(children, [DialogDescription, DialogPrimitive.Description]);
+
+  // Silence Radix's "Missing Description or aria-describedby={undefined}" warning
+  // when no DialogDescription is provided and the caller hasn't set aria-describedby.
+  const describedByProps =
+    hasDescription || 'aria-describedby' in props
+      ? {}
+      : { 'aria-describedby': undefined as string | undefined };
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={ref}
+        {...describedByProps}
         className={cn(
           // Base styles
           "fixed z-50 grid w-full gap-4 border bg-background p-6 shadow-lg duration-300",
@@ -66,6 +115,10 @@ const DialogContent = React.forwardRef<
         {isMobile && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-muted-foreground/30" />
         )}
+        {/* Accessible fallback title when the caller does not render one. */}
+        {!hasTitle && (
+          <DialogPrimitive.Title className="sr-only">Dialog</DialogPrimitive.Title>
+        )}
         {children}
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-full p-1 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-accent focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground min-h-[44px] min-w-[44px] flex items-center justify-center">
           <X className="h-5 w-5" />
@@ -86,26 +139,6 @@ const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   <div className={cn("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-2", className)} {...props} />
 );
 DialogFooter.displayName = "DialogFooter";
-
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
-
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description ref={ref} className={cn("text-sm text-muted-foreground", className)} {...props} />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
 
 export {
   Dialog,
