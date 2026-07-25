@@ -13,7 +13,7 @@ export function FreeAssetsTeaser() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('id, name, slug, images, download_count, stores!inner(is_active)')
+        .select('id, name, slug, product_number, images, download_count, stores!inner(is_active)')
         .eq('is_active', true)
         .eq('moderation_status', 'approved')
         .eq('stores.is_active', true)
