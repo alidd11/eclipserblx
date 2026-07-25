@@ -24,7 +24,7 @@ export function CampaignAnalytics({ campaignId, productSlug, startedAt, expiresA
  const { data, error } = await supabase
  .from('page_visits')
  .select('created_at, device_type, country')
- .eq('page_path', `/product/${productSlug}`)
+ .eq('page_path', `/products/${productSlug}`)
  .gte('created_at', start.toISOString())
  .lte('created_at', end.toISOString())
  .limit(1000);
