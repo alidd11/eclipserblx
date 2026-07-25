@@ -78,6 +78,11 @@ const AlertDialogContent = React.forwardRef<
         {!hasTitle && (
           <AlertDialogPrimitive.Title className="sr-only">Confirmation</AlertDialogPrimitive.Title>
         )}
+        {!hasDescription && (
+          <AlertDialogPrimitive.Description className="sr-only">
+            Please confirm your action.
+          </AlertDialogPrimitive.Description>
+        )}
         {children}
       </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
