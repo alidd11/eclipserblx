@@ -1,5 +1,5 @@
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useMemo } from 'react';
 import { useFeaturedProducts, type ScoredProduct } from '@/hooks/useFeaturedProducts';
 import { formatGBP } from '@/lib/formatters';
@@ -43,22 +43,14 @@ export function LandingHero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative isolate border-b border-border"
+      className="relative isolate"
     >
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-        {/* Masthead */}
-        <div className="flex items-end justify-between gap-4 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2 text-[10px] font-bold tracking-[0.25em] uppercase text-primary">
-            <Sparkles className="h-3 w-3" />
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 lg:pt-16 pb-8 sm:pb-12">
+        {/* Masthead — single quiet label, no competing secondary CTA */}
+        <div className="mb-5 sm:mb-8">
+          <span className="inline-block text-[10px] font-semibold tracking-[0.28em] uppercase text-muted-foreground">
             Featured drop
-          </div>
-          <Link
-            to="/products"
-            className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Browse marketplace
-            <ArrowRight className="h-3 w-3" />
-          </Link>
+          </span>
         </div>
 
         {/* Editorial split: featured hero product + side rail */}
