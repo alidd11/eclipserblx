@@ -44,47 +44,48 @@ export function FreeAssetsTeaser() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="p-0">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2.5">
-              <div className="border-l-2 border-primary pl-3">
-                <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">Free Assets</h2>
-              </div>
-              <span className="text-[10px] uppercase tracking-wider text-emerald-400/80 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
-                No fees
-              </span>
-            </div>
-            <Link to="/free" className="text-sm text-foreground hover:text-primary hover:underline flex items-center gap-1">
-              View All <ArrowRight className="h-3 w-3" />
-            </Link>
+        <div className="flex items-end justify-between gap-4 mb-6 pb-4 border-b border-border/60">
+          <div className="min-w-0">
+            <span className="block text-[10px] font-semibold tracking-[0.25em] uppercase text-primary mb-1.5">
+              No fees, no catch
+            </span>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">
+              Free assets
+            </h2>
           </div>
+          <Link
+            to="/free"
+            className="shrink-0 text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 uppercase tracking-widest font-semibold"
+          >
+            View all <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
 
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0">
-            {products.map((product) => {
-              const imageUrl = getFirstImageUrl(product.images, 360, 360, 'contain');
-              return (
-                <Link key={product.id} to={`/products/${(product as any).product_number ?? product.slug}`} className="block min-w-[160px] lg:min-w-0 group">
-                  <div className="aspect-[4/5] sm:aspect-square rounded-lg overflow-hidden bg-muted border border-border">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-contain object-center"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/50 gap-1.5">
-                        <Gift className="h-6 w-6" />
-                        <span className="text-[10px] font-medium">Free</span>
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-xs font-medium mt-1.5 truncate group-hover:text-primary transition-colors">{product.name}</p>
-                  <p className="text-[10px] text-primary font-semibold">Free</p>
-                </Link>
-              );
-            })}
-          </div>
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide lg:grid lg:grid-cols-6 lg:overflow-visible lg:pb-0">
+          {products.map((product) => {
+            const imageUrl = getFirstImageUrl(product.images, 360, 360, 'contain');
+            return (
+              <Link key={product.id} to={`/products/${(product as any).product_number ?? product.slug}`} className="block min-w-[160px] lg:min-w-0 group">
+                <div className="aspect-[4/5] sm:aspect-square rounded-lg overflow-hidden bg-muted border border-border/60 group-hover:border-primary/40 transition-colors">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-contain object-center"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/50 gap-1.5">
+                      <Gift className="h-6 w-6" />
+                      <span className="text-[10px] font-medium">Free</span>
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs font-medium mt-2 truncate group-hover:text-primary transition-colors">{product.name}</p>
+                <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5">Free</p>
+              </Link>
+            );
+          })}
         </div>
       </ScrollReveal>
     </section>

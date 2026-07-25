@@ -111,25 +111,28 @@ export function OnSaleProducts() {
   return (
     <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
       <ScrollReveal direction="up" distance={16} duration={0.35}>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="border-l-2 border-primary pl-3">
-              <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">On Sale</h2>
-            </div>
-            <span className="text-[10px] uppercase tracking-wider text-red-400/80 font-semibold bg-red-500/10 px-1.5 py-0.5 rounded">
-              Sale!
+        <div className="flex items-end justify-between gap-4 mb-6 pb-4 border-b border-border/60">
+          <div className="min-w-0">
+            <span className="block text-[10px] font-semibold tracking-[0.25em] uppercase text-primary mb-1.5">
+              Limited-time savings
             </span>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-semibold tracking-tight text-foreground">
+              On sale
+            </h2>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <div className="hidden sm:flex items-center gap-1">
-              <Button variant="outline" size="icon" aria-label="Go back" className="h-7 w-7 rounded-md" onClick={() => scroll('left')}>
+              <Button variant="outline" size="icon" aria-label="Scroll left" className="h-8 w-8 rounded-md" onClick={() => scroll('left')}>
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="outline" size="icon" aria-label="Go forward" className="h-7 w-7 rounded-md" onClick={() => scroll('right')}>
+              <Button variant="outline" size="icon" aria-label="Scroll right" className="h-8 w-8 rounded-md" onClick={() => scroll('right')}>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>
-            <Link to="/products" className="text-sm text-foreground hover:text-primary hover:underline flex items-center gap-1">
+            <Link
+              to="/products"
+              className="text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 uppercase tracking-widest font-semibold"
+            >
               View all <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
@@ -142,7 +145,7 @@ export function OnSaleProducts() {
             return (
               <div key={product.id} className="w-[82%] min-w-[260px] flex-shrink-0 snap-start sm:w-[44%] sm:min-w-[240px] lg:w-auto lg:min-w-0 relative">
                 {product.discountPercent > 0 && (
-                  <div className="absolute top-2 right-2 z-10 bg-red-500 text-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
+                  <div className="absolute top-2 right-2 z-10 bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 rounded">
                     -{product.discountPercent}%
                   </div>
                 )}
