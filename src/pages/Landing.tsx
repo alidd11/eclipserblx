@@ -22,6 +22,17 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { SectionErrorBoundary } from '@/components/SectionErrorBoundary';
 import { LazySection } from '@/components/ui/LazySection';
 
+/**
+ * Editorial home layout.
+ *
+ * Section rhythm rules (kept intentional to avoid a "dashboard of stacked
+ * widgets" feel):
+ *   - Hero owns the top viewport; nothing else competes at that scale.
+ *   - Only two subtle banded sections break the neutral surface, spaced far
+ *     enough apart that the eye reads them as rhythm markers, not stripes.
+ *   - Every band uses a single top border only — no double borders on the
+ *     seam where a banded section meets a plain one.
+ */
 export default function Landing() {
   usePageMeta({ canonicalPath: '/' });
 
@@ -31,17 +42,28 @@ export default function Landing() {
       <WebsiteSearchSchema />
       <SiteNavigationSchema />
 
-      {/* Hero — compact */}
+      {/* Hero — editorial featured drop, sole above-the-fold statement */}
       <SectionErrorBoundary section="hero" compact>
         <LandingHero />
       </SectionErrorBoundary>
 
-      {/* Trending Products */}
+      {/* Trending — first product surface */}
       <SectionErrorBoundary section="trending" compact>
         <TrendingProducts />
       </SectionErrorBoundary>
 
-      {/* Why Choose Eclipse — trust signals */}
+      {/* Recent releases — first banded rhythm marker */}
+      <LazySection minHeight="200px" rootMargin="300px">
+        <div className="section-band border-t border-border/60">
+          <SectionErrorBoundary section="recent-releases" compact>
+            <Suspense fallback={null}>
+              <RecentReleases />
+            </Suspense>
+          </SectionErrorBoundary>
+        </div>
+      </LazySection>
+
+      {/* Trust signals — sits on plain surface, quiet transition */}
       <LazySection minHeight="150px" rootMargin="300px">
         <SectionErrorBoundary section="trust-signals" compact>
           <Suspense fallback={null}>
@@ -50,7 +72,7 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Promotions */}
+      {/* Promotions + abandoned cart — contextual, no forced chrome */}
       <SectionErrorBoundary section="promotions" compact>
         <Suspense fallback={null}>
           <ActiveOffersCard />
@@ -61,18 +83,7 @@ export default function Landing() {
         <AbandonedCartBanner />
       </Suspense>
 
-      {/* Recent Releases — banded background */}
-      <LazySection minHeight="200px" rootMargin="300px">
-        <div className="section-band border-t border-border">
-          <SectionErrorBoundary section="recent-releases" compact>
-            <Suspense fallback={null}>
-              <RecentReleases />
-            </Suspense>
-          </SectionErrorBoundary>
-        </div>
-      </LazySection>
-
-      {/* On Sale Products */}
+      {/* On sale */}
       <LazySection minHeight="200px" rootMargin="200px">
         <SectionErrorBoundary section="on-sale" compact>
           <Suspense fallback={null}>
@@ -81,18 +92,16 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* Free Assets Teaser — banded background */}
+      {/* Free assets */}
       <LazySection minHeight="200px" rootMargin="200px">
-        <div className="section-band border-t border-border">
-          <SectionErrorBoundary section="free-assets" compact>
-            <Suspense fallback={null}>
-              <FreeAssetsTeaser />
-            </Suspense>
-          </SectionErrorBoundary>
-        </div>
+        <SectionErrorBoundary section="free-assets" compact>
+          <Suspense fallback={null}>
+            <FreeAssetsTeaser />
+          </Suspense>
+        </SectionErrorBoundary>
       </LazySection>
 
-      {/* Recently Viewed */}
+      {/* Recently viewed */}
       <LazySection minHeight="150px" rootMargin="200px">
         <SectionErrorBoundary section="recently-viewed" compact>
           <Suspense fallback={null}>
@@ -101,9 +110,9 @@ export default function Landing() {
         </SectionErrorBoundary>
       </LazySection>
 
-      {/* For You — banded background */}
+      {/* For You — second banded rhythm marker, closes personalised block */}
       <LazySection minHeight="200px" rootMargin="200px">
-        <div className="section-band border-t border-border">
+        <div className="section-band border-t border-border/60">
           <SectionErrorBoundary section="for-you" compact>
             <Suspense fallback={null}>
               <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-6">
