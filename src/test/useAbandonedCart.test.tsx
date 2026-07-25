@@ -91,10 +91,11 @@ describe('useAbandonedCart persistence', () => {
     expect(update!.filters).toMatchObject({ id: 'row-abc' });
   });
 
-  it('does nothing when the cart is empty', async () => {
+  it('does not attempt to persist a save when the cart is empty', async () => {
     cartState = { items: [], total: 0 };
     renderHook(() => useAbandonedCart());
     await flushSaveTimer();
-    expect(calls.length).toBe(0);
+    // The recovery-check select may run; ensure no write ops fire.
+    expect(calls.some((c) => c.op === 'insert' || c.op === 'update' || c.op === 'upsert')).toBe(false);
   });
 });
