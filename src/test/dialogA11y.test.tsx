@@ -37,7 +37,7 @@ afterEach(() => {
 function assertNoA11yWarnings() {
   for (const spy of [warnSpy, errorSpy]) {
     for (const call of spy.mock.calls) {
-      const msg = call.map((c) => (typeof c === "string" ? c : "")).join(" ");
+      const msg = call.map((c: unknown) => (typeof c === "string" ? c : "")).join(" ");
       expect(msg).not.toMatch(forbidden);
     }
   }
