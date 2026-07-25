@@ -4,6 +4,7 @@ import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { containsComponent } from "@/components/ui/_dialogA11y";
 
 const AlertDialog = AlertDialogPrimitive.Root;
 
@@ -29,14 +30,24 @@ AlertDialogOverlay.displayName = AlertDialogPrimitive.Overlay.displayName;
 const AlertDialogContent = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Content>
->(({ className, ...props }, ref) => {
+>(({ className, children, ...props }, ref) => {
   const isMobile = useIsMobile();
-  
+  const hasTitle = containsComponent(children, [AlertDialogTitle, AlertDialogPrimitive.Title]);
+  const hasDescription = containsComponent(children, [
+    AlertDialogDescription,
+    AlertDialogPrimitive.Description,
+  ]);
+  const describedByProps =
+    hasDescription || "aria-describedby" in props
+      ? {}
+      : { "aria-describedby": undefined as string | undefined };
+
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Content
         ref={ref}
+        {...describedByProps}
         className={cn(
           // Base styles
           "fixed z-50 grid w-full gap-4 border bg-background p-6 shadow-lg duration-300",
@@ -64,7 +75,10 @@ const AlertDialogContent = React.forwardRef<
         {isMobile && (
           <div className="absolute top-3 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-muted-foreground/30" />
         )}
-        {props.children}
+        {!hasTitle && (
+          <AlertDialogPrimitive.Title className="sr-only">Confirmation</AlertDialogPrimitive.Title>
+        )}
+        {children}
       </AlertDialogPrimitive.Content>
     </AlertDialogPortal>
   );

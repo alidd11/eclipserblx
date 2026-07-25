@@ -2,6 +2,7 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@/lib/utils";
+import { containsComponent } from "@/components/ui/_dialogA11y";
 
 const Drawer = ({ shouldScaleBackground = true, ...props }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root shouldScaleBackground={shouldScaleBackground} {...props} />
@@ -25,28 +26,41 @@ DrawerOverlay.displayName = DrawerPrimitive.Overlay.displayName;
 const DrawerContent = React.forwardRef<
   React.ElementRef<typeof DrawerPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DrawerPrimitive.Content>
->(({ className, children, style, ...props }, ref) => (
-  <DrawerPortal>
-    <DrawerOverlay />
-    <DrawerPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
-        className,
-      )}
-      style={{
-        // Ensure iOS safe-area region inherits the themed background (prevents white strip)
-        backgroundColor: "hsl(var(--background))",
-        paddingBottom: "env(safe-area-inset-bottom)",
-        ...style,
-      }}
-      {...props}
-    >
-      <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
-      {children}
-    </DrawerPrimitive.Content>
-  </DrawerPortal>
-));
+>(({ className, children, style, ...props }, ref) => {
+  const hasTitle = containsComponent(children, [DrawerTitle, DrawerPrimitive.Title]);
+  const hasDescription = containsComponent(children, [DrawerDescription, DrawerPrimitive.Description]);
+  const describedByProps =
+    hasDescription || "aria-describedby" in props
+      ? {}
+      : { "aria-describedby": undefined as string | undefined };
+
+  return (
+    <DrawerPortal>
+      <DrawerOverlay />
+      <DrawerPrimitive.Content
+        ref={ref}
+        {...describedByProps}
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          className,
+        )}
+        style={{
+          // Ensure iOS safe-area region inherits the themed background (prevents white strip)
+          backgroundColor: "hsl(var(--background))",
+          paddingBottom: "env(safe-area-inset-bottom)",
+          ...style,
+        }}
+        {...props}
+      >
+        <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
+        {!hasTitle && (
+          <DrawerPrimitive.Title className="sr-only">Drawer</DrawerPrimitive.Title>
+        )}
+        {children}
+      </DrawerPrimitive.Content>
+    </DrawerPortal>
+  );
+});
 DrawerContent.displayName = "DrawerContent";
 
 const DrawerHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
