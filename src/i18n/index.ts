@@ -34,6 +34,9 @@ i18n
     },
     lng: detectedLang,
     fallbackLng: 'en',
+    // Silence i18next's dev console banner/logs in production while preserving
+    // localization behavior. Warnings still surface in development builds.
+    debug: false,
     interpolation: {
       escapeValue: false,
     },

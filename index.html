@@ -38,9 +38,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet" />
 
     
-    <!-- Preload LCP hero image — responsive -->
-    <link rel="preload" href="/hero-bg.webp" as="image" type="image/webp" fetchpriority="high" media="(min-width: 768px)" />
-    <link rel="preload" href="/hero-bg-mobile.webp" as="image" type="image/webp" fetchpriority="high" media="(max-width: 767px)" />
+    <!-- Hero image is prioritized on the landing route via <img fetchpriority="high"> in HeroBanner;
+         a global <link rel="preload"> here fires on every route and triggers unused-preload warnings. -->
+
 
     <!-- Inline critical CSS to eliminate render-blocking for above-the-fold content -->
     <style>

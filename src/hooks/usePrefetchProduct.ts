@@ -12,15 +12,20 @@ export function usePrefetchProduct() {
   const queryClient = useQueryClient();
 
   const prefetch = useCallback(
-    (productNumber: string | number) => {
-      const key = ['product', String(productNumber)];
+    (identifier: string | number | undefined | null) => {
+      if (identifier === undefined || identifier === null || identifier === '') return;
+      const idStr = String(identifier);
+      const key = ['product', idStr];
       // Skip if already cached and fresh
       if (queryClient.getQueryData(key)) return;
+
+      const isNumeric = /^\d+$/.test(idStr);
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idStr);
 
       queryClient.prefetchQuery({
         queryKey: key,
         queryFn: async () => {
-          const { data } = await supabase
+          let q = supabase
             .from('products')
             .select(
                `id, name, slug, description, price, images, category_id, is_resellable, is_active,
@@ -28,9 +33,17 @@ export function usePrefetchProduct() {
                stores!inner(id, name, slug, logo_url, is_verified, accent_color),
                categories(name, slug)`
             )
-            .eq('product_number' as any, Number(productNumber))
-            .eq('is_active', true)
-            .maybeSingle();
+            .eq('is_active', true);
+
+          if (isNumeric) {
+            q = q.eq('product_number' as any, Number(idStr));
+          } else if (isUuid) {
+            q = q.eq('id', idStr);
+          } else {
+            q = q.eq('slug', idStr);
+          }
+
+          const { data } = await q.maybeSingle();
           return data;
         },
         staleTime: PRODUCT_PREFETCH_STALE,
