@@ -1,31 +1,37 @@
-import { Share2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Link2, Share2 } from 'lucide-react';
 import { copyToClipboard } from '@/lib/copyToClipboard';
+import { buildProductShareUrl } from '@/lib/productUrls';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SocialShareButtonsProps {
-  url: string;
+  productIdentifier: string | number;
   title: string;
   description?: string;
 }
 
-export function SocialShareButtons({ url, title, description }: SocialShareButtonsProps) {
-  const sharePath = url.startsWith('http') ? url : `https://eclipserblx.com/share${url}`;
-  const fullUrl = url.startsWith('http') ? url : `https://eclipserblx.com${url}`;
+export function SocialShareButtons({ productIdentifier, title, description }: SocialShareButtonsProps) {
+  const shareUrl = buildProductShareUrl(productIdentifier);
   const text = description ? `${title} — ${description}` : title;
 
+  const handleCopyLink = () => {
+    void copyToClipboard(shareUrl, 'Product link copied!');
+  };
+
   const handleCopyForDiscord = () => {
-    copyToClipboard(`\uD83C\uDFAE **${title}**\n${sharePath}`, 'Copied for Discord!');
+    void copyToClipboard(`\uD83C\uDFAE **${title}**\n${shareUrl}`, 'Copied for Discord!');
   };
 
   const handleNativeShare = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title, text: description, url: sharePath });
-      } catch {}
+        await navigator.share({ title, text: description, url: shareUrl });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        await copyToClipboard(shareUrl, 'Product link copied!');
+      }
     } else {
-      copyToClipboard(sharePath, 'Link copied!');
+      await copyToClipboard(shareUrl, 'Product link copied!');
     }
   };
 
@@ -37,7 +43,11 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
         </svg>
       ),
-      onClick: () => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(sharePath)}`, '_blank'),
+      onClick: () => window.open(
+        `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
+        '_blank',
+        'noopener,noreferrer',
+      ),
     },
     {
       name: 'Discord',
@@ -56,7 +66,20 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
   ];
 
   return (
-    <div className="flex items-center gap-1">
+    <div
+      className="flex flex-wrap items-center gap-1"
+      role="group"
+      aria-label="Share this product"
+    >
+      <Button
+        variant="outline"
+        size="sm"
+        className="h-8 gap-1.5 px-2.5 text-xs"
+        onClick={handleCopyLink}
+      >
+        <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+        Copy link
+      </Button>
       {items.map((item) => (
         <Tooltip key={item.name}>
           <TooltipTrigger asChild>
@@ -75,6 +98,9 @@ export function SocialShareButtons({ url, title, description }: SocialShareButto
           </TooltipContent>
         </Tooltip>
       ))}
+      <span className="sr-only" aria-live="polite">
+        Shared links open the product page and include its image and description in supported apps.
+      </span>
     </div>
   );
 }
