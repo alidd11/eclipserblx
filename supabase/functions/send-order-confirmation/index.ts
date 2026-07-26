@@ -3,6 +3,7 @@ import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { PDFDocument, rgb, StandardFonts } from "https://esm.sh/pdf-lib@1.17.1";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -535,6 +536,12 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Only internal server-side callers (verify-payment, stripe webhook handler)
+  // may trigger receipt emails. Blocks phishing via crafted "order receipt".
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+
 
   const clientIp = getClientIp(req);
   const rateLimitResult = checkRateLimit({
