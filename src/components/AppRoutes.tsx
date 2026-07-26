@@ -406,6 +406,7 @@ export function AppRoutes() {
         <Route path="/admin/disputes" element={<Navigate to="/admin/disputes-refunds?tab=disputes" replace />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
+        <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/canned-responses" element={<AdminCannedResponses />} />
         
