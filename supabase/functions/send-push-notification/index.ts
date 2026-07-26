@@ -477,6 +477,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Auth: block unauthenticated callers. Service role / staff may target any
+  // user; a regular authenticated user may only push to themselves. This blocks
+  // arbitrary cross-user push spam via this endpoint.
+  const authz = await authorizePushCaller(req, corsHeaders);
+  if (!authz.ok) return authz.response;
+
   // Rate limiting: 60 requests per minute (internal API calls)
   const clientIp = getClientIp(req);
   const rateLimitResult = checkRateLimit({
@@ -509,8 +515,20 @@ serve(async (req) => {
       throw new Error('Missing user_ids or payload');
     }
 
+    // Non-staff, non-service callers may only push to themselves.
+    if (!authz.isServiceRole && !authz.isStaff) {
+      const invalid = user_ids.some((id) => id !== authz.callerId);
+      if (invalid) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: may only notify self' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        );
+      }
+    }
+
     console.log(`Sending push notifications to ${user_ids.length} users`);
     console.log('Payload:', JSON.stringify(payload));
+
 
     // Fetch all subscriptions for the given users
     const { data: subscriptions, error: fetchError } = await supabase
