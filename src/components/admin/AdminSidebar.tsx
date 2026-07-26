@@ -95,7 +95,9 @@ const navGroups: NavGroup[] = [
     icon: Store,
     items: [
       { title: 'Seller Stores', icon: Store, href: '/admin/seller-commissions', permissions: ['view_seller_stores'] },
+      { title: 'Store Applications', icon: ClipboardList, href: '/admin/store-applications', permissions: ['review_store_applications'] },
       { title: 'Compliance', icon: ShieldCheck, href: '/admin/compliance', permissions: ['view_seller_stores'] },
+      
       
       { title: 'Product Review', icon: Package, href: '/admin/seller-product-review', permissions: ['view_seller_stores'] },
       { title: 'All Seller Products', icon: Package, href: '/admin/seller-products', permissions: ['view_seller_stores'] },
