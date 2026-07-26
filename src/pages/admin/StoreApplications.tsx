@@ -156,7 +156,7 @@ function AdminStoreApplicationsInner() {
       const { data, error } = await supabase.rpc('review_store_application', {
         _application_id: app.id,
         _decision: decision,
-        _rejection_reason: rejection_reason ?? null,
+        _rejection_reason: rejection_reason ?? undefined,
       });
       if (error) throw error;
       return data;
