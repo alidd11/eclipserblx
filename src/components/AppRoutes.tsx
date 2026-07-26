@@ -78,6 +78,7 @@ const AdminPromotions = lazyWithRetry(() => import("@/pages/admin/Promotions"));
 const AdminOrders = lazyWithRetry(() => import("@/pages/admin/Orders"));
 const AdminUsers = lazyWithRetry(() => import("@/pages/admin/Users"));
 const AdminModerationQueue = lazyWithRetry(() => import("@/pages/admin/ModerationQueue"));
+const AdminStoreApplications = lazyWithRetry(() => import("@/pages/admin/StoreApplications"));
 const AdminSettings = lazyWithRetry(() => import("@/pages/admin/Settings"));
 const AdminCannedResponses = lazyWithRetry(() => import("@/pages/admin/CannedResponses"));
 
