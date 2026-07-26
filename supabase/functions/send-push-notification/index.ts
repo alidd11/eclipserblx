@@ -2,6 +2,58 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
+const STAFF_ROLES = new Set([
+  "admin",
+  "lead_administrator",
+  "lead_manager",
+  "moderator",
+  "support_agent",
+  "manager",
+  "staff",
+]);
+
+// Returns { ok: true, isServiceRole, callerId, isStaff } on success, or Response on failure.
+async function authorizePushCaller(
+  req: Request,
+  corsHeaders: Record<string, string>,
+): Promise<
+  | { ok: true; isServiceRole: true; callerId: null; isStaff: false }
+  | { ok: true; isServiceRole: false; callerId: string; isStaff: boolean }
+  | { ok: false; response: Response }
+> {
+  const auth = req.headers.get("Authorization") || req.headers.get("authorization") || "";
+  if (!auth.toLowerCase().startsWith("bearer ")) {
+    return {
+      ok: false,
+      response: new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }),
+    };
+  }
+  const token = auth.slice(7);
+  const url = Deno.env.get("SUPABASE_URL")!;
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  if (token === serviceKey) {
+    return { ok: true, isServiceRole: true, callerId: null, isStaff: false };
+  }
+  const supa = createClient(url, serviceKey);
+  const { data, error } = await supa.auth.getUser(token);
+  if (error || !data?.user) {
+    return {
+      ok: false,
+      response: new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }),
+    };
+  }
+  const { data: roles } = await supa.from("user_roles").select("role").eq("user_id", data.user.id);
+  const isStaff = !!roles?.some((r: { role: string }) => STAFF_ROLES.has(r.role));
+  return { ok: true, isServiceRole: false, callerId: data.user.id, isStaff };
+}
+
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
