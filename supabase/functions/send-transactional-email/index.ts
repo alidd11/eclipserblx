@@ -31,15 +31,21 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// Auth: config.toml still has verify_jwt = true, but the publishable anon key is
+// itself a valid signed JWT and is public, so the gateway check alone lets
+// anyone enqueue attacker-controlled email content (e.g. ticket-reply body/URL).
+// Enforce an in-code staff/service-role check so only trusted internal callers
+// can send app emails.
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const authResult = await requireStaff(req, corsHeaders)
+  if ('error' in authResult) return authResult.error
+
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
