@@ -173,8 +173,8 @@ export default function BecomeSellerWizard() {
  // Approval is a manual reviewer decision via review_store_application().
  const { data, error } = await supabase.rpc('submit_store_application', {
  _store_name: formValues.storeName.trim(),
- _store_description: formValues.storeDescription.trim() || null,
- _product_category: formValues.productCategory || null,
+ _store_description: formValues.storeDescription.trim() || '',
+ _product_category: formValues.productCategory || '',
  _discord_server_invite: formValues.discordServerInvite.trim(),
  _age_confirmed: formValues.ageConfirmed,
  _terms_accepted: formValues.termsAccepted,
