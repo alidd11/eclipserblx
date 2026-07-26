@@ -78,6 +78,7 @@ const AdminPromotions = lazyWithRetry(() => import("@/pages/admin/Promotions"));
 const AdminOrders = lazyWithRetry(() => import("@/pages/admin/Orders"));
 const AdminUsers = lazyWithRetry(() => import("@/pages/admin/Users"));
 const AdminModerationQueue = lazyWithRetry(() => import("@/pages/admin/ModerationQueue"));
+const AdminStoreApplications = lazyWithRetry(() => import("@/pages/admin/StoreApplications"));
 const AdminSettings = lazyWithRetry(() => import("@/pages/admin/Settings"));
 const AdminCannedResponses = lazyWithRetry(() => import("@/pages/admin/CannedResponses"));
 
@@ -405,6 +406,7 @@ export function AppRoutes() {
         <Route path="/admin/disputes" element={<Navigate to="/admin/disputes-refunds?tab=disputes" replace />} />
         <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/admin/moderation-queue" element={<AdminModerationQueue />} />
+        <Route path="/admin/store-applications" element={<AdminStoreApplications />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
         <Route path="/admin/canned-responses" element={<AdminCannedResponses />} />
         

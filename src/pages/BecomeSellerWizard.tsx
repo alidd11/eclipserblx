@@ -169,36 +169,33 @@ export default function BecomeSellerWizard() {
  throw new Error('Please provide a valid Discord server invite');
  }
 
- const { data, error } = await supabase.from('store_applications').insert({
- user_id: user.id,
- store_name: formValues.storeName.trim(),
- store_description: formValues.storeDescription.trim() || null,
- product_category: formValues.productCategory || null,
- discord_server_invite: formValues.discordServerInvite.trim(),
- age_confirmed: formValues.ageConfirmed,
- terms_accepted: formValues.termsAccepted,
- terms_accepted_at: new Date().toISOString(),
- verification_results: verificationResults as any,
- }).select('status, auto_approved').single();
+ // Client verification results are stored as unverified evidence only.
+ // Approval is a manual reviewer decision via review_store_application().
+ const { data, error } = await supabase.rpc('submit_store_application', {
+ _store_name: formValues.storeName.trim(),
+ _store_description: formValues.storeDescription.trim() || '',
+ _product_category: formValues.productCategory || '',
+ _discord_server_invite: formValues.discordServerInvite.trim(),
+ _age_confirmed: formValues.ageConfirmed,
+ _terms_accepted: formValues.termsAccepted,
+ _verification_results: verificationResults as any,
+ });
 
  if (error) throw error;
- return data;
+ return { id: data as unknown as string };
  },
- onSuccess: (data) => {
- const autoApproved = data?.auto_approved === true && data?.status === 'approved';
- setWasAutoApproved(autoApproved);
- if (autoApproved) {
- toast.success('Store Approved!', { description: 'Your identity was verified automatically.' });
- } else {
- toast.success('Application Submitted!');
- }
+ onSuccess: () => {
+ setWasAutoApproved(false);
+ toast.success('Application submitted', {
+ description: 'A reviewer will respond within 24 hours.',
+ });
  queryClient.invalidateQueries({ queryKey: ['seller-application'] });
  queryClient.invalidateQueries({ queryKey: ['seller-status'] });
  clearFormValues();
  setCurrentStep(4);
  },
- onError: (error) => {
- toast.error(error.message || 'Failed to submit application');
+ onError: (error: any) => {
+ toast.error(error?.message || 'Failed to submit application');
  },
  });
 
