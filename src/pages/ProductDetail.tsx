@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Check, ChevronLeft, Star, MessageSquare, Clock, Flag, Share2, Heart, Shield, Zap, BadgeCheck } from 'lucide-react';
+import { ShoppingCart, Check, ChevronLeft, Star, MessageSquare, Clock, Flag, Heart, Shield, Zap, BadgeCheck } from 'lucide-react';
 import { StoreTrustSignals } from '@/components/store/StoreTrustSignals';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
@@ -564,7 +564,7 @@ export default function ProductDetail() {
  {/* Actions row */}
  <div className="flex items-center justify-between pt-3 border-t border-border/60">
  <SocialShareButtons
- url={`/products/${(product as any).product_number || productNumber}`}
+ productIdentifier={(product as any).product_number || productNumber}
  title={product.name}
  description={`Check out ${product.name} on Eclipse`}
  />
