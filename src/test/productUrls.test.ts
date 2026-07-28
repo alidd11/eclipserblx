@@ -10,7 +10,7 @@ describe('product URL helpers', () => {
     expect(buildProductUrl(57)).toBe('https://eclipserblx.com/products/57');
   });
 
-  it('builds explicit share URLs on the branded preview domain', () => {
+  it('uses the rich-preview endpoint for explicit sharing', () => {
     expect(buildProductShareUrl(57)).toBe('https://share.eclipserblx.com/products/57');
   });
 
@@ -19,6 +19,7 @@ describe('product URL helpers', () => {
   });
 
   it('rejects empty identifiers', () => {
+    expect(() => buildProductUrl('  ')).toThrow('A product identifier is required');
     expect(() => buildProductShareUrl('  ')).toThrow('A product identifier is required');
   });
 });

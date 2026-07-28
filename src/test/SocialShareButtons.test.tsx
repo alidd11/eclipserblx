@@ -29,7 +29,7 @@ describe('SocialShareButtons', () => {
     });
   });
 
-  it('exposes a prominent accessible copy-link action using the preview domain', () => {
+  it('exposes a prominent accessible copy-link action using the rich-preview URL', () => {
     renderShareButtons();
 
     fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
@@ -41,7 +41,7 @@ describe('SocialShareButtons', () => {
     expect(screen.getByRole('group', { name: 'Share this product' })).toBeInTheDocument();
   });
 
-  it('uses the branded preview URL for native sharing', async () => {
+  it('uses the rich-preview URL for native sharing', async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'share', {
       configurable: true,
@@ -58,7 +58,7 @@ describe('SocialShareButtons', () => {
     }));
   });
 
-  it('copies the branded preview URL when native sharing is unavailable', async () => {
+  it('copies the rich-preview URL when native sharing is unavailable', async () => {
     renderShareButtons();
 
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));

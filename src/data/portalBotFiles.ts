@@ -51,35 +51,21 @@ EXPOSE 8080
 
 CMD ["node", "index.js"]`,
 
-  'fly.toml': `app = "eclipse-portal-bot"
-primary_region = "lhr"
-
-[build]
-
-[env]
-  NODE_ENV = "production"
-
-[http_service]
-  internal_port = 8080
-  force_https = true
-  auto_stop_machines = false
-  auto_start_machines = true
-  min_machines_running = 1
-
-[[services]]
-  internal_port = 8080
-  protocol = "tcp"
-
-  [[services.ports]]
-    port = 8080
-
-  [[services.http_checks]]
-    interval = 30000
-    grace_period = "10s"
-    method = "get"
-    path = "/health"
-    protocol = "http"
-    timeout = 5000`,
+  'railway.json': `{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "node index.js",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 300,
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10,
+    "numReplicas": 1
+  }
+}`,
 
   'index.js': `import 'dotenv/config';
 import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
@@ -128,7 +114,7 @@ client.once('ready', () => {
 client.on('error', (error) => console.error('Discord client error:', error));
 process.on('unhandledRejection', (error) => console.error('Unhandled promise rejection:', error));
 
-// Health check HTTP server (for Railway/Fly.io)
+// Health check HTTP server (for Railway)
 const PORT = process.env.PORT || 8080;
 http.createServer((req, res) => {
   if (req.url === '/health') {

@@ -56,6 +56,55 @@ const commands = [
   { name: 'leaderboard', description: 'View the Eclipse XP leaderboard' },
   { name: 'balance', description: 'View your Eclipse credits and XP in one place' },
   { name: 'newdrops', description: 'View the latest product drops on Eclipse' },
+  // Moderation + utility commands (handlers exist in interaction.js; these were
+  // previously unregistered, so they never appeared in Discord).
+  {
+    name: 'ban', description: 'Ban a member from this server',
+    options: [
+      { name: 'user', description: 'The member to ban', type: 6, required: true },
+      { name: 'reason', description: 'Reason for the ban', type: 3, required: false },
+      { name: 'delete_messages', description: "Days of the user's messages to delete (0-7)", type: 4, required: false },
+    ],
+  },
+  {
+    name: 'kick', description: 'Kick a member from this server',
+    options: [
+      { name: 'user', description: 'The member to kick', type: 6, required: true },
+      { name: 'reason', description: 'Reason for the kick', type: 3, required: false },
+    ],
+  },
+  {
+    name: 'timeout', description: 'Timeout a member for a set duration',
+    options: [
+      { name: 'user', description: 'The member to timeout', type: 6, required: true },
+      {
+        name: 'duration', description: 'How long to timeout for', type: 3, required: true,
+        choices: [
+          { name: '60 seconds', value: '60s' }, { name: '5 minutes', value: '5m' },
+          { name: '10 minutes', value: '10m' }, { name: '30 minutes', value: '30m' },
+          { name: '1 hour', value: '1h' }, { name: '6 hours', value: '6h' },
+          { name: '12 hours', value: '12h' }, { name: '1 day', value: '1d' },
+          { name: '7 days', value: '7d' }, { name: '28 days', value: '28d' },
+        ],
+      },
+      { name: 'reason', description: 'Reason for the timeout', type: 3, required: false },
+    ],
+  },
+  {
+    name: 'unban', description: 'Unban a user by their Discord ID',
+    options: [
+      { name: 'user_id', description: 'The Discord user ID to unban', type: 3, required: true },
+      { name: 'reason', description: 'Reason for the unban', type: 3, required: false },
+    ],
+  },
+  {
+    name: 'modlog', description: 'View recent moderation actions in this server',
+    options: [{ name: 'count', description: 'How many actions to show (max 25)', type: 4, required: false }],
+  },
+  {
+    name: 'afk', description: 'Set your AFK status',
+    options: [{ name: 'reason', description: 'Your AFK reason', type: 3, required: false }],
+  },
 ];
 
 async function registerCommands() {

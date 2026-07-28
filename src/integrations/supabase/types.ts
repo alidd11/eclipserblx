@@ -8792,6 +8792,7 @@ export type Database = {
       store_applications: {
         Row: {
           age_confirmed: boolean
+          approved_store_id: string | null
           auto_approved: boolean | null
           created_at: string | null
           discord_server_invite: string | null
@@ -8817,6 +8818,7 @@ export type Database = {
         }
         Insert: {
           age_confirmed?: boolean
+          approved_store_id?: string | null
           auto_approved?: boolean | null
           created_at?: string | null
           discord_server_invite?: string | null
@@ -8842,6 +8844,7 @@ export type Database = {
         }
         Update: {
           age_confirmed?: boolean
+          approved_store_id?: string | null
           auto_approved?: boolean | null
           created_at?: string | null
           discord_server_invite?: string | null
@@ -8866,6 +8869,20 @@ export type Database = {
           verification_results?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "store_applications_approved_store_id_fkey"
+            columns: ["approved_store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_applications_approved_store_id_fkey"
+            columns: ["approved_store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "store_applications_user_id_fkey"
             columns: ["user_id"]
@@ -12492,6 +12509,14 @@ export type Database = {
         Returns: undefined
       }
       revert_expired_custom_rates: { Args: never; Returns: undefined }
+      review_store_application: {
+        Args: {
+          _application_id: string
+          _decision: string
+          _rejection_reason?: string
+        }
+        Returns: Json
+      }
       run_nightly_reconciliation: { Args: never; Returns: Json }
       search_products_ranked: {
         Args: {
@@ -12578,6 +12603,18 @@ export type Database = {
       store_password_reset_code: {
         Args: { p_code: string; p_email: string; p_expires_at: string }
         Returns: undefined
+      }
+      submit_store_application: {
+        Args: {
+          _age_confirmed: boolean
+          _discord_server_invite: string
+          _product_category: string
+          _store_description: string
+          _store_name: string
+          _terms_accepted: boolean
+          _verification_results?: Json
+        }
+        Returns: string
       }
       suggest_correction: { Args: { search_query: string }; Returns: string }
       update_category_affinity: {

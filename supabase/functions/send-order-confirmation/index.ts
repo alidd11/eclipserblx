@@ -539,6 +539,12 @@ const handler = async (req: Request): Promise<Response> => {
   const unauthorized = requireServiceRole(req, corsHeaders);
   if (unauthorized) return unauthorized;
 
+  // Only internal server-side callers (verify-payment, stripe webhook handler)
+  // may trigger receipt emails. Blocks phishing via crafted "order receipt".
+  const _unauth = requireServiceRole(req, corsHeaders);
+  if (_unauth) return _unauth;
+
+
   const clientIp = getClientIp(req);
   const rateLimitResult = checkRateLimit({
     ...RATE_LIMITS.WRITE,

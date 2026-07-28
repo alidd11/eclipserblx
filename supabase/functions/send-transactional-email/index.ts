@@ -31,9 +31,11 @@ function generateToken(): string {
     .join('')
 }
 
-// The gateway accepts the project's anon JWT as well as user JWTs. Because this
-// function sends email with service-role access, it must also authorize the
-// caller in-function; gateway JWT verification alone is not sufficient.
+// Auth: config.toml still has verify_jwt = true, but the publishable anon key is
+// itself a valid signed JWT and is public, so the gateway check alone lets
+// anyone enqueue attacker-controlled email content (e.g. ticket-reply body/URL).
+// Enforce an in-code staff/service-role check so only trusted internal callers
+// can send app emails.
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
@@ -41,8 +43,9 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  const auth = await requireStaff(req, corsHeaders)
-  if ('error' in auth) return auth.error
+  const authResult = await requireStaff(req, corsHeaders)
+  if ('error' in authResult) return authResult.error
+
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')

@@ -17,9 +17,8 @@ export function buildProductUrl(identifier: string | number): string {
 }
 
 /**
- * Share URL used only by explicit copy/share actions.
- * Humans are redirected to the canonical product page while social crawlers
- * receive the product-specific Open Graph document.
+ * Reliable rich-preview URL for explicit copy/share actions. Humans are
+ * redirected to the canonical page; social crawlers receive product metadata.
  */
 export function buildProductShareUrl(identifier: string | number): string {
   return `${ECLIPSE_SHARE_ORIGIN}${buildProductPath(identifier)}`;
