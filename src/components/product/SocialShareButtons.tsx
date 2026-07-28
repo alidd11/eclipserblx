@@ -1,6 +1,6 @@
 import { Link2, Share2 } from 'lucide-react';
 import { copyToClipboard } from '@/lib/copyToClipboard';
-import { buildProductShareUrl } from '@/lib/productUrls';
+import { buildProductUrl } from '@/lib/productUrls';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -11,7 +11,7 @@ interface SocialShareButtonsProps {
 }
 
 export function SocialShareButtons({ productIdentifier, title, description }: SocialShareButtonsProps) {
-  const shareUrl = buildProductShareUrl(productIdentifier);
+  const shareUrl = buildProductUrl(productIdentifier);
   const text = description ? `${title} — ${description}` : title;
 
   const handleCopyLink = () => {
