@@ -43,6 +43,11 @@ const READ_TABLES = new Set<string>([
   "audit_logs",
   "user_roles",
   "store_domains",
+  "credit_balances",
+  "discord_daily_claims",
+  "discord_xp",
+  "guild_command_permissions",
+  "store_welcome_embeds",
 ]);
 
 // Tables the bot may write via db.insert / db.update / db.delete / db.upsert
@@ -58,6 +63,8 @@ const WRITE_TABLES = new Set<string>([
   "audit_logs",
   "profiles",
   "download_logs",
+  "discord_daily_claims",
+  "discord_xp",
 ]);
 
 // RPCs the bot may invoke
