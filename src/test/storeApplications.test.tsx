@@ -113,7 +113,7 @@ describe('StoreApplications admin page', () => {
       p_application_id: 'app-1',
       p_decision: 'rejected',
       p_rejection_reason: 'Store description is misleading',
-      p_notes: null,
+      p_notes: undefined,
     })));
   });
 });
