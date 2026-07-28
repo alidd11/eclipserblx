@@ -1,6 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { logStep } from "./stripe-helpers.ts";
+import { loadCheckoutCart } from "./checkout-cart.ts";
 
 const LOG = (step: string, d?: unknown) => logStep("STRIPE-WEBHOOK", step, d);
 
@@ -17,7 +18,8 @@ export async function processPayment(
   stripe: Stripe,
   data: PaymentData
 ) {
-  const { paymentId, paymentType, customerEmail, metadata, amountTotal } = data;
+  const { paymentId, paymentType, metadata, amountTotal } = data;
+  let customerEmail = data.customerEmail;
   LOG("Processing payment", { paymentId, paymentType, customerEmail, amountTotal });
 
   // Dedupe: check by payment_intent for checkout sessions
@@ -37,14 +39,20 @@ export async function processPayment(
       : `payment_id.eq.${paymentId}`)
     .maybeSingle();
 
-  if (existingOrder) {
-    LOG("Order already exists", { orderId: (existingOrder as any).id });
-    return;
-  }
-
   // Parse items
   let items: Array<{ id: string; name: string; price: number; category_slug?: string }> = [];
-  if (metadata?.items) {
+  const checkoutCart = await loadCheckoutCart(
+    supabase,
+    metadata?.cart_ref,
+    paymentIntentId || (paymentType === "payment_intent" ? paymentId : null),
+  );
+  if (metadata?.cart_ref && !checkoutCart) {
+    throw new Error("Checkout cart reference is missing or expired");
+  }
+  if (checkoutCart) {
+    items = checkoutCart.items;
+    customerEmail = checkoutCart.customer_email || customerEmail;
+  } else if (metadata?.items) {
     try {
       const rawItems = JSON.parse(metadata.items);
       items = rawItems.map((item: any) => ({
@@ -71,11 +79,16 @@ export async function processPayment(
     }
   }
 
-  const subtotal = items.reduce((sum, item) => sum + (item.price || 0), 0) || (amountTotal ? amountTotal / 100 : 0);
-  const total = amountTotal ? amountTotal / 100 : subtotal;
+  if (paymentType === "payment_intent" && items.length === 0) {
+    throw new Error("PaymentIntent checkout has no recoverable cart items");
+  }
+  const subtotal = checkoutCart?.subtotal
+    ?? items.reduce((sum, item) => sum + (item.price || 0), 0)
+    ?? (amountTotal ? amountTotal / 100 : 0);
+  const total = checkoutCart?.total ?? (amountTotal ? amountTotal / 100 : subtotal);
 
   // Resolve user
-  let userId: string | null = metadata?.user_id || null;
+  let userId: string | null = checkoutCart?.user_id || metadata?.user_id || null;
   if (!userId && customerEmail) {
     const { data: profile } = await supabase
       .from("profiles").select("user_id").eq("email", customerEmail).maybeSingle();
@@ -98,23 +111,39 @@ export async function processPayment(
     } catch { /* default stripe */ }
   }
 
-  // Create order
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .insert({ customer_email: customerEmail, user_id: userId, payment_id: paymentId, payment_method: paymentMethod, status: "paid", subtotal, total })
-    .select().single();
+  let orderId = (existingOrder as any)?.id as string | undefined;
+  let orderCreated = false;
+  if (!orderId) {
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({ customer_email: customerEmail, user_id: userId, payment_id: paymentId, payment_method: paymentMethod, status: "paid", subtotal, total })
+      .select().single();
 
-  if (orderError) {
-    // Unique violation on payment_id means the other fulfillment path (verify-payment)
-    // won the race and already created this order — treat as already-processed, not an error.
-    if (orderError.code === "23505") {
-      LOG("Order already created by a concurrent request, skipping", { paymentId });
-      return;
+    if (orderError) {
+      if (orderError.code === "23505") {
+        const { data: concurrentOrder, error: concurrentError } = await supabase
+          .from("orders")
+          .select("id")
+          .or(paymentIntentId
+            ? `payment_id.eq.${paymentId},payment_id.eq.${paymentIntentId}`
+            : `payment_id.eq.${paymentId}`)
+          .maybeSingle();
+        if (concurrentError || !concurrentOrder) {
+          throw new Error("Concurrent order creation could not be recovered");
+        }
+        orderId = concurrentOrder.id;
+      } else {
+        throw new Error(`Failed to create order: ${orderError.message}`);
+      }
+    } else {
+      orderId = (order as any).id;
+      orderCreated = true;
+      LOG("Order created", { orderId });
     }
-    throw new Error(`Failed to create order: ${orderError.message}`);
+  } else {
+    LOG("Repairing or confirming existing order fulfilment", { orderId });
   }
-  const orderId = (order as any).id;
-  LOG("Order created", { orderId });
+  if (!orderId) throw new Error("Order ID was not resolved");
 
   // Create order items + bot codes
   const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
@@ -130,16 +159,45 @@ export async function processPayment(
       }
     }
 
-    const orderItems = items.map(item => ({ order_id: orderId, product_id: item.id || null, product_name: item.name, price: item.price }));
-    const { data: insertedItems, error: itemsError } = await supabase.from("order_items").insert(orderItems).select();
-    if (itemsError) { LOG("ERROR creating order items", { error: itemsError.message }); }
-    else {
-      const insertedArr = insertedItems as any[];
+    const { data: existingItems, error: existingItemsError } = await supabase
+      .from("order_items")
+      .select("id, product_id")
+      .eq("order_id", orderId);
+    if (existingItemsError) throw new Error(`Failed to inspect order items: ${existingItemsError.message}`);
+    const existingByProduct = new Map((existingItems || []).map((item: any) => [item.product_id, item]));
+    const missingItems = items.filter(item => !item.id || !existingByProduct.has(item.id));
+    if (missingItems.length > 0) {
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .upsert(missingItems.map(item => ({
+          order_id: orderId,
+          product_id: item.id || null,
+          product_name: item.name,
+          price: item.price,
+        })), { onConflict: "order_id,product_id", ignoreDuplicates: true })
+        .select();
+      if (itemsError) throw new Error(`Failed to create order items: ${itemsError.message}`);
+    }
+    {
+      const { data: allOrderItems, error: reloadItemsError } = await supabase
+        .from("order_items")
+        .select("id, product_id")
+        .eq("order_id", orderId);
+      if (reloadItemsError) throw new Error(`Failed to reload order items: ${reloadItemsError.message}`);
+      const orderItemByProduct = new Map((allOrderItems || []).map((item: any) => [item.product_id, item]));
+      const insertedArr = items.map(item => orderItemByProduct.get(item.id));
       for (let i = 0; i < items.length; i++) {
         const item = items[i] as any;
         const dbSlug = item.id ? productCategories[item.id] : undefined;
         const isBot = item.category_slug === 'bots' || dbSlug === 'bots' || item.name.toLowerCase().includes('bot');
         if (isBot && insertedArr[i]) {
+          const { data: existingCode } = await supabase
+            .from("bot_installation_codes")
+            .select("id")
+            .eq("order_item_id", insertedArr[i].id)
+            .limit(1)
+            .maybeSingle();
+          if (existingCode) continue;
           const qty = item.quantity || 1;
           let botProductId: string | null = null;
           if (item.id) {
@@ -169,14 +227,32 @@ export async function processPayment(
     if (userId) {
       for (const item of items) {
         if (item.id) {
-          await supabase.from("review_reminders").insert({ user_id: userId, order_id: orderId, product_id: item.id, product_name: item.name });
+          const { data: reminder } = await supabase
+            .from("review_reminders")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("order_id", orderId)
+            .eq("product_id", item.id)
+            .maybeSingle();
+          if (!reminder) {
+            await supabase.from("review_reminders").insert({ user_id: userId, order_id: orderId, product_id: item.id, product_name: item.name });
+          }
         }
       }
     }
   }
 
   // Notifications (email, push, discord, referral)
-  await sendOrderNotifications(supabase, { orderId, userId, customerEmail, items, subtotal, total, paymentMethod, botInstallationCodes });
+  if (orderCreated || (checkoutCart && !checkoutCart.fulfilled_at)) {
+    await sendOrderNotifications(supabase, { orderId, userId, customerEmail, items, subtotal, total, paymentMethod, botInstallationCodes });
+  }
+  if (checkoutCart) {
+    const { error: cartUpdateError } = await supabase
+      .from("payment_checkout_carts")
+      .update({ fulfilled_at: new Date().toISOString() })
+      .eq("id", checkoutCart.id);
+    if (cartUpdateError) throw new Error(`Failed to mark checkout cart fulfilled: ${cartUpdateError.message}`);
+  }
 }
 
 async function processSellerEarnings(
@@ -224,8 +300,7 @@ async function processSellerEarnings(
     const { data: orderItem } = await supabase.from("order_items").select("id").eq("order_id", orderId).eq("product_id", item.id).limit(1).maybeSingle();
     const orderItemId = orderItem?.id || null;
 
-    const { data: existingTx } = await supabase.from("seller_transactions").select("id").eq("order_id", orderId).eq("order_item_id", orderItemId).limit(1);
-    if (existingTx && existingTx.length > 0) continue;
+    if (!orderItemId) throw new Error(`Order item is missing for seller product ${item.id}`);
 
     // Use the price actually charged at checkout, not the product's current
     // catalog price — these can diverge for pay-what-you-want products or if
@@ -241,19 +316,20 @@ async function processSellerEarnings(
     const escrowHoldUntil = new Date();
     escrowHoldUntil.setDate(escrowHoldUntil.getDate() + 3);
 
-    await supabase.from("seller_transactions").insert({
-      seller_id: sellerId, store_id: product.store_id, order_id: orderId, order_item_id: orderItemId,
-      gross_amount: gross, stripe_fee: fee, net_before_commission: netBefore, platform_fee: platformFee,
-      net_amount: earnings, amount: earnings, type: "sale", status: "completed",
-      escrow_hold_until: escrowHoldUntil.toISOString(),
-    });
-
-    // Atomic balance update — prevents read-then-write race
-    await supabase.rpc('increment_seller_pending_balance', {
+    const { data: recorded, error: recordError } = await supabase.rpc('record_seller_sale_earning', {
       p_seller_id: sellerId,
       p_store_id: product.store_id,
-      p_amount: earnings,
+      p_order_id: orderId,
+      p_order_item_id: orderItemId,
+      p_gross_amount: gross,
+      p_stripe_fee: fee,
+      p_net_before_commission: netBefore,
+      p_platform_fee: platformFee,
+      p_net_amount: earnings,
+      p_escrow_hold_until: escrowHoldUntil.toISOString(),
     });
+    if (recordError) throw new Error(`Failed to record seller earning: ${recordError.message}`);
+    if (!recorded) continue;
 
     // Seller Discord webhook
     try {

@@ -37,6 +37,7 @@ i18n
     // Silence i18next's dev console banner/logs in production while preserving
     // localization behavior. Warnings still surface in development builds.
     debug: false,
+    showSupportNotice: false,
     interpolation: {
       escapeValue: false,
     },

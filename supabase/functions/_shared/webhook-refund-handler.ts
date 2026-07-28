@@ -47,23 +47,30 @@ export async function processRefund(
 
   const orderId = order.id;
 
-  // Already processed?
-  const { data: existing } = await supabase.from("orders").select("refunded_at").eq("id", orderId).single();
-  if (existing && (existing as any).refunded_at) {
-    LOG("Refund already processed", { orderId });
+  // Stripe's charge.refunded amount is cumulative. Apply only the positive
+  // delta under a row lock so repeated and out-of-order webhook deliveries are
+  // idempotent while later partial refunds can still be accounted for.
+  const { data: refundResult, error: refundError } = await supabase.rpc(
+    'apply_cumulative_order_refund',
+    {
+      p_order_id: orderId,
+      p_charge_id: chargeId,
+      p_cumulative_amount: refundAmount / 100,
+      p_is_full_refund: isFullRefund,
+    },
+  );
+  if (refundError) {
+    throw new Error(`Failed to apply refund accounting: ${refundError.message}`);
+  }
+
+  const applied = Boolean((refundResult as any)?.applied);
+  if (!applied) {
+    LOG("Refund already accounted for", { orderId, refundAmount });
     return;
   }
 
-  // Update order
-  const newStatus = isFullRefund ? "refunded" : "partially_refunded";
-  await supabase.from("orders").update({
-    status: newStatus, refunded_at: new Date().toISOString(),
-    refund_amount: refundAmount / 100, refund_id: chargeId,
-  }).eq("id", orderId);
-
-  // Reverse commissions
-  await supabase.rpc('reverse_affiliate_commission', { p_order_id: orderId, p_refund_id: chargeId });
-  await supabase.rpc('reverse_seller_earnings', { p_order_id: orderId, p_refund_id: chargeId });
+  const appliedAmount = Number((refundResult as any)?.delta || 0);
+  const effectiveFullRefund = Boolean((refundResult as any)?.is_full_refund);
 
   // Notify sellers
   try {
@@ -77,7 +84,7 @@ export async function processRefund(
           await fetch(`${supabaseUrl}/functions/v1/notify-seller-sale`, {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
-            body: JSON.stringify({ type: 'dispute', store_id: product.store_id, order_id: orderId, product_name: item.product_name, reason: isFullRefund ? 'Full refund issued' : 'Partial refund issued', amount: item.price }),
+            body: JSON.stringify({ type: 'dispute', store_id: product.store_id, order_id: orderId, product_name: item.product_name, reason: effectiveFullRefund ? 'Full refund issued' : 'Partial refund issued', amount: appliedAmount }),
           });
         }
       }
@@ -86,12 +93,12 @@ export async function processRefund(
 
   // User notification
   if (order.user_id) {
-    const msg = isFullRefund
+    const msg = effectiveFullRefund
       ? "Your order has been fully refunded. The refund will appear in your account within 5-10 business days."
-      : `A partial refund of £${(refundAmount / 100).toFixed(2)} has been processed for your order.`;
+      : `A partial refund of £${appliedAmount.toFixed(2)} has been processed for your order.`;
     await supabase.from('notifications').insert({
       user_id: order.user_id,
-      title: isFullRefund ? '💸 Order Refunded' : '💸 Partial Refund Processed',
+      title: effectiveFullRefund ? '💸 Order Refunded' : '💸 Partial Refund Processed',
       message: msg, type: 'refund', link: '/account#purchases',
     });
   }
@@ -109,9 +116,9 @@ export async function processRefund(
     await fetch(`${supabaseUrl}/functions/v1/finance-notify`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}` },
-      body: JSON.stringify({ type: "refund_processed", data: { orderId, userId: order.user_id, amount: refundAmount / 100, storeName: storeName || "Unknown", reason: isFullRefund ? "Full refund" : "Partial refund" } }),
+      body: JSON.stringify({ type: "refund_processed", data: { orderId, userId: order.user_id, amount: appliedAmount, storeName: storeName || "Unknown", reason: effectiveFullRefund ? "Full refund" : "Partial refund" } }),
     });
   } catch { /* non-fatal */ }
 
-  LOG("Refund processing complete", { orderId, isFullRefund });
+  LOG("Refund processing complete", { orderId, isFullRefund: effectiveFullRefund, appliedAmount });
 }

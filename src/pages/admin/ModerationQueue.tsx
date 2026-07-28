@@ -51,8 +51,19 @@ export default function ModerationQueue() {
  // (approved/rejected on the review page) never lingers here. See CLAUDE.md.
  staleTime: 30_000, refetchOnMount: 'always' });
 
- const pendingStoreApps: Array<{ id: string; store_name: string | null; created_at: string | null; status: string; profiles: unknown }> = [];
- const loadingStores = false;
+ const { data: pendingStoreApps = [], isLoading: loadingStores } = useQuery({
+ queryKey: ['mod-queue-stores'],
+ queryFn: async () => {
+ const { data, error } = await supabase
+ .from('store_applications')
+ .select('id, store_name, created_at, status, profiles!store_applications_user_id_fkey(display_name)')
+ .eq('status', 'pending')
+ .order('created_at', { ascending: true })
+ .limit(50);
+ if (error) throw error;
+ return data || [];
+ },
+ staleTime: 30_000, refetchOnMount: 'always' });
 
  const { data: pendingReviews = [], isLoading: loadingReviews } = useQuery({
  queryKey: ['mod-queue-reviews'],

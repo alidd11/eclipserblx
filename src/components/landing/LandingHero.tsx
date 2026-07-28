@@ -86,11 +86,17 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
       <div className="relative aspect-[16/10] lg:aspect-auto lg:h-full lg:min-h-[360px] lg:w-[56%] shrink-0 bg-gradient-to-br from-muted via-muted/70 to-muted overflow-hidden">
         <img
           src={optimizeImageUrl(hero.image, 1200, 750, 'contain')}
+          srcSet={[
+            `${optimizeImageUrl(hero.image, 480, 300, 'contain', 76)} 480w`,
+            `${optimizeImageUrl(hero.image, 800, 500, 'contain', 78)} 800w`,
+            `${optimizeImageUrl(hero.image, 1200, 750, 'contain', 80)} 1200w`,
+          ].join(', ')}
+          sizes="(max-width: 1023px) calc(100vw - 2rem), min(56vw, 760px)"
           alt={hero.name}
           width={1200}
           height={750}
           loading="eager"
-          decoding="sync"
+          decoding="async"
           {...({ fetchpriority: 'high' } as Record<string, string>)}
           className="w-full h-full object-contain object-center transition-transform duration-700 group-hover:scale-[1.02]"
         />
@@ -123,8 +129,12 @@ function HeroFeature({ hero, id }: { hero: HeroPick | undefined; id: string }) {
             <div className="flex items-center gap-2 min-w-0">
               {hero.storeLogo ? (
                 <img
-                  src={hero.storeLogo}
+                  src={optimizeImageUrl(hero.storeLogo, 48, 48, 'cover', 76)}
                   alt=""
+                  width={24}
+                  height={24}
+                  loading="lazy"
+                  decoding="async"
                   className="w-6 h-6 rounded-full object-cover border border-border shrink-0"
                 />
               ) : null}
@@ -159,6 +169,11 @@ function RailPick({ pick }: { pick: HeroPick }) {
         {pick.image ? (
           <img
             src={optimizeImageUrl(pick.image, 320, 240, 'contain')}
+            srcSet={[
+              `${optimizeImageUrl(pick.image, 192, 144, 'contain', 74)} 192w`,
+              `${optimizeImageUrl(pick.image, 320, 240, 'contain', 76)} 320w`,
+            ].join(', ')}
+            sizes="(max-width: 1023px) 8rem, 7rem"
             alt={pick.name}
             width={288}
             height={288}

@@ -16,6 +16,22 @@ const logStep = (step: string, details?: unknown) => {
 const MINIMUM_PAYOUT_AMOUNT = 1000;
 const MAXIMUM_PAYOUT_AMOUNT = 1000000;
 
+function isDefinitiveStripeRejection(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const type = 'type' in error ? String(error.type) : '';
+  const rawType = 'raw' in error
+    && error.raw
+    && typeof error.raw === 'object'
+    && 'type' in error.raw
+      ? String(error.raw.type)
+      : '';
+  return [
+    'StripeInvalidRequestError',
+    'StripeAuthenticationError',
+    'StripePermissionError',
+  ].includes(type) || rawType === 'invalid_request_error';
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -63,29 +79,6 @@ serve(async (req) => {
       throw new Error("Invalid payout method");
     }
 
-    // Check for pending payouts
-    const { data: pendingPayouts } = await supabaseClient
-      .from('affiliate_payouts')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('status', 'pending');
-
-    if (pendingPayouts && pendingPayouts.length > 0) {
-      throw new Error("You already have a pending payout request");
-    }
-
-    // Check balance
-    const { data: balance, error: balanceError } = await supabaseClient
-      .from('affiliate_balances')
-      .select('available_balance')
-      .eq('user_id', user.id)
-      .single();
-
-    if (balanceError || !balance) throw new Error("No affiliate balance found");
-    if (balance.available_balance < amount) throw new Error("Insufficient balance");
-
-    logStep("Balance check passed", { available: balance.available_balance, requested: amount });
-
     // Get payment details
     const { data: paymentDetails, error: paymentError } = await supabaseClient
       .from('user_payment_details')
@@ -109,98 +102,116 @@ serve(async (req) => {
       throw new Error("Please add your PayPal email to receive payouts. Update your payout settings.");
     }
 
-    // Deduct balance
-    const newBalance = balance.available_balance - amount;
-    const { error: updateBalanceError } = await supabaseClient
-      .from('affiliate_balances')
-      .update({ available_balance: newBalance, updated_at: new Date().toISOString() })
-      .eq('user_id', user.id)
-      .gte('available_balance', amount);
+    const bankNotes = payoutMethod === 'bank_transfer'
+      ? `Bank: ${paymentDetails.bank_name || 'N/A'}, Holder: ${paymentDetails.bank_account_holder}, Account: ${paymentDetails.bank_account_number}, SWIFT: ${paymentDetails.bank_swift_bic || 'N/A'}`
+      : null;
 
-    if (updateBalanceError) throw new Error("Failed to update balance - please try again");
+    // Reserve the balance and create (or reuse on retry) the payout in one
+    // database transaction. The payout ID is also the provider idempotency key.
+    const { data: payoutId, error: reserveError } = await supabaseClient.rpc(
+      'reserve_affiliate_payout',
+      {
+        p_user_id: user.id,
+        p_amount: amount,
+        p_payout_method: payoutMethod,
+        p_stripe_account_id: payoutMethod === 'stripe' ? paymentDetails.stripe_account_id : null,
+        p_paypal_email: payoutMethod === 'paypal' ? paymentDetails.paypal_email : null,
+        p_notes: bankNotes,
+      },
+    );
 
-    logStep("Balance deducted", { previousBalance: balance.available_balance, newBalance, amount });
+    if (reserveError || !payoutId) {
+      throw new Error(reserveError?.message || "Failed to reserve affiliate payout");
+    }
+
+    logStep("Payout reserved", { payoutId, amount });
 
     // Stripe auto-transfer
     if (payoutMethod === 'stripe' && paymentDetails.stripe_account_id) {
+      let providerRequestStarted = false;
       try {
         const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
         if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
         
         const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
-        const transfer = await stripe.transfers.create({
-          amount,
-          currency: 'gbp',
-          destination: paymentDetails.stripe_account_id,
-          metadata: { user_id: user.id, type: 'affiliate_payout' },
-        });
+        let transferCreated = false;
+        providerRequestStarted = true;
+        const transfer = await stripe.transfers.create(
+          {
+            amount,
+            currency: 'gbp',
+            destination: paymentDetails.stripe_account_id,
+            transfer_group: `affiliate_payout_${payoutId}`,
+            metadata: { user_id: user.id, payout_id: payoutId, type: 'affiliate_payout' },
+          },
+          { idempotencyKey: `affiliate-payout-${payoutId}` },
+        );
+        transferCreated = true;
 
         logStep("Stripe transfer created", { transferId: transfer.id, amount });
 
-        const { data: payout } = await supabaseClient
-          .from('affiliate_payouts')
-          .insert({
-            user_id: user.id,
-            amount,
-            stripe_account_id: paymentDetails.stripe_account_id,
-            payout_method: 'stripe',
-            status: 'completed',
-            processed_at: new Date().toISOString(),
-            notes: `Automatic Stripe transfer: ${transfer.id}`,
-          })
-          .select()
-          .single();
-
-        await supabaseClient
-          .from('affiliate_balances')
-          .update({ total_paid: (balance.available_balance - newBalance) + amount, updated_at: new Date().toISOString() })
-          .eq('user_id', user.id);
+        const { data: completed, error: completeError } = await supabaseClient.rpc(
+          'complete_affiliate_payout',
+          {
+            p_payout_id: payoutId,
+            p_user_id: user.id,
+            p_stripe_transfer_id: transfer.id,
+          },
+        );
+        if (completeError || !completed) {
+          // Do not release the reservation after Stripe accepted the transfer.
+          // A retry reuses both payoutId and Stripe's idempotency key.
+          throw Object.assign(
+            new Error(completeError?.message || "Failed to finalize affiliate payout"),
+            { transferCreated },
+          );
+        }
 
         return new Response(JSON.stringify({ 
-          success: true, payoutId: payout?.id, transferId: transfer.id, method: 'stripe',
+          success: true, payoutId, transferId: transfer.id, method: 'stripe',
           message: "Payout completed! Funds have been transferred to your Stripe account.",
         }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
       } catch (stripeError) {
-        // Rollback
-        await supabaseClient
-          .from('affiliate_balances')
-          .update({ available_balance: balance.available_balance, updated_at: new Date().toISOString() })
-          .eq('user_id', user.id);
+        const transferCreated = Boolean(
+          stripeError
+          && typeof stripeError === 'object'
+          && 'transferCreated' in stripeError
+          && stripeError.transferCreated
+        );
+        const definitelyRejected = isDefinitiveStripeRejection(stripeError);
+        // A connection/API failure after dispatch has an unknown outcome. Keep
+        // the reservation in "processing": a retry reuses the same payout ID
+        // and Stripe idempotency key, preventing a second transfer. Release only
+        // when no request was sent or Stripe definitively rejected it.
+        if (!transferCreated && (!providerRequestStarted || definitelyRejected)) {
+          const { error: releaseError } = await supabaseClient.rpc(
+            'release_affiliate_payout',
+            {
+              p_payout_id: payoutId,
+              p_user_id: user.id,
+              p_failure_reason: stripeError instanceof Error ? stripeError.message : String(stripeError),
+            },
+          );
+          if (releaseError) {
+            logStep("Failed to release affiliate payout reservation", { payoutId, error: releaseError.message });
+          }
+        }
 
         const errorMsg = stripeError instanceof Error ? stripeError.message : String(stripeError);
-        logStep("Stripe transfer failed, balance rolled back", { error: errorMsg });
-        throw new Error(`Stripe transfer failed: ${errorMsg}`);
+        logStep("Stripe payout failed", {
+          error: errorMsg,
+          transferCreated,
+          outcomeUnknown: providerRequestStarted && !transferCreated && !definitelyRejected,
+        });
+        throw new Error("Stripe transfer could not be confirmed. Please retry; the payout is protected from duplicate transfer.");
       }
     }
 
-    // Non-Stripe payout — create pending request
-    const payoutData: Record<string, unknown> = {
-      user_id: user.id, amount, payout_method: payoutMethod, status: 'pending',
-    };
-    if (payoutMethod === 'paypal') payoutData.paypal_email = paymentDetails.paypal_email;
-    if (payoutMethod === 'bank_transfer') {
-      payoutData.notes = `Bank: ${paymentDetails.bank_name || 'N/A'}, Holder: ${paymentDetails.bank_account_holder}, Account: ${paymentDetails.bank_account_number}, SWIFT: ${paymentDetails.bank_swift_bic || 'N/A'}`;
-    }
-
-    const { data: payout, error: payoutError } = await supabaseClient
-      .from('affiliate_payouts')
-      .insert(payoutData)
-      .select()
-      .single();
-
-    if (payoutError) {
-      await supabaseClient
-        .from('affiliate_balances')
-        .update({ available_balance: balance.available_balance, updated_at: new Date().toISOString() })
-        .eq('user_id', user.id);
-      throw new Error("Failed to create payout request");
-    }
-
     const methodLabel = payoutMethod === 'bank_transfer' ? 'bank transfer' : 'PayPal';
-    logStep(`${methodLabel} payout request created`, { payoutId: payout.id, amount });
+    logStep(`${methodLabel} payout request created`, { payoutId, amount });
 
     return new Response(JSON.stringify({ 
-      success: true, payoutId: payout.id, method: payoutMethod,
+      success: true, payoutId, method: payoutMethod,
       message: `Payout request submitted! Your ${methodLabel} payment will be processed today.`,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
   } catch (error) {

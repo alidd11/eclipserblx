@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
+import { requireAuth } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -424,6 +425,8 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  const authResult = await requireAuth(req, corsHeaders);
+  if ("error" in authResult) return authResult.error;
 
   // Rate limiting: 60 requests per minute (internal API calls)
   const clientIp = getClientIp(req);
@@ -453,18 +456,49 @@ serve(async (req) => {
 
     const { user_ids, payload }: NotificationRequest = await req.json();
 
-    if (!user_ids || !user_ids.length || !payload) {
+    if (!Array.isArray(user_ids) || user_ids.length === 0 || user_ids.length > 100 || !payload) {
       throw new Error('Missing user_ids or payload');
     }
+    const uniqueUserIds = [...new Set(user_ids)];
+    if (
+      uniqueUserIds.some(id => typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) ||
+      typeof payload.title !== "string" ||
+      payload.title.length < 1 ||
+      payload.title.length > 120 ||
+      typeof payload.body !== "string" ||
+      payload.body.length < 1 ||
+      payload.body.length > 500 ||
+      (payload.url && (!payload.url.startsWith("/") || payload.url.startsWith("//")))
+    ) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid notification request" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    console.log(`Sending push notifications to ${user_ids.length} users`);
+    // System callers may target users selected by trusted backend logic. A
+    // browser caller may notify only themselves unless they are staff.
+    if (authResult.user.id !== "service_role") {
+      const targetsOnlySelf = uniqueUserIds.every(id => id === authResult.user.id);
+      const { data: callerIsStaff } = await supabase.rpc("is_staff", {
+        _user_id: authResult.user.id,
+      });
+      if (!targetsOnlySelf && !callerIsStaff) {
+        return new Response(JSON.stringify({ success: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    console.log(`Sending push notifications to ${uniqueUserIds.length} users`);
     console.log('Payload:', JSON.stringify(payload));
 
     // Fetch all subscriptions for the given users
     const { data: subscriptions, error: fetchError } = await supabase
       .from('push_subscriptions')
       .select('*')
-      .in('user_id', user_ids);
+      .in('user_id', uniqueUserIds);
 
     if (fetchError) {
       console.error('Error fetching subscriptions:', fetchError);

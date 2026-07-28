@@ -21,7 +21,7 @@ export function LazySection({
   className, 
   minHeight = '200px',
   rootMargin = '200px',
-  timeoutMs = 3000,
+  timeoutMs = 15000,
 }: LazySectionProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);

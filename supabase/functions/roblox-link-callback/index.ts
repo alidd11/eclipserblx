@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { isAllowedAppUrl } from "../_shared/allowed-app-origin.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,7 +30,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!redirect_uri || typeof redirect_uri !== 'string' || redirect_uri.length > 500) {
+    if (
+      !redirect_uri
+      || typeof redirect_uri !== 'string'
+      || redirect_uri.length > 500
+      || !isAllowedAppUrl(redirect_uri)
+    ) {
       return new Response(
         JSON.stringify({ error: 'Valid redirect URI is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

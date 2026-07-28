@@ -2,10 +2,11 @@ import * as React from 'npm:react@18.3.1'
 import { renderAsync } from 'npm:@react-email/components@0.0.22'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { TEMPLATES } from '../_shared/transactional-email-templates/registry.ts'
+import { requireStaff } from '../_shared/auth-guard.ts'
 
 // Configuration baked in at scaffold time — do NOT change these manually.
 // To update, re-run the email domain setup flow.
-const SITE_NAME = "roleplay-hub-shop"
+const SITE_NAME = "Eclipse"
 // SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
 // It MUST match the subdomain delegated to Lovable's nameservers — never the root domain.
 // The email API looks up this exact domain; a mismatch causes "No email domain record found".
@@ -30,15 +31,18 @@ function generateToken(): string {
     .join('')
 }
 
-// Auth note: this function uses verify_jwt = true in config.toml, so Supabase's
-// gateway validates the caller's JWT (anon or service_role) before the request
-// reaches this code. No in-function auth check is needed.
+// The gateway accepts the project's anon JWT as well as user JWTs. Because this
+// function sends email with service-role access, it must also authorize the
+// caller in-function; gateway JWT verification alone is not sufficient.
 
 Deno.serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
+
+  const auth = await requireStaff(req, corsHeaders)
+  if ('error' in auth) return auth.error
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -63,7 +67,7 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json()
     templateName = body.templateName || body.template_name
-    recipientEmail = body.recipientEmail || body.recipient_email
+    recipientEmail = body.recipientEmail || body.recipient_email || body.to
     messageId = crypto.randomUUID()
     idempotencyKey = body.idempotencyKey || body.idempotency_key || messageId
     if (body.templateData && typeof body.templateData === 'object') {

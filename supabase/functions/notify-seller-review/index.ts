@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { requireAuth } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,37 +24,64 @@ Deno.serve(async (req) => {
   if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
   try {
-    // Auth guard: require service-role key
-    const authHeader = req.headers.get("Authorization");
-    const token = authHeader?.replace("Bearer ", "");
-    if (token !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
-      return new Response(JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const auth = await requireAuth(req, corsHeaders);
+    if ("error" in auth) return auth.error;
 
-    const { productId, productName, storeOwnerId, flagReasons } = await req.json();
-
-    if (!productId || !UUID_REGEX.test(productId) || !storeOwnerId || !UUID_REGEX.test(storeOwnerId)) {
+    const { productId, flagReasons } = await req.json();
+    if (!productId || !UUID_REGEX.test(productId)) {
       return new Response(
-        JSON.stringify({ error: "Invalid productId or storeOwnerId" }),
+        JSON.stringify({ error: "Invalid productId" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const safeName = typeof productName === 'string' ? productName.substring(0, 200) : 'Unknown';
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
-
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    await supabase
+    // Never trust caller-supplied product or owner details. Resolve them from
+    // the database and only let a seller request review for their own product.
+    const { data: product, error: productError } = await supabase
+      .from("products")
+      .select("id, name, stores!inner(owner_id)")
+      .eq("id", productId)
+      .maybeSingle();
+    if (productError || !product) {
+      return new Response(JSON.stringify({ error: "Product not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
+    const storeOwnerId = store?.owner_id;
+    if (!storeOwnerId || (auth.user.id !== "service_role" && auth.user.id !== storeOwnerId)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const safeName = String(product.name || "Unknown").substring(0, 200);
+
+    // Atomic idempotency guard: repeated UI submissions or retries must not
+    // send duplicate seller notifications and emails.
+    const { data: newlyRequested, error: updateError } = await supabase
       .from("products")
       .update({ file_review_requested_at: new Date().toISOString() })
-      .eq("id", productId);
+      .eq("id", productId)
+      .is("file_review_requested_at", null)
+      .select("id")
+      .maybeSingle();
+    if (updateError) throw updateError;
+    if (!newlyRequested) {
+      return new Response(JSON.stringify({ success: true, duplicate: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    await supabase
+    const { error: notificationError } = await supabase
       .from("seller_notifications")
       .insert({
         user_id: storeOwnerId,
@@ -63,6 +91,7 @@ Deno.serve(async (req) => {
         product_id: productId,
         action_url: "/seller",
       });
+    if (notificationError) throw notificationError;
 
     if (resendApiKey) {
       const { data: profile } = await supabase

@@ -23,7 +23,7 @@ import { StepAccounts } from '@/components/seller/wizard/StepAccounts';
 import { StepDetails } from '@/components/seller/wizard/StepDetails';
 import { StepDiscord } from '@/components/seller/wizard/StepDiscord';
 import { StepConfirm } from '@/components/seller/wizard/StepConfirm';
-import { AutoApprovedView, ApplicationSubmittedView, PendingApplicationView, SuccessRedirect } from '@/components/seller/wizard/WizardStateViews';
+import { ApplicationSubmittedView, PendingApplicationView, SuccessRedirect } from '@/components/seller/wizard/WizardStateViews';
 
 const STEPS = [
  { id: 'accounts', title: 'Link Accounts', description: 'Connect Discord & Roblox' },
@@ -53,8 +53,6 @@ export default function BecomeSellerWizard() {
  const { isSeller, hasPendingApplication, application, loading } = useSellerStatus();
  const queryClient = useQueryClient();
  const [currentStep, setCurrentStep] = useState(0);
- const [wasAutoApproved, setWasAutoApproved] = useState(false);
-
  const [formValues, setFormValues, clearFormValues, isDirty] = useFormPersistence('seller-application', INITIAL_FORM);
 
  const {
@@ -179,19 +177,13 @@ export default function BecomeSellerWizard() {
  terms_accepted: formValues.termsAccepted,
  terms_accepted_at: new Date().toISOString(),
  verification_results: verificationResults as any,
- }).select('status, auto_approved').single();
+ }).select('id').single();
 
  if (error) throw error;
  return data;
  },
- onSuccess: (data) => {
- const autoApproved = data?.auto_approved === true && data?.status === 'approved';
- setWasAutoApproved(autoApproved);
- if (autoApproved) {
- toast.success('Store Approved!', { description: 'Your identity was verified automatically.' });
- } else {
+ onSuccess: () => {
  toast.success('Application Submitted!');
- }
  queryClient.invalidateQueries({ queryKey: ['seller-application'] });
  queryClient.invalidateQueries({ queryKey: ['seller-status'] });
  clearFormValues();
@@ -248,7 +240,7 @@ export default function BecomeSellerWizard() {
  return (
  <MainLayout>
  <ResponsiveContainer size="md" className="py-6 md:py-12 px-4">
- {wasAutoApproved ? <AutoApprovedView /> : <ApplicationSubmittedView />}
+ <ApplicationSubmittedView />
  </ResponsiveContainer>
  </MainLayout>
  );

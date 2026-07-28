@@ -32,7 +32,7 @@ export default {
       fontFamily: {
         display: ['Sora', 'sans-serif'],
         sans: ['Source Sans 3', 'sans-serif'],
-        serif: ['Fraunces', 'ui-serif', 'Georgia', 'serif'],
+        serif: ['ui-serif', 'Georgia', 'serif'],
       },
 
       colors: {

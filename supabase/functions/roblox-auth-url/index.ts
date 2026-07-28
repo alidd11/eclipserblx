@@ -1,26 +1,13 @@
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { isAllowedAppUrl } from '../_shared/allowed-app-origin.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Whitelist of allowed redirect origins
-const ALLOWED_REDIRECT_ORIGINS = [
-  'https://eclipserblx.com',
-  'https://www.eclipserblx.com',
-  'http://localhost:5173',
-  'http://localhost:8080',
-];
-
 function isValidRedirectUri(uri: string): boolean {
-  try {
-    const parsed = new URL(uri);
-    return ALLOWED_REDIRECT_ORIGINS.some(o => uri.startsWith(o)) ||
-      parsed.hostname.endsWith('.lovable.app');
-  } catch {
-    return false;
-  }
+  return isAllowedAppUrl(uri);
 }
 
 Deno.serve(async (req) => {

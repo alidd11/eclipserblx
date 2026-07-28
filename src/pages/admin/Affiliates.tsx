@@ -169,43 +169,23 @@ export default function AdminAffiliates() {
  // Reject payout mutation
  const rejectPayoutMutation = useMutation({
  mutationFn: async ({ payoutId, reason }: { payoutId: string; reason: string }) => {
- // Get payout details first
- const { data: payout } = await supabase
- .from('affiliate_payouts')
- .select('user_id, amount')
- .eq('id', payoutId)
- .single();
-
- if (!payout) throw new Error('Payout not found');
-
- // Update payout status
- const { error } = await supabase
+ // The database trigger releases the reserved balance in the same transaction
+ // as this status change, avoiding a double-credit or a rejected-but-unrefunded
+ // payout if either of two separate client writes failed.
+ const { data: rejectedPayout, error } = await supabase
  .from('affiliate_payouts')
  .update({ 
  status: 'rejected', 
  notes: reason,
  processed_at: new Date().toISOString(),
  })
- .eq('id', payoutId);
+ .eq('id', payoutId)
+ .eq('status', 'pending')
+ .select('id')
+ .maybeSingle();
 
  if (error) throw error;
-
- // Refund the balance by incrementing available_balance
- const { data: currentBalance } = await supabase
- .from('affiliate_balances')
- .select('available_balance')
- .eq('user_id', payout.user_id)
- .single();
-
- if (currentBalance) {
- await supabase
- .from('affiliate_balances')
- .update({ 
- available_balance: currentBalance.available_balance + payout.amount,
- updated_at: new Date().toISOString(),
- })
- .eq('user_id', payout.user_id);
- }
+ if (!rejectedPayout) throw new Error('Payout was already processed');
  },
  onSuccess: () => {
  toast.success('Payout rejected and balance refunded');

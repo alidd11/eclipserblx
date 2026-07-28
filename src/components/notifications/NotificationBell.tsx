@@ -12,6 +12,7 @@ import { formatDistanceToNow } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
+import { safeInternalPath } from '@/lib/safeNavigation';
 
 const notificationIcons: Record<string, React.ReactNode> = {
   badge_earned: <Award className="h-4 w-4 text-yellow-500" />,
@@ -36,11 +37,12 @@ export function NotificationBell() {
     }
     if (notification.link) {
       const isOnAdminSite = location.pathname.startsWith('/admin');
-      const isAdminLink = notification.link.startsWith('/admin');
+      const internalLink = safeInternalPath(notification.link, isOnAdminSite ? '/admin' : '/account');
+      const isAdminLink = internalLink.startsWith('/admin');
       
       const safeLink = (!isOnAdminSite && isAdminLink) 
         ? '/account' 
-        : notification.link;
+        : internalLink;
       navigate(safeLink);
       setIsOpen(false);
     }

@@ -99,6 +99,8 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.og-proxy]
     verify_jwt = false
+  [functions.dynamic-sitemap]
+    verify_jwt = false
   [functions.poll-discord-audit-log]
     verify_jwt = false
   [functions.poll-game-news]
@@ -221,4 +223,3 @@ project_id = "qlnbergwjfrmgkjhrbkj"
     verify_jwt = false
   [functions.process-dispute-refund]
     verify_jwt = false
-

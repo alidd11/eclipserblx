@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useSellerStatus } from "@/hooks/useSellerStatus";
-import { ShieldCheck, AlertTriangle, XCircle, Activity, MessageCircle, Image, Package } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ShieldCheck, AlertTriangle, XCircle, Activity, Image, Package, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SellerLayout } from "@/components/seller/SellerLayout";
+import { Button } from "@/components/ui/button";
 
 interface HealthScore {
   overall_score: number;
@@ -49,53 +49,103 @@ const violationTypeLabels: Record<string, string> = {
 };
 
 export default function SellerAccountHealth() {
-  const { user } = useAuth();
-  const { store: activeStore } = useSellerStatus();
+  const { store: activeStore, loading: sellerLoading } = useSellerStatus();
   const [health, setHealth] = useState<HealthScore | null>(null);
   const [violations, setViolations] = useState<Violation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!activeStore?.id) return;
-    const load = async () => {
-      setLoading(true);
+  const load = useCallback(async () => {
+    if (sellerLoading) return;
+    if (!activeStore?.id) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setLoadError(null);
+    try {
       const [healthRes, violationsRes] = await Promise.all([
         supabase.from("store_health_scores").select("*").eq("store_id", activeStore.id).maybeSingle(),
         supabase.from("compliance_violations").select("*").eq("store_id", activeStore.id).order("created_at", { ascending: false }).limit(50),
       ]);
+      if (healthRes.error) throw healthRes.error;
+      if (violationsRes.error) throw violationsRes.error;
       setHealth(healthRes.data as HealthScore | null);
       setViolations((violationsRes.data || []) as Violation[]);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Account health could not be loaded");
+    } finally {
       setLoading(false);
-    };
-    load();
-  }, [activeStore?.id]);
+    }
+  }, [activeStore?.id, sellerLoading]);
+
+  useEffect(() => { void load(); }, [load]);
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6 max-w-4xl mx-auto">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-48 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
+      <SellerLayout>
+        <div className="mx-auto max-w-4xl space-y-6">
+          <Skeleton className="h-8 w-64 max-w-full" />
+          <Skeleton className="h-48 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      </SellerLayout>
     );
   }
 
-  const cfg = statusConfig[health?.status as keyof typeof statusConfig] || statusConfig.healthy;
-  const StatusIcon = cfg.icon;
-  const score = health?.overall_score ?? 100;
+  if (loadError) {
+    return (
+      <SellerLayout>
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="max-w-md space-y-4 text-center">
+            <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+            <div>
+              <h1 className="text-xl font-semibold">Account health is unavailable</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Your store has not been assigned a health status while compliance data is unavailable.
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => void load()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </SellerLayout>
+    );
+  }
 
-  const metrics = [
+  const hasHealthScore = health !== null;
+  const cfg = hasHealthScore
+    ? statusConfig[health.status as keyof typeof statusConfig] || statusConfig.healthy
+    : { label: "Pending", color: "text-muted-foreground", bg: "bg-muted", icon: Activity };
+  const StatusIcon = cfg.icon;
+  const score = health?.overall_score ?? 0;
+
+  const metrics: Array<{
+    label: string;
+    value: string;
+    target: string;
+    icon: typeof Activity;
+    ok: boolean | null;
+  }> = hasHealthScore ? [
     { label: "Dispute Rate", value: `${health?.dispute_rate ?? 0}%`, target: "< 15%", icon: AlertTriangle, ok: (health?.dispute_rate ?? 0) < 15 },
     { label: "Listing Quality", value: `${health?.listing_quality_score ?? 100}%`, target: "> 80%", icon: Image, ok: (health?.listing_quality_score ?? 100) > 80 },
     { label: "Delivery Rate", value: `${health?.delivery_rate ?? 100}%`, target: "> 95%", icon: Package, ok: (health?.delivery_rate ?? 100) > 95 },
     { label: "Active Violations", value: `${health?.active_violations ?? 0}`, target: "0", icon: Activity, ok: (health?.active_violations ?? 0) === 0 },
+  ] : [
+    { label: "Dispute Rate", value: "—", target: "< 15%", icon: AlertTriangle, ok: null },
+    { label: "Listing Quality", value: "—", target: "> 80%", icon: Image, ok: null },
+    { label: "Delivery Rate", value: "—", target: "> 95%", icon: Package, ok: null },
+    { label: "Active Violations", value: `${violations.filter(v => !v.is_resolved).length}`, target: "0", icon: Activity, ok: null },
   ];
 
   const activeViolations = violations.filter(v => !v.is_resolved);
   const resolvedViolations = violations.filter(v => v.is_resolved);
 
   return (
-    <div className="space-y-6 p-6 max-w-4xl mx-auto">
+    <SellerLayout>
+    <div className="mx-auto max-w-4xl space-y-6">
       <div>
         <h1 className="text-xl font-semibold text-foreground">Account Health</h1>
         <p className="text-sm text-muted-foreground mt-1">Monitor your store's compliance and performance metrics</p>
@@ -120,7 +170,8 @@ export default function SellerAccountHealth() {
               <span className={`text-lg font-semibold ${cfg.color}`}>{cfg.label}</span>
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {score >= 60 ? "Your store meets marketplace standards." :
+              {!hasHealthScore ? "Your first automated compliance calculation is pending." :
+               score >= 60 ? "Your store meets marketplace standards." :
                score >= 40 ? "Your store needs attention. Resolve violations to avoid suspension." :
                "Your store is at risk of suspension. Immediate action required."}
             </p>
@@ -138,7 +189,7 @@ export default function SellerAccountHealth() {
         {metrics.map(m => (
           <div key={m.label} className="border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <m.icon className={`h-4 w-4 ${m.ok ? "text-green-600" : "text-red-600"}`} />
+              <m.icon className={`h-4 w-4 ${m.ok === null ? "text-muted-foreground" : m.ok ? "text-green-600" : "text-red-600"}`} />
               <span className="text-xs text-muted-foreground">{m.label}</span>
             </div>
             <p className="text-lg font-semibold text-foreground">{m.value}</p>
@@ -198,5 +249,6 @@ export default function SellerAccountHealth() {
         </div>
       )}
     </div>
+    </SellerLayout>
   );
 }

@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.4";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { requireAdmin } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,13 +20,10 @@ Deno.serve(async (req: Request) => {
   if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
   try {
-    // Auth guard: require service-role key
-    const authHeader = req.headers.get("Authorization");
-    const token = authHeader?.replace("Bearer ", "");
-    if (token !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
-      return new Response(JSON.stringify({ error: "Forbidden" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    // The admin dashboard invokes this with the signed-in user's JWT. Authorize
+    // that user as an admin while still allowing internal service-role calls.
+    const auth = await requireAdmin(req, corsHeaders);
+    if ("error" in auth) return auth.error;
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
