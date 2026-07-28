@@ -12330,6 +12330,10 @@ export type Database = {
         Args: { p_event_id: string }
         Returns: undefined
       }
+      consume_password_reset_code: {
+        Args: { p_code: string; p_email: string; p_max_attempts?: number }
+        Returns: string
+      }
       deduct_seller_balance: {
         Args: { p_amount: number; p_user_id: string }
         Returns: boolean
