@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { Client, GatewayIntentBits, ChannelType } from 'discord.js';
+import { Client, GatewayIntentBits, ChannelType, Partials } from 'discord.js';
 import http from 'http';
 import { config } from './src/config.js';
 import { handleInteraction } from './src/handlers/interaction.js';
@@ -26,7 +26,9 @@ const client = new Client({
     GatewayIntentBits.DirectMessages,
     GatewayIntentBits.MessageContent,
   ],
-  partials: ['CHANNEL', 'MESSAGE'],
+  // discord.js v14 requires the Partials enum, not strings. Without Partials.Channel
+  // the bot never receives DMs in uncached channels, silently breaking modmail.
+  partials: [Partials.Channel, Partials.Message],
 });
 
 // Route interactions (slash commands, buttons, modals)
@@ -120,9 +122,15 @@ const PORT = process.env.PORT || 8080;
 http.createServer((req, res) => {
   if (req.url === '/health') {
     const memUsage = process.memoryUsage();
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    // Report unhealthy (503) when the Discord gateway is not connected, so Fly's
+    // http_check and any external uptime monitor actually detect a down bot
+    // instead of seeing a green process with a dead gateway.
+    const ready = client.isReady();
+    res.writeHead(ready ? 200 : 503, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
-      status: 'ok',
+      status: ready ? 'ok' : 'degraded',
+      discordConnected: ready,
+      wsStatus: client.ws?.status ?? -1,
       uptime: process.uptime(),
       uptimeFormatted: formatUptime(process.uptime()),
       guilds: client.guilds?.cache?.size || 0,
@@ -154,5 +162,31 @@ function formatUptime(seconds) {
   return `${d}d ${h}h ${m}m`;
 }
 
-// Login
-client.login(config.botToken);
+// Readiness watchdog: discord.js reconnects brief drops itself, but a *stuck*
+// gateway (disconnected with no thrown error) can hang forever. If we stay
+// not-ready for a sustained window, exit so Fly.io restarts with a fresh session.
+let notReadySince = Date.now();
+const MAX_NOT_READY_MS = 10 * 60 * 1000; // 10 minutes
+setInterval(() => {
+  if (client.isReady()) {
+    notReadySince = null;
+    return;
+  }
+  if (notReadySince === null) {
+    notReadySince = Date.now();
+    return;
+  }
+  if (Date.now() - notReadySince >= MAX_NOT_READY_MS) {
+    console.error('[watchdog] Discord gateway not ready for 10m — exiting for a clean restart.');
+    logBotError('watchdog:not-ready', new Error('Gateway not ready for 10 minutes'));
+    setTimeout(() => process.exit(1), 1000);
+  }
+}, 60 * 1000);
+
+// Login. A failed login must exit (not hang as a zombie with a healthy HTTP port)
+// so the process manager restarts it.
+client.login(config.botToken).catch((error) => {
+  console.error('[login] Failed to log in to Discord:', error);
+  logBotError('login:failed', error instanceof Error ? error : new Error(String(error)));
+  setTimeout(() => process.exit(1), 2000);
+});
