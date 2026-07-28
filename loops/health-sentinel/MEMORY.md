@@ -26,11 +26,17 @@ No fixes needed → no PR. Checker subagent independently confirmed PASS.
   Trend down over time; do NOT batch-fix.
 - Checks don't cover RLS / auth guards / live data (sandbox can't reach live
   Supabase). When a diff touches those, escalate verification to Lovable.
-- BOT DEPLOY PENDING: bot fixes (partials, /health accuracy, login catch,
-  watchdog, +6 registered commands) are on main but NOT yet deployed. They take
-  effect only after `fly deploy` in eclipse-portal-bot/ AND `npm run register`
-  (to publish the 6 new slash commands). Until then the live bot runs the old code.
+- BOT NOT DEPLOYED: the bot is being hosted on RAILWAY (fly.toml removed; the bot
+  was never actually running on Fly — bot_error_logs/mod_actions/command_usage are
+  all empty). Deploy config is `eclipse-portal-bot/railway.json`. It goes live only
+  after the user deploys on Railway (connect repo, root dir `eclipse-portal-bot`,
+  set env from .env.example) AND runs `npm run register` (publishes the 6 new
+  slash commands). Until then no bot is running.
 - BOT UPTIME (real-time) is NOT covered by this loop — the env can't reach the
-  fly.dev health endpoint. Real-time monitoring must be an external uptime service
-  pointed at https://eclipse-portal-bot.fly.dev/health (now truthful). The loop
-  only guards the bot's uptime-critical *code* from regressions.
+  Railway health endpoint. Real-time monitoring must be an external uptime service
+  pointed at the Railway `/health` URL (now truthful — returns 503 when the gateway
+  is down). The loop only guards the bot's uptime-critical *code* from regressions.
+- KNOWN DRIFT: src/data/portalBotFiles.ts (the in-app "Portal Bot Setup" snapshot)
+  embeds an OLDER index.js than the real bot — missing the partials/health/watchdog
+  fixes. Its deploy file was pointed at railway.json, but a full snapshot re-sync is
+  still a follow-up.
