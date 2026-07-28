@@ -417,6 +417,7 @@ export type Database = {
           order_total: number
           referred_user_id: string
           refund_id: string | null
+          reversed_amount: number
           reversed_at: string | null
           status: string
         }
@@ -430,6 +431,7 @@ export type Database = {
           order_total: number
           referred_user_id: string
           refund_id?: string | null
+          reversed_amount?: number
           reversed_at?: string | null
           status?: string
         }
@@ -443,6 +445,7 @@ export type Database = {
           order_total?: number
           referred_user_id?: string
           refund_id?: string | null
+          reversed_amount?: number
           reversed_at?: string | null
           status?: string
         }
@@ -473,6 +476,8 @@ export type Database = {
       affiliate_payouts: {
         Row: {
           amount: number
+          balance_released_at: string | null
+          balance_reserved_at: string | null
           created_at: string
           id: string
           notes: string | null
@@ -487,6 +492,8 @@ export type Database = {
         }
         Insert: {
           amount: number
+          balance_released_at?: string | null
+          balance_reserved_at?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -501,6 +508,8 @@ export type Database = {
         }
         Update: {
           amount?: number
+          balance_released_at?: string | null
+          balance_reserved_at?: string | null
           created_at?: string
           id?: string
           notes?: string | null
@@ -8237,6 +8246,7 @@ export type Database = {
           order_item_id: string | null
           platform_fee: number | null
           refund_id: string | null
+          refunded_amount: number
           refunded_at: string | null
           seller_id: string
           status: string | null
@@ -8260,6 +8270,7 @@ export type Database = {
           order_item_id?: string | null
           platform_fee?: number | null
           refund_id?: string | null
+          refunded_amount?: number
           refunded_at?: string | null
           seller_id: string
           status?: string | null
@@ -8283,6 +8294,7 @@ export type Database = {
           order_item_id?: string | null
           platform_fee?: number | null
           refund_id?: string | null
+          refunded_amount?: number
           refunded_at?: string | null
           seller_id?: string
           status?: string | null
@@ -12214,6 +12226,15 @@ export type Database = {
         Returns: undefined
       }
       admin_overview_snapshot: { Args: never; Returns: Json }
+      apply_cumulative_order_refund: {
+        Args: {
+          p_charge_id: string
+          p_cumulative_amount: number
+          p_is_full_refund?: boolean
+          p_order_id: string
+        }
+        Returns: Json
+      }
       auth_user_exists: { Args: { _user_id: string }; Returns: boolean }
       auto_escalate_all_tickets: { Args: never; Returns: Json }
       burn_reset_code: { Args: { p_id: string }; Returns: undefined }
@@ -12297,6 +12318,14 @@ export type Database = {
       cleanup_expired_link_codes: { Args: never; Returns: undefined }
       cleanup_expired_tracking_data: { Args: never; Returns: Json }
       cleanup_old_webhook_events: { Args: never; Returns: undefined }
+      complete_affiliate_payout: {
+        Args: {
+          p_payout_id: string
+          p_stripe_transfer_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       complete_stripe_webhook_event: {
         Args: { p_event_id: string }
         Returns: undefined
@@ -12323,6 +12352,18 @@ export type Database = {
       fail_stripe_webhook_event: {
         Args: { p_error: string; p_event_id: string }
         Returns: undefined
+      }
+      finalize_seller_payout: {
+        Args: {
+          p_lock_id: string
+          p_notes: string
+          p_payout_id: string
+          p_provider: string
+          p_provider_reference: string
+          p_provider_secondary_reference?: string
+          p_status: string
+        }
+        Returns: boolean
       }
       fulfill_credits_idempotent: {
         Args: {
@@ -12572,6 +12613,14 @@ export type Database = {
         Returns: boolean
       }
       refresh_page_visits_summary: { Args: never; Returns: undefined }
+      release_affiliate_payout: {
+        Args: {
+          p_failure_reason?: string
+          p_payout_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       release_escrow_funds: {
         Args: never
         Returns: {
@@ -12581,6 +12630,17 @@ export type Database = {
       }
       request_seller_payout: {
         Args: { p_amount: number; p_seller_id: string; p_store_id: string }
+        Returns: string
+      }
+      reserve_affiliate_payout: {
+        Args: {
+          p_amount: number
+          p_notes?: string
+          p_payout_method: string
+          p_paypal_email?: string
+          p_stripe_account_id?: string
+          p_user_id: string
+        }
         Returns: string
       }
       restore_deleted: {
@@ -12669,6 +12729,15 @@ export type Database = {
       }
       seller_owns_order_item_product: {
         Args: { _product_id: string; _user_id: string }
+        Returns: boolean
+      }
+      settle_seller_payout: {
+        Args: {
+          p_failure_reason?: string
+          p_payout_id: string
+          p_provider_reference: string
+          p_status: string
+        }
         Returns: boolean
       }
       soft_delete: {
