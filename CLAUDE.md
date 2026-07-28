@@ -32,3 +32,21 @@ A Roblox UK-roleplay marketplace: buyers browse and purchase digital assets (veh
 - Verify changes with `npx tsc --noEmit` and `npx vitest run` before considering a change done.
 - For anything requiring live data, real auth, or the deployed preview, delegate verification to Lovable (`query_database`/`send_message` MCP tools) rather than assuming local sandboxed checks are sufficient — this sandbox cannot reach the live Supabase API or the Lovable preview URL.
 - Never use a directly-connected "Supabase" MCP tool for this app's data unless you've confirmed it points at project `qlnbergwjfrmgkjhrbkj` — a wrong-project Supabase MCP connection has shown up in this session before.
+
+## Automated loops (read this at session start)
+
+- **A "Health Sentinel" loop exists.** It's a self-prompting nightly loop (maker/checker
+  pattern) that keeps the repo releasable. Its files live on their **own branch,
+  `loops/health-sentinel`** (not on `main`): `LOOP.md` (constitution), `MEMORY.md`
+  (persistent state), `CHECKER.md` (the independent evaluator's brief), and `runs/`.
+- **What it does each night (01:00 UTC):** reads `MEMORY.md`, runs `tsc` + `vite build`
+  + `vitest` + `eslint`, diffs `main` since the last run's SHA, scans that diff for the
+  regression classes in `LOOP.md` (including the **bot uptime-critical checks** for
+  `eclipse-portal-bot/`), fixes only the smallest safe items on a `loop/health-YYYYMMDD`
+  branch, then a **separate checker subagent** verifies against THE CHECK.
+- **Guardrails:** it **never merges to `main`** — a fix is pushed as a branch awaiting a
+  human PR approval. One run per night (the cron is the hard cap).
+- **Scheduling:** Routine `trig_013oR9RLJXHaJd3tmpmKVLzY`. To pause/kill/change it, use
+  the `update_trigger`/`delete_trigger` tools; to run on demand use `fire_trigger`.
+- **If you're a fresh session:** don't recreate it. Read `loops/health-sentinel/MEMORY.md`
+  (on that branch) to see what the last run did and any OPEN ITEMS before acting.
