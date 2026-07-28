@@ -12511,9 +12511,10 @@ export type Database = {
       revert_expired_custom_rates: { Args: never; Returns: undefined }
       review_store_application: {
         Args: {
-          _application_id: string
-          _decision: string
-          _rejection_reason?: string
+          p_application_id: string
+          p_decision: string
+          p_notes?: string
+          p_rejection_reason?: string
         }
         Returns: Json
       }
