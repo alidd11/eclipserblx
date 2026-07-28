@@ -48,24 +48,48 @@ npm start
 
 ## Deploy to Railway
 
+This is the bot's hosting platform. It builds from the `Dockerfile` and reads
+its deploy settings from `railway.json` (start command `node index.js`, health
+check on `/health`, restart-on-failure). The `/health` endpoint returns 503 when
+the Discord gateway is disconnected, so Railway's health check and any external
+uptime monitor detect a down bot.
+
+### Option A — connect the GitHub repo (recommended)
+
+1. In Railway → **New Project → Deploy from GitHub repo**, pick this repository.
+2. In the service **Settings → Root Directory**, set `eclipse-portal-bot` (the bot
+   is a subfolder of the monorepo).
+3. **Variables** → add every var from `.env.example`:
+   `DISCORD_CUSTOMER_BOT_TOKEN`, `SUPABASE_URL` (`https://qlnbergwjfrmgkjhrbkj.supabase.co`),
+   `SUPABASE_SERVICE_ROLE_KEY`, `DISCORD_GUILD_ID`, the four role IDs, and the
+   optional `DISCORD_WEBHOOK_URL` / `ORION_WEBHOOK_URL` / `DISCORD_WEBHOOK_SECRET`.
+   (Do **not** set `PORT` — Railway injects it; the bot reads `process.env.PORT`.)
+4. Deploy. Railway waits for `/health` to return 200 (gateway connected) before
+   marking the deploy healthy.
+
+### Option B — Railway CLI
+
 ```bash
+cd eclipse-portal-bot
 railway init
 railway variables set DISCORD_CUSTOMER_BOT_TOKEN=your_token
 railway variables set SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
 railway variables set SUPABASE_SERVICE_ROLE_KEY=your_key
-# ... set all other env vars from .env.example
+# ... set all other vars from .env.example
 railway up
 ```
 
-## Deploy to Fly.io
+### Register slash commands (one-time, after the first deploy)
 
 ```bash
-fly launch --no-deploy
-fly secrets set DISCORD_CUSTOMER_BOT_TOKEN=your_token
-fly secrets set SUPABASE_URL=https://qlnbergwjfrmgkjhrbkj.supabase.co
-fly secrets set SUPABASE_SERVICE_ROLE_KEY=your_key
-# ... set all other secrets
-fly deploy
+railway run npm run register     # or: run `npm run register` locally with the same env
+```
+
+### Verify it's live
+
+```bash
+curl https://<your-service>.up.railway.app/health
+# expect: {"status":"ok","discordConnected":true, ...}
 ```
 
 ## After Deployment

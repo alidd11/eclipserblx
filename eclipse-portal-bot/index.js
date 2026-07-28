@@ -117,7 +117,7 @@ function gracefulShutdown(signal) {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-// Health check HTTP server (for Railway/Fly.io)
+// Health check HTTP server (for Railway)
 const PORT = process.env.PORT || 8080;
 http.createServer((req, res) => {
   if (req.url === '/health') {
@@ -164,7 +164,7 @@ function formatUptime(seconds) {
 
 // Readiness watchdog: discord.js reconnects brief drops itself, but a *stuck*
 // gateway (disconnected with no thrown error) can hang forever. If we stay
-// not-ready for a sustained window, exit so Fly.io restarts with a fresh session.
+// not-ready for a sustained window, exit so Railway restarts with a fresh session.
 let notReadySince = Date.now();
 const MAX_NOT_READY_MS = 10 * 60 * 1000; // 10 minutes
 setInterval(() => {
