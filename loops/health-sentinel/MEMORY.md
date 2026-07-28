@@ -26,3 +26,11 @@ No fixes needed → no PR. Checker subagent independently confirmed PASS.
   Trend down over time; do NOT batch-fix.
 - Checks don't cover RLS / auth guards / live data (sandbox can't reach live
   Supabase). When a diff touches those, escalate verification to Lovable.
+- BOT DEPLOY PENDING: bot fixes (partials, /health accuracy, login catch,
+  watchdog, +6 registered commands) are on main but NOT yet deployed. They take
+  effect only after `fly deploy` in eclipse-portal-bot/ AND `npm run register`
+  (to publish the 6 new slash commands). Until then the live bot runs the old code.
+- BOT UPTIME (real-time) is NOT covered by this loop — the env can't reach the
+  fly.dev health endpoint. Real-time monitoring must be an external uptime service
+  pointed at https://eclipse-portal-bot.fly.dev/health (now truthful). The loop
+  only guards the bot's uptime-critical *code* from regressions.

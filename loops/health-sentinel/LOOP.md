@@ -34,6 +34,21 @@ zero, and no new regressions in the diff since the last run.
 - A trigger calling `net.http_post` without the unset-GUC short-circuit + exception guard.
 - New orphaned i18n keys, or copy added to fewer than all 5 locale files.
 
+### Bot uptime-critical checks (eclipse-portal-bot/)
+This env cannot reach the deployed bot (proxy blocks fly.dev), so the loop guards
+the bot's uptime posture in CODE. If a diff touches `eclipse-portal-bot/`, verify:
+- `node --check` passes on every changed `.js` file.
+- `index.js` uses the `Partials` enum in `partials:` (never the strings
+  'CHANNEL'/'MESSAGE') — string partials silently break DM/modmail.
+- `/health` returns a non-200 status when `client.isReady()` is false (truthful
+  health is what lets Fly + uptime monitors detect a down bot).
+- `client.login(...)` has a `.catch()` that exits, and the readiness watchdog
+  (`MAX_NOT_READY_MS`) is still present — both are the self-restart safety net.
+- `fly.toml` still has `min_machines_running >= 1` and an http health check on `/health`.
+- Every command routed in `src/handlers/interaction.js` (switch cases +
+  DEFERRED_COMMANDS) has a matching entry in `src/register-commands.js` — an
+  unregistered handler is a dead command.
+
 ## THE CHECK (pass/fail)
 PASS requires ALL of:
 - `tsc --noEmit` clean, `vite build` succeeds, `vitest run` all pass.
