@@ -28,6 +28,12 @@ export const config = {
   supabaseUrl: process.env.SUPABASE_URL,
   supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
 
+  // bot-gateway: on Lovable Cloud the service_role key is never exposed, so the
+  // bot's privileged DB work goes through the `bot-gateway` edge function, which
+  // holds the key server-side. The bot authenticates with this shared secret.
+  gatewaySecret: process.env.BOT_GATEWAY_SECRET || '',
+  gatewayUrl: `${process.env.SUPABASE_URL || ''}/functions/v1/bot-gateway`,
+
   // Optional
   webhookUrl: process.env.DISCORD_WEBHOOK_URL || '',
   siteUrl: process.env.SITE_URL || 'https://eclipserblx.com',
