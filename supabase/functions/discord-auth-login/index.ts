@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { isAllowedAppUrl } from '../_shared/allowed-app-origin.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,23 +25,8 @@ interface DiscordTokenResponse {
   scope: string;
 }
 
-// Validate redirect_uri to prevent open redirect / SSRF
-const ALLOWED_REDIRECT_ORIGINS = [
-  'https://eclipserblx.com',
-  'https://www.eclipserblx.com',
-  'http://localhost:5173',
-  'http://localhost:8080',
-];
-
 function isValidRedirectUri(uri: string | undefined | null): boolean {
-  if (!uri || typeof uri !== 'string') return false;
-  try {
-    const parsed = new URL(uri);
-    return ALLOWED_REDIRECT_ORIGINS.some(o => uri.startsWith(o)) ||
-      parsed.hostname.endsWith('.lovable.app');
-  } catch {
-    return false;
-  }
+  return isAllowedAppUrl(uri);
 }
 
 Deno.serve(async (req) => {

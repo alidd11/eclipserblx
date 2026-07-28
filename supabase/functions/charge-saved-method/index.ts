@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { storeCheckoutCart } from "../_shared/checkout-cart.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -84,8 +85,14 @@ serve(async (req) => {
     const productIds = items.map(item => item.id);
     const { data: products, error: productsError } = await supabaseClient
       .from('products')
-      .select('id, name, price, category_id, is_resellable, slug, store_id')
-      .in('id', productIds);
+      .select('id, name, price, category_id, is_resellable, slug, store_id, stores!inner(id, status, is_active, deleted_at)')
+      .in('id', productIds)
+      .eq('is_active', true)
+      .eq('moderation_status', 'approved')
+      .is('deleted_at', null)
+      .eq('stores.status', 'approved')
+      .eq('stores.is_active', true)
+      .is('stores.deleted_at', null);
 
     if (productsError) {
       logStep("Error fetching products", productsError);
@@ -209,28 +216,43 @@ serve(async (req) => {
     if (paymentMethod.customer !== customerId) throw new Error("Payment method does not belong to this customer");
     logStep("Payment method verified");
 
-    const paymentIntent = await stripe.paymentIntents.create({
+    const cartReference = crypto.randomUUID();
+    const paymentIntentDraft = await stripe.paymentIntents.create({
       amount: amountInPence,
       currency: "gbp",
       customer: customerId,
       payment_method: paymentMethodId,
       off_session: true,
-      confirm: true,
       receipt_email: userEmail,
       metadata: {
         user_id: userId,
         customer_email: userEmail,
-        items: JSON.stringify(validatedItems.map(i => ({ 
-          id: i.id, 
-          name: i.name, 
-          price: i.finalPrice,
-          originalPrice: i.originalPrice,
-          category_id: i.category_id,
-          category_slug: i.category_slug 
-        }))),
+        payment_type: "checkout",
+        cart_ref: cartReference,
         discount_code_id: discountCodeId || "",
         discount_amount: discountAmount.toString(),
       },
+    });
+
+    await storeCheckoutCart(supabaseClient, {
+      id: cartReference,
+      paymentIntentId: paymentIntentDraft.id,
+      userId,
+      customerEmail: userEmail,
+      items: validatedItems.map(i => ({
+        id: i.id,
+        name: i.name,
+        price: i.finalPrice,
+        category_slug: i.category_slug,
+      })),
+      subtotal: serverSubtotal,
+      total,
+      discountCodeId: discountCodeId || null,
+      discountAmount,
+    });
+
+    const paymentIntent = await stripe.paymentIntents.confirm(paymentIntentDraft.id, {
+      payment_method: paymentMethodId,
     });
 
     logStep("PaymentIntent created and confirmed", { 

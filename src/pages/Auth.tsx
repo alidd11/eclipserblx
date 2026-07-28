@@ -11,6 +11,7 @@ import { ForgotPasswordForm } from '@/components/auth/ForgotPasswordForm';
 import { ResetVerifyForm } from '@/components/auth/ResetVerifyForm';
 import { ResetPasswordForm } from '@/components/auth/ResetPasswordForm';
 import { VerifyEmailForm } from '@/components/auth/VerifyEmailForm';
+import { safeInternalPath } from '@/lib/safeNavigation';
 
 type AuthMode = 'login' | 'signup' | 'forgot' | 'reset' | 'reset-verify' | 'verify';
 
@@ -59,7 +60,7 @@ const Auth = forwardRef<HTMLDivElement>(function Auth(_, ref) {
     if (user && mode !== 'reset') {
       // Honor ?next=<same-origin-path> so OAuth consent (and other flows) return the user to the original URL.
       const rawNext = searchParams.get('next');
-      const safeNext = rawNext && rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
+      const safeNext = safeInternalPath(rawNext);
       navigate(safeNext, { replace: true });
     }
   }, [user, navigate, mode, searchParams]);

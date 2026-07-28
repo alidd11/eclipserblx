@@ -1,108 +1,136 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
+import {
+  buildSitemap,
+  type SitemapCategory,
+  type SitemapProduct,
+  type SitemapStore,
+} from "./sitemap.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const SITE_URL = 'https://eclipserblx.com';
+const PAGE_SIZE = 1000;
+
+function getPublishableKey(): string {
+  const publishableKeys = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
+  if (publishableKeys) {
+    try {
+      const parsed = JSON.parse(publishableKeys);
+      if (typeof parsed?.default === "string" && parsed.default) return parsed.default;
+    } catch {
+      // Hosted projects that have not migrated to publishable keys still expose
+      // the legacy anon key. It remains safe here because RLS is enforced.
+    }
+  }
+
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!anonKey) throw new Error("No Supabase publishable key is configured");
+  return anonKey;
+}
+
+async function fetchAll<T>(
+  createQuery: (from: number, to: number) => PromiseLike<{
+    data: T[] | null;
+    error: { message: string } | null;
+  }>,
+): Promise<T[]> {
+  const rows: T[] = [];
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await createQuery(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    const page = data ?? [];
+    rows.push(...page);
+    if (page.length < PAGE_SIZE) return rows;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    return new Response("Method Not Allowed", {
+      status: 405,
+      headers: { ...corsHeaders, Allow: "GET, HEAD, OPTIONS" },
+    });
+  }
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    if (!supabaseUrl) throw new Error("SUPABASE_URL is not configured");
 
-    // Fetch all active, approved products
-    const { data: products } = await supabase
-      .from('products')
-      .select('product_number, created_at, updated_at')
-      .eq('is_active', true)
-      .eq('moderation_status', 'approved')
-      .order('created_at', { ascending: false })
-      .limit(1000);
+    // A public sitemap should only need public data. Using the publishable/anon
+    // key makes RLS part of the contract and avoids bypassing it with a secret.
+    const supabase = createClient(supabaseUrl, getPublishableKey(), {
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
 
-    // Fetch all active stores
-    const { data: stores } = await supabase
-      .from('stores')
-      .select('slug, updated_at')
-      .eq('is_active', true)
-      .order('updated_at', { ascending: false })
-      .limit(500);
+    const [products, stores, categories] = await Promise.all([
+      fetchAll<SitemapProduct>((from, to) =>
+        supabase
+          .from("products")
+          .select("product_number, created_at, updated_at, stores!inner(status,is_active)")
+          .eq("is_active", true)
+          .eq("moderation_status", "approved")
+          .is("deleted_at", null)
+          .eq("stores.status", "approved")
+          .eq("stores.is_active", true)
+          .not("product_number", "is", null)
+          .order("product_number", { ascending: true })
+          .range(from, to)
+      ),
+      fetchAll<SitemapStore>((from, to) =>
+        supabase
+          .from("stores")
+          .select("slug, created_at, updated_at")
+          .eq("status", "approved")
+          .eq("is_active", true)
+          .not("slug", "is", null)
+          .order("slug", { ascending: true })
+          .range(from, to)
+      ),
+      fetchAll<SitemapCategory>((from, to) =>
+        supabase
+          .from("categories")
+          .select("slug, created_at, updated_at")
+          .not("slug", "is", null)
+          .order("display_order", { ascending: true })
+          .range(from, to)
+      ),
+    ]);
 
-    // Fetch categories
-    const { data: categories } = await supabase
-      .from('categories')
-      .select('slug, name')
-      .order('display_order');
+    const xml = buildSitemap({
+      generatedAt: new Date(),
+      products,
+      stores,
+      categories,
+    });
 
-    const today = new Date().toISOString().split('T')[0];
-
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Static pages -->
-  <url><loc>${SITE_URL}/</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>1.0</priority></url>
-  <url><loc>${SITE_URL}/products</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.9</priority></url>
-  <url><loc>${SITE_URL}/categories</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>
-  <url><loc>${SITE_URL}/featured</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.8</priority></url>
-  <url><loc>${SITE_URL}/stores</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/sell</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/changelog</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/help-center</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/help-center/buyers</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/help-center/sellers</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.7</priority></url>
-  <url><loc>${SITE_URL}/faq</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${SITE_URL}/contact</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${SITE_URL}/support</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>
-  <url><loc>${SITE_URL}/jobs</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/advertise</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/affiliate</loc><lastmod>${today}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>
-  <url><loc>${SITE_URL}/terms</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>${SITE_URL}/privacy</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>${SITE_URL}/refunds</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>
-  <url><loc>${SITE_URL}/dmca</loc><lastmod>${today}</lastmod><changefreq>yearly</changefreq><priority>0.3</priority></url>`;
-
-    // Category filter pages — high SEO value for long-tail keywords
-    if (categories) {
-      for (const cat of categories) {
-        xml += `\n  <url><loc>${SITE_URL}/products?category=${cat.slug}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>`;
-      }
-    }
-
-    // Individual product pages
-    if (products) {
-      for (const p of products) {
-        const lastmod = (p.updated_at || p.created_at)?.split('T')[0] || today;
-        xml += `\n  <url><loc>${SITE_URL}/products/${(p as any).product_number}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>`;
-      }
-    }
-
-    // Individual store pages
-    if (stores) {
-      for (const s of stores) {
-        const lastmod = s.updated_at?.split('T')[0] || today;
-        xml += `\n  <url><loc>${SITE_URL}/store/${s.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`;
-      }
-    }
-
-    xml += '\n</urlset>';
-
-    return new Response(xml, {
+    return new Response(req.method === "HEAD" ? null : xml, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=900, s-maxage=3600, stale-while-revalidate=86400',
+        'X-Content-Type-Options': 'nosniff',
       },
     });
   } catch (err) {
     console.error('Sitemap error:', err);
     return new Response(
-      `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`,
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/xml' } }
+      "Sitemap temporarily unavailable",
+      {
+        status: 503,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Retry-After': '300',
+        },
+      }
     );
   }
 });

@@ -20,7 +20,18 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
-    sourcemap: mode === 'production' ? 'hidden' : true,
+    // "hidden" still emits downloadable .map files containing sourcesContent.
+    // Production maps must be uploaded privately to monitoring, never shipped.
+    sourcemap: mode !== 'production',
+    // Optional dashboard/observability vendors must not compete with the
+    // storefront's critical path. They remain available to their lazy routes,
+    // but are not eagerly downloaded from the initial HTML.
+    modulePreload: {
+      resolveDependencies: (_filename, deps, context) =>
+        context.hostType === 'html'
+          ? deps.filter((dep) => !/(?:^|\/)(?:sentry|recharts|tiptap)-/.test(dep))
+          : deps,
+    },
     // Optimize chunk splitting for better caching and smaller initial bundles
     rollupOptions: {
       output: {
@@ -109,7 +120,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         // Bump this to force workbox to invalidate its precache on next deploy
-        cacheId: 'eclipse-v7',
+        cacheId: 'eclipse-v8',
         // Only precache static assets — JS/CSS are content-hashed and served fresh from network.
         // Precaching JS/CSS causes stale chunk errors after deploys on iOS Safari.
         globPatterns: ["**/*.{ico,png,svg,woff,woff2}"],
@@ -122,10 +133,10 @@ export default defineConfig(({ mode }) => ({
           // No Supabase caching — stale auth tokens cause boot failures
           {
             // Content-hashed JS/CSS — immutable, serve from cache instantly
-            urlPattern: /\/assets\/.*\.[a-f0-9]{8}\.(js|css)$/,
+            urlPattern: /\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.(?:js|css)$/,
             handler: "CacheFirst",
             options: {
-              cacheName: "asset-cache-v1",
+              cacheName: "asset-cache-v2",
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year — hash changes on update
@@ -136,7 +147,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
             handler: "CacheFirst",
             options: {
-              cacheName: "image-cache",
+              cacheName: "image-cache-v2",
               expiration: {
                 maxEntries: 50,
                 maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
@@ -147,7 +158,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /\.(?:woff|woff2|ttf|otf)$/,
             handler: "CacheFirst",
             options: {
-              cacheName: "font-cache",
+              cacheName: "font-cache-v2",
               expiration: {
                 maxEntries: 20,
                 maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year

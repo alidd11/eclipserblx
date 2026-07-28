@@ -110,9 +110,10 @@ describe('StoreApplications admin page', () => {
 
     fireEvent.click(confirm);
     await waitFor(() => expect(rpcMock).toHaveBeenCalledWith('review_store_application', expect.objectContaining({
-      _application_id: 'app-1',
-      _decision: 'rejected',
-      _rejection_reason: 'Store description is misleading',
+      p_application_id: 'app-1',
+      p_decision: 'rejected',
+      p_rejection_reason: 'Store description is misleading',
+      p_notes: null,
     })));
   });
 });

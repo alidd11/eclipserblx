@@ -65,6 +65,20 @@ serve(async (req) => {
       if (setupIntent.status !== 'succeeded') {
         throw new Error("Payment method setup not completed");
       }
+      if (!setupIntent.customer || typeof setupIntent.customer !== "string") {
+        throw new Error("Payment setup has no customer");
+      }
+      const setupCustomer = await stripe.customers.retrieve(setupIntent.customer);
+      if (
+        setupCustomer.deleted ||
+        !setupCustomer.email ||
+        setupCustomer.email.toLowerCase() !== user.email?.toLowerCase()
+      ) {
+        throw new Error("Payment setup does not belong to this account");
+      }
+      if (setupIntent.metadata?.user_id && setupIntent.metadata.user_id !== user.id) {
+        throw new Error("Payment setup does not belong to this account");
+      }
 
       // Get tier data for price ID
       const { data: tierData, error: tierError } = await supabaseAdmin
@@ -90,16 +104,20 @@ serve(async (req) => {
       });
 
       // Create the subscription
-      const subscription = await stripe.subscriptions.create({
-        customer: setupIntent.customer as string,
-        items: [{ price: priceId }],
-        default_payment_method: setupIntent.payment_method as string,
-        metadata: {
-          user_id: user.id,
-          tier,
-          billing_period: billingPeriod,
+      const subscription = await stripe.subscriptions.create(
+        {
+          customer: setupIntent.customer as string,
+          items: [{ price: priceId }],
+          default_payment_method: setupIntent.payment_method as string,
+          metadata: {
+            user_id: user.id,
+            tier,
+            billing_period: billingPeriod,
+            setup_intent_id: setupIntentId,
+          },
         },
-      });
+        { idempotencyKey: `embedded-subscription-${setupIntentId}-${tier}-${billingPeriod || "monthly"}` },
+      );
 
       logStep("Subscription created", { subscriptionId: subscription.id });
 
@@ -121,6 +139,22 @@ serve(async (req) => {
       }
 
       const paymentType = paymentIntent.metadata?.payment_type;
+      if (paymentIntent.metadata?.user_id !== user.id) {
+        throw new Error("Payment does not belong to this account");
+      }
+      if (!['credits', 'ad_pings', 'checkout'].includes(paymentType || '')) {
+        throw new Error("Unsupported payment type");
+      }
+      if (paymentIntent.customer && typeof paymentIntent.customer === "string") {
+        const paymentCustomer = await stripe.customers.retrieve(paymentIntent.customer);
+        if (
+          paymentCustomer.deleted ||
+          !paymentCustomer.email ||
+          paymentCustomer.email.toLowerCase() !== user.email?.toLowerCase()
+        ) {
+          throw new Error("Payment does not belong to this account");
+        }
+      }
       logStep("PaymentIntent verified", { paymentIntentId, status: paymentIntent.status, type: paymentType });
 
       // Handle different payment types

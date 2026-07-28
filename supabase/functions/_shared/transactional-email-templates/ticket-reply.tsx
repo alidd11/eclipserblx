@@ -12,7 +12,7 @@ function TicketReplyEmail({
   ticketNumber = 'TKT-000001',
   subject = 'Your support request',
   staffMessage = 'We have an update on your ticket.',
-  ticketUrl = 'https://roleplay-hub-shop.lovable.app/support',
+  ticketUrl = 'https://eclipserblx.com/support',
 }: TicketReplyProps) {
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', backgroundColor: '#ffffff', padding: '40px 20px' }}>
@@ -74,6 +74,6 @@ export const template: TemplateEntry<TicketReplyProps> = {
     ticketNumber: 'TKT-000042',
     subject: 'Cannot download my product',
     staffMessage: 'Hi! I\'ve checked your order and the download link has been refreshed. Please try again from your orders page. Let me know if it works!',
-    ticketUrl: 'https://roleplay-hub-shop.lovable.app/support/tickets/example',
+    ticketUrl: 'https://eclipserblx.com/support/tickets/example',
   },
 }

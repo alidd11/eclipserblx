@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { getCardMediaChain, isVideoUrl } from '@/lib/mediaUtils';
 import { WishlistButton } from '@/components/wishlist/WishlistButton';
 import { usePrefetchProduct } from '@/hooks/usePrefetchProduct';
+import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
 
 
 interface ProductCardProps {
@@ -55,6 +56,17 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
   const currentMedia = mediaChain[mediaIndex] ?? null;
   const isVideo = isVideoUrl(currentMedia);
   const showMedia = Boolean(currentMedia);
+  const responsiveImage = useMemo(() => {
+    if (!currentMedia || isVideo) return null;
+    return {
+      src: optimizeImageUrl(currentMedia, 620, 465, 'contain', 78),
+      srcSet: [
+        `${optimizeImageUrl(currentMedia, 320, 240, 'contain', 74)} 320w`,
+        `${optimizeImageUrl(currentMedia, 480, 360, 'contain', 76)} 480w`,
+        `${optimizeImageUrl(currentMedia, 620, 465, 'contain', 78)} 620w`,
+      ].join(', '),
+    };
+  }, [currentMedia, isVideo]);
 
   const handleMediaError = useCallback(() => {
     setMediaIndex((prev) => (prev + 1 < mediaChain.length ? prev + 1 : mediaChain.length));
@@ -150,7 +162,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                 />
               ) : (
                 <img
-                  src={currentMedia!}
+                  src={responsiveImage?.src ?? currentMedia!}
+                  srcSet={responsiveImage?.srcSet}
+                  sizes="(max-width: 639px) calc((100vw - 3.25rem) / 2), (max-width: 1023px) calc((100vw - 5rem) / 2), min(23vw, 320px)"
                   alt={name}
                   width={620}
                   height={465}
@@ -268,8 +282,12 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
               <div className="relative w-6 h-6 shrink-0">
                 {storeLogo ? (
                   <img
-                    src={storeLogo}
+                    src={optimizeImageUrl(storeLogo, 48, 48, 'cover', 72)}
                     alt={storeName || ''}
+                    width={24}
+                    height={24}
+                    loading="lazy"
+                    decoding="async"
                     className="w-6 h-6 rounded-full object-cover border border-border"
                   />
                 ) : (
@@ -310,4 +328,3 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 }));
 
 ProductCard.displayName = 'ProductCard';
-

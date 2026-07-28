@@ -2,6 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { crypto } from "https://deno.land/std@0.224.0/crypto/mod.ts";
 import { encodeHex } from "https://deno.land/std@0.224.0/encoding/hex.ts";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { requireAuth } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -83,10 +84,14 @@ Deno.serve(async (req) => {
   try {
     // Handle generating an invite URL
     if (req.method === "POST") {
-      const body = await req.json();
-      const { installationCodeId, userId, redirectUri } = body;
+      const auth = await requireAuth(req, corsHeaders);
+      if ("error" in auth) return auth.error;
 
-      if (!installationCodeId || !userId) {
+      const body = await req.json();
+      const { installationCodeId } = body;
+      const userId = auth.user.id;
+
+      if (!installationCodeId || userId === "service_role") {
         return new Response(
           JSON.stringify({ error: "Missing required parameters" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -148,7 +153,7 @@ Deno.serve(async (req) => {
       oauthUrl.searchParams.set("permissions", permissions.toString());
       oauthUrl.searchParams.set("scope", scopes.join(" "));
       oauthUrl.searchParams.set("response_type", "code");
-      oauthUrl.searchParams.set("redirect_uri", redirectUri || `${supabaseUrl}/functions/v1/activate-bot-license`);
+      oauthUrl.searchParams.set("redirect_uri", `${supabaseUrl}/functions/v1/activate-bot-license`);
       oauthUrl.searchParams.set("state", state);
 
       console.log(`[activate-bot-license] Generated OAuth URL for code ${installationCodeId}, using app ${botAppId}`);

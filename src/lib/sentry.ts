@@ -5,14 +5,16 @@
 let captureFn: ((error: Error, extra?: Record<string, unknown>) => void) | null = null;
 const errorQueue: Array<{ error: Error; extra?: Record<string, unknown> }> = [];
 let loading = false;
+let removeBootstrapListeners: (() => void) | null = null;
 
 async function loadSentry() {
   if (loading) return;
   loading = true;
 
-  const Sentry = await import("@sentry/react");
+  try {
+    const Sentry = await import("@sentry/react");
 
-  Sentry.init({
+    Sentry.init({
     dsn: "https://4ac222b43cbc5852505f1a84b54fff28@o4510982044581888.ingest.de.sentry.io/4510982079905872",
     tracesSampleRate: import.meta.env.PROD ? 0.2 : 1.0,
     enabled: import.meta.env.PROD,
@@ -48,15 +50,21 @@ async function loadSentry() {
       }
       return event;
     },
-  });
+    });
 
-  captureFn = (error, extra) => Sentry.captureException(error, { extra });
+    captureFn = (error, extra) => Sentry.captureException(error, { extra });
+    removeBootstrapListeners?.();
+    removeBootstrapListeners = null;
 
-  // Flush queued errors
-  for (const { error, extra } of errorQueue) {
-    captureFn(error, extra);
+    // Flush queued errors
+    for (const { error, extra } of errorQueue) {
+      captureFn(error, extra);
+    }
+    errorQueue.length = 0;
+  } catch {
+    // A monitoring outage must never affect the application.
+    loading = false;
   }
-  errorQueue.length = 0;
 }
 
 /**
@@ -67,15 +75,32 @@ export function captureException(error: Error, extra?: Record<string, unknown>) 
     captureFn(error, extra);
   } else {
     errorQueue.push({ error, extra });
+    void loadSentry();
   }
 }
 
-// Load Sentry after critical resources using requestIdleCallback
+// Keep the monitoring vendor off the error-free critical path. Lightweight
+// bootstrap listeners load it on the first actual runtime failure, retaining
+// early error coverage without downloading the SDK during a healthy visit.
 if (import.meta.env.PROD) {
-  const schedule = typeof requestIdleCallback === 'function'
-    ? requestIdleCallback
-    : (cb: () => void) => setTimeout(cb, 2000);
-  schedule(() => loadSentry());
+  const onError = (event: ErrorEvent) => {
+    captureException(
+      event.error instanceof Error ? event.error : new Error(event.message || 'Unhandled window error'),
+      { source: 'window.error.bootstrap' },
+    );
+  };
+  const onUnhandledRejection = (event: PromiseRejectionEvent) => {
+    captureException(
+      event.reason instanceof Error ? event.reason : new Error(String(event.reason)),
+      { source: 'window.unhandledrejection.bootstrap' },
+    );
+  };
+  window.addEventListener('error', onError);
+  window.addEventListener('unhandledrejection', onUnhandledRejection);
+  removeBootstrapListeners = () => {
+    window.removeEventListener('error', onError);
+    window.removeEventListener('unhandledrejection', onUnhandledRejection);
+  };
 } else {
-  loadSentry();
+  void loadSentry();
 }

@@ -39,7 +39,7 @@ async function sendPayPalPayout(accessToken: string, payoutId: string, amount: n
     },
     body: JSON.stringify({
       sender_batch_header: {
-        sender_batch_id: `eclipse-payout-${payoutId}-${Date.now()}`,
+        sender_batch_id: `eclipse-payout-${payoutId}`,
         email_subject: 'You have received a payout from Eclipse',
         email_message: 'Your seller earnings have been sent to your PayPal account.',
       },
@@ -69,6 +69,17 @@ const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[AUTO-PAYOUT] ${step}${detailsStr}`);
 };
+
+async function releasePayoutLock(supabase: any, payoutId: string, runId: string) {
+  const { error } = await supabase
+    .from('seller_payouts')
+    .update({ processing_locked_at: null, processing_lock_id: null })
+    .eq('id', payoutId)
+    .eq('processing_lock_id', runId);
+  if (error) {
+    logStep('Failed to release payout lock', { payoutId, error: error.message });
+  }
+}
 
 async function getWiseProfile(wiseApiKey: string): Promise<any> {
   const response = await fetch(`${WISE_API_URL}/v1/profiles`, {
@@ -165,6 +176,7 @@ Deno.serve(async (req) => {
       const storeData = Array.isArray(payout.stores) ? payout.stores[0] : payout.stores;
       const storeId = storeData?.id || payout.store_id;
       const payoutMethod = storeData?.payout_method;
+      let claimedByThisRun = false;
 
       try {
         // === ATOMIC CLAIM: Prevent duplicate processing by concurrent runs ===
@@ -178,6 +190,22 @@ Deno.serve(async (req) => {
           logStep('Payout already claimed by another run', { payoutId });
           results.skipped++;
           results.details.push({ payoutId, status: 'skipped', reason: 'already_claimed' });
+          continue;
+        }
+        claimedByThisRun = true;
+
+        if (!storeData || storeData.owner_id !== payout.seller_id) {
+          logStep('Rejecting payout with mismatched seller/store ownership', { payoutId, storeId });
+          await supabase
+            .from('seller_payouts')
+            .update({
+              status: 'failed',
+              failure_reason: 'Seller/store ownership validation failed',
+            })
+            .eq('id', payoutId)
+            .eq('processing_lock_id', runId);
+          results.skipped++;
+          results.details.push({ payoutId, status: 'skipped', reason: 'seller_store_mismatch' });
           continue;
         }
 
@@ -273,37 +301,38 @@ Deno.serve(async (req) => {
 
           // Create Stripe Transfer
           const amountInPence = Math.round(payout.amount * 100);
-          const transfer = await stripe.transfers.create({
-            amount: amountInPence,
-            currency: 'gbp',
-            destination: storePayment.stripe_account_id,
-            transfer_group: `payout_${payoutId}`,
-            metadata: {
-              payout_id: payoutId,
-              seller_id: payout.seller_id,
-              auto_processed: 'true',
+          const transfer = await stripe.transfers.create(
+            {
+              amount: amountInPence,
+              currency: 'gbp',
+              destination: storePayment.stripe_account_id,
+              transfer_group: `payout_${payoutId}`,
+              metadata: {
+                payout_id: payoutId,
+                seller_id: payout.seller_id,
+                auto_processed: 'true',
+              },
             },
-          });
+            { idempotencyKey: `seller-payout-${payoutId}` },
+          );
 
           logStep(`Stripe transfer created`, { payoutId, transferId: transfer.id });
 
-          // Update payout as completed
-          await supabase
-            .from('seller_payouts')
-            .update({
-              status: 'completed',
-              processed_at: new Date().toISOString(),
-              processed_by: null, // auto-processed
-              notes: `Auto-processed via Stripe Connect${fallbackNote}. Transfer: ${transfer.id}`,
-              auto_processed: true,
-            })
-            .eq('id', payoutId);
-
-          // Atomic balance deduction
-          await supabase.rpc('deduct_seller_balance', {
-            p_user_id: payout.seller_id,
-            p_amount: payout.amount,
-          });
+          const { data: finalized, error: finalizeError } = await supabase.rpc(
+            'finalize_seller_payout',
+            {
+              p_payout_id: payoutId,
+              p_lock_id: runId,
+              p_provider: 'stripe',
+              p_provider_reference: transfer.id,
+              p_status: 'completed',
+              p_notes: `Auto-processed via Stripe Connect${fallbackNote}. Transfer: ${transfer.id}`,
+              p_provider_secondary_reference: null,
+            },
+          );
+          if (finalizeError || !finalized) {
+            throw new Error(finalizeError?.message || 'Failed to finalize Stripe payout');
+          }
 
           // Audit log
           await supabase.from('audit_logs').insert({
@@ -380,12 +409,15 @@ Deno.serve(async (req) => {
                 const fundingAmountPence = Math.ceil(requiredAmount * 100);
 
                 if (availableGBP >= fundingAmountPence) {
-                  const stripePayout = await stripe.payouts.create({
-                    amount: fundingAmountPence,
-                    currency: 'gbp',
-                    description: `Auto Wise funding for payout ${payoutId}`,
-                    metadata: { purpose: 'wise_funding', linked_payout_id: payoutId, auto_processed: 'true' },
-                  });
+                  const stripePayout = await stripe.payouts.create(
+                    {
+                      amount: fundingAmountPence,
+                      currency: 'gbp',
+                      description: `Auto Wise funding for payout ${payoutId}`,
+                      metadata: { purpose: 'wise_funding', linked_payout_id: payoutId, auto_processed: 'true' },
+                    },
+                    { idempotencyKey: `wise-funding-${payoutId}` },
+                  );
 
                   await supabase.from('wise_funding_requests').insert({
                     stripe_payout_id: stripePayout.id,
@@ -510,7 +542,7 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
               targetAccount: recipientId,
               quoteUuid: quote.id,
-              customerTransactionId: `auto-payout-${payoutId}-${Date.now()}`,
+              customerTransactionId: payoutId,
               details: { reference: `Eclipse Seller Payout #${payoutId}` },
             }),
           });
@@ -526,24 +558,21 @@ Deno.serve(async (req) => {
 
           logStep(`Wise transfer completed`, { payoutId, transferId: transfer.id });
 
-          // Update payout
-          await supabase
-            .from('seller_payouts')
-            .update({
-              status: 'processing',
-              wise_transfer_id: transfer.id.toString(),
-              wise_quote_id: quote.id,
-              funding_status: 'funded',
-              processed_at: new Date().toISOString(),
-              auto_processed: true,
-            })
-            .eq('id', payoutId);
-
-          // Atomic balance deduction
-          await supabase.rpc('deduct_seller_balance', {
-            p_user_id: payout.seller_id,
-            p_amount: payout.amount,
-          });
+          const { data: finalized, error: finalizeError } = await supabase.rpc(
+            'finalize_seller_payout',
+            {
+              p_payout_id: payoutId,
+              p_lock_id: runId,
+              p_provider: 'wise',
+              p_provider_reference: transfer.id.toString(),
+              p_status: 'processing',
+              p_notes: `Auto-processed via Wise. Transfer: ${transfer.id}; quote: ${quote.id}`,
+              p_provider_secondary_reference: quote.id,
+            },
+          );
+          if (finalizeError || !finalized) {
+            throw new Error(finalizeError?.message || 'Failed to finalize Wise payout');
+          }
 
           // Audit & notification
           await supabase.from('audit_logs').insert({
@@ -642,12 +671,15 @@ Deno.serve(async (req) => {
                 const fundingAmountPence = Math.ceil(requiredPaypalAmount * 100);
 
                 if (availableGBP >= fundingAmountPence) {
-                  const stripePayout = await stripe.payouts.create({
-                    amount: fundingAmountPence,
-                    currency: 'gbp',
-                    description: `Auto PayPal funding for payout ${payoutId}`,
-                    metadata: { purpose: 'paypal_funding', linked_payout_id: payoutId, auto_processed: 'true' },
-                  });
+                  const stripePayout = await stripe.payouts.create(
+                    {
+                      amount: fundingAmountPence,
+                      currency: 'gbp',
+                      description: `Auto PayPal funding for payout ${payoutId}`,
+                      metadata: { purpose: 'paypal_funding', linked_payout_id: payoutId, auto_processed: 'true' },
+                    },
+                    { idempotencyKey: `paypal-funding-${payoutId}` },
+                  );
 
                   await supabase.from('wise_funding_requests').insert({
                     stripe_payout_id: stripePayout.id,
@@ -718,23 +750,21 @@ Deno.serve(async (req) => {
 
           logStep(`PayPal payout sent`, { payoutId, batchId, email: paypalEmail });
 
-          // Update payout as completed
-          await supabase
-            .from('seller_payouts')
-            .update({
-              status: 'completed',
-              processed_at: new Date().toISOString(),
-              processed_by: null,
-              notes: `Auto-processed via PayPal Payouts${fallbackNote}. Batch: ${batchId}`,
-              auto_processed: true,
-            })
-            .eq('id', payoutId);
-
-          // Atomic balance deduction
-          await supabase.rpc('deduct_seller_balance', {
-            p_user_id: payout.seller_id,
-            p_amount: payout.amount,
-          });
+          const { data: finalized, error: finalizeError } = await supabase.rpc(
+            'finalize_seller_payout',
+            {
+              p_payout_id: payoutId,
+              p_lock_id: runId,
+              p_provider: 'paypal',
+              p_provider_reference: batchId,
+              p_status: 'completed',
+              p_notes: `Auto-processed via PayPal Payouts${fallbackNote}. Batch: ${batchId}`,
+              p_provider_secondary_reference: null,
+            },
+          );
+          if (finalizeError || !finalized) {
+            throw new Error(finalizeError?.message || 'Failed to finalize PayPal payout');
+          }
 
           // Audit log
           await supabase.from('audit_logs').insert({
@@ -818,6 +848,10 @@ Deno.serve(async (req) => {
             await fetch(fnUrl, { method: "POST", headers: fnHeaders, body: JSON.stringify({ type: "payout_failed", data: { sellerName: storeData?.name || "Unknown", amount: payout.amount, error: err.message } }) });
           } catch { /* non-fatal */ }
         } catch (_) { /* best effort */ }
+      } finally {
+        if (claimedByThisRun) {
+          await releasePayoutLock(supabase, payoutId, runId);
+        }
       }
     }
 

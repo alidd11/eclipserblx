@@ -93,7 +93,7 @@ serve(async (req) => {
     });
 
     // Mark as completed - staff will manually send PayPal payment
-    const { error: updateError } = await supabaseClient
+    const { data: updatedPayout, error: updateError } = await supabaseClient
       .from('affiliate_payouts')
       .update({
         status: 'completed',
@@ -102,27 +102,12 @@ serve(async (req) => {
         notes: `PayPal payout processed by staff`,
       })
       .eq('id', payoutId)
-      .eq('status', 'pending'); // Optimistic concurrency check
+      .eq('status', 'pending')
+      .select('id')
+      .maybeSingle(); // Optimistic concurrency check
 
-    if (updateError) {
-      throw new Error("Failed to update payout status");
-    }
-
-    // Update total_paid in affiliate_balances
-    const { data: currentBalance } = await supabaseClient
-      .from('affiliate_balances')
-      .select('total_paid')
-      .eq('user_id', payout.user_id)
-      .single();
-
-    if (currentBalance) {
-      await supabaseClient
-        .from('affiliate_balances')
-        .update({
-          total_paid: currentBalance.total_paid + payout.amount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', payout.user_id);
+    if (updateError || !updatedPayout) {
+      throw new Error("Payout was already processed by another request");
     }
 
     // Audit log

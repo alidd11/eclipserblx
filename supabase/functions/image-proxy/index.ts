@@ -52,10 +52,6 @@ Deno.serve(async (req) => {
     })
   }
 
-  // Detect browser WebP/AVIF support from Accept header
-  const accept = req.headers.get('Accept') || ''
-  const supportsWebP = accept.includes('image/webp')
-
   try {
     // Use Supabase Storage render endpoint for on-the-fly transforms
     // Convert /storage/v1/object/public/BUCKET/PATH → /storage/v1/render/image/public/BUCKET/PATH
@@ -74,15 +70,24 @@ Deno.serve(async (req) => {
         renderUrl.searchParams.set('resize', resize)
       }
       renderUrl.searchParams.set('quality', quality)
-      if (supportsWebP) renderUrl.searchParams.set('format', 'origin')
+      // Do not set `format=origin`: Supabase uses content negotiation here and
+      // automatically returns WebP to compatible browsers. Opting out caused
+      // large PNG/JPEG responses even though the client accepted WebP.
 
       fetchUrl = renderUrl.toString()
     }
 
+    // Forward the browser's image capabilities so Supabase Storage can
+    // negotiate WebP instead of falling back to the source PNG/JPEG.
+    const accept = req.headers.get('Accept') || 'image/avif,image/webp,image/*,*/*;q=0.8'
+
     // Propagate client aborts upstream so we don't leak connections
     const signal = req.signal
 
-    const response = await fetch(fetchUrl, { signal })
+    const response = await fetch(fetchUrl, {
+      signal,
+      headers: { Accept: accept },
+    })
     if (!response.ok) {
       // Fallback: if render endpoint fails, try original URL
       const fallback = await fetch(imageUrl, { signal })

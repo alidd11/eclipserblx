@@ -7,8 +7,6 @@ import { ArrowRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-import { useMemo } from 'react';
-import { usePreloadImages } from '@/hooks/usePreloadImages';
 
 export function RecentReleases() {
   const { data: products, isLoading } = useQuery({
@@ -31,12 +29,6 @@ export function RecentReleases() {
     },
     staleTime: 5 * 60 * 1000,
   });
-
-  const imageUrls = useMemo(() =>
-    (products || []).slice(0, 4).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
-    [products]
-  );
-  usePreloadImages(imageUrls);
 
   if (isLoading) {
     return (
@@ -105,7 +97,6 @@ export function RecentReleases() {
                   isVerified={store?.is_verified}
                   createdAt={product.created_at}
                   showNewBadge
-                  priority={index < 4}
                 />
               </div>
             );

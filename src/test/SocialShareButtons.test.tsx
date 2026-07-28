@@ -29,19 +29,19 @@ describe('SocialShareButtons', () => {
     });
   });
 
-  it('exposes a prominent accessible copy-link action using the canonical product URL', () => {
+  it('exposes a prominent accessible copy-link action using the rich-preview URL', () => {
     renderShareButtons();
 
     fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
 
     expect(copyToClipboard).toHaveBeenCalledWith(
-      'https://eclipserblx.com/products/57',
+      'https://share.eclipserblx.com/products/57',
       'Product link copied!',
     );
     expect(screen.getByRole('group', { name: 'Share this product' })).toBeInTheDocument();
   });
 
-  it('uses the canonical product URL for native sharing', async () => {
+  it('uses the rich-preview URL for native sharing', async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'share', {
       configurable: true,
@@ -54,17 +54,17 @@ describe('SocialShareButtons', () => {
     await waitFor(() => expect(share).toHaveBeenCalledWith({
       title: 'Fire Hose System',
       text: 'A realistic firefighting system',
-      url: 'https://eclipserblx.com/products/57',
+      url: 'https://share.eclipserblx.com/products/57',
     }));
   });
 
-  it('copies the canonical product URL when native sharing is unavailable', async () => {
+  it('copies the rich-preview URL when native sharing is unavailable', async () => {
     renderShareButtons();
 
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));
 
     await waitFor(() => expect(copyToClipboard).toHaveBeenCalledWith(
-      'https://eclipserblx.com/products/57',
+      'https://share.eclipserblx.com/products/57',
       'Product link copied!',
     ));
   });

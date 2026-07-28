@@ -1,20 +1,29 @@
 // Custom Service Worker for Push Notifications + Cache Busting + Offline Support
 // This file is imported by the Workbox-generated service worker
 
-const SW_VERSION = '1.3.0';
-const OFFLINE_CACHE = 'offline-v1';
+const SW_VERSION = '1.4.0';
+const OFFLINE_CACHE = 'offline-v2';
 const OFFLINE_URL = '/offline.html';
 
-// Caches that should be purged on every activation (stale API data causes boot failures)
-const PURGE_CACHES = ['supabase-cache'];
+const CURRENT_CACHE_NAMES = new Set([
+  OFFLINE_CACHE,
+  'asset-cache-v2',
+  'image-cache-v2',
+  'font-cache-v2',
+]);
+const CURRENT_WORKBOX_CACHE_ID = 'eclipse-v8';
 
-// Clear ALL caches on activation - full reset for every new SW version
+// Remove only obsolete application caches. Deleting every cache here also
+// deleted the offline fallback and Workbox precache created during install.
 const clearOldCaches = async () => {
   const cacheNames = await caches.keys();
-  // Always purge known-bad caches; clear all others on version change
-  const toPurge = cacheNames.filter(name => PURGE_CACHES.includes(name));
-  console.log('[Eclipse SW] Force-clearing caches:', cacheNames);
-  return Promise.all(cacheNames.map(cache => caches.delete(cache)));
+  const toPurge = cacheNames.filter(
+    (name) =>
+      !CURRENT_CACHE_NAMES.has(name) &&
+      !name.includes(CURRENT_WORKBOX_CACHE_ID),
+  );
+  console.log('[Eclipse SW] Removing obsolete caches:', toPurge);
+  return Promise.all(toPurge.map((cache) => caches.delete(cache)));
 };
 
 // Force refresh all clients when a new SW activates

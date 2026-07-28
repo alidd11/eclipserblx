@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { safeStorage } from '@/lib/safeStorage';
+import { safeInternalPath } from '@/lib/safeNavigation';
 
 const LAST_ROUTE_KEY = 'pwa-last-route';
 const EXCLUDED_ROUTES = ['/auth', '/admin/login', '/order-success'];
@@ -8,14 +9,14 @@ const VOLATILE_QUERY_PARAMS = ['__chunk', '__v', '__t', '__ra'];
 
 function sanitizeRoute(path: string): string {
   try {
-    const url = new URL(path, window.location.origin);
+    const url = new URL(safeInternalPath(path), window.location.origin);
     VOLATILE_QUERY_PARAMS.forEach((param) => {
       url.searchParams.delete(param);
     });
     const next = `${url.pathname}${url.search}${url.hash}`;
     return next || '/';
   } catch {
-    return path || '/';
+    return '/';
   }
 }
 

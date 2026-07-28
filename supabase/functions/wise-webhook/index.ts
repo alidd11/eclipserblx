@@ -1,5 +1,4 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { createHmac } from "https://deno.land/std@0.177.0/node/crypto.ts";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
@@ -29,17 +28,51 @@ interface WiseWebhookPayload {
   sent_at: string;
 }
 
-function verifySignature(payload: string, signature: string, secret: string): boolean {
-  const hmac = createHmac('sha256', secret);
-  hmac.update(payload);
-  const expectedSignature = hmac.digest('base64');
-  // Constant-time comparison
-  if (signature.length !== expectedSignature.length) return false;
-  let mismatch = 0;
-  for (let i = 0; i < signature.length; i++) {
-    mismatch |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
+// Wise signs webhook bodies with RSA-SHA256. The public key is not secret and
+// may be overridden through WISE_WEBHOOK_PUBLIC_KEY when Wise rotates it.
+const WISE_PRODUCTION_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvO8vXV+JksBzZAY6GhSO
+XdoTCfhXaaiZ+qAbtaDBiu2AGkGVpmEygFmWP4Li9m5+Ni85BhVvZOodM9epgW3F
+bA5Q1SexvAF1PPjX4JpMstak/QhAgl1qMSqEevL8cmUeTgcMuVWCJmlge9h7B1CS
+D4rtlimGZozG39rUBDg6Qt2K+P4wBfLblL0k4C4YUdLnpGYEDIth+i8XsRpFlogx
+CAFyH9+knYsDbR43UJ9shtc42Ybd40Afihj8KnYKXzchyQ42aC8aZ/h5hyZ28yVy
+Oj3Vos0VdBIs/gAyJ/4yyQFCXYte64I7ssrlbGRaco4nKF3HmaNhxwyKyJafz19e
+HwIDAQAB
+-----END PUBLIC KEY-----`;
+
+function decodeBase64(value: string): Uint8Array {
+  const binary = atob(value.replace(/\s+/g, ''));
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+async function verifySignature(
+  payload: string,
+  signature: string,
+  publicKeyPem: string,
+): Promise<boolean> {
+  try {
+    const publicKeyDer = decodeBase64(
+      publicKeyPem
+        .replace('-----BEGIN PUBLIC KEY-----', '')
+        .replace('-----END PUBLIC KEY-----', ''),
+    );
+    const publicKey = await crypto.subtle.importKey(
+      'spki',
+      publicKeyDer,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false,
+      ['verify'],
+    );
+
+    return await crypto.subtle.verify(
+      'RSASSA-PKCS1-v1_5',
+      publicKey,
+      decodeBase64(signature),
+      new TextEncoder().encode(payload),
+    );
+  } catch {
+    return false;
   }
-  return mismatch === 0;
 }
 
 const VALID_WISE_STATES = new Set([
@@ -58,14 +91,8 @@ Deno.serve(async (req) => {
   if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
   try {
-    const webhookSecret = Deno.env.get('WISE_WEBHOOK_SECRET');
-    if (!webhookSecret) {
-      LOG('ERROR: WISE_WEBHOOK_SECRET not configured');
-      return new Response(
-        JSON.stringify({ error: 'Webhook not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const webhookPublicKey =
+      Deno.env.get('WISE_WEBHOOK_PUBLIC_KEY') || WISE_PRODUCTION_PUBLIC_KEY;
 
     const rawBody = await req.text();
 
@@ -79,7 +106,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!verifySignature(rawBody, signature, webhookSecret)) {
+    if (!await verifySignature(rawBody, signature, webhookPublicKey)) {
       LOG('Invalid signature');
       return new Response(
         JSON.stringify({ error: 'Invalid signature' }),
@@ -148,14 +175,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Map Wise states
+    // Map Wise states. Financial settlement is performed by one locked RPC so
+    // duplicate/out-of-order provider deliveries cannot adjust balances twice.
     let newStatus: string | null = null;
-    let shouldUpdateBalance = false;
 
     switch (newState) {
       case 'outgoing_payment_sent':
         newStatus = 'completed';
-        shouldUpdateBalance = true;
         break;
       case 'funds_converted':
       case 'processing':
@@ -169,62 +195,22 @@ Deno.serve(async (req) => {
         break;
     }
 
-    if (newStatus && newStatus !== payout.status) {
-      const { error: updateError } = await supabase
-        .from('seller_payouts')
-        .update({
-          status: newStatus,
-          ...(newStatus === 'completed' ? { completed_at: new Date().toISOString() } : {}),
-          ...(newStatus === 'failed' ? { failure_reason: `Transfer ${newState}` } : {}),
-        })
-        .eq('id', payout.id);
+    if (newStatus === 'completed' || newStatus === 'failed') {
+      const { data: settled, error: settlementError } = await supabase.rpc(
+        'settle_seller_payout',
+        {
+          p_payout_id: payout.id,
+          p_provider_reference: transferId,
+          p_status: newStatus,
+          p_failure_reason: newStatus === 'failed' ? `Transfer ${newState}` : null,
+        },
+      );
 
-      if (updateError) {
-        LOG('Failed to update payout', { error: updateError.message });
-        throw new Error('Failed to update payout status');
+      if (settlementError || !settled) {
+        LOG('Failed to settle payout', { error: settlementError?.message });
+        throw new Error('Failed to settle payout status');
       }
-
       LOG(`Payout ${payout.id} → ${newStatus}`);
-
-      // Update seller balance if completed
-      if (shouldUpdateBalance && payout.store_id) {
-        const { error: balanceError } = await supabase
-          .from('seller_balances')
-          .update({
-            total_paid: supabase.rpc('increment_total_paid', {
-              p_store_id: payout.store_id,
-              p_amount: payout.amount,
-            }),
-            available_balance: supabase.rpc('decrement_available_balance', {
-              p_store_id: payout.store_id,
-              p_amount: payout.amount,
-            }),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('store_id', payout.store_id);
-
-        if (balanceError) {
-          LOG('Failed to update seller balance', { error: balanceError.message });
-        }
-      }
-
-      // If failed, refund the balance deduction
-      if (newStatus === 'failed' && payout.store_id) {
-        const { error: refundError } = await supabase
-          .from('seller_balances')
-          .update({
-            available_balance: supabase.rpc('increment_available_balance', {
-              p_store_id: payout.store_id,
-              p_amount: payout.amount,
-            }),
-            updated_at: new Date().toISOString(),
-          })
-          .eq('store_id', payout.store_id);
-
-        if (refundError) {
-          LOG('Failed to refund seller balance', { error: refundError.message });
-        }
-      }
     }
 
     return new Response(

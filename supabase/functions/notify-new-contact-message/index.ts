@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
-import { requireServiceRole } from '../_shared/auth-guard.ts';
+import { requireServiceRole } from "../_shared/auth-guard.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,13 +19,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Internal-only: prevents unauthenticated spam of every staff member's
-  // notification feed and devices with attacker-controlled alert text.
-  const _unauth = requireServiceRole(req, corsHeaders);
-  if (_unauth) return _unauth;
-
-
   try {
+    // This endpoint writes notifications as service role and fans out a push to
+    // every staff account. Only database/internal callers may invoke it.
+    const unauthorized = requireServiceRole(req, corsHeaders);
+    if (unauthorized) return unauthorized;
+
     // Rate limit check - prevent abuse of notification system
     const clientIp = getClientIp(req);
     const rateLimitResult = checkRateLimit({

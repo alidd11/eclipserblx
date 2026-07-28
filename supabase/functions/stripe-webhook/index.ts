@@ -4,7 +4,6 @@ import { createStripeClient, createAdminSupabase, logStep } from "../_shared/str
 import { processPayment, PaymentData } from "../_shared/webhook-payment-handler.ts";
 import { processRefund } from "../_shared/webhook-refund-handler.ts";
 import { processAdSubscriptionPurchase, processAdPingPurchase, processCreditPurchase } from "../_shared/webhook-ad-handlers.ts";
-import { checkRateLimit, getClientIp, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,9 +13,8 @@ const corsHeaders = {
 const LOG = (step: string, d?: unknown) => logStep("STRIPE-WEBHOOK", step, d);
 
 serve(async (req) => {
-  const clientIp = getClientIp(req);
-  const rl = checkRateLimit({ maxRequests: 120, windowMs: 60000, identifier: clientIp, action: 'stripe-webhook' });
-  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+  let claimedEventId: string | null = null;
+  let supabaseAdmin: ReturnType<typeof createAdminSupabase> | null = null;
 
   try {
     LOG("Webhook received");
@@ -25,7 +23,7 @@ serve(async (req) => {
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET is not set");
 
-    const supabaseAdmin = createAdminSupabase();
+    supabaseAdmin = createAdminSupabase();
 
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
@@ -40,18 +38,20 @@ serve(async (req) => {
       return new Response(`Webhook signature verification failed`, { status: 400 });
     }
 
-    // === WEBHOOK EVENT DEDUP: Prevent processing the same event twice ===
-    const { error: dedupError } = await supabaseAdmin
-      .from('processed_webhook_events')
-      .insert({ event_id: event.id, event_type: event.type });
-
-    if (dedupError?.code === '23505') {
-      // Unique constraint violation = already processed
-      LOG("Duplicate event, skipping", { eventId: event.id });
+    // Atomically claim the event. Failed and stale processing attempts remain
+    // reclaimable; only successfully completed events are permanent duplicates.
+    const { data: claimed, error: claimError } = await supabaseAdmin.rpc(
+      'claim_stripe_webhook_event',
+      { p_event_id: event.id, p_event_type: event.type },
+    );
+    if (claimError) throw new Error(`Failed to claim webhook event: ${claimError.message}`);
+    if (!claimed) {
+      LOG("Event already succeeded or is currently processing", { eventId: event.id });
       return new Response(JSON.stringify({ received: true, duplicate: true }), {
         headers: { "Content-Type": "application/json" }, status: 200,
       });
     }
+    claimedEventId = event.id;
 
     // Route events to handlers
     switch (event.type) {
@@ -113,11 +113,17 @@ serve(async (req) => {
           }
         } catch { /* process anyway */ }
 
-        await processPayment(supabaseAdmin, stripe, {
-          paymentId: pi.id, paymentType: "payment_intent",
-          customerEmail: pi.receipt_email || pi.metadata?.customer_email || "",
-          metadata: pi.metadata, amountTotal: pi.amount,
-        });
+        if (pi.metadata?.payment_type === "credits") {
+          await processCreditPurchase(supabaseAdmin, pi as unknown as Stripe.Checkout.Session);
+        } else if (pi.metadata?.payment_type === "ad_pings") {
+          await processAdPingPurchase(supabaseAdmin, pi as unknown as Stripe.Checkout.Session);
+        } else {
+          await processPayment(supabaseAdmin, stripe, {
+            paymentId: pi.id, paymentType: "payment_intent",
+            customerEmail: pi.receipt_email || pi.metadata?.customer_email || "",
+            metadata: pi.metadata, amountTotal: pi.amount,
+          });
+        }
         break;
       }
 
@@ -155,11 +161,29 @@ serve(async (req) => {
         LOG("Unhandled event type", { type: event.type });
     }
 
+    const { error: completeError } = await supabaseAdmin.rpc(
+      'complete_stripe_webhook_event',
+      { p_event_id: event.id },
+    );
+    if (completeError) throw new Error(`Failed to complete webhook event: ${completeError.message}`);
+    claimedEventId = null;
+
     return new Response(JSON.stringify({ received: true }), {
       headers: { "Content-Type": "application/json" }, status: 200,
     });
   } catch (error) {
     LOG("ERROR", { message: String(error) });
+    if (claimedEventId && supabaseAdmin) {
+      try {
+        await supabaseAdmin.rpc('fail_stripe_webhook_event', {
+          p_event_id: claimedEventId,
+          p_error: error instanceof Error ? error.message : String(error),
+        });
+      } catch {
+        // Stripe will retry the 500 response; the five-minute stale lock also
+        // makes an interrupted delivery reclaimable.
+      }
+    }
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       headers: { "Content-Type": "application/json" }, status: 500,
     });
