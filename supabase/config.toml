@@ -7,8 +7,11 @@ project_id = "qlnbergwjfrmgkjhrbkj"
       uri = "pg-functions://postgres/supabase_functions/http_request"
 
 [functions]
+  [functions.bot-gateway]
+    verify_jwt = false
   [functions.activate-bot-license]
     verify_jwt = false
+
   [functions.ai-chat-support]
     verify_jwt = false
   [functions.ai-recommendations]
