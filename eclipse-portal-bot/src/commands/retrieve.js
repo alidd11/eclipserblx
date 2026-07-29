@@ -109,36 +109,71 @@ export async function deliverDownload(interaction, profile, product, branding, a
   const buffer = await fetchAssetBuffer(signedUrl);
   if (buffer) {
     const filename = assetFilename(product);
-    const embed = {
+    const sizeLabel = `\`${filename}\` • ${(buffer.length / 1024 / 1024).toFixed(2)} MB`;
+
+    // Primary delivery: DM the file so the customer keeps a permanent private copy.
+    // Fresh AttachmentBuilder per send (DM + ephemeral) to avoid re-reading a spent stream.
+    let dmDelivered = false;
+    try {
+      await interaction.user.send({
+        embeds: [{
+          color: 0x3b82f6,
+          title: `📥 ${product.name}`,
+          description: `Here's your download — the file is attached below.\n\n${sizeLabel}`,
+          thumbnail: { url: avatarUrl },
+          footer: { text: branding.footer },
+          timestamp: new Date().toISOString(),
+        }],
+        files: [new AttachmentBuilder(buffer, { name: filename })],
+      });
+      dmDelivered = true;
+    } catch { /* DMs closed */ }
+
+    // Ephemeral reply: confirm the DM and always include the file as a backup, so
+    // delivery still succeeds even when the customer has DMs from the server off.
+    return ephemeralReply(interaction, [{
       color: 0x3b82f6,
       title: `📥 ${product.name}`,
-      description: `Your file is attached below — just click to save it.\n\n\`${filename}\` • ${(buffer.length / 1024 / 1024).toFixed(2)} MB`,
+      description: dmDelivered
+        ? `📬 I've also sent this to your **DMs**. The file is attached here as a backup too.\n\n${sizeLabel}`
+        : `Your file is attached below — just click to save it.\n\n💡 Turn on **Direct Messages** from server members to get downloads sent to your DMs too.\n\n${sizeLabel}`,
       thumbnail: { url: avatarUrl },
       footer: { text: branding.footer },
       timestamp: new Date().toISOString(),
-    };
-    // Fresh AttachmentBuilder per send (DM + ephemeral) to avoid re-reading a spent stream.
-    try {
-      await interaction.user.send({ embeds: [embed], files: [new AttachmentBuilder(buffer, { name: filename })] });
-    } catch { /* DMs closed */ }
-    return ephemeralReply(interaction, [embed], undefined, [new AttachmentBuilder(buffer, { name: filename })]);
+    }], undefined, [new AttachmentBuilder(buffer, { name: filename })]);
   }
 
   // Fallback for large files: signed-URL button (link expires in 1 hour).
-  const embed = {
-    color: 0x3b82f6,
-    title: `📥 ${product.name}`,
-    description: 'This file is too large to attach directly, so here’s a secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.',
-    thumbnail: { url: avatarUrl },
-    footer: { text: branding.footer },
-    timestamp: new Date().toISOString(),
-  };
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setLabel('📥 Download File').setStyle(ButtonStyle.Link).setURL(signedUrl),
   );
 
-  try { await interaction.user.send({ embeds: [embed], components: [row] }); } catch { /* DMs closed */ }
-  return ephemeralReply(interaction, [embed], [row]);
+  let dmDelivered = false;
+  try {
+    await interaction.user.send({
+      embeds: [{
+        color: 0x3b82f6,
+        title: `📥 ${product.name}`,
+        description: 'This file is too large to attach directly, so here’s a secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.',
+        thumbnail: { url: avatarUrl },
+        footer: { text: branding.footer },
+        timestamp: new Date().toISOString(),
+      }],
+      components: [row],
+    });
+    dmDelivered = true;
+  } catch { /* DMs closed */ }
+
+  return ephemeralReply(interaction, [{
+    color: 0x3b82f6,
+    title: `📥 ${product.name}`,
+    description: dmDelivered
+      ? '📬 I\'ve also sent this to your **DMs**. This file is too large to attach, so use the secure link below (expires in **1 hour**).'
+      : 'This file is too large to attach directly, so here’s a secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.\n\n💡 Turn on **Direct Messages** from server members to get downloads sent to your DMs too.',
+    thumbnail: { url: avatarUrl },
+    footer: { text: branding.footer },
+    timestamp: new Date().toISOString(),
+  }], [row]);
 }
 
 export async function handleRetrieve(interaction, serverContext) {
