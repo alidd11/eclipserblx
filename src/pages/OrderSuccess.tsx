@@ -11,10 +11,12 @@ import { useCurrency } from '@/hooks/useCurrency';
 import { ConfettiCelebration } from '@/components/ui/ConfettiCelebration';
 import { usePageTracking } from '@/hooks/usePageTracking';
 import { usePageMeta } from '@/hooks/usePageMeta';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderSuccess() {
   usePageTracking({ pagePath: '/order-success' });
   usePageMeta({ title: 'Order Confirmed', description: 'Thank you for your purchase on Eclipse — your order is being processed and downloads will be available shortly.' });
+  const { t } = useTranslation();
   const { checkBadges } = useBadges();
   const { formatPrice } = useCurrency();
   const [searchParams] = useSearchParams();
@@ -139,7 +141,7 @@ export default function OrderSuccess() {
         {isLoading ? (
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
-            <p className="text-muted-foreground">Verifying your payment...</p>
+            <p className="text-muted-foreground">{t('orderSuccess.verifying')}</p>
           </div>
         ) : verificationFailed && !verifiedOrderId ? (
           <>
@@ -148,25 +150,24 @@ export default function OrderSuccess() {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-3xl md:text-4xl font-display font-bold">Payment not completed</h1>
+              <h1 className="text-3xl md:text-4xl font-display font-bold">{t('orderSuccess.failedTitle')}</h1>
               <p className="text-muted-foreground">
-                We couldn't confirm your payment, so your order wasn't placed. You have not been charged for a completed order.
+                {t('orderSuccess.failedDesc')}
               </p>
             </div>
 
             <div className="border border-border rounded-xl bg-card p-5 text-left space-y-2">
               <p className="text-sm text-muted-foreground">
-                If you cancelled at the payment step, your cart is still saved — you can try again. If you believe you were
-                charged but see this message, contact support with your payment details and we'll sort it out right away.
+                {t('orderSuccess.failedHelp')}
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild className="gradient-button border-0">
-                <Link to="/cart">Return to Cart</Link>
+                <Link to="/cart">{t('orderSuccess.returnToCart')}</Link>
               </Button>
               <Button asChild variant="outline">
-                <Link to="/support">Contact Support</Link>
+                <Link to="/support">{t('orderSuccess.contactSupport')}</Link>
               </Button>
             </div>
           </>
@@ -177,36 +178,36 @@ export default function OrderSuccess() {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-3xl md:text-4xl font-display font-bold">Order Complete!</h1>
+              <h1 className="text-3xl md:text-4xl font-display font-bold">{t('orderSuccess.title')}</h1>
               <p className="text-muted-foreground">
-                Thank you for your purchase. Your order has been confirmed.
+                {t('orderSuccess.subtitle')}
               </p>
             </div>
 
             {order && (
               <div className="border border-border rounded-xl bg-card p-5 text-left space-y-3">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Order ID</span>
+                  <span className="text-muted-foreground">{t('orderSuccess.orderId')}</span>
                   <span className="font-mono">{order.id.slice(0, 8).toUpperCase()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Date</span>
+                  <span className="text-muted-foreground">{t('orderSuccess.date')}</span>
                   <span>{new Date(order.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    {order.payment_method === 'credits' ? 'Credits Used' : 'Total'}
+                    {order.payment_method === 'credits' ? t('orderSuccess.creditsUsed') : t('orderSuccess.total')}
                   </span>
                   <span className="font-bold">
                     {order.payment_method === 'credits' 
-                      ? `${Number(order.total).toFixed(2)} credits`
+                      ? t('orderSuccess.creditsAmount', { amount: Number(order.total).toFixed(2) })
                       : formatPrice(Number(order.total))
                     }
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Status</span>
-                  <span className="text-success font-medium">Paid</span>
+                  <span className="text-muted-foreground">{t('orderSuccess.status')}</span>
+                  <span className="text-success font-medium">{t('orderSuccess.paid')}</span>
                 </div>
               </div>
             )}
@@ -215,18 +216,18 @@ export default function OrderSuccess() {
               <div className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium text-sm">Check your email</p>
+                  <p className="font-medium text-sm">{t('orderSuccess.checkEmail')}</p>
                   <p className="text-xs text-muted-foreground">
-                    A confirmation email with your receipt has been sent
+                    {t('orderSuccess.checkEmailDesc')}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Download className="h-5 w-5 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium text-sm">Instant access</p>
+                  <p className="font-medium text-sm">{t('orderSuccess.instantAccess')}</p>
                   <p className="text-xs text-muted-foreground">
-                    Download your files now from your account
+                    {t('orderSuccess.instantAccessDesc')}
                   </p>
                 </div>
               </div>
@@ -234,11 +235,11 @@ export default function OrderSuccess() {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild className="gradient-button border-0">
-                <Link to="/downloads">View My Downloads</Link>
+                <Link to="/downloads">{t('orderSuccess.viewDownloads')}</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/products">
-                  Continue Shopping
+                  {t('orderSuccess.continueShopping')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
