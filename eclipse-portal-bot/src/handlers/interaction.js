@@ -52,19 +52,19 @@ let disabledCommandsCache = new Set();
 let disabledCacheTimestamp = 0;
 const DISABLED_CACHE_TTL = 2 * 60 * 1000;
 
-async function getDisabledCommands() {
-  if (Date.now() - disabledCacheTimestamp < DISABLED_CACHE_TTL) {
-    return disabledCommandsCache;
-  }
-  try {
-    const { data } = await supabase
+function getDisabledCommands() {
+  // NEVER block the interaction on a network call — Discord's ack deadline is 3s.
+  // Serve the current cache immediately; refresh in the background when stale.
+  if (Date.now() - disabledCacheTimestamp >= DISABLED_CACHE_TTL) {
+    disabledCacheTimestamp = Date.now(); // set first to avoid a refresh stampede
+    supabase
       .from('bot_command_settings')
       .select('command_name')
-      .eq('enabled', false);
-    disabledCommandsCache = new Set((data || []).map(c => c.command_name));
-    disabledCacheTimestamp = Date.now();
-  } catch (err) {
-    console.error('[interaction] Failed to fetch command settings:', err.message);
+      .eq('enabled', false)
+      .then(({ data }) => {
+        disabledCommandsCache = new Set((data || []).map(c => c.command_name));
+      })
+      .catch((err) => console.error('[interaction] Failed to refresh command settings:', err?.message || err));
   }
   return disabledCommandsCache;
 }
