@@ -20,7 +20,13 @@ Independently re-run the checks yourself (do not take the generator's word):
 
 ## What you must return
 - A verdict line: `VERDICT: PASS` or `VERDICT: FAIL`.
+- A risk line: `RISK: LOW` or `RISK: HIGH` — this gates auto-merge, so be strict.
+  RISK is HIGH if the diff touches ANY of: `supabase/functions/**`,
+  `supabase/migrations/**`, auth/RLS/policy/security code, payments/stripe/webhooks,
+  `package.json`/lockfiles, CI/config/env handling, or if the diff is ≥ 100 lines.
+  Otherwise RISK: LOW. When uncertain, say HIGH.
 - Under it, list EVERY failure plainly with the command output that proves it.
 - Even on PASS, list at least one honest observation or risk you noticed (an
   evaluator that only ever says "all good" is a nodding loop and is useless).
-- Do not edit files. Do not commit. Do not open PRs.
+- Do not edit files. Do not commit. Do not open PRs. Only PASS+LOW may auto-merge;
+  everything else goes to a human PR.
