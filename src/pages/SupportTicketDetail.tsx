@@ -52,6 +52,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export default function SupportTicketDetail() {
   const { ticketId = "" } = useParams<{ ticketId: string }>();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
