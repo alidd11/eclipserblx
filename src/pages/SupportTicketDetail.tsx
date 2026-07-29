@@ -15,6 +15,7 @@ import { ArrowLeft, Send, Clock, User, Headphones, Paperclip, X, Loader2 } from 
 import { format, formatRelative } from '@/lib/dateUtils';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface TicketMessage {
   id: string;
@@ -162,7 +163,7 @@ export default function SupportTicketDetail() {
       queryClient.invalidateQueries({ queryKey: ['support-ticket', ticketId] });
     },
     onError: () => {
-      toast.error('Failed to send message');
+      toast.error(t('supportTicket.sendFailed'));
     } });
 
   const handleSend = () => {
@@ -181,7 +182,7 @@ export default function SupportTicketDetail() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('File too large', { description: 'Maximum file size is 10MB' });
+      toast.error(t('supportTicket.fileTooLarge'), { description: t('supportTicket.fileTooLargeDesc') });
       return;
     }
     setAttachmentFile(file);
