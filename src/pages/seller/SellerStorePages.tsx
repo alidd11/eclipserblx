@@ -285,6 +285,7 @@ export default function SellerStorePages() {
                   <div className="flex items-center gap-1 shrink-0">
                     <Button
                       variant="ghost" size="icon" className="h-8 w-8"
+                      aria-label={page.is_published ? 'Unpublish page' : 'Publish page'}
                       onClick={() => togglePublish.mutate({ id: page.id, published: !page.is_published })}
                       title={page.is_published ? 'Unpublish' : 'Publish'}
                     >

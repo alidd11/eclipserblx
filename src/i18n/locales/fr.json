@@ -139,6 +139,7 @@
     "discountCode": "Code de Réduction",
     "total": "Total",
     "proceedToCheckout": "Passer à la Caisse",
+    "item": "article",
     "items": "articles",
     "savingWith": "Vous économisez {{amount}} !",
     "eclipseDiscount": "Réduction"

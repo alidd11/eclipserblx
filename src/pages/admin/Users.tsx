@@ -152,7 +152,19 @@ export default function AdminUsers() {
                 paginatedProfiles.map((profile) => {
                   const roles = getUserRoles(profile.user_id);
                   return (
-                    <div key={profile.user_id} className={`rounded-lg border border-border bg-card p-4 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50' : ''}`} onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}>
+                    <div
+                      key={profile.user_id}
+                      className={`rounded-lg border border-border bg-card p-4 ${isPrimaryAdmin ? 'cursor-pointer active:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring' : ''}`}
+                      onClick={() => isPrimaryAdmin && setViewProfileUser(profile)}
+                      {...(isPrimaryAdmin ? {
+                        role: 'button',
+                        tabIndex: 0,
+                        'aria-label': `View profile for ${profile.display_name || 'user'}`,
+                        onKeyDown: (e: React.KeyboardEvent) => {
+                          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setViewProfileUser(profile); }
+                        },
+                      } : {})}
+                    >
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-base truncate pr-2">{profile.display_name || 'Unnamed'}</h3>
                         {roles.length === 0 ? <Badge variant="secondary" className="text-xs shrink-0">Customer</Badge> : <div className="flex gap-1.5 shrink-0">{roles.map(r => getRoleBadge(r.role))}</div>}

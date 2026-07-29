@@ -230,7 +230,7 @@ export function SellerProductsList({
                           </Button>
                         ) : (
                           <>
-                            <Button variant="ghost" size="icon" onClick={() => onEdit(product)}>
+                            <Button variant="ghost" size="icon" aria-label="Edit product" onClick={() => onEdit(product)}>
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => onDelete(product.id)}>

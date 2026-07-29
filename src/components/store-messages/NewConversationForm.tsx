@@ -43,8 +43,9 @@ export function NewConversationForm({
     return (
       <>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Select an order (optional)</label>
+          <label htmlFor="new-conversation-order" className="text-sm font-medium">Select an order (optional)</label>
           <select
+            id="new-conversation-order"
             value={selectedOrderId || ''}
             onChange={(e) => setSelectedOrderId(e.target.value || null)}
             className="flex h-12 w-full rounded-xl border border-input bg-card px-4 py-3 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
@@ -59,12 +60,13 @@ export function NewConversationForm({
           </select>
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Subject (optional)</label>
-          <Input placeholder="Brief summary of your issue" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} />
+          <label htmlFor="new-conversation-subject" className="text-sm font-medium">Subject (optional)</label>
+          <Input id="new-conversation-subject" placeholder="Brief summary of your issue" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium">Describe your issue</label>
+          <label htmlFor="new-conversation-description" className="text-sm font-medium">Describe your issue</label>
           <textarea
+            id="new-conversation-description"
             placeholder="Please describe what you need help with..."
             value={issueDescription}
             onChange={(e) => setIssueDescription(e.target.value)}

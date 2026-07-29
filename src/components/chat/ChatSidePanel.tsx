@@ -332,7 +332,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                       <Button variant="ghost" size="icon" aria-label="Attach file" className="h-8 w-8 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setShowSecureInput(true)} title="Submit secure code">
+                      <Button variant="ghost" size="icon" aria-label="Submit secure code" className="h-8 w-8 shrink-0" onClick={() => setShowSecureInput(true)} title="Submit secure code">
                         <ShieldCheck className="h-4 w-4" />
                       </Button>
                       <Input

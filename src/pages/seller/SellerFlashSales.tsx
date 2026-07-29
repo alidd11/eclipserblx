@@ -196,7 +196,7 @@ export default function SellerFlashSales() {
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(sale)}>
+                    <Button variant="ghost" size="icon" aria-label="Edit flash sale" onClick={() => openEdit(sale)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => setDeleteId(sale.id)}>

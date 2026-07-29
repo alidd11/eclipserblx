@@ -315,6 +315,7 @@ export function DiscordRoleManager({ storeId, isGlobal = false }: DiscordRoleMan
  <Button
  variant="ghost"
  size="icon"
+ aria-label="Edit role"
  onClick={() => handleOpenEdit(role)}
  >
  <Edit2 className="h-4 w-4" />

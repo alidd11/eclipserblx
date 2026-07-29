@@ -29,7 +29,7 @@ export function DnsRecordRow({ type, name, value, note, proxied }: DnsRecordRowP
       </span>
       <code className="text-xs font-mono text-foreground truncate">{name}</code>
       <code className="text-xs font-mono text-muted-foreground truncate">{value}</code>
-      <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0" onClick={copy}>
+      <Button variant="ghost" size="icon" aria-label="Copy value" className="h-7 w-7 shrink-0" onClick={copy}>
         {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
       </Button>
       {note && (

@@ -218,7 +218,7 @@ export default function SellerAnnouncements() {
                       checked={a.is_active}
                       onCheckedChange={(c) => toggleActive.mutate({ id: a.id, is_active: c })}
                     />
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(a)}>
+                    <Button variant="ghost" size="icon" aria-label="Edit announcement" onClick={() => openEdit(a)}>
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" aria-label="Delete" onClick={() => setDeleteId(a.id)}>

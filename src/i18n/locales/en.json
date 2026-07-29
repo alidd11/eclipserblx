@@ -139,6 +139,7 @@
     "discountCode": "Discount Code",
     "total": "Total",
     "proceedToCheckout": "Proceed to Checkout",
+    "item": "item",
     "items": "items",
     "savingWith": "You're saving {{amount}}!",
     "eclipseDiscount": "Discount"

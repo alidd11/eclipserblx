@@ -389,9 +389,10 @@ export default function SellerDiscounts() {
                         toggleActiveMutation.mutate({ id: code.id, is_active: checked })
                       }
                     />
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="icon"
+                      aria-label="Edit discount code"
                       onClick={() => openEditDialog(code)}
                     >
                       <Edit className="h-4 w-4" />

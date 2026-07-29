@@ -90,7 +90,7 @@ export function CloudflareCredentials({ storeId }: CloudflareCredentialsProps) {
               <p className="text-sm font-mono text-foreground truncate">{creds.cloudflare_zone_id}</p>
             </div>
           )}
-          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => clearCreds.mutate()} disabled={clearCreds.isPending}>
+          <Button variant="ghost" size="icon" aria-label="Clear Cloudflare credentials" className="h-8 w-8 shrink-0" onClick={() => clearCreds.mutate()} disabled={clearCreds.isPending}>
             <Trash2 className="w-4 h-4 text-destructive" />
           </Button>
         </div>

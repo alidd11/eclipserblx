@@ -119,7 +119,7 @@ const LiveChatPage = () => {
                   <Button variant="ghost" size="icon" aria-label="Attach file" onClick={() => chat.fileInputRef.current?.click()} disabled={chat.isUploading}>
                     {chat.isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => chat.setShowSecureInput(true)} title="Submit secure code">
+                  <Button variant="ghost" size="icon" aria-label="Submit secure code" onClick={() => chat.setShowSecureInput(true)} title="Submit secure code">
                     <ShieldCheck className="h-4 w-4" />
                   </Button>
                   <Input

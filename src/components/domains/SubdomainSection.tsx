@@ -46,10 +46,10 @@ export function SubdomainSection({ subdomain, storeSlug, onClaim, onRemove, isCl
               <span className="text-xs text-muted-foreground">https://</span>
               <code className="text-sm font-mono font-medium text-foreground">{subdomain.domain}</code>
             </div>
-            <Button variant="outline" size="icon" className="h-9 w-9 shrink-0" onClick={() => window.open(`https://${subdomain.domain}`, '_blank')}>
+            <Button variant="outline" size="icon" aria-label="Open subdomain in new tab" className="h-9 w-9 shrink-0" onClick={() => window.open(`https://${subdomain.domain}`, '_blank')}>
               <ExternalLink className="w-4 h-4" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={() => onRemove(subdomain.id)}>
+            <Button variant="ghost" size="icon" aria-label="Remove subdomain" className="h-9 w-9 shrink-0" onClick={() => onRemove(subdomain.id)}>
               <Trash2 className="w-4 h-4 text-destructive" />
             </Button>
           </div>

@@ -58,7 +58,7 @@ export default function Cart() {
               <LoyaltyBadge />
             </div>
             <p className="text-sm text-muted-foreground mt-1">
-              {items.length} {items.length === 1 ? t('cart.items').replace(/s$/, '') : t('cart.items')} • {t('cart.proceedToCheckout')}
+              {items.length} {items.length === 1 ? t('cart.item') : t('cart.items')} • {t('cart.proceedToCheckout')}
             </p>
           </div>
           <div className="flex items-center gap-4 shrink-0">
