@@ -160,6 +160,10 @@ Deno.serve(async (req) => {
       return await handleTokenRedemption(tokenParam, req);
     }
 
+    const botSecret = req.headers.get("x-bot-secret");
+    const isServiceCaller = !!botSecret &&
+      botSecret === (Deno.env.get("BOT_GATEWAY_SECRET") ?? "\u0000unset");
+
     // Otherwise, this is a token generation request (POST with auth)
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -167,29 +171,66 @@ Deno.serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Get user from auth header
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: "Not authenticated" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Use service role for all admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    let user: { id: string; email?: string | null };
+    let productId: string;
+    let orderItemId: string | undefined;
+    let fileIndex: number | undefined;
+    let clientIp: string;
+    let userAgent: string;
+
+    if (isServiceCaller) {
+      const body = await req.json();
+      productId = body?.productId;
+      const userId = body?.userId;
+      fileIndex = body?.fileIndex;
+
+      if (!UUID_REGEX.test(productId) || !UUID_REGEX.test(userId)) {
+        return new Response(
+          JSON.stringify({ error: "Valid Product ID and User ID are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: au } = await supabaseAdmin.auth.admin.getUserById(userId);
+      user = { id: userId, email: au?.user?.email ?? null };
+      clientIp = "discord-bot";
+      userAgent = "discord-bot";
+    } else {
+      // Get user from auth header
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader) {
+        return new Response(
+          JSON.stringify({ error: "Not authenticated" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: { user: authenticatedUser }, error: authError } = await supabaseClient.auth.getUser(token);
+
+      if (authError || !authenticatedUser) {
+        return new Response(
+          JSON.stringify({ error: "Invalid authentication" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      user = authenticatedUser;
+      const body = await req.json();
+      productId = body.productId;
+      orderItemId = body.orderItemId;
+      fileIndex = body.fileIndex;
+      clientIp = getClientIp(req);
+      userAgent = req.headers.get("user-agent") || "unknown";
     }
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-    
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Invalid authentication" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const { productId, orderItemId, fileIndex } = await req.json();
     const requestedFileIndex = typeof fileIndex === 'number' ? fileIndex : 0;
-    const clientIp = getClientIp(req);
-    const userAgent = req.headers.get("user-agent") || "unknown";
 
     console.log("Download request:", { productId, orderItemId, userId: user.id, ip: clientIp });
 
@@ -206,12 +247,6 @@ Deno.serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Use service role for all admin operations
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
 
     // === RATE LIMITING ===
     const { data: perProductOk } = await supabaseAdmin.rpc('check_download_rate_limit', {
@@ -329,6 +364,79 @@ Deno.serve(async (req) => {
     // Atomically increment download count
     const incResult = await supabaseAdmin.rpc('increment_download_count', { p_product_id: productId });
     if (incResult.error) console.error("Error incrementing download count:", incResult.error);
+
+    if (isServiceCaller) {
+      const orderId = ((userOrder as Record<string, unknown>).order_id as string) || userOrder.id;
+      const MAX_INLINE = 8 * 1024 * 1024;
+      const { data: fileData, error: dlErr } = await supabaseAdmin.storage
+        .from('product-assets')
+        .download(assetUrl);
+
+      if (dlErr || !fileData) {
+        return new Response(
+          JSON.stringify({ error: "Failed to read asset" }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      let outBytes: Uint8Array;
+      let watermarked = false;
+      if (isLuaFile) {
+        outBytes = new TextEncoder().encode(
+          watermarkLuaFile(await fileData.text(), user.id, orderId, productId)
+        );
+        watermarked = true;
+      } else {
+        const bytes = new Uint8Array(await fileData.arrayBuffer());
+        const fpExts = ['.rbxm', '.rbxl', '.png', '.jpg', '.jpeg', '.webp', '.zip', '.rar', '.7z'];
+        if (fpExts.includes(fileExtension.toLowerCase())) {
+          outBytes = fingerprintBinaryFile(
+            bytes,
+            generateWatermarkHash(user.id, orderId, productId),
+            fileExtension
+          );
+          watermarked = true;
+        } else {
+          outBytes = bytes;
+        }
+      }
+
+      const sanitized = product.name.replace(/[^a-zA-Z0-9-_ ]/g, '').trim();
+      const suffix = requestedFileIndex > 0 ? `-file${requestedFileIndex + 1}` : '';
+      const fileName = fileExtension ? `${sanitized}${suffix}${fileExtension}` : `${sanitized}${suffix}`;
+
+      if (outBytes.length <= MAX_INLINE) {
+        let binary = '';
+        const chunkSize = 0x8000;
+        for (let i = 0; i < outBytes.length; i += chunkSize) {
+          binary += String.fromCharCode(...outBytes.subarray(i, i + chunkSize));
+        }
+        return new Response(
+          JSON.stringify({
+            fileBase64: btoa(binary),
+            fileName,
+            sizeBytes: outBytes.length,
+            watermarked,
+            inline: true,
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: signed } = await supabaseAdmin.storage
+        .from('product-assets')
+        .createSignedUrl(assetUrl, 300);
+      return new Response(
+        JSON.stringify({
+          signedUrl: signed?.signedUrl ?? null,
+          fileName,
+          sizeBytes: outBytes.length,
+          watermarked: false,
+          inline: false,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // === WATERMARKING for .lua files ===
     if (isLuaFile) {
@@ -518,6 +626,7 @@ Deno.serve(async (req) => {
 
     let fileSize: number | null = null;
     try {
+      const signedUrlData = { signedUrl: finalSignedUrl };
       const headResponse = await fetch(signedUrlData.signedUrl, { method: 'HEAD' });
       const contentLength = headResponse.headers.get('content-length');
       if (contentLength) {
