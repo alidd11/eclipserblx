@@ -132,8 +132,8 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
       <article
         className={cn(
           'relative h-full flex flex-col bg-card contain-layout overflow-hidden rounded-xl',
-          'border border-border/50 transition-all duration-300',
-          'hover:border-primary/40 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.35)] active:scale-[0.97]',
+          'border border-border/50 transition-[border-color,box-shadow,transform] duration-200 ease-emphasized',
+          'hover:border-primary/40 hover:shadow-[0_8px_30px_-12px_hsl(var(--primary)/0.35)] active:scale-[0.97] active:duration-100',
           isFeatured && 'border-primary/50 shadow-[0_0_0_1px_hsl(var(--primary)/0.25)]'
         )}
       >
@@ -176,7 +176,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
                     const img = e.currentTarget;
                     if (img.naturalWidth === 0) handleMediaError();
                   }}
-                  className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.02]"
+                  className="w-full h-full object-cover object-center transition-transform duration-300 ease-emphasized group-hover:scale-[1.03]"
                 />
               )
             ) : (
@@ -309,9 +309,9 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
             <button
               onClick={handleAddToCart}
               className={cn(
-                'shrink-0 relative w-9 h-9 flex items-center justify-center rounded-lg border transition-all duration-200 active:scale-[0.97]',
+                'shrink-0 relative w-9 h-9 flex items-center justify-center rounded-lg border transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-emphasized active:scale-[0.92]',
                 inCart
-                  ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/40'
+                  ? 'bg-success/15 text-success border-success/40'
                   : 'border-border text-foreground hover:border-primary hover:bg-primary hover:text-primary-foreground hover:shadow-[0_4px_14px_-4px_hsl(var(--primary)/0.5)]'
               )}
               aria-label={inCart ? 'In cart' : 'Add to cart'}

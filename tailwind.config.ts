@@ -99,6 +99,13 @@ export default {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      transitionTimingFunction: {
+        // Shared motion easings (mirror the --ease-* tokens in index.css).
+        // `ease-emphasized` = crisp decelerating out-curve for hover/entrances;
+        // `ease-spring` = subtle tactile overshoot for press/toggle.
+        emphasized: "var(--ease-out)",
+        spring: "var(--ease-spring)",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
