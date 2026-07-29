@@ -220,8 +220,8 @@ export default function MyPurchases() {
       } catch { failCount++; }
     }
     setIsBatchDownloading(false);
-    if (successCount > 0) showSuccessNotification(t('myPurchases.downloadsStarted'), t('myPurchases.filesDownloaded', { count: successCount }));
-    if (failCount > 0) toast.error(t('myPurchases.filesFailed', { count: failCount }));
+    if (successCount > 0) showSuccessNotification(t('myPurchases.downloadsStarted'), t('myPurchases.filesDownloaded', { value: successCount }));
+    if (failCount > 0) toast.error(t('myPurchases.filesFailed', { value: failCount }));
   };
 
   const clearFilters = () => { setSearchQuery(''); setStatusFilter(null); setDateRange({}); setOrdersPage(1); };

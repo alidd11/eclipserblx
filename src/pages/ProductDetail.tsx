@@ -485,7 +485,7 @@ export default function ProductDetail() {
  </span>
  {selectedBundle.quantity > 1 && (
  <span className="text-sm text-muted-foreground ml-2">
- {t('productDetail.forLicenses', { count: selectedBundle.quantity })}
+ {t('productDetail.forLicenses', { value: selectedBundle.quantity })}
  </span>
  )}
  </div>

@@ -418,7 +418,7 @@
     "freeOrSupport": "Saisissez 0 £ pour un téléchargement gratuit, ou payez le montant de votre choix pour soutenir le créateur",
     "minimum": "Minimum : {{amount}}",
     "minimumPaid": "Les montants payés doivent être d'au moins 1,00 £",
-    "forLicenses": "pour {{count}} licences",
+    "forLicenses": "pour {{value}} licences",
     "addedToCart": "Ajouté au panier",
     "getForFree": "Obtenir gratuitement",
     "addToCart": "Ajouter au panier",
@@ -469,7 +469,7 @@
     "downloadFailedDesc": "Le téléchargement a échoué",
     "noItemsSelected": "Aucun élément sélectionné",
     "downloadsStarted": "Téléchargements lancés",
-    "filesDownloaded": "{{count}} fichier(s) téléchargé(s)",
-    "filesFailed": "{{count}} fichier(s) en échec"
+    "filesDownloaded": "{{value}} fichier(s) téléchargé(s)",
+    "filesFailed": "{{value}} fichier(s) en échec"
   }
 }
