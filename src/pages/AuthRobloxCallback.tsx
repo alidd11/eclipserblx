@@ -3,10 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function AuthRobloxCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,15 +19,15 @@ export default function AuthRobloxCallback() {
 
       if (errorParam) {
         console.error('Roblox OAuth error:', errorParam, errorDescription);
-        setError(errorDescription || 'Roblox authentication was cancelled');
-        toast.error('Authentication Failed', { description: errorDescription || 'Roblox authentication was cancelled' });
+        setError(errorDescription || t('authCallback.cancelledRoblox'));
+        toast.error(t('authCallback.failed'), { description: errorDescription || t('authCallback.cancelledRoblox') });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
 
       if (!code) {
-        setError('No authorization code received');
-        toast.error('Authentication Failed', { description: 'No authorization code received from Roblox' });
+        setError(t('authCallback.noCode'));
+        toast.error(t('authCallback.failed'), { description: t('authCallback.noCodeRoblox') });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
@@ -46,8 +48,8 @@ export default function AuthRobloxCallback() {
       if (!isLinking) {
         const returnedState = searchParams.get('state');
         if (!storedState || !returnedState || returnedState !== storedState) {
-          setError('This sign-in link is invalid or has expired. Please try again.');
-          toast.error('Authentication Failed', { description: 'This sign-in link is invalid or has expired.' });
+          setError(t('authCallback.invalidLink'));
+          toast.error(t('authCallback.failed'), { description: t('authCallback.invalidLinkShort') });
           setTimeout(() => navigate('/auth'), 3000);
           return;
         }
@@ -62,7 +64,7 @@ export default function AuthRobloxCallback() {
         try {
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) {
-            setError('You must be logged in to link your Roblox account');
+            setError(t('authCallback.robloxLoginRequired'));
             setTimeout(() => navigate('/account'), 3000);
             return;
           }
@@ -79,12 +81,12 @@ export default function AuthRobloxCallback() {
           if (invokeError) throw invokeError;
           if (data?.error) throw new Error(data.error);
 
-          toast.success('Roblox Linked!', { description: `Connected as ${data.roblox_username}` });
+          toast.success(t('authCallback.robloxLinked'), { description: t('authCallback.robloxLinkedDesc', { username: data.roblox_username }) });
           navigate('/account');
           return;
         } catch (err) {
           console.error('Roblox link callback error:', err);
-          setError(err instanceof Error ? err.message : 'Failed to link Roblox account');
+          setError(err instanceof Error ? err.message : t('authCallback.robloxLinkFailed'));
           setTimeout(() => navigate('/account'), 3000);
           return;
         }
@@ -101,8 +103,8 @@ export default function AuthRobloxCallback() {
 
         if (fnError || data?.error) {
           console.error('Roblox auth error:', fnError || data?.error);
-          setError(data?.error || 'Failed to authenticate with Roblox');
-          toast.error('Authentication Failed', { description: data?.error || 'Failed to authenticate with Roblox' });
+          setError(data?.error || t('authCallback.robloxFailed'));
+          toast.error(t('authCallback.failed'), { description: data?.error || t('authCallback.robloxFailed') });
           setTimeout(() => navigate('/auth'), 3000);
           return;
         }
@@ -115,16 +117,16 @@ export default function AuthRobloxCallback() {
 
           if (sessionError) {
             console.error('Failed to set session:', sessionError);
-            setError('Failed to complete sign-in');
-            toast.error('Authentication Failed', { description: 'Failed to complete sign-in' });
+            setError(t('authCallback.sessionFailed'));
+            toast.error(t('authCallback.failed'), { description: t('authCallback.sessionFailed') });
             setTimeout(() => navigate('/auth'), 3000);
             return;
           }
 
-          toast.success(data.isNewUser ? 'Account Created!' : 'Welcome Back!', {
+          toast.success(data.isNewUser ? t('authCallback.accountCreated') : t('authCallback.welcomeBack'), {
             description: data.isNewUser
-              ? 'Your account has been created successfully.'
-              : 'You have been signed in successfully.',
+              ? t('authCallback.accountCreatedDesc')
+              : t('authCallback.welcomeBackDesc'),
           });
 
           // Process pending referral if exists
@@ -158,20 +160,20 @@ export default function AuthRobloxCallback() {
             navigate('/');
           }
         } else {
-          setError('No session received');
-          toast.error('Authentication Failed', { description: 'No session received from server' });
+          setError(t('authCallback.noSession'));
+          toast.error(t('authCallback.failed'), { description: t('authCallback.noSessionDesc') });
           setTimeout(() => navigate('/auth'), 3000);
         }
       } catch (err) {
         console.error('Roblox callback error:', err);
-        setError('An unexpected error occurred');
-        toast.error('Authentication Failed', { description: 'An unexpected error occurred' });
+        setError(t('authCallback.unexpected'));
+        toast.error(t('authCallback.failed'), { description: t('authCallback.unexpected') });
         setTimeout(() => navigate('/auth'), 3000);
       }
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, t]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
@@ -184,15 +186,15 @@ export default function AuthRobloxCallback() {
               </svg>
             </div>
             <h1 className="text-xl font-semibold text-foreground">{error}</h1>
-            <p className="text-muted-foreground">Redirecting to sign in...</p>
+            <p className="text-muted-foreground">{t('authCallback.redirecting')}</p>
           </>
         ) : (
           <>
             <div className="h-16 w-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center">
               <Loader2 className="h-8 w-8 text-red-500 animate-spin" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground">Signing in with Roblox</h1>
-            <p className="text-muted-foreground">Please wait...</p>
+            <h1 className="text-xl font-semibold text-foreground">{t('authCallback.signingInRoblox')}</h1>
+            <p className="text-muted-foreground">{t('authCallback.pleaseWait')}</p>
           </>
         )}
       </div>

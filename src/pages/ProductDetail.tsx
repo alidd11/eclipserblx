@@ -38,10 +38,12 @@ import { StickyBuyBar } from '@/components/product/StickyBuyBar';
 import { supabase } from '@/integrations/supabase/client';
 import { useProductDetailData } from './product-detail/useProductDetailData';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { useTranslation } from 'react-i18next';
 
 export default function ProductDetail() {
  const { productNumber } = useParams<{ productNumber: string }>();
  usePageTracking({ pagePath: `/products/${productNumber}` });
+ const { t } = useTranslation();
  const location = useLocation();
  const { addItem, isInCart } = useCart();
  const { formatPrice } = useCurrency();
@@ -363,7 +365,7 @@ export default function ProductDetail() {
 						>
 							<div className="flex items-center gap-3 text-foreground/90">
 								<ChevronLeft className="h-6 w-6 animate-pulse" />
-								<span className="text-sm font-medium">Swipe to browse</span>
+								<span className="text-sm font-medium">{t('productDetail.swipeToBrowse')}</span>
 								<ChevronLeft className="h-6 w-6 rotate-180 animate-pulse" />
 							</div>
 						</div>
@@ -421,7 +423,7 @@ export default function ProductDetail() {
  )}
  {product.is_featured && (
  <Badge className="bg-primary/10 text-primary border-primary/20">
- Featured Product
+ {t('productDetail.featuredProduct')}
  </Badge>
  )}
  </div>
@@ -433,11 +435,11 @@ export default function ProductDetail() {
  <div className="space-y-4">
  <div className="flex items-center gap-2">
  <Heart className="h-5 w-5 text-emerald-500" />
- <span className="text-sm font-medium text-emerald-500">Pay What You Want</span>
+ <span className="text-sm font-medium text-emerald-500">{t('productDetail.payWhatYouWant')}</span>
  </div>
  {pwywSuggestedPrice > 0 && (
  <p className="text-sm text-muted-foreground">
- Suggested price: {formatPrice(pwywSuggestedPrice)}
+ {t('productDetail.suggestedPrice', { amount: formatPrice(pwywSuggestedPrice) })}
  </p>
  )}
  <div className="flex items-center gap-3">
@@ -448,24 +450,24 @@ export default function ProductDetail() {
  min={pwywMinPrice}
  value={pwywAmount}
  onChange={(e) => setPwywAmount(e.target.value)}
- aria-label="Your price in GBP"
+ aria-label={t('productDetail.yourPriceLabel')}
  className="text-3xl font-bold bg-transparent border-b-2 border-border focus:border-primary focus-visible:ring-2 focus-visible:ring-primary/40 outline-none w-32 text-foreground rounded-sm"
  placeholder="0.00"
  />
  </div>
  {pwywMinPrice === 0 && (
  <p className="text-xs text-muted-foreground">
- Enter £0 for a free download, or pay any amount to support the creator
+ {t('productDetail.freeOrSupport')}
  </p>
  )}
  {pwywMinPrice > 0 && (
  <p className="text-xs text-muted-foreground">
- Minimum: {formatPrice(pwywMinPrice)}
+ {t('productDetail.minimum', { amount: formatPrice(pwywMinPrice) })}
  </p>
  )}
  {parseFloat(pwywAmount) > 0 && parseFloat(pwywAmount) < 1 && (
  <p className="text-xs text-destructive">
- Paid amounts must be at least £1.00
+ {t('productDetail.minimumPaid')}
  </p>
  )}
  </div>
@@ -483,7 +485,7 @@ export default function ProductDetail() {
  </span>
  {selectedBundle.quantity > 1 && (
  <span className="text-sm text-muted-foreground ml-2">
- for {selectedBundle.quantity} licenses
+ {t('productDetail.forLicenses', { value: selectedBundle.quantity })}
  </span>
  )}
  </div>
@@ -517,24 +519,24 @@ export default function ProductDetail() {
  {inCart ? (
  <>
  <Check className="h-5 w-5 mr-2" />
- Added to Cart
+ {t('productDetail.addedToCart')}
  </>
  ) : isPWYW && getPwywCartPrice() === 0 ? (
  <>
  <Heart className="h-5 w-5 mr-2" />
- Get for Free
+ {t('productDetail.getForFree')}
  </>
  ) : (
  <>
  <ShoppingCart className="h-5 w-5 mr-2" />
- {isPWYW ? `Add to Cart — ${formatPrice(getPwywCartPrice())}` : 'Add to Cart'}
+ {isPWYW ? t('productDetail.addToCartAmount', { amount: formatPrice(getPwywCartPrice()) }) : t('productDetail.addToCart')}
  </>
  )}
  </Button>
  
  {inCart && (
  <Button size="lg" asChild className="h-12">
- <Link to="/cart">View Cart</Link>
+ <Link to="/cart">{t('productDetail.viewCart')}</Link>
  </Button>
  )}
  </div>
@@ -545,11 +547,11 @@ export default function ProductDetail() {
  {product.stores && (
  <div className="grid grid-cols-3 divide-x divide-border rounded-xl border border-border bg-card overflow-hidden">
  {[
- { icon: Shield, label: 'Buyer Protection' },
- { icon: Zap, label: 'Instant Delivery' },
+ { icon: Shield, label: t('productDetail.buyerProtection') },
+ { icon: Zap, label: t('productDetail.instantDelivery') },
  product.stores.is_verified
- ? { icon: BadgeCheck, label: 'Verified Seller' }
- : { icon: Check, label: 'Secure Checkout' },
+ ? { icon: BadgeCheck, label: t('productDetail.verifiedSeller') }
+ : { icon: Check, label: t('productDetail.secureCheckout') },
  ].map(({ icon: Icon, label }) => (
  <div key={label} className="flex flex-col items-center justify-center gap-1.5 px-2 py-3.5 text-center">
  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
@@ -583,7 +585,7 @@ export default function ProductDetail() {
  onClick={() => setShowIPReportDialog(true)}
  >
  <Flag className="h-3.5 w-3.5" />
- Report
+ {t('productDetail.report')}
  </Button>
  </div>
  </div>

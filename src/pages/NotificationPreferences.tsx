@@ -13,8 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useBackgroundPush } from '@/hooks/useBackgroundPush';
 import { sendPushNotification } from '@/lib/pushNotifications';
+import { useTranslation } from 'react-i18next';
 
 export default function NotificationPreferences() {
+ const { t } = useTranslation();
  const { user } = useAuth();
  
  const queryClient = useQueryClient();
@@ -84,10 +86,10 @@ export default function NotificationPreferences() {
  },
  onSuccess: () => {
  queryClient.invalidateQueries({ queryKey: ['email-subscription', user?.id] });
- toast.success('Preferences Saved', { description: 'Your notification preferences have been updated.' });
+ toast.success(t('notificationPrefs.saved'), { description: t('notificationPrefs.savedDesc') });
  },
  onError: () => {
- toast.error('Error', { description: 'Failed to update preferences. Please try again.' });
+ toast.error(t('common.error'), { description: t('notificationPrefs.updateFailed') });
  },
  });
 
@@ -104,14 +106,14 @@ export default function NotificationPreferences() {
  if (isSubscribed) {
  const success = await unsubscribe();
  if (success) {
- toast.success('Push Disabled', { description: 'You will no longer receive push notifications.' });
+ toast.success(t('notificationPrefs.pushDisabled'), { description: t('notificationPrefs.pushDisabledDesc') });
  }
  } else {
  const result = await subscribe();
  if (result.success) {
- toast.success('Push Enabled', { description: 'You will now receive push notifications.' });
+ toast.success(t('notificationPrefs.pushEnabled'), { description: t('notificationPrefs.pushEnabledDesc') });
  } else if (result.error) {
- toast.error('Error', { description: result.error });
+ toast.error(t('common.error'), { description: result.error });
  }
  }
  };
@@ -142,12 +144,12 @@ export default function NotificationPreferences() {
  });
  
  if (result.success) {
- toast.success('Test Sent', { description: 'Check your device for the notification.' });
+ toast.success(t('notificationPrefs.testSent'), { description: t('notificationPrefs.testSentDesc') });
  } else {
- toast.error('Test Failed', { description: result.error || 'Could not send test notification.' });
+ toast.error(t('notificationPrefs.testFailed'), { description: result.error || t('notificationPrefs.testFailedDesc') });
  }
  } catch (error) {
- toast.error('Error', { description: 'Failed to send test notification.' });
+ toast.error(t('common.error'), { description: t('notificationPrefs.sendTestFailed') });
  } finally {
  setTestingPush(false);
  }

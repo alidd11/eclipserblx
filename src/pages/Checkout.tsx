@@ -16,6 +16,7 @@ import { usePageMeta } from '@/hooks/usePageMeta';
 import { useTranslation } from 'react-i18next';
 import { errMsg } from '@/lib/errors';
 import { optimizeImageUrl } from '@/utils/optimizeImageUrl';
+import { formatGBP } from '@/lib/formatters';
 
 interface AppliedDiscount {
   id: string;
@@ -95,7 +96,7 @@ export default function Checkout() {
 
   const applyDiscount = async () => {
     if (!discountCode.trim()) {
-      showErrorNotification(t('common.error'), 'Please enter a discount code');
+      showErrorNotification(t('common.error'), t('checkout.enterDiscountCode'));
       return;
     }
 
@@ -138,7 +139,7 @@ export default function Checkout() {
       setDiscountCode('');
       showSuccessNotification(t('checkout.discountApplied'), t('checkout.youSaved', { amount: formatPrice(amount) }));
     } catch (error) {
-      showErrorNotification(t('common.error'), 'Failed to apply discount');
+      showErrorNotification(t('common.error'), t('checkout.applyFailed'));
     } finally {
       setIsApplyingDiscount(false);
     }
@@ -167,10 +168,10 @@ export default function Checkout() {
       if (data?.error) throw new Error(data.error);
 
       clearCart();
-      showSuccessNotification(t('checkout.paymentSuccess'), 'Your free products are ready to download!');
+      showSuccessNotification(t('checkout.paymentSuccess'), t('checkout.freeReady'));
       navigate(`/order-success?order_id=${data.orderId}&free=true`);
     } catch (err) {
-      showErrorNotification(t('common.error'), errMsg(err) || 'Failed to claim free products');
+      showErrorNotification(t('common.error'), errMsg(err) || t('checkout.claimFailed'));
     } finally {
       setIsProcessing(false);
     }
@@ -272,6 +273,12 @@ export default function Checkout() {
                 <span>{t('checkout.total')}</span>
                 <span>{formatPrice(finalTotal)}</span>
               </div>
+
+              {finalTotal > 0 && (
+                <p className="text-xs text-muted-foreground text-right">
+                  {t('checkout.chargedInGbp', { amount: formatGBP(finalTotal) })}
+                </p>
+              )}
               
             </div>
 
@@ -330,13 +337,13 @@ export default function Checkout() {
 
             <div className="border border-border rounded-xl bg-card p-4 sm:p-6 space-y-4">
               <h2 className="text-lg font-semibold">
-                {isFreeOrder ? 'Claim Products' : t('checkout.payment')}
+                {isFreeOrder ? t('checkout.claimProducts') : t('checkout.payment')}
               </h2>
 
               {isFreeOrder ? (
                 <div className="space-y-4">
                   <p className="text-sm text-muted-foreground">
-                    These products are free — no payment required!
+                    {t('checkout.freeNoPayment')}
                   </p>
                   <Button
                     onClick={handleFreeOrder}
@@ -344,7 +351,7 @@ export default function Checkout() {
                     disabled={isProcessing}
                   >
                     <Gift className="h-5 w-5 mr-2" />
-                    {isProcessing ? 'Claiming...' : 'Get for Free'}
+                    {isProcessing ? t('checkout.claiming') : t('checkout.getForFree')}
                   </Button>
                 </div>
               ) : (

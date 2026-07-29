@@ -16,6 +16,7 @@ import { DisputeDialog } from '@/components/purchases/DisputeDialog';
 import { DisputeStatusDialog } from '@/components/purchases/DisputeStatusDialog';
 import { ProductsTab } from '@/components/purchases/ProductsTab';
 import { OrdersTab } from '@/components/purchases/OrdersTab';
+import { useTranslation } from 'react-i18next';
 
 interface OrderItem {
   id: string;
@@ -56,6 +57,7 @@ const formatOrderId = (id: string): string => `#${id.slice(-6).toUpperCase()}`;
 export default function MyPurchases() {
   usePageMeta({ title: 'My Purchases', description: 'View and download your purchased products on Eclipse.', canonicalPath: '/purchases' });
   usePageTracking({ pagePath: '/purchases' });
+  const { t } = useTranslation();
   const { user, session } = useAuth();
   const { formatPrice } = useCurrency();
 
@@ -152,13 +154,13 @@ export default function MyPurchases() {
   const hasActiveFilters = !!(searchQuery || statusFilter || dateRange.from || dateRange.to);
 
   const handleDownload = async (item: OrderItem & { orderId: string }, fileIndex: number = 0) => {
-    if (!item.product_id || !session?.access_token) { showErrorNotification('Error', 'Unable to download'); return; }
+    if (!item.product_id || !session?.access_token) { showErrorNotification(t('common.error'), t('myPurchases.unableToDownload')); return; }
     setDownloading(item.id);
     setDownloadProgress({ itemId: item.id, progress: 0, fileSize: null, downloaded: 0 });
     try {
       const { data, error } = await supabase.functions.invoke('download-asset', { body: { productId: item.product_id, orderItemId: item.id, fileIndex }, headers: { Authorization: `Bearer ${session.access_token}` } });
       if (error) throw error;
-      if (data?.error) { showErrorNotification('Download Error', data.error); return; }
+      if (data?.error) { showErrorNotification(t('myPurchases.downloadErrorTitle'), data.error); return; }
       if (data?.downloadUrl) {
         const response = await fetch(data.downloadUrl);
         const reader = response.body?.getReader();
@@ -179,11 +181,11 @@ export default function MyPurchases() {
           a.href = url; a.download = data.fileName || data.productName || 'download';
           document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); document.body.removeChild(a);
         } else { window.open(data.downloadUrl, '_blank'); }
-        showSuccessNotification('Downloaded!', data.productName || 'Your file is ready');
+        showSuccessNotification(t('myPurchases.downloaded'), data.productName || t('myPurchases.fileReady'));
       }
     } catch (err: unknown) {
       console.error('Download error:', err);
-      showErrorNotification('Download Failed', err instanceof Error ? err.message : 'Download failed');
+      showErrorNotification(t('myPurchases.downloadFailed'), err instanceof Error ? err.message : t('myPurchases.downloadFailedDesc'));
     } finally { setDownloading(null); setDownloadProgress(null); }
   };
 
@@ -197,7 +199,7 @@ export default function MyPurchases() {
 
   const handleDownloadSelected = async () => {
     const itemsToDownload = downloadableItems.filter(item => selectedItems.has(item.id) && item.product?.asset_file_url && item.product?.category_id !== BOT_CATEGORY_ID);
-    if (itemsToDownload.length === 0) { toast.error('No items selected'); return; }
+    if (itemsToDownload.length === 0) { toast.error(t('myPurchases.noItemsSelected')); return; }
     setIsBatchDownloading(true);
     let successCount = 0, failCount = 0;
     for (const item of itemsToDownload) {
@@ -218,8 +220,8 @@ export default function MyPurchases() {
       } catch { failCount++; }
     }
     setIsBatchDownloading(false);
-    if (successCount > 0) showSuccessNotification('Downloads Started', `${successCount} file(s) downloaded`);
-    if (failCount > 0) toast.error(`${failCount} file(s) failed`);
+    if (successCount > 0) showSuccessNotification(t('myPurchases.downloadsStarted'), t('myPurchases.filesDownloaded', { value: successCount }));
+    if (failCount > 0) toast.error(t('myPurchases.filesFailed', { value: failCount }));
   };
 
   const clearFilters = () => { setSearchQuery(''); setStatusFilter(null); setDateRange({}); setOrdersPage(1); };
@@ -228,9 +230,9 @@ export default function MyPurchases() {
     return (
       <MainLayout>
         <div className="container py-16 text-center space-y-4">
-          <h1 className="text-2xl font-display font-bold">Please Sign In</h1>
-          <p className="text-muted-foreground">You need to be signed in to view your purchases.</p>
-          <Button asChild className="gradient-button border-0"><Link to="/auth">Sign In</Link></Button>
+          <h1 className="text-2xl font-display font-bold">{t('myPurchases.signInTitle')}</h1>
+          <p className="text-muted-foreground">{t('myPurchases.signInDesc')}</p>
+          <Button asChild className="gradient-button border-0"><Link to="/auth">{t('common.signIn')}</Link></Button>
         </div>
       </MainLayout>
     );
@@ -241,23 +243,23 @@ export default function MyPurchases() {
       <div className="container py-6 sm:py-8 space-y-6 max-w-4xl">
         <div className="space-y-2">
           <Link to="/account" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-            <ChevronLeft className="h-4 w-4" />Back to Account
+            <ChevronLeft className="h-4 w-4" />{t('myPurchases.backToAccount')}
           </Link>
           <div className="flex items-start gap-4">
             <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-muted flex items-center justify-center shrink-0">
               <ShoppingBag className="h-6 w-6 sm:h-7 sm:w-7 text-muted-foreground" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-display font-bold">My Purchases</h1>
-              <p className="text-muted-foreground text-sm sm:text-base">Access your products and view order history</p>
+              <h1 className="text-2xl sm:text-3xl font-display font-bold">{t('myPurchases.title')}</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">{t('myPurchases.subtitle')}</p>
             </div>
           </div>
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="products" className="gap-2"><Download className="h-4 w-4" />Products</TabsTrigger>
-            <TabsTrigger value="orders" className="gap-2"><Receipt className="h-4 w-4" />Order History</TabsTrigger>
+            <TabsTrigger value="products" className="gap-2"><Download className="h-4 w-4" />{t('myPurchases.tabProducts')}</TabsTrigger>
+            <TabsTrigger value="orders" className="gap-2"><Receipt className="h-4 w-4" />{t('myPurchases.tabOrders')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="products" className="space-y-4">

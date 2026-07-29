@@ -3,10 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function AuthDiscordCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -17,15 +19,15 @@ export default function AuthDiscordCallback() {
 
       if (errorParam) {
         console.error('Discord OAuth error:', errorParam, errorDescription);
-        setError(errorDescription || 'Discord authentication was cancelled');
-        toast.error('Authentication Failed', { description: errorDescription || 'Discord authentication was cancelled' });
+        setError(errorDescription || t('authCallback.cancelledDiscord'));
+        toast.error(t('authCallback.failed'), { description: errorDescription || t('authCallback.cancelledDiscord') });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
 
       if (!code) {
-        setError('No authorization code received');
-        toast.error('Authentication Failed', { description: 'No authorization code received from Discord' });
+        setError(t('authCallback.noCode'));
+        toast.error(t('authCallback.failed'), { description: t('authCallback.noCodeDiscord') });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
@@ -35,8 +37,8 @@ export default function AuthDiscordCallback() {
       sessionStorage.removeItem('discord_oauth_state');
       const returnedState = searchParams.get('state');
       if (!storedState || !returnedState || returnedState !== storedState) {
-        setError('This sign-in link is invalid or has expired. Please try again.');
-        toast.error('Authentication Failed', { description: 'This sign-in link is invalid or has expired.' });
+        setError(t('authCallback.invalidLink'));
+        toast.error(t('authCallback.failed'), { description: t('authCallback.invalidLinkShort') });
         setTimeout(() => navigate('/auth'), 3000);
         return;
       }
@@ -52,8 +54,8 @@ export default function AuthDiscordCallback() {
 
         if (fnError || data?.error) {
           console.error('Discord auth error:', fnError || data?.error);
-          setError(data?.error || 'Failed to authenticate with Discord');
-          toast.error('Authentication Failed', { description: data?.error || 'Failed to authenticate with Discord' });
+          setError(data?.error || t('authCallback.discordFailed'));
+          toast.error(t('authCallback.failed'), { description: data?.error || t('authCallback.discordFailed') });
           setTimeout(() => navigate('/auth'), 3000);
           return;
         }
@@ -67,17 +69,17 @@ export default function AuthDiscordCallback() {
 
           if (sessionError) {
             console.error('Failed to set session:', sessionError);
-            setError('Failed to complete sign-in');
-            toast.error('Authentication Failed', { description: 'Failed to complete sign-in' });
+            setError(t('authCallback.sessionFailed'));
+            toast.error(t('authCallback.failed'), { description: t('authCallback.sessionFailed') });
             setTimeout(() => navigate('/auth'), 3000);
             return;
           }
 
           // Success!
-          toast.success(data.isNewUser ? 'Account Created!' : 'Welcome Back!', {
-            description: data.isNewUser 
-              ? 'Your account has been created successfully.' 
-              : 'You have been signed in successfully.',
+          toast.success(data.isNewUser ? t('authCallback.accountCreated') : t('authCallback.welcomeBack'), {
+            description: data.isNewUser
+              ? t('authCallback.accountCreatedDesc')
+              : t('authCallback.welcomeBackDesc'),
           });
 
           // Process pending referral if exists
@@ -112,20 +114,20 @@ export default function AuthDiscordCallback() {
             navigate('/');
           }
         } else {
-          setError('No session received');
-          toast.error('Authentication Failed', { description: 'No session received from server' });
+          setError(t('authCallback.noSession'));
+          toast.error(t('authCallback.failed'), { description: t('authCallback.noSessionDesc') });
           setTimeout(() => navigate('/auth'), 3000);
         }
       } catch (err) {
         console.error('Discord callback error:', err);
-        setError('An unexpected error occurred');
-        toast.error('Authentication Failed', { description: 'An unexpected error occurred' });
+        setError(t('authCallback.unexpected'));
+        toast.error(t('authCallback.failed'), { description: t('authCallback.unexpected') });
         setTimeout(() => navigate('/auth'), 3000);
       }
     };
 
     handleCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, t]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center safe-area-page">
@@ -138,15 +140,15 @@ export default function AuthDiscordCallback() {
               </svg>
             </div>
             <h1 className="text-xl font-semibold text-foreground">{error}</h1>
-            <p className="text-muted-foreground">Redirecting to sign in...</p>
+            <p className="text-muted-foreground">{t('authCallback.redirecting')}</p>
           </>
         ) : (
           <>
             <div className="h-16 w-16 mx-auto rounded-full bg-[hsl(var(--brand-discord))]/10 flex items-center justify-center">
               <Loader2 className="h-8 w-8 text-[hsl(var(--brand-discord))] animate-spin" />
             </div>
-            <h1 className="text-xl font-semibold text-foreground">Signing in with Discord</h1>
-            <p className="text-muted-foreground">Please wait...</p>
+            <h1 className="text-xl font-semibold text-foreground">{t('authCallback.signingInDiscord')}</h1>
+            <p className="text-muted-foreground">{t('authCallback.pleaseWait')}</p>
           </>
         )}
       </div>

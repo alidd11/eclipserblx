@@ -20,10 +20,12 @@ import { MyPaymentsCard } from '@/components/wallet/MyPaymentsCard';
 // Embedded payment
 import { EmbeddedPaymentModal } from '@/components/payments/EmbeddedPaymentModal';
 import { formatGBP } from '@/lib/formatters';
+import { useTranslation } from 'react-i18next';
 
 export default function Credits() {
   usePageTracking({ pagePath: '/credits' });
   usePageMeta({ title: 'Store Credits', description: 'Manage your Eclipse store credits. Top up your wallet and pay for products instantly.', canonicalPath: '/credits' });
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -42,14 +44,14 @@ export default function Credits() {
 
   useEffect(() => {
     if (wasSuccess && purchasedAmount) {
-      toast.success(`Successfully added ${formatGBP(parseFloat(purchasedAmount))} to your wallet!`);
+      toast.success(t('credits.addedToWallet', { amount: formatGBP(parseFloat(purchasedAmount)) }));
       fetchBalance();
       navigate('/credits', { replace: true });
     } else if (wasCanceled) {
-      toast.info('Credit purchase was canceled.');
+      toast.info(t('credits.purchaseCanceled'));
       navigate('/credits', { replace: true });
     }
-  }, [wasSuccess, wasCanceled, purchasedAmount, fetchBalance, navigate]);
+  }, [wasSuccess, wasCanceled, purchasedAmount, fetchBalance, navigate, t]);
 
   const handlePurchaseCredits = (amount: number) => {
     setCreditAmount(amount);
@@ -57,7 +59,7 @@ export default function Credits() {
   };
 
   const handlePaymentSuccess = () => {
-    toast.success(`Successfully added ${formatGBP(creditAmount)} to your wallet!`);
+    toast.success(t('credits.addedToWallet', { amount: formatGBP(creditAmount) }));
     fetchBalance();
     setPaymentModalOpen(false);
   };
