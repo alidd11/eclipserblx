@@ -7,7 +7,7 @@ import { handleLink } from '../commands/link.js';
 import { handleVerify } from '../commands/verify.js';
 import { handleProfile } from '../commands/profile.js';
 import { handlePurchases } from '../commands/purchases.js';
-import { handleRetrieve } from '../commands/retrieve.js';
+import { handleRetrieve, handleRetrieveSelect } from '../commands/retrieve.js';
 import { handleGetRole } from '../commands/getrole.js';
 import { handleStore } from '../commands/store.js';
 import { handleUnlink } from '../commands/unlink.js';
@@ -90,6 +90,16 @@ export async function handleInteraction(interaction) {
         await interaction.deferReply();
         const serverContext = await getServerContext(interaction.guildId);
         return handleShowcaseModal(interaction, serverContext);
+      }
+      return;
+    }
+
+    // Handle the click-to-download dropdown from /retrieve
+    if (interaction.isStringSelectMenu()) {
+      if (interaction.customId === 'retrieve_dl') {
+        await interaction.deferReply({ ephemeral: true });
+        const serverContext = await getServerContext(interaction.guildId);
+        return handleRetrieveSelect(interaction, serverContext);
       }
       return;
     }
