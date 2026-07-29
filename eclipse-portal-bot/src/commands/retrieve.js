@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, AttachmentBuilder } from 'discord.js';
 import { getBranding, getAvatarUrl } from '../utils/embeds.js';
 import { ephemeralReply } from '../utils/responses.js';
 import { getLinkedAccount } from '../utils/server-context.js';
@@ -6,10 +6,38 @@ import { supabase } from '../supabase.js';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// Stay comfortably under Discord's 25 MB bot upload limit. Files at or below this
+// are sent as a direct attachment (no external link shown); larger ones fall back
+// to a signed-URL button.
+const MAX_ATTACH_BYTES = 24 * 1024 * 1024;
+
 function chunk(arr, size = 50) {
   const chunks = [];
   for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
   return chunks;
+}
+
+/** Build a clean, human-friendly filename (product name + original extension). */
+function assetFilename(product) {
+  const base = (product.asset_file_url || '').split('/').pop() || '';
+  const dot = base.lastIndexOf('.');
+  const ext = dot > -1 ? base.slice(dot) : '';
+  const safe = (product.name || 'download').replace(/[^\w.\- ]+/g, '').trim().slice(0, 80) || 'download';
+  return safe.toLowerCase().endsWith(ext.toLowerCase()) ? safe : `${safe}${ext}`;
+}
+
+/** Fetch the asset bytes server-side; returns a Buffer, or null if too big / failed. */
+async function fetchAssetBuffer(signedUrl) {
+  try {
+    const res = await fetch(signedUrl);
+    if (!res.ok) return null;
+    const declared = Number(res.headers.get('content-length') || 0);
+    if (declared && declared > MAX_ATTACH_BYTES) return null;
+    const buf = Buffer.from(await res.arrayBuffer());
+    return buf.length > MAX_ATTACH_BYTES ? null : buf;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -73,16 +101,40 @@ export async function deliverDownload(interaction, profile, product, branding, a
     }]);
   }
 
+  const signedUrl = signedUrlResult.data.signedUrl;
+
+  // Preferred path: attach the file directly so the customer never sees a raw
+  // storage URL and Discord shows no "Leaving Discord" warning. Only small files
+  // (≤24 MB) qualify; anything larger falls back to a signed-link button.
+  const buffer = await fetchAssetBuffer(signedUrl);
+  if (buffer) {
+    const filename = assetFilename(product);
+    const embed = {
+      color: 0x3b82f6,
+      title: `📥 ${product.name}`,
+      description: `Your file is attached below — just click to save it.\n\n\`${filename}\` • ${(buffer.length / 1024 / 1024).toFixed(2)} MB`,
+      thumbnail: { url: avatarUrl },
+      footer: { text: branding.footer },
+      timestamp: new Date().toISOString(),
+    };
+    // Fresh AttachmentBuilder per send (DM + ephemeral) to avoid re-reading a spent stream.
+    try {
+      await interaction.user.send({ embeds: [embed], files: [new AttachmentBuilder(buffer, { name: filename })] });
+    } catch { /* DMs closed */ }
+    return ephemeralReply(interaction, [embed], undefined, [new AttachmentBuilder(buffer, { name: filename })]);
+  }
+
+  // Fallback for large files: signed-URL button (link expires in 1 hour).
   const embed = {
     color: 0x3b82f6,
     title: `📥 ${product.name}`,
-    description: 'Your download link is ready! Click the button below.\n\n⚠️ This link expires in **1 hour**. Do not share it.',
+    description: 'This file is too large to attach directly, so here’s a secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.',
     thumbnail: { url: avatarUrl },
     footer: { text: branding.footer },
     timestamp: new Date().toISOString(),
   };
   const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setLabel('📥 Download File').setStyle(ButtonStyle.Link).setURL(signedUrlResult.data.signedUrl),
+    new ButtonBuilder().setLabel('📥 Download File').setStyle(ButtonStyle.Link).setURL(signedUrl),
   );
 
   try { await interaction.user.send({ embeds: [embed], components: [row] }); } catch { /* DMs closed */ }

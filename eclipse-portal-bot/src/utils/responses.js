@@ -5,10 +5,11 @@
 /**
  * Send an ephemeral reply with embed(s)
  */
-export async function ephemeralReply(interaction, embeds, components) {
+export async function ephemeralReply(interaction, embeds, components, files) {
   const payload = { embeds: Array.isArray(embeds) ? embeds : [embeds], ephemeral: true };
   if (components) payload.components = components;
-  
+  if (files) payload.files = files;
+
   if (interaction.deferred || interaction.replied) {
     return interaction.editReply(payload);
   }
