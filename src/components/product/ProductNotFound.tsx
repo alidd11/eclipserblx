@@ -1,23 +1,28 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Package } from 'lucide-react';
+import { MainLayout } from '@/components/layout/MainLayout';
 
 /**
- * Shared "Product Not Found" fallback used by product detail pages.
+ * Shared "Product Not Found" fallback used by product detail pages. Wrapped in
+ * MainLayout so a buyer who hits a stale/removed product link still has the header,
+ * navigation, and search to recover — rather than a chrome-less dead end.
  */
 export function ProductNotFound() {
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 px-4 safe-area-page">
-      <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-2">
-        <Package className="h-8 w-8 text-muted-foreground/60" />
+    <MainLayout>
+      <div className="flex flex-col items-center justify-center gap-4 px-4 py-24 text-center">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-2">
+          <Package className="h-8 w-8 text-muted-foreground/60" />
+        </div>
+        <h1 className="text-2xl font-bold text-foreground">Product not found</h1>
+        <p className="text-sm text-muted-foreground max-w-xs">
+          This product may have been removed or is no longer available.
+        </p>
+        <Button asChild size="sm">
+          <Link to="/products">Browse Products</Link>
+        </Button>
       </div>
-      <h1 className="text-2xl font-bold text-foreground">Product not found</h1>
-      <p className="text-sm text-muted-foreground text-center max-w-xs">
-        This product may have been removed or is no longer available.
-      </p>
-      <Button asChild size="sm">
-        <Link to="/products">Browse Products</Link>
-      </Button>
-    </div>
+    </MainLayout>
   );
 }

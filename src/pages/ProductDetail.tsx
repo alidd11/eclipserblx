@@ -619,6 +619,16 @@ export default function ProductDetail() {
  productId={product.id}
  productName={product.name}
  />
+
+ {/* Mobile sticky buy bar — reappears once the main CTA scrolls out of view */}
+ <StickyBuyBar
+ productName={product.name}
+ formattedPrice={isPWYW ? formatPrice(getPwywCartPrice()) : formatPrice(Number(product.price))}
+ inCart={inCart}
+ onAddToCart={handleAddToCart}
+ ctaRef={ctaButtonRef}
+ disabled={isPWYW && parseFloat(pwywAmount) > 0 && parseFloat(pwywAmount) < 1}
+ />
  </MainLayout>
  );
 }
