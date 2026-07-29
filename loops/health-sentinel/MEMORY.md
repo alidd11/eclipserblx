@@ -40,3 +40,15 @@ No fixes needed → no PR. Checker subagent independently confirmed PASS.
   embeds an OLDER index.js than the real bot — missing the partials/health/watchdog
   fixes. Its deploy file was pointed at railway.json, but a full snapshot re-sync is
   still a follow-up.
+- BOT DOWNLOAD WATERMARKING GAP (security follow-up, needs Lovable): `/retrieve`
+  signs the raw `asset_file_url` from the product-assets bucket directly, so it
+  BYPASSES the per-buyer `.lua` watermarking + `additional_asset_files` bundling that
+  the website's `download-asset` edge function does. Bot downloads of script products
+  are therefore un-watermarked. Fix (security-sensitive, edge-function change → human
+  PR, HIGH-RISK, do NOT auto-merge): either (1) add a bot-secret-authenticated
+  server-to-server path to `download-asset` so the bot delegates to the same
+  watermark/bundle logic, or (2) add a `download.getSignedAsset` op to bot-gateway
+  that replicates it. Option 1 preferred (single source of truth). Ownership gating
+  and download logging in the bot are already correct; only the watermark step is
+  missing. (As of 2026-07-29 the bot delivers files as direct Discord attachments,
+  so there's no longer a raw storage URL exposed to the customer.)
