@@ -9,6 +9,8 @@ const cooldowns = new Map(); // Map<commandName, Map<userId, expiresAt>>
 const COMMAND_COOLDOWNS = {
   daily: 86400,      // 24 hours (server-side enforced too)
   retrieve: 10,
+  retrieve_dl: 10,   // click-to-download dropdown — each click streams + uploads a file
+
   showcase: 30,
   profile: 5,
   purchases: 5,

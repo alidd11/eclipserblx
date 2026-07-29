@@ -3,28 +3,14 @@ import { getBranding, getAvatarUrl } from '../utils/embeds.js';
 import { ephemeralReply } from '../utils/responses.js';
 import { getLinkedAccount } from '../utils/server-context.js';
 import { supabase } from '../supabase.js';
+import { chunk, assetFilename, extractProductIds, matchProduct } from './retrieve-helpers.js';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// Stay comfortably under Discord's 25 MB bot upload limit. Files at or below this
-// are sent as a direct attachment (no external link shown); larger ones fall back
-// to a signed-URL button.
-const MAX_ATTACH_BYTES = 24 * 1024 * 1024;
-
-function chunk(arr, size = 50) {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
-  return chunks;
-}
-
-/** Build a clean, human-friendly filename (product name + original extension). */
-function assetFilename(product) {
-  const base = (product.asset_file_url || '').split('/').pop() || '';
-  const dot = base.lastIndexOf('.');
-  const ext = dot > -1 ? base.slice(dot) : '';
-  const safe = (product.name || 'download').replace(/[^\w.\- ]+/g, '').trim().slice(0, 80) || 'download';
-  return safe.toLowerCase().endsWith(ext.toLowerCase()) ? safe : `${safe}${ext}`;
-}
+// Files at or below this are streamed into memory and sent as a direct attachment
+// (no external link shown). Kept deliberately low (8 MB, not the 25 MB Discord
+// ceiling) because every attachment is buffered fully in RAM — several concurrent
+// large downloads could OOM the bot and take it down. Anything larger takes the
+// zero-memory signed-link path instead.
+const MAX_ATTACH_BYTES = 8 * 1024 * 1024;
 
 /** Fetch the asset bytes server-side; returns a Buffer, or null if too big / failed. */
 async function fetchAssetBuffer(signedUrl) {
@@ -67,7 +53,7 @@ export async function getPurchasedDownloadableProducts(profile, serverContext) {
     if (orderItems) allOrderItems.push(...orderItems);
   }
 
-  const productIds = [...new Set(allOrderItems.map(i => i.product_id).filter(v => typeof v === 'string' && UUID_RE.test(v)))];
+  const productIds = extractProductIds(allOrderItems);
   if (productIds.length === 0) return [];
 
   const products = [];
@@ -80,19 +66,27 @@ export async function getPurchasedDownloadableProducts(profile, serverContext) {
   return products;
 }
 
+/** Record a completed download once, after the file/link has actually been delivered. */
+async function recordDownload(profile, product) {
+  try {
+    await Promise.all([
+      supabase.from('download_logs').insert({ user_id: profile.user_id, product_id: product.id }),
+      supabase.rpc('increment_download_count', { p_product_id: product.id }).then(() => {}).catch(() => {}),
+    ]);
+  } catch { /* logging is best-effort; never fail a delivery over it */ }
+}
+
 /**
- * Generate a signed download link for one owned product, log it, and deliver via
- * DM (best-effort) + an ephemeral reply. `interaction` must already be deferred
- * or repliable ephemerally.
+ * Deliver a signed download for one owned product via DM (best-effort) + an ephemeral
+ * reply, then log it. Small files are attached directly (no raw storage URL shown);
+ * large files — or any case where attaching fails — fall back to a signed-link button.
+ * `interaction` must already be deferred or repliable ephemerally.
  */
 export async function deliverDownload(interaction, profile, product, branding, avatarUrl) {
-  const [signedUrlResult] = await Promise.all([
-    supabase.storage.from('product-assets').createSignedUrl(product.asset_file_url, 3600),
-    supabase.from('download_logs').insert({ user_id: profile.user_id, product_id: product.id }),
-    supabase.rpc('increment_download_count', { p_product_id: product.id }).then(() => {}).catch(() => {}),
-  ]);
+  const { data: signed, error: signErr } = await supabase.storage
+    .from('product-assets').createSignedUrl(product.asset_file_url, 3600);
 
-  if (signedUrlResult.error || !signedUrlResult.data?.signedUrl) {
+  if (signErr || !signed?.signedUrl) {
     return ephemeralReply(interaction, [{
       color: 0xef4444, title: '❌ Download Failed',
       description: "Couldn't generate a download link. Please try again or use the website.",
@@ -100,12 +94,10 @@ export async function deliverDownload(interaction, profile, product, branding, a
       footer: { text: branding.footer }, timestamp: new Date().toISOString(),
     }]);
   }
+  const signedUrl = signed.signedUrl;
 
-  const signedUrl = signedUrlResult.data.signedUrl;
-
-  // Preferred path: attach the file directly so the customer never sees a raw
-  // storage URL and Discord shows no "Leaving Discord" warning. Only small files
-  // (≤24 MB) qualify; anything larger falls back to a signed-link button.
+  // Preferred path: attach the file directly so the customer never sees a raw storage
+  // URL and Discord shows no "Leaving Discord" warning. Only small files qualify.
   const buffer = await fetchAssetBuffer(signedUrl);
   if (buffer) {
     const filename = assetFilename(product);
@@ -117,12 +109,9 @@ export async function deliverDownload(interaction, profile, product, branding, a
     try {
       await interaction.user.send({
         embeds: [{
-          color: 0x3b82f6,
-          title: `📥 ${product.name}`,
+          color: 0x3b82f6, title: `📥 ${product.name}`,
           description: `Here's your download — the file is attached below.\n\n${sizeLabel}`,
-          thumbnail: { url: avatarUrl },
-          footer: { text: branding.footer },
-          timestamp: new Date().toISOString(),
+          thumbnail: { url: avatarUrl }, footer: { text: branding.footer }, timestamp: new Date().toISOString(),
         }],
         files: [new AttachmentBuilder(buffer, { name: filename })],
       });
@@ -131,19 +120,24 @@ export async function deliverDownload(interaction, profile, product, branding, a
 
     // Ephemeral reply: confirm the DM and always include the file as a backup, so
     // delivery still succeeds even when the customer has DMs from the server off.
-    return ephemeralReply(interaction, [{
-      color: 0x3b82f6,
-      title: `📥 ${product.name}`,
-      description: dmDelivered
-        ? `📬 I've also sent this to your **DMs**. The file is attached here as a backup too.\n\n${sizeLabel}`
-        : `Your file is attached below — just click to save it.\n\n💡 Turn on **Direct Messages** from server members to get downloads sent to your DMs too.\n\n${sizeLabel}`,
-      thumbnail: { url: avatarUrl },
-      footer: { text: branding.footer },
-      timestamp: new Date().toISOString(),
-    }], undefined, [new AttachmentBuilder(buffer, { name: filename })]);
+    try {
+      const res = await ephemeralReply(interaction, [{
+        color: 0x3b82f6, title: `📥 ${product.name}`,
+        description: dmDelivered
+          ? `📬 I've also sent this to your **DMs**. The file is attached here as a backup too.\n\n${sizeLabel}`
+          : `Your file is attached below — save it now. 💡 Turn on **Direct Messages** from server members to also get downloads sent privately to your DMs.\n\n${sizeLabel}`,
+        thumbnail: { url: avatarUrl }, footer: { text: branding.footer }, timestamp: new Date().toISOString(),
+      }], undefined, [new AttachmentBuilder(buffer, { name: filename })]);
+      await recordDownload(profile, product);
+      return res;
+    } catch (err) {
+      // Attaching failed (e.g. Discord rejected the upload) — fall through to the
+      // signed-link path below rather than surfacing a generic error to the buyer.
+      console.error('[retrieve] attachment delivery failed, falling back to link:', err?.message || err);
+    }
   }
 
-  // Fallback for large files: signed-URL button (link expires in 1 hour).
+  // Fallback: signed-URL button (link expires in 1 hour). Zero bot memory.
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setLabel('📥 Download File').setStyle(ButtonStyle.Link).setURL(signedUrl),
   );
@@ -152,28 +146,24 @@ export async function deliverDownload(interaction, profile, product, branding, a
   try {
     await interaction.user.send({
       embeds: [{
-        color: 0x3b82f6,
-        title: `📥 ${product.name}`,
-        description: 'This file is too large to attach directly, so here’s a secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.',
-        thumbnail: { url: avatarUrl },
-        footer: { text: branding.footer },
-        timestamp: new Date().toISOString(),
+        color: 0x3b82f6, title: `📥 ${product.name}`,
+        description: 'Here’s your secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.',
+        thumbnail: { url: avatarUrl }, footer: { text: branding.footer }, timestamp: new Date().toISOString(),
       }],
       components: [row],
     });
     dmDelivered = true;
   } catch { /* DMs closed */ }
 
-  return ephemeralReply(interaction, [{
-    color: 0x3b82f6,
-    title: `📥 ${product.name}`,
+  const res = await ephemeralReply(interaction, [{
+    color: 0x3b82f6, title: `📥 ${product.name}`,
     description: dmDelivered
-      ? '📬 I\'ve also sent this to your **DMs**. This file is too large to attach, so use the secure link below (expires in **1 hour**).'
-      : 'This file is too large to attach directly, so here’s a secure download link.\n\n⚠️ This link expires in **1 hour**. Do not share it.\n\n💡 Turn on **Direct Messages** from server members to get downloads sent to your DMs too.',
-    thumbnail: { url: avatarUrl },
-    footer: { text: branding.footer },
-    timestamp: new Date().toISOString(),
+      ? '📬 I\'ve also sent this to your **DMs**. Use the secure link below (expires in **1 hour**).'
+      : 'Here’s your secure download link — use it now (expires in **1 hour**).\n\n💡 Turn on **Direct Messages** from server members to also get downloads sent privately to your DMs.',
+    thumbnail: { url: avatarUrl }, footer: { text: branding.footer }, timestamp: new Date().toISOString(),
   }], [row]);
+  await recordDownload(profile, product);
+  return res;
 }
 
 export async function handleRetrieve(interaction, serverContext) {
@@ -221,12 +211,7 @@ export async function handleRetrieve(interaction, serverContext) {
   }
 
   // Search term → fuzzy match then deliver directly.
-  const term = productSearch.toLowerCase().trim();
-  const matched = products.find(p =>
-    p.name.toLowerCase().includes(term) ||
-    term.includes(p.name.toLowerCase()) ||
-    p.name.toLowerCase().split(' ').some(w => term.includes(w) && w.length > 3),
-  );
+  const matched = matchProduct(products, productSearch);
 
   if (!matched) {
     return ephemeralReply(interaction, [{

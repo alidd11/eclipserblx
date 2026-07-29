@@ -97,7 +97,17 @@ export async function handleInteraction(interaction) {
     // Handle the click-to-download dropdown from /retrieve
     if (interaction.isStringSelectMenu()) {
       if (interaction.customId === 'retrieve_dl') {
+        // Each selection streams a file into memory and uploads it — rate-limit
+        // per user so the dropdown can't be spammed into an egress/memory drain.
+        const remaining = checkCooldown('retrieve_dl', interaction.user.id);
+        if (remaining > 0) {
+          return interaction.reply({
+            embeds: [{ color: 0xf59e0b, description: `⏳ Please wait **${remaining}s** before downloading again.` }],
+            ephemeral: true,
+          });
+        }
         await interaction.deferReply({ ephemeral: true });
+        setCooldown('retrieve_dl', interaction.user.id);
         const serverContext = await getServerContext(interaction.guildId);
         return handleRetrieveSelect(interaction, serverContext);
       }
