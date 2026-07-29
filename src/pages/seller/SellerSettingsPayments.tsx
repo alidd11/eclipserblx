@@ -175,6 +175,7 @@ export default function SellerSettingsPayments() {
       setSearchParams({});
       refetchConnectStatus();
       queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      queryClient.invalidateQueries({ queryKey: ['seller-onboarding-data'] });
     }
   }, [stripeOnboardingComplete, refetchConnectStatus, queryClient, setSearchParams]);
 
@@ -253,6 +254,8 @@ export default function SellerSettingsPayments() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-store'] });
+      // Adding a payout method completes an onboarding step — refresh the checklist.
+      queryClient.invalidateQueries({ queryKey: ['seller-onboarding-data'] });
       toast.success('Payout method updated');
     },
     onError: (error) => {

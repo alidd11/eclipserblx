@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { invalidateProductSurfaces } from '@/lib/queryInvalidation';
 import { useAuth } from '@/hooks/useAuth';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useMarketplaceAccess } from '@/hooks/useFeatureFlag';
@@ -308,7 +309,7 @@ export function useProductEditorData() {
         toast.success('Product submitted for review - our team will approve it shortly');
       }
       clearFormData();
-      queryClient.invalidateQueries({ queryKey: ['seller-products'] });
+      invalidateProductSurfaces(queryClient);
       navigate('/seller/products');
     },
     onError: (error) => { toast.error('Failed to save product: ' + error.message); },

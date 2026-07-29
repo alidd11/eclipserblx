@@ -68,6 +68,8 @@ export default function SellerTermsOfService() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['seller-agreement', store?.id] });
+      // Signing the TOS ticks an onboarding step — refresh the checklist/progress.
+      queryClient.invalidateQueries({ queryKey: ['seller-onboarding-data'] });
       toast.success("Agreement signed successfully", {
         description: "Thank you for agreeing to the Seller Terms of Service.",
       });

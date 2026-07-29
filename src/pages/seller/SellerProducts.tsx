@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
 import { sanitizeSearch } from '@/lib/searchUtils';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSellerStatus } from '@/hooks/useSellerStatus';
 import { useSellerSubscription } from '@/hooks/useSellerSubscription';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { invalidateProductSurfaces } from '@/lib/queryInvalidation';
 import { supabase } from '@/integrations/supabase/client';
 import { QUANTIS_STORE_ID } from '@/lib/constants';
 import { SellerLayout } from '@/components/seller/SellerLayout';
@@ -62,6 +63,7 @@ const isAdminManagedProduct = (product: { store_id: string; is_seller_product: b
 
 export default function SellerProducts() {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const { store } = useSellerStatus();
   const { limits } = useSellerSubscription();
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,7 +157,7 @@ export default function SellerProducts() {
     },
     onSuccess: (newProductId, variables) => {
       toast.success(variables.id ? 'Product updated' : 'Product created');
-      queryClient.invalidateQueries({ queryKey: ['seller-products'] });
+      invalidateProductSurfaces(queryClient);
       setIsDialogOpen(false);
       setForm(INITIAL_FORM);
       if (!variables.id && newProductId) {
@@ -170,7 +172,7 @@ export default function SellerProducts() {
       const { error } = await supabase.from('products').delete().eq('id', productId).eq('store_id', store?.id ?? '');
       if (error) throw error;
     },
-    onSuccess: () => { toast.success('Product deleted'); queryClient.invalidateQueries({ queryKey: ['seller-products'] }); setDeleteProductId(null); },
+    onSuccess: () => { toast.success('Product deleted'); invalidateProductSurfaces(queryClient); setDeleteProductId(null); },
     onError: (error) => toast.error('Failed: ' + error.message),
   });
 
@@ -198,7 +200,11 @@ export default function SellerProducts() {
     setIsDialogOpen(true);
   };
 
-  const openCreate = () => { hapticTap(); setForm(INITIAL_FORM); setIsDialogOpen(true); };
+  // Creating a product must go through the full editor, which enforces the
+  // IP-ownership (DMCA) attestation and the 100-char description minimum. The inline
+  // dialog is kept for quick edits of existing products only, so those gates can
+  // never be bypassed by which "Add Product" button the seller happened to click.
+  const openCreate = () => { hapticTap(); navigate('/seller/products/new'); };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
