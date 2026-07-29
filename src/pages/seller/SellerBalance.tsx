@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SellerLayout } from '@/components/seller/SellerLayout';
 
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -69,7 +70,6 @@ export default function SellerBalance() {
 
       if (error) throw error;
       return (data as any[]) || [];
-      return data || [];
     },
     enabled: !!store?.id,
   });
@@ -349,12 +349,19 @@ export default function SellerBalance() {
                   </Table>
                 </div>
               ) : (
-                <div className="text-center py-12">
+                <div className="border border-dashed border-border rounded-xl py-12 px-6 text-center">
                   <DollarSign className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
                   <h3 className="text-lg font-medium mb-2">No payouts yet</h3>
-                  <p className="text-muted-foreground">
-                    Your payout history will appear here once you request your first payout.
+                  <p className="text-muted-foreground max-w-sm mx-auto mb-4">
+                    {hasPayoutMethod
+                      ? 'Once your available balance reaches the minimum, request a payout and it will appear here.'
+                      : 'Add a payout method to start withdrawing your earnings — your payout history will appear here.'}
                   </p>
+                  {!hasPayoutMethod && (
+                    <Button asChild variant="outline" size="sm">
+                      <Link to="/seller/settings/payments">Set up payout method</Link>
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Plus, Trash2, Loader2, Eye, EyeOff, Copy, Clock } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useActiveStore } from '@/contexts/ActiveStoreContext';
 import { format, formatRelative } from '@/lib/dateUtils';
 import { WebhookDeliveryLogs } from '@/components/seller/WebhookDeliveryLogs';
@@ -166,8 +167,10 @@ export default function SellerWebhooks() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <div className="space-y-3">
+            {[1, 2, 3].map(i => (
+              <Skeleton key={i} className="h-14" />
+            ))}
           </div>
         ) : !webhooks?.length ? (
           <div className="border border-border rounded-xl p-8 text-center text-muted-foreground">

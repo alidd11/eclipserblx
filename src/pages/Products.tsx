@@ -301,16 +301,25 @@ function ProductsGrid({
  }
 
  if (products?.length === 0) {
+ const hasActiveFilters = !!search.trim() || Array.from(searchParams.keys()).length > 0;
  return (
- <div className="text-center py-16 space-y-4">
- <p className="text-xl text-muted-foreground">{t('products.noProductsFound')}</p>
+ <div className="border border-dashed border-border rounded-xl py-16 px-6 text-center space-y-4">
+ <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center mx-auto">
+ <Package className="h-7 w-7 text-muted-foreground/60" />
+ </div>
+ <p className="text-lg font-medium text-foreground">{t('products.noProductsFound')}</p>
+ {hasActiveFilters ? (
  <Button variant="outline" onClick={() => {
  setSearch('');
- const newParams = new URLSearchParams();
- setSearchParams(newParams);
+ setSearchParams(new URLSearchParams());
  }}>
  {t('common.clearFilters')}
  </Button>
+ ) : (
+ <Button asChild variant="outline">
+ <Link to="/">{t('common.browseProducts')}</Link>
+ </Button>
+ )}
  </div>
  );
  }

@@ -11,7 +11,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
 import { Receipt, Download, Printer, Calendar, PoundSterling, TrendingUp, AlertTriangle } from 'lucide-react';
-import { Loader2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { format } from '@/lib/dateUtils';
 import { SITE_NAME } from '@/lib/constants';
 import { useIsInsideHub } from '@/components/admin/AdminHubContext';
@@ -198,8 +198,10 @@ export default function SellerTaxSummary() {
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="space-y-3 py-2">
+              {[1, 2, 3, 4].map(i => (
+                <Skeleton key={i} className="h-12" />
+              ))}
             </div>
           ) : !summary || summary.saleCount === 0 ? (
             <div className="border border-border rounded-xl overflow-hidden">

@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Download, Package, Loader2, ExternalLink } from 'lucide-react';
+import { Download, Package, ExternalLink } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
@@ -146,9 +147,10 @@ export function MyPurchasesCard() {
  </h3>
  </div>
  <div className="p-4">
- <div className="text-center py-8">
- <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
- <p className="text-sm text-muted-foreground mt-2">Loading purchases...</p>
+ <div className="space-y-3">
+ {[1, 2, 3].map(i => (
+ <Skeleton key={i} className="h-16" />
+ ))}
  </div>
  </div>
  </div>
