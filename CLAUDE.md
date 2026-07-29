@@ -44,9 +44,19 @@ A Roblox UK-roleplay marketplace: buyers browse and purchase digital assets (veh
   regression classes in `LOOP.md` (including the **bot uptime-critical checks** for
   `eclipse-portal-bot/`), fixes only the smallest safe items on a `loop/health-YYYYMMDD`
   branch, then a **separate checker subagent** verifies against THE CHECK.
-- **Guardrails:** it **never merges to `main`** — a fix is pushed as a branch awaiting a
-  human PR approval. One run per night (the cron is the hard cap).
-- **Scheduling:** Routine `trig_013oR9RLJXHaJd3tmpmKVLzY`. To pause/kill/change it, use
-  the `update_trigger`/`delete_trigger` tools; to run on demand use `fire_trigger`.
+- **Autonomy (checker-gated auto-merge):** after the checker returns `VERDICT: PASS` +
+  `RISK: LOW` (small diff; app/`eclipse-portal-bot` code only), the loop **merges the fix
+  to `main` itself** (git, no human). **HIGH-RISK always needs a human PR** and is never
+  auto-merged: anything touching `supabase/functions/**`, `supabase/migrations/**`,
+  auth/RLS/policy/security, payments/stripe/webhooks, `package.json`/lockfiles, or config.
+  One run per night (the cron is the hard cap).
+- **Connector limit (important):** this org does NOT allow attaching MCP connectors to
+  Routines, so the scheduled fresh sessions have **git only — no GitHub/Sentry/Lovable**.
+  Auto-merge works (git). The loop's **Sentry-triage and CI-follow-through steps only run
+  when a connector is present** (e.g. when the loop is fired from a connector-holding
+  session), otherwise they're skipped. Scheduled Lovable QA sweeps / Sentry auto-fix must
+  be run from a session that holds those connectors, or set up from the claude.ai Routines UI.
+- **Scheduling:** Routine `trig_013oR9RLJXHaJd3tmpmKVLzY` (nightly 01:00 UTC). Pause/kill/
+  change via `update_trigger`/`delete_trigger`; run on demand with `fire_trigger`.
 - **If you're a fresh session:** don't recreate it. Read `loops/health-sentinel/MEMORY.md`
   (on that branch) to see what the last run did and any OPEN ITEMS before acting.
