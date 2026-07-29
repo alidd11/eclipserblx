@@ -11,7 +11,7 @@ describe('product URL helpers', () => {
   });
 
   it('uses the rich-preview endpoint for explicit sharing', () => {
-    expect(buildProductShareUrl(57)).toBe('https://share.eclipserblx.com/products/57');
+    expect(buildProductShareUrl(57)).toBe('https://eclipserblx.com/products/57');
   });
 
   it('safely encodes slug identifiers', () => {

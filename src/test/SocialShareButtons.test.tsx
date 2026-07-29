@@ -35,7 +35,7 @@ describe('SocialShareButtons', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Copy link' }));
 
     expect(copyToClipboard).toHaveBeenCalledWith(
-      'https://share.eclipserblx.com/products/57',
+      'https://eclipserblx.com/products/57',
       'Product link copied!',
     );
     expect(screen.getByRole('group', { name: 'Share this product' })).toBeInTheDocument();
@@ -54,7 +54,7 @@ describe('SocialShareButtons', () => {
     await waitFor(() => expect(share).toHaveBeenCalledWith({
       title: 'Fire Hose System',
       text: 'A realistic firefighting system',
-      url: 'https://share.eclipserblx.com/products/57',
+      url: 'https://eclipserblx.com/products/57',
     }));
   });
 
@@ -64,7 +64,7 @@ describe('SocialShareButtons', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Share' }));
 
     await waitFor(() => expect(copyToClipboard).toHaveBeenCalledWith(
-      'https://share.eclipserblx.com/products/57',
+      'https://eclipserblx.com/products/57',
       'Product link copied!',
     ));
   });
