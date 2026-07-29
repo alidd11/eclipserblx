@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Check, ExternalLink, Star, BadgeCheck } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
@@ -43,13 +43,17 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
   if (!product) return null;
 
   const images = (product.images as string[]) || [];
-  const store = product.stores as any;
+  const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
   const inCart = isInCart(product.id);
   const currentImage = images[imgIndex] || getFirstImageUrl(product.images);
 
   return (
     <Dialog open={!!productId} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-lg p-0 overflow-hidden">
+        <DialogTitle className="sr-only">Quick view: {product.name}</DialogTitle>
+        <DialogDescription className="sr-only">
+          Preview the product, add it to your cart, or open its full details.
+        </DialogDescription>
         {/* Image */}
         <div className="relative aspect-[4/3] bg-muted">
           {currentImage ? (
@@ -63,7 +67,10 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
               {images.slice(0, 5).map((_, i) => (
                 <button
                   key={i}
+                  type="button"
                   onClick={() => setImgIndex(i)}
+                  aria-label={`Show product image ${i + 1}`}
+                  aria-current={i === imgIndex ? 'true' : undefined}
                   className={`h-1.5 w-1.5 rounded-full transition-colors ${i === imgIndex ? 'bg-primary' : 'bg-background/50'}`}
                 />
               ))}
@@ -120,7 +127,7 @@ export function QuickViewModal({ productId, onClose }: QuickViewModalProps) {
               variant="outline"
               onClick={() => {
                 onClose();
-                navigate(`/products/${(product as any).product_number}`);
+                navigate(`/products/${product.product_number}`);
               }}
             >
               <ExternalLink className="h-4 w-4 mr-1.5" /> Details

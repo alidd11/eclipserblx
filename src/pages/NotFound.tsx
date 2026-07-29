@@ -21,8 +21,6 @@ const NotFound = () => {
   usePageMeta({ title: "Page Not Found" });
 
   useEffect(() => {
-    console.error("404 Error: User attempted to access non-existent route:", location.pathname);
-
     // Tell search engines not to index this soft-404 page
     let meta = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
     const existed = !!meta;

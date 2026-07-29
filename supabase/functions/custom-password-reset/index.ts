@@ -194,7 +194,6 @@ Deno.serve(async (req) => {
       }
 
       const normalizedEmail = email.trim().toLowerCase();
-      console.log(`Password reset requested for: ${normalizedEmail}`)
 
       // Check if user exists
       const { data: profile } = await supabase
@@ -272,50 +271,46 @@ Deno.serve(async (req) => {
       }
 
       const normalizedEmail = email.trim().toLowerCase();
-      console.log(`Verifying password reset for: ${normalizedEmail}`)
 
-      // Check attempt count on the most recent unused code for this email
-      const { data: recentCode } = await supabase
-        .rpc('get_reset_code_attempts', { p_email: normalizedEmail })
-        .maybeSingle();
+      // Verify, increment the durable attempt counter and burn a successful
+      // code in one locked database transaction. This prevents parallel reuse
+      // and keeps limits effective across Edge Function instances.
+      const { data: consumeStatus, error: consumeError } = await supabase.rpc(
+        'consume_password_reset_code',
+        {
+          p_email: normalizedEmail,
+          p_code: code,
+          p_max_attempts: MAX_VERIFY_ATTEMPTS,
+        },
+      );
 
-      if (!recentCode) {
+      if (consumeError) {
+        console.error('Failed to consume password reset code:', consumeError)
+        throw new Error('Failed to verify reset code')
+      }
+
+      if (consumeStatus === 'no_active') {
         return new Response(
           JSON.stringify({ error: 'No active reset code found. Please request a new one.' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Check if max attempts exceeded - invalidate code
-      const currentAttempts = recentCode.attempts ?? 0;
-      if (currentAttempts >= MAX_VERIFY_ATTEMPTS) {
-        // Burn the code
-        await supabase.rpc('burn_reset_code', { p_id: recentCode.id });
-
-        console.warn(`[custom-password-reset] Max attempts exceeded for ${normalizedEmail}`);
+      if (consumeStatus === 'too_many') {
+        console.warn('[custom-password-reset] Max attempts exceeded');
         return new Response(
           JSON.stringify({ error: 'Too many failed attempts. Please request a new code.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Increment attempt counter BEFORE checking code (prevents timing attacks)
-      await supabase.rpc('increment_reset_code_attempts', { p_id: recentCode.id });
-
-      // Verify the code against the hash
-      const { data: verifiedCodeId } = await supabase
-        .rpc('verify_password_reset_code', { p_email: normalizedEmail, p_code: code });
-
-      if (!verifiedCodeId) {
+      if (consumeStatus !== 'verified') {
         console.log('Invalid or expired code')
         return new Response(
           JSON.stringify({ error: 'Invalid or expired code' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-
-      // Mark code as used
-      await supabase.rpc('burn_reset_code', { p_id: verifiedCodeId });
 
       // Get user by email
       const { data: userProfile } = await supabase

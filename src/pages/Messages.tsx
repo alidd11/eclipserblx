@@ -11,6 +11,7 @@ import { formatDistanceToNow } from '@/lib/dateUtils';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { hapticTap } from '@/lib/haptics';
+import { safeInternalPath } from '@/lib/safeNavigation';
 import { usePageMeta } from '@/hooks/usePageMeta';
 import { useNotificationSound } from '@/hooks/useNotificationSound';
 
@@ -142,8 +143,9 @@ export default function Messages() {
     hapticTap();
     if (!notification.is_read) markAsRead(notification.id);
     if (notification.link) {
-      const isAdminLink = notification.link.startsWith('/admin');
-      navigate(isAdminLink ? '/account' : notification.link);
+      const safeLink = safeInternalPath(notification.link, '/account');
+      const isAdminLink = safeLink.startsWith('/admin');
+      navigate(isAdminLink ? '/account' : safeLink);
     }
   };
 

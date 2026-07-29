@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { safeInternalPath } from '@/lib/safeNavigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -120,7 +121,7 @@ export default function SellerNotifications() {
       markAsRead.mutate(notification.id);
     }
     if (notification.action_url) {
-      navigate(notification.action_url);
+      navigate(safeInternalPath(notification.action_url, '/seller'));
     }
   };
 

@@ -536,6 +536,8 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  const unauthorized = requireServiceRole(req, corsHeaders);
+  if (unauthorized) return unauthorized;
 
   // Only internal server-side callers (verify-payment, stripe webhook handler)
   // may trigger receipt emails. Blocks phishing via crafted "order receipt".

@@ -2,6 +2,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { loadCheckoutCart, StoredCheckoutCart } from "../_shared/checkout-cart.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,6 +66,7 @@ Deno.serve(async (req) => {
     let discountCodeId: string | null = null;
     let discountAmount = 0;
     let stripeProcessingFee = 0; // Actual Stripe fee from balance transaction
+    let checkoutCart: StoredCheckoutCart | null = null;
 
     // Handle Stripe Checkout Session
     if (sessionId) {
@@ -84,9 +86,14 @@ Deno.serve(async (req) => {
         });
       }
 
-      items = JSON.parse(session.metadata?.items || "[]");
-      customerEmail = session.customer_email || session.metadata?.customer_email || "";
-      userId = session.metadata?.user_id || null;
+      const sessionPaymentIntentId = typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : session.payment_intent?.id;
+      checkoutCart = await loadCheckoutCart(supabaseClient, session.metadata?.cart_ref, sessionPaymentIntentId);
+      if (session.metadata?.cart_ref && !checkoutCart) throw new Error("Checkout cart reference is missing or expired");
+      items = checkoutCart?.items || JSON.parse(session.metadata?.items || "[]");
+      customerEmail = checkoutCart?.customer_email || session.customer_email || session.metadata?.customer_email || "";
+      userId = checkoutCart?.user_id || session.metadata?.user_id || null;
       paymentId = session.id;
       discountCodeId = session.metadata?.discount_code_id || null;
       discountAmount = parseFloat(session.metadata?.discount_amount || "0");
@@ -135,9 +142,12 @@ Deno.serve(async (req) => {
         });
       }
 
-      items = JSON.parse(paymentIntent.metadata?.items || "[]");
-      customerEmail = paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "";
-      userId = paymentIntent.metadata?.user_id || null;
+      checkoutCart = await loadCheckoutCart(supabaseClient, paymentIntent.metadata?.cart_ref, paymentIntent.id);
+      if (paymentIntent.metadata?.cart_ref && !checkoutCart) throw new Error("Checkout cart reference is missing or expired");
+      items = checkoutCart?.items || JSON.parse(paymentIntent.metadata?.items || "[]");
+      if (items.length === 0) throw new Error("PaymentIntent checkout has no recoverable cart items");
+      customerEmail = checkoutCart?.customer_email || paymentIntent.receipt_email || paymentIntent.metadata?.customer_email || "";
+      userId = checkoutCart?.user_id || paymentIntent.metadata?.user_id || null;
       paymentId = paymentIntent.id;
       discountCodeId = paymentIntent.metadata?.discount_code_id || null;
       discountAmount = parseFloat(paymentIntent.metadata?.discount_amount || "0");
@@ -179,6 +189,10 @@ Deno.serve(async (req) => {
       .single();
 
     let orderId: string;
+    const subtotal = checkoutCart?.subtotal ?? items.reduce((sum: number, item: any) => sum + item.price, 0);
+    const total = checkoutCart?.total ?? (amountTotal || (subtotal - discountAmount));
+    let insertedItems: Array<{ id: string; product_name: string; product_id: string | null }> = [];
+    const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
 
     if (existingOrder) {
       logStep("Order already exists", { orderId: existingOrder.id });
@@ -193,6 +207,11 @@ Deno.serve(async (req) => {
 
       if (existingTx && existingTx.length > 0) {
         logStep("Seller transactions already processed, skipping");
+        if (checkoutCart) {
+          await supabaseClient.from("payment_checkout_carts")
+            .update({ fulfilled_at: new Date().toISOString() })
+            .eq("id", checkoutCart.id);
+        }
         return new Response(JSON.stringify({ 
           success: true, 
           orderId: existingOrder.id,
@@ -207,9 +226,6 @@ Deno.serve(async (req) => {
     } else {
 
     // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => sum + item.price, 0);
-    const total = amountTotal || (subtotal - discountAmount);
-
     logStep("Creating order", { customerEmail, userId, subtotal, discountAmount, total, paymentMethod, discountCodeId });
 
     // Increment discount code usage if applicable
@@ -254,6 +270,11 @@ Deno.serve(async (req) => {
         logStep("Order already created by the webhook, deferring to it", { paymentId });
         const { data: raceOrder } = await supabaseClient
           .from("orders").select("id").eq("payment_id", paymentId).single();
+        if (checkoutCart) {
+          await supabaseClient.from("payment_checkout_carts")
+            .update({ fulfilled_at: new Date().toISOString() })
+            .eq("id", checkoutCart.id);
+        }
         return new Response(JSON.stringify({
           success: true,
           orderId: raceOrder?.id ?? null,
@@ -271,8 +292,6 @@ Deno.serve(async (req) => {
     orderId = order.id;
 
     // Create order items and track bot purchases
-    const botInstallationCodes: Array<{ product_name: string; installation_code: string }> = [];
-    
     const orderItems = items.map((item: any) => ({
       order_id: orderId,
       product_id: item.id,
@@ -280,15 +299,20 @@ Deno.serve(async (req) => {
       price: item.price,
     }));
 
-    const { data: insertedItems, error: itemsError } = await supabaseClient
+    const { error: itemsError } = await supabaseClient
       .from("order_items")
-      .insert(orderItems)
-      .select();
+      .upsert(orderItems, { onConflict: "order_id,product_id", ignoreDuplicates: true });
 
     if (itemsError) {
       logStep("Order items error", itemsError);
       throw itemsError;
     }
+    const { data: reloadedItems, error: reloadItemsError } = await supabaseClient
+      .from("order_items")
+      .select("id, product_name, product_id")
+      .eq("order_id", orderId);
+    if (reloadItemsError) throw reloadItemsError;
+    insertedItems = reloadedItems || [];
     } // end of else block (order didn't exist)
 
     // Process seller earnings for seller products (net-based after Stripe fees)
@@ -374,50 +398,30 @@ Deno.serve(async (req) => {
             const escrowHoldUntil = new Date();
             escrowHoldUntil.setDate(escrowHoldUntil.getDate() + 3);
 
-            // Dedup guard: skip if seller transaction already exists for this order+item (webhook may have created it)
-            if (orderItemRecord?.id) {
-              const { data: existingSellerTx } = await supabaseClient
-                .from("seller_transactions")
-                .select("id")
-                .eq("order_id", orderId)
-                .eq("order_item_id", orderItemRecord.id)
-                .eq("type", "sale")
-                .is("refunded_at", null)
-                .limit(1);
-
-              if (existingSellerTx && existingSellerTx.length > 0) {
-                logStep("Seller transaction already exists for this order item, skipping", { orderId, orderItemId: orderItemRecord.id });
-                continue;
-              }
+            if (!orderItemRecord?.id) {
+              throw new Error(`Order item is missing for seller product ${item.id}`);
             }
-
-            const { error: txError } = await supabaseClient
-              .from("seller_transactions")
-              .insert({
-                seller_id: sellerId,
-                store_id: product.store_id,
-                order_id: orderId,
-                order_item_id: orderItemRecord?.id || null,
-                gross_amount: grossAmount,
-                stripe_fee: proportionalStripeFee,
-                net_before_commission: netBeforeCommission,
-                platform_fee: platformFee,
-                net_amount: sellerEarnings,
-                amount: sellerEarnings,
-                type: "sale",
-                status: "completed",
-                escrow_hold_until: escrowHoldUntil.toISOString(),
-              });
-
-            if (txError) {
-              logStep("Seller transaction error (non-fatal)", txError);
-            } else {
-              // Atomic balance update — prevents read-then-write race
-              await supabaseClient.rpc('increment_seller_pending_balance', {
+            const { data: recorded, error: txError } = await supabaseClient.rpc(
+              'record_seller_sale_earning',
+              {
                 p_seller_id: sellerId,
                 p_store_id: product.store_id,
-                p_amount: sellerEarnings,
-              });
+                p_order_id: orderId,
+                p_order_item_id: orderItemRecord.id,
+                p_gross_amount: grossAmount,
+                p_stripe_fee: proportionalStripeFee,
+                p_net_before_commission: netBeforeCommission,
+                p_platform_fee: platformFee,
+                p_net_amount: sellerEarnings,
+                p_escrow_hold_until: escrowHoldUntil.toISOString(),
+              },
+            );
+
+            if (txError) throw new Error(`Failed to record seller earning: ${txError.message}`);
+            if (!recorded) {
+              logStep("Seller earning already recorded, skipping", { orderId, orderItemId: orderItemRecord.id });
+              continue;
+            } else {
               logStep("Seller balance updated atomically", { sellerId, amount: sellerEarnings });
 
               // Send email + in-app sale notification to seller
@@ -529,12 +533,14 @@ Deno.serve(async (req) => {
     // The following sections only run for new orders (not when order was already created by webhook)
     if (!existingOrder) {
     // Generate installation codes for bot purchases
-    const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string }>;
+    const insertedItemsArray = insertedItems as Array<{ id: string; product_name: string; product_id: string | null }>;
+    const insertedItemByProduct = new Map(insertedItemsArray.map(item => [item.product_id, item]));
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
+      const insertedOrderItem = insertedItemByProduct.get(item.id);
       const isBotPurchase = item.category_slug === 'bots' || (item.name && item.name.toLowerCase().includes('bot'));
       
-      if (isBotPurchase && insertedItemsArray[i]) {
+      if (isBotPurchase && insertedOrderItem) {
         // Determine how many codes to generate (default to 1 for single license)
         const bundleQuantity = item.quantity || 1;
         const bundleId = item.bundle_id || null;
@@ -566,7 +572,7 @@ Deno.serve(async (req) => {
               .from("bot_installation_codes")
               .insert({
                 order_id: orderId,
-                order_item_id: insertedItemsArray[i].id,
+                order_item_id: insertedOrderItem.id,
                 user_id: userId,
                 installation_code: installationCode,
                 product_name: bundleQuantity > 1 
@@ -771,6 +777,14 @@ Deno.serve(async (req) => {
       }
     }
     } // end of !existingOrder block
+
+    if (checkoutCart) {
+      const { error: cartUpdateError } = await supabaseClient
+        .from("payment_checkout_carts")
+        .update({ fulfilled_at: new Date().toISOString() })
+        .eq("id", checkoutCart.id);
+      if (cartUpdateError) throw new Error(`Failed to mark checkout cart fulfilled: ${cartUpdateError.message}`);
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 

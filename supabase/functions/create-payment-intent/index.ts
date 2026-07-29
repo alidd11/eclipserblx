@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createStripeClient, createAdminSupabase, authenticateUser, getOrCreateStripeCustomer, logStep } from "../_shared/stripe-helpers.ts";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { storeCheckoutCart, StoredCheckoutItem } from "../_shared/checkout-cart.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -65,6 +66,13 @@ serve(async (req) => {
 
     let amountInPence: number;
     let description: string;
+    let checkoutCart: {
+      id: string;
+      items: StoredCheckoutItem[];
+      subtotal: number;
+      discountCodeId: string | null;
+      discountAmount: number;
+    } | null = null;
     const metadata: Record<string, string> = {
       user_id: userId || "", customer_email: userEmail || "", payment_type: type,
     };
@@ -76,8 +84,14 @@ serve(async (req) => {
         const productIds = items.map(i => i.id);
         const { data: products, error: pErr } = await supabaseClient
           .from('products')
-          .select('id, name, price, category_id, is_resellable, store_id, is_pay_what_you_want, min_price')
-          .in('id', productIds);
+          .select('id, name, price, category_id, is_resellable, store_id, is_pay_what_you_want, min_price, stores!inner(id, status, is_active, deleted_at)')
+          .in('id', productIds)
+          .eq('is_active', true)
+          .eq('moderation_status', 'approved')
+          .is('deleted_at', null)
+          .eq('stores.status', 'approved')
+          .eq('stores.is_active', true)
+          .is('stores.deleted_at', null);
         if (pErr) throw new Error("Failed to verify product prices");
 
         const productMap = new Map((products || []).map((p: any) => [p.id, p]));
@@ -142,13 +156,21 @@ serve(async (req) => {
         if (amountInPence < 100) throw new Error("Minimum order amount is £1.00");
 
         description = `Purchase: ${validatedItems.map((i: any) => i.name).join(', ')}`;
-        const compact = validatedItems.map((i: any) => ({ id: i.id, name: i.name, finalPrice: i.finalPrice }));
-        let itemsJson = JSON.stringify(compact);
-        if (itemsJson.length > 490) {
-          itemsJson = JSON.stringify(validatedItems.map((i: any) => ({ id: i.id, p: i.finalPrice })));
-          if (itemsJson.length > 490) itemsJson = itemsJson.substring(0, 490);
-        }
-        metadata.items = itemsJson;
+        const cartReference = crypto.randomUUID();
+        const compact = validatedItems.map((i: any) => ({
+          id: i.id,
+          name: i.name,
+          price: i.finalPrice,
+          category_slug: i.category_slug,
+        }));
+        checkoutCart = {
+          id: cartReference,
+          items: compact,
+          subtotal: serverSubtotal,
+          discountCodeId: discountCodeId || null,
+          discountAmount,
+        };
+        metadata.cart_ref = cartReference;
         metadata.discount_code_id = discountCodeId || '';
         metadata.discount_amount = discountAmount.toString();
         break;
@@ -168,9 +190,8 @@ serve(async (req) => {
         const everyoneCount = Math.max(0, Math.min(100, parseInt(String(everyonePings)) || 0));
         if (hereCount === 0 && everyoneCount === 0) throw new Error("Please select at least one ping to purchase");
 
-        const { data: adSub } = await supabaseClient.from("advertisement_subscriptions").select("*").eq("user_id", userId!).eq("status", "active").maybeSingle();
-        const isTestUser = userEmail === "alicanimir1@gmail.com";
-        if (!adSub && !isTestUser) throw new Error("You need an active advertisement subscription to purchase pings");
+        const { data: adSub } = await supabaseClient.from("advertisement_subscriptions").select("id").eq("user_id", userId!).eq("status", "active").maybeSingle();
+        if (!adSub) throw new Error("You need an active advertisement subscription to purchase pings");
 
         const HERE_BASE = 79, EVERYONE_BASE = 149;
         const BULK = [{ min: 50, d: 0.30 }, { min: 25, d: 0.20 }, { min: 10, d: 0.10 }, { min: 5, d: 0.05 }];
@@ -197,6 +218,31 @@ serve(async (req) => {
       automatic_payment_methods: { enabled: true },
       setup_future_usage: 'on_session',
     });
+
+    if (checkoutCart) {
+      try {
+        await storeCheckoutCart(supabaseClient, {
+          id: checkoutCart.id,
+          paymentIntentId: paymentIntent.id,
+          userId,
+          customerEmail: userEmail || null,
+          items: checkoutCart.items,
+          subtotal: checkoutCart.subtotal,
+          total: amountInPence / 100,
+          discountCodeId: checkoutCart.discountCodeId,
+          discountAmount: checkoutCart.discountAmount,
+        });
+      } catch (cartError) {
+        // A PaymentIntent without its server-side cart can never be fulfilled
+        // safely. Cancel it while it is still unconfirmed and fail closed.
+        try {
+          await stripe.paymentIntents.cancel(paymentIntent.id);
+        } catch {
+          // The caller still receives an error and no client secret.
+        }
+        throw cartError;
+      }
+    }
 
     LOG("PaymentIntent created", { paymentIntentId: paymentIntent.id, amount: amountInPence! });
 

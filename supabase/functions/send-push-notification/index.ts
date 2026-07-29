@@ -511,13 +511,29 @@ serve(async (req) => {
 
     const { user_ids, payload }: NotificationRequest = await req.json();
 
-    if (!user_ids || !user_ids.length || !payload) {
+    if (!Array.isArray(user_ids) || user_ids.length === 0 || user_ids.length > 100 || !payload) {
       throw new Error('Missing user_ids or payload');
+    }
+    const uniqueUserIds = [...new Set(user_ids)];
+    if (
+      uniqueUserIds.some(id => typeof id !== "string" || !/^[0-9a-f-]{36}$/i.test(id)) ||
+      typeof payload.title !== "string" ||
+      payload.title.length < 1 ||
+      payload.title.length > 120 ||
+      typeof payload.body !== "string" ||
+      payload.body.length < 1 ||
+      payload.body.length > 500 ||
+      (payload.url && (!payload.url.startsWith("/") || payload.url.startsWith("//")))
+    ) {
+      return new Response(JSON.stringify({ success: false, error: "Invalid notification request" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Non-staff, non-service callers may only push to themselves.
     if (!authz.isServiceRole && !authz.isStaff) {
-      const invalid = user_ids.some((id) => id !== authz.callerId);
+      const invalid = uniqueUserIds.some((id) => id !== authz.callerId);
       if (invalid) {
         return new Response(
           JSON.stringify({ error: 'Forbidden: may only notify self' }),
@@ -526,7 +542,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Sending push notifications to ${user_ids.length} users`);
+    console.log(`Sending push notifications to ${uniqueUserIds.length} users`);
     console.log('Payload:', JSON.stringify(payload));
 
 
@@ -534,7 +550,7 @@ serve(async (req) => {
     const { data: subscriptions, error: fetchError } = await supabase
       .from('push_subscriptions')
       .select('*')
-      .in('user_id', user_ids);
+      .in('user_id', uniqueUserIds);
 
     if (fetchError) {
       console.error('Error fetching subscriptions:', fetchError);

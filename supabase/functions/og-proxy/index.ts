@@ -165,6 +165,30 @@ function buildBreadcrumbLd(items: { name: string; url: string }[]): string {
   })}</script>`;
 }
 
+function notFoundResponse(entity: "Product" | "Store" | "Category", url: string): Response {
+  const title = `${entity} not found | ${SITE_NAME}`;
+  const description = `This ${entity.toLowerCase()} is no longer available on Eclipse.`;
+  const html = `<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8"/><title>${esc(title)}</title>
+<meta name="description" content="${esc(description)}"/>
+<meta name="robots" content="noindex, nofollow"/>
+<link rel="canonical" href="${esc(url)}"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+</head><body><main><h1>${esc(entity)} not found</h1><p>${esc(description)}</p>
+<p><a href="${SITE_URL}/products">Browse available products</a></p></main></body></html>`;
+
+  return new Response(html, {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=60",
+      "X-Robots-Tag": "noindex, nofollow",
+      "X-Content-Type-Options": "nosniff",
+      ...corsHeaders,
+    },
+  });
+}
+
 async function resolveStoreByHostname(hostname: string): Promise<any> {
   const url = Deno.env.get("SUPABASE_URL")!;
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -177,7 +201,7 @@ async function resolveStoreByHostname(hostname: string): Promise<any> {
   if (!domains?.length) return null;
 
   const storeRes = await fetch(
-    `${url}/rest/v1/stores?select=id,name,description,logo_url,banner_url,slug,product_count&id=eq.${domains[0].store_id}&is_active=eq.true`,
+    `${url}/rest/v1/stores?select=id,name,description,logo_url,banner_url,slug,product_count&id=eq.${domains[0].store_id}&is_active=eq.true&status=eq.approved`,
     { headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: "application/vnd.pgrst.object+json" } }
   );
   if (!storeRes.ok) { await storeRes.text(); return null; }
@@ -230,7 +254,7 @@ Deno.serve(async (req) => {
 
       const pm = path.match(/^\/products\/(\d+)$/);
       if (pm) {
-        const product = await pgQuery("products", "name,description,images,price,product_number,store_id", `product_number=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true`);
+        const product = await pgQuery("products", "name,description,images,price,product_number,store_id", `product_number=eq.${pm[1]}&store_id=eq.${store.id}&is_active=eq.true&moderation_status=eq.approved&deleted_at=is.null`);
         if (product) {
           const pDesc = product.description ? product.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Check out ${product.name} on ${store.name}`;
           const pImg = product.images?.[0] || img;
@@ -241,6 +265,7 @@ Deno.serve(async (req) => {
             headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader(path), ...corsHeaders },
           });
         }
+        return notFoundResponse("Product", storeUrl);
       }
 
       const body = buildStoreBody(store);
@@ -265,7 +290,7 @@ Deno.serve(async (req) => {
     const catSlug = catMatch[1];
     const category = await pgQuery("categories", "id,name,description,slug", `slug=eq.${catSlug}`);
     const pageUrl = `${SITE_URL}/categories/${encodeURIComponent(catSlug)}`;
-    if (!category) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
+    if (!category) return notFoundResponse("Category", pageUrl);
 
     // Fetch top products in this category
     const url = Deno.env.get("SUPABASE_URL")!;
@@ -273,7 +298,7 @@ Deno.serve(async (req) => {
     let categoryProducts: any[] = [];
     try {
       const prodRes = await fetch(
-        `${url}/rest/v1/products?select=name,price,images,product_number,stores(name)&category_id=eq.${category.id}&is_active=eq.true&order=created_at.desc&limit=8`,
+        `${url}/rest/v1/products?select=name,price,images,product_number,stores!inner(name,status,is_active)&category_id=eq.${category.id}&is_active=eq.true&moderation_status=eq.approved&deleted_at=is.null&stores.status=eq.approved&stores.is_active=eq.true&order=created_at.desc&limit=8`,
         { headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: "application/json" } }
       );
       if (prodRes.ok) categoryProducts = await prodRes.json();
@@ -334,9 +359,9 @@ Deno.serve(async (req) => {
   const pm = path.match(/^\/products\/(\d+)$/);
   if (pm) {
     const productNumber = pm[1];
-    const product = await pgQuery("products", "name,description,images,price,product_number,stores(name)", `product_number=eq.${productNumber}&is_active=eq.true`);
+    const product = await pgQuery("products", "name,description,images,price,product_number,stores!inner(name,status,is_active)", `product_number=eq.${productNumber}&is_active=eq.true&moderation_status=eq.approved&deleted_at=is.null&stores.status=eq.approved&stores.is_active=eq.true`);
     const pageUrl = `${SITE_URL}/products/${encodeURIComponent(productNumber)}`;
-    if (!product) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
+    if (!product) return notFoundResponse("Product", pageUrl);
 
     const storeName = product.stores?.name;
     const rawDesc = product.description ? product.description.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().slice(0, 160) : `Check out ${product.name} on Eclipse`;
@@ -362,7 +387,7 @@ Deno.serve(async (req) => {
   const slugPm = path.match(/^\/products\/([a-zA-Z][a-zA-Z0-9\-_]{0,200})$/);
   if (slugPm) {
     const slugVal = slugPm[1];
-    const product = await pgQuery("products", "name,description,images,price,product_number,stores(name)", `slug=eq.${slugVal}&is_active=eq.true`);
+    const product = await pgQuery("products", "name,description,images,price,product_number,stores!inner(name,status,is_active)", `slug=eq.${slugVal}&is_active=eq.true&moderation_status=eq.approved&deleted_at=is.null&stores.status=eq.approved&stores.is_active=eq.true`);
     if (product) {
       const canonicalUrl = product.product_number ? `${SITE_URL}/products/${product.product_number}` : `${SITE_URL}/products/${encodeURIComponent(slugVal)}`;
       const storeName = product.stores?.name;
@@ -379,15 +404,16 @@ Deno.serve(async (req) => {
         headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": getCacheHeader("/products/1"), ...corsHeaders },
       });
     }
+    return notFoundResponse("Product", `${SITE_URL}/products/${encodeURIComponent(slugVal)}`);
   }
 
   // Store pages
   const sm = path.match(/^\/store\/([a-zA-Z0-9][a-zA-Z0-9\-_]{0,200})$/);
   if (sm) {
     const slug = sm[1];
-    const store = await pgQuery("stores", "name,description,logo_url,banner_url,slug,product_count", `slug=eq.${slug}&is_active=eq.true`);
+    const store = await pgQuery("stores", "name,description,logo_url,banner_url,slug,product_count", `slug=eq.${slug}&is_active=eq.true&status=eq.approved`);
     const pageUrl = `${SITE_URL}/store/${encodeURIComponent(slug)}`;
-    if (!store) return new Response(null, { status: 302, headers: { Location: pageUrl, ...corsHeaders } });
+    if (!store) return notFoundResponse("Store", pageUrl);
 
     const desc = store.description ? store.description.replace(/<[^>]*>/g, "").slice(0, 200) : `Browse ${store.name}'s products on Eclipse \u2014 ${store.product_count || 0} items available.`;
     const img = store.banner_url || store.logo_url || DEFAULT_IMAGE;

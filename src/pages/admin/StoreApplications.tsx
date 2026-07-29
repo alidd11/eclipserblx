@@ -41,6 +41,16 @@ type AppRow = {
   profiles?: { display_name: string | null; username: string | null } | null;
 };
 
+function safeExternalUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 function StatusBadge({ status }: { status: string }) {
   const variant =
     status === 'pending' ? 'secondary'
@@ -79,9 +89,18 @@ function ApplicationCard({ app, onReview }: { app: AppRow; onReview: (a: AppRow,
         {app.discord_server_invite && (
           <div className="truncate">
             <span className="text-muted-foreground">Discord:</span>{' '}
-            <a href={app.discord_server_invite} target="_blank" rel="noreferrer" className="underline inline-flex items-center gap-1">
-              invite <ExternalLink className="h-3 w-3" />
-            </a>
+            {safeExternalUrl(app.discord_server_invite) ? (
+              <a
+                href={safeExternalUrl(app.discord_server_invite) ?? undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline inline-flex items-center gap-1"
+              >
+                invite <ExternalLink className="h-3 w-3" />
+              </a>
+            ) : (
+              <span className="text-destructive">invalid link</span>
+            )}
           </div>
         )}
       </div>
@@ -154,9 +173,10 @@ function AdminStoreApplicationsInner() {
   const review = useMutation({
     mutationFn: async ({ app, decision, rejection_reason }: { app: AppRow; decision: 'approved' | 'rejected'; rejection_reason?: string }) => {
       const { data, error } = await supabase.rpc('review_store_application', {
-        _application_id: app.id,
-        _decision: decision,
-        _rejection_reason: rejection_reason ?? undefined,
+        p_application_id: app.id,
+        p_decision: decision,
+        p_rejection_reason: rejection_reason ?? undefined,
+        p_notes: undefined,
       });
       if (error) throw error;
       return data;

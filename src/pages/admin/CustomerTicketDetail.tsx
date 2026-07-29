@@ -290,7 +290,7 @@ export default function CustomerTicketDetail() {
               ticketNumber: ticket.ticket_number || '',
               subject: ticket.subject || 'Your support ticket',
               staffMessage: message.trim().substring(0, 500),
-              ticketUrl: `https://roleplay-hub-shop.lovable.app/support/tickets/${ticketId}` } } }).catch(() => {}); // fire-and-forget
+              ticketUrl: `https://eclipserblx.com/support/tickets/${ticketId}` } } }).catch(() => {}); // fire-and-forget
       }
     },
     onSuccess: () => {

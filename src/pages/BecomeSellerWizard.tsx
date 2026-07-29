@@ -23,7 +23,7 @@ import { StepAccounts } from '@/components/seller/wizard/StepAccounts';
 import { StepDetails } from '@/components/seller/wizard/StepDetails';
 import { StepDiscord } from '@/components/seller/wizard/StepDiscord';
 import { StepConfirm } from '@/components/seller/wizard/StepConfirm';
-import { AutoApprovedView, ApplicationSubmittedView, PendingApplicationView, SuccessRedirect } from '@/components/seller/wizard/WizardStateViews';
+import { ApplicationSubmittedView, PendingApplicationView, SuccessRedirect } from '@/components/seller/wizard/WizardStateViews';
 
 const STEPS = [
  { id: 'accounts', title: 'Link Accounts', description: 'Connect Discord & Roblox' },
@@ -53,8 +53,6 @@ export default function BecomeSellerWizard() {
  const { isSeller, hasPendingApplication, application, loading } = useSellerStatus();
  const queryClient = useQueryClient();
  const [currentStep, setCurrentStep] = useState(0);
- const [wasAutoApproved, setWasAutoApproved] = useState(false);
-
  const [formValues, setFormValues, clearFormValues, isDirty] = useFormPersistence('seller-application', INITIAL_FORM);
 
  const {
@@ -185,7 +183,6 @@ export default function BecomeSellerWizard() {
  return { id: data as unknown as string };
  },
  onSuccess: () => {
- setWasAutoApproved(false);
  toast.success('Application submitted', {
  description: 'A reviewer will respond within 24 hours.',
  });
@@ -245,7 +242,7 @@ export default function BecomeSellerWizard() {
  return (
  <MainLayout>
  <ResponsiveContainer size="md" className="py-6 md:py-12 px-4">
- {wasAutoApproved ? <AutoApprovedView /> : <ApplicationSubmittedView />}
+ <ApplicationSubmittedView />
  </ResponsiveContainer>
  </MainLayout>
  );

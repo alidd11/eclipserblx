@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ShieldCheck, AlertTriangle, XCircle, Store, Search, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 
 interface StoreHealth {
   id: string;
@@ -46,19 +47,28 @@ export default function ComplianceDashboard() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const [recalculating, setRecalculating] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
-    const [healthRes, violationsRes] = await Promise.all([
-      supabase.from("store_health_scores").select("*, stores(name, slug, is_active, owner_id)").order("overall_score", { ascending: true }),
-      supabase.from("compliance_violations").select("*, stores(name)").eq("is_resolved", false).order("created_at", { ascending: false }).limit(100),
-    ]);
-    setStores((healthRes.data || []) as unknown as StoreHealth[]);
-    setViolations((violationsRes.data || []) as unknown as Violation[]);
-    setLoading(false);
-  };
+    setLoadError(null);
+    try {
+      const [healthRes, violationsRes] = await Promise.all([
+        supabase.from("store_health_scores").select("*, stores(name, slug, is_active, owner_id)").order("overall_score", { ascending: true }),
+        supabase.from("compliance_violations").select("*, stores(name)").eq("is_resolved", false).order("created_at", { ascending: false }).limit(100),
+      ]);
+      if (healthRes.error) throw healthRes.error;
+      if (violationsRes.error) throw violationsRes.error;
+      setStores((healthRes.data || []) as unknown as StoreHealth[]);
+      setViolations((violationsRes.data || []) as unknown as Violation[]);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Compliance data could not be loaded");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { void load(); }, [load]);
 
   const recalculate = async () => {
     setRecalculating(true);
@@ -99,17 +109,42 @@ export default function ComplianceDashboard() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-4 gap-3">{[1,2,3,4].map(i => <Skeleton key={i} className="h-20" />)}</div>
-        <Skeleton className="h-64" />
-      </div>
+      <AdminLayout requiredPermissions={["view_seller_stores"]}>
+        <div className="space-y-6">
+          <Skeleton className="h-8 w-64 max-w-full" />
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{[1,2,3,4].map(i => <Skeleton key={i} className="h-20" />)}</div>
+          <Skeleton className="h-64" />
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <AdminLayout requiredPermissions={["view_seller_stores"]}>
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="max-w-md space-y-4 text-center">
+            <AlertTriangle className="mx-auto h-10 w-10 text-destructive" />
+            <div>
+              <h1 className="text-xl font-semibold">Compliance data is unavailable</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                No store has been marked healthy or clear while the compliance checks are unavailable.
+              </p>
+            </div>
+            <Button variant="outline" onClick={() => void load()}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Retry
+            </Button>
+          </div>
+        </div>
+      </AdminLayout>
     );
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <AdminLayout requiredPermissions={["view_seller_stores"]}>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground">Compliance Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Monitor store health and policy compliance</p>
@@ -220,5 +255,6 @@ export default function ComplianceDashboard() {
         </div>
       </div>
     </div>
+    </AdminLayout>
   );
 }

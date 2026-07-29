@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { checkRateLimit, getClientIp, rateLimitResponse, RATE_LIMITS } from '../_shared/rateLimit.ts';
+import { allowedAppOrigin } from '../_shared/allowed-app-origin.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,9 +13,6 @@ const logStep = (step: string, details?: unknown) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-CONNECT-ACCOUNT] ${step}${detailsStr}`);
 };
-
-// Allowed origins for redirect URLs
-const ALLOWED_ORIGINS = ["https://eclipserblx.com", "https://www.eclipserblx.com"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -127,10 +125,7 @@ serve(async (req) => {
     }
 
     // Validate origin for redirect URLs
-    const rawOrigin = req.headers.get("origin");
-    const origin = rawOrigin && ALLOWED_ORIGINS.some(o => rawOrigin.startsWith(o))
-      ? rawOrigin
-      : "https://eclipserblx.com";
+    const origin = allowedAppOrigin(req.headers.get("origin"));
     
     const accountLink = await stripe.accountLinks.create({
       account: accountId,

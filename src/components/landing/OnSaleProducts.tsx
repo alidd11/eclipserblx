@@ -6,9 +6,8 @@ import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PrefetchLink as Link } from '@/components/PrefetchLink';
 import { ScrollReveal } from '@/components/ui/ScrollReveal';
 import { getFirstImageUrl } from '@/lib/mediaUtils';
-import { useRef, useMemo } from 'react';
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { usePreloadImages } from '@/hooks/usePreloadImages';
 
 interface FlashSaleProduct {
   id: string;
@@ -87,12 +86,6 @@ export function OnSaleProducts() {
     scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
   };
 
-  const imageUrls = useMemo(() =>
-    (saleProducts || []).slice(0, 4).map(p => getFirstImageUrl(p.images, 620, 465, 'contain')).filter(Boolean),
-    [saleProducts]
-  );
-  usePreloadImages(imageUrls);
-
   if (isLoading) {
     return (
       <section className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -164,7 +157,6 @@ export function OnSaleProducts() {
                   storeLogo={store?.logo_url}
                   isVerified={store?.is_verified}
                   createdAt={product.created_at}
-                  priority={index < 4}
                 />
               </div>
             );

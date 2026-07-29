@@ -43,6 +43,11 @@ const READ_TABLES = new Set<string>([
   "audit_logs",
   "user_roles",
   "store_domains",
+  "credit_balances",
+  "discord_daily_claims",
+  "discord_xp",
+  "guild_command_permissions",
+  "store_welcome_embeds",
 ]);
 
 // Tables the bot may write via db.insert / db.update / db.delete / db.upsert
@@ -58,6 +63,8 @@ const WRITE_TABLES = new Set<string>([
   "audit_logs",
   "profiles",
   "download_logs",
+  "discord_daily_claims",
+  "discord_xp",
 ]);
 
 // RPCs the bot may invoke
@@ -288,9 +295,37 @@ Deno.serve(async (req) => {
         return ok(data ?? null);
       }
 
+      // params: { banId, action: 'ban' | 'unban' }
+      case "syncGlobalBans": {
+        const banId = String(params.banId ?? "").trim();
+        const action = params.action;
+        if (!banId) return err("banId required", 400, "BAD_PARAMS");
+        if (action !== "ban" && action !== "unban") return err("action must be 'ban' or 'unban'", 400, "BAD_PARAMS");
+        const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/sync-global-bans`;
+        const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+        try {
+          const resp = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${serviceKey}`,
+            },
+            body: JSON.stringify({ banId, action }),
+          });
+          const text = await resp.text();
+          let body: unknown = text;
+          try { body = JSON.parse(text); } catch { /* keep text */ }
+          if (!resp.ok) return err(`sync-global-bans failed: ${resp.status}`, 502, "SYNC_FAILED");
+          return ok({ triggered: true, response: body });
+        } catch (e) {
+          return err((e as Error)?.message ?? "sync invoke failed", 502, "SYNC_FAILED");
+        }
+      }
+
       // Simple health probe
       case "ping":
         return ok({ pong: true, at: new Date().toISOString() });
+
 
       default:
         return err(`unknown op: ${op}`, 400, "UNKNOWN_OP");

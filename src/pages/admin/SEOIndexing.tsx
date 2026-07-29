@@ -4,10 +4,33 @@ import { Globe, RefreshCw, CheckCircle, AlertCircle, Clock } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { errMsg } from '@/lib/errors';
+import { AdminLayout } from '@/components/admin/AdminLayout';
+
+interface SubmissionResult {
+ ok?: boolean;
+ endpoint?: string;
+ status?: string;
+ error?: string;
+}
+
+interface IndexingResult {
+ totalUrls: number;
+ results?: Array<{ submissions?: SubmissionResult[] }>;
+ googlePing?: { ok?: boolean; status?: string };
+}
+
+function endpointLabel(endpoint: string | undefined): string {
+ if (!endpoint) return 'Unknown';
+ try {
+ return new URL(endpoint).hostname;
+ } catch {
+ return 'Unknown';
+ }
+}
 
 export default function SEOIndexing() {
  const [loading, setLoading] = useState(false);
- const [lastResult, setLastResult] = useState<any>(null);
+ const [lastResult, setLastResult] = useState<IndexingResult | null>(null);
 
  const submitToSearchEngines = async (type: 'all' | 'recent' = 'all') => {
  setLoading(true);
@@ -16,7 +39,7 @@ export default function SEOIndexing() {
  body: { type },
  });
  if (error) throw error;
- setLastResult(data);
+ setLastResult(data as IndexingResult);
  toast.success(`Submitted ${data.totalUrls} URLs to search engines`);
  } catch (err) {
  toast.error('Failed to submit: ' + (errMsg(err) || 'Unknown error'));
@@ -26,6 +49,7 @@ export default function SEOIndexing() {
  };
 
  return (
+ <AdminLayout requiredPermissions={['manage_settings']}>
  <div className="space-y-4">
  <div>
  <h1 className="text-2xl font-bold">SEO & Indexing</h1>
@@ -81,7 +105,7 @@ export default function SEOIndexing() {
  <span className="font-medium">{lastResult.totalUrls} URLs submitted</span>
  </div>
 
-  {lastResult.results?.map((batch: { submissions?: { ok?: boolean; endpoint?: string; status?: string; error?: string }[] }, i: number) => (
+  {lastResult.results?.map((batch, i) => (
   <div key={i} className="space-y-1">
   {batch.submissions?.map((sub, j: number) => (
  <div key={j} className="flex items-center gap-2 text-sm">
@@ -91,7 +115,7 @@ export default function SEOIndexing() {
  <AlertCircle className="h-3.5 w-3.5 text-yellow-500" />
  )}
  <span className="text-muted-foreground">
- {sub.endpoint ? new URL(sub.endpoint).hostname : 'Unknown'}: {sub.status || sub.error}
+ {endpointLabel(sub.endpoint)}: {sub.status || sub.error}
  </span>
  </div>
  ))}
@@ -114,5 +138,6 @@ export default function SEOIndexing() {
  </div>
  )}
  </div>
+ </AdminLayout>
  );
 }

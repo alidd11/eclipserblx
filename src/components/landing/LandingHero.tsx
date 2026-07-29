@@ -112,11 +112,17 @@ function HeroFeature({ hero, id }: { hero: HeroPick; id: string }) {
         <div className="w-full aspect-[16/10] bg-muted overflow-hidden rounded-md">
           <img
             src={optimizeImageUrl(hero.image ?? '', 1200, 750, 'contain')}
+            srcSet={[
+              `${optimizeImageUrl(hero.image ?? '', 480, 300, 'contain', 76)} 480w`,
+              `${optimizeImageUrl(hero.image ?? '', 800, 500, 'contain', 78)} 800w`,
+              `${optimizeImageUrl(hero.image ?? '', 1200, 750, 'contain', 80)} 1200w`,
+            ].join(', ')}
+            sizes="(max-width: 1023px) calc(100vw - 2rem), min(67vw, 880px)"
             alt={hero.name}
             width={1200}
             height={750}
             loading="eager"
-            decoding="sync"
+            decoding="async"
             {...({ fetchpriority: 'high' } as Record<string, string>)}
             className="w-full h-full object-contain object-center transition-opacity duration-200 hover:opacity-95"
           />
@@ -147,9 +153,22 @@ function HeroFeature({ hero, id }: { hero: HeroPick; id: string }) {
               <p className="text-muted-foreground text-[10px] uppercase tracking-widest mb-1">
                 Created by
               </p>
+              <div className="flex items-center gap-2 min-w-0 md:justify-end">
+              {hero.storeLogo ? (
+                <img
+                  src={optimizeImageUrl(hero.storeLogo, 48, 48, 'cover', 76)}
+                  alt=""
+                  width={24}
+                  height={24}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-6 h-6 rounded-full object-cover border border-border shrink-0"
+                />
+              ) : null}
               <p className="text-foreground text-base font-medium truncate max-w-[16ch]">
                 {hero.storeName}
               </p>
+              </div>
             </div>
           )}
           <div className="flex items-center gap-6">
@@ -180,7 +199,12 @@ function RailPick({ pick }: { pick: HeroPick }) {
       <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-muted overflow-hidden rounded-sm">
         {pick.image ? (
           <img
-            src={optimizeImageUrl(pick.image, 240, 240, 'contain')}
+            src={optimizeImageUrl(pick.image, 320, 240, 'contain')}
+            srcSet={[
+              `${optimizeImageUrl(pick.image, 192, 144, 'contain', 74)} 192w`,
+              `${optimizeImageUrl(pick.image, 320, 240, 'contain', 76)} 320w`,
+            ].join(', ')}
+            sizes="(max-width: 1023px) 8rem, 7rem"
             alt={pick.name}
             width={240}
             height={240}
