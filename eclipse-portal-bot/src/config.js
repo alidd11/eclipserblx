@@ -3,7 +3,9 @@
 const required = [
   'DISCORD_CUSTOMER_BOT_TOKEN',
   'SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
+  // The bot no longer holds the service_role key (inaccessible on Lovable Cloud);
+  // it authenticates to the bot-gateway edge function with this shared secret.
+  'BOT_GATEWAY_SECRET',
 ];
 
 for (const key of required) {
@@ -24,9 +26,8 @@ export const config = {
   storeCreatorRoleId: process.env.DISCORD_STORE_CREATOR_ROLE_ID || '',
   verifiedSellerRoleId: process.env.DISCORD_VERIFIED_SELLER_ROLE_ID || '',
 
-  // Supabase
+  // Supabase (URL only — the service_role key is never used by the bot anymore)
   supabaseUrl: process.env.SUPABASE_URL,
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
 
   // bot-gateway: on Lovable Cloud the service_role key is never exposed, so the
   // bot's privileged DB work goes through the `bot-gateway` edge function, which

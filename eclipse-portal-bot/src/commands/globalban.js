@@ -2,7 +2,7 @@ import { getAvatarUrl } from '../utils/embeds.js';
 import { ephemeralReply, publicReply } from '../utils/responses.js';
 import { getLinkedAccount } from '../utils/server-context.js';
 import { supabase } from '../supabase.js';
-import { config } from '../config.js';
+import { gatewayCall } from '../gateway.js';
 
 export async function handleGlobalBan(interaction) {
   const discordUserId = interaction.user.id;
@@ -49,12 +49,8 @@ export async function handleGlobalBan(interaction) {
 
   await supabase.from('global_ban_logs').insert({ ban_id: ban.id, action: 'created', performed_by: profile.user_id, details: { via: 'discord_command', ban_type: banType } });
 
-  // Trigger sync
-  fetch(`${config.supabaseUrl}/functions/v1/sync-global-bans`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.supabaseServiceKey}` },
-    body: JSON.stringify({ banId: ban.id, action: 'ban' }),
-  }).catch(console.error);
+  // Trigger sync (server-side, via the gateway — the bot has no service key)
+  gatewayCall('syncGlobalBans', { banId: ban.id, action: 'ban' }).catch(console.error);
 
   const durationText = duration ? `for **${duration.replace('h', ' hour').replace('d', ' day')}**` : '**permanently**';
   return publicReply(interaction, [{
