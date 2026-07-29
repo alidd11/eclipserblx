@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, Download, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle, Download, Mail, ArrowRight, Loader2, XCircle } from 'lucide-react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { useQuery } from '@tanstack/react-query';
@@ -27,6 +27,7 @@ export default function OrderSuccess() {
   
   const [verifiedOrderId, setVerifiedOrderId] = useState<string | null>(orderId);
   const [isVerifying, setIsVerifying] = useState(!!(sessionId || paymentIntentId) && !orderId);
+  const [verificationFailed, setVerificationFailed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   
   const hasVerified = useRef(false);
@@ -61,14 +62,17 @@ export default function OrderSuccess() {
         
         if (data?.success && data?.orderId) {
           setVerifiedOrderId(data.orderId);
+          setVerificationFailed(false);
           stableClearCart();
           checkBadges();
           setShowConfetti(true);
         } else if (!data?.success) {
           console.error('Payment not completed:', data?.message);
+          setVerificationFailed(true);
         }
       } catch (error) {
         console.error('Payment verification error:', error);
+        setVerificationFailed(true);
       } finally {
         setIsVerifying(false);
       }
@@ -137,6 +141,35 @@ export default function OrderSuccess() {
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
             <p className="text-muted-foreground">Verifying your payment...</p>
           </div>
+        ) : verificationFailed && !verifiedOrderId ? (
+          <>
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-destructive/10 text-destructive">
+              <XCircle className="h-7 w-7" />
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-3xl md:text-4xl font-display font-bold">Payment not completed</h1>
+              <p className="text-muted-foreground">
+                We couldn't confirm your payment, so your order wasn't placed. You have not been charged for a completed order.
+              </p>
+            </div>
+
+            <div className="border border-border rounded-xl bg-card p-5 text-left space-y-2">
+              <p className="text-sm text-muted-foreground">
+                If you cancelled at the payment step, your cart is still saved — you can try again. If you believe you were
+                charged but see this message, contact support with your payment details and we'll sort it out right away.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button asChild className="gradient-button border-0">
+                <Link to="/cart">Return to Cart</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/support">Contact Support</Link>
+              </Button>
+            </div>
+          </>
         ) : (
           <>
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-success/10 text-success">
@@ -201,7 +234,7 @@ export default function OrderSuccess() {
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Button asChild className="gradient-button border-0">
-                <Link to="/account?tab=downloads">View My Downloads</Link>
+                <Link to="/downloads">View My Downloads</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link to="/products">

@@ -83,7 +83,7 @@ export function StaffRoleManagement({
                   ))}
                 </SelectContent>
               </Select>
-              <Button size="icon" aria-label="Loading" disabled={!newRole || addRoleMutation.isPending} onClick={() => newRole && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}>
+              <Button size="icon" aria-label="Add role" disabled={!newRole || addRoleMutation.isPending} onClick={() => newRole && addRoleMutation.mutate({ role: newRole, targetUserId: userId })}>
                 {addRoleMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               </Button>
             </div>

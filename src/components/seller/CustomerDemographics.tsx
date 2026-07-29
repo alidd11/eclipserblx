@@ -4,14 +4,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { Globe } from 'lucide-react';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
+import { CHART_COLORS } from '@/lib/chartColors';
 
+// Categorical palette (countries) — sourced from the shared, theme-aware CHART_COLORS
+// tokens rather than inlined HSL literals. See CLAUDE.md design-system rules.
 const COLORS = [
- 'hsl(var(--primary))',
- 'hsl(var(--muted-foreground))',
- 'hsl(142, 76%, 36%)',
- 'hsl(45, 93%, 47%)',
- 'hsl(24, 95%, 53%)',
- 'hsl(263, 70%, 50%)',
+ CHART_COLORS.purple,
+ CHART_COLORS.blue,
+ CHART_COLORS.gold,
+ CHART_COLORS.pink,
+ CHART_COLORS.teal,
+ CHART_COLORS.orange,
 ];
 
 export function CustomerDemographics() {

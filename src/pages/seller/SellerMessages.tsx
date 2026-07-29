@@ -371,7 +371,7 @@ export default function SellerMessages() {
                   />
                 </div>
                 <Button
-                  size="icon" aria-label="Loading"
+                  size="icon" aria-label="Send message"
                   className="rounded-full h-10 w-10"
                   onClick={handleSend}
                   disabled={!newMessage.trim() || sendMessageMutation.isPending}

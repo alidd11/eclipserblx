@@ -109,6 +109,7 @@ export function CartUpsells() {
                     size="icon"
                     variant="ghost"
                     className="h-6 w-6"
+                    aria-label={`Add ${product.name} to cart`}
                     onClick={() => addItem({
                       id: product.id,
                       name: product.name,

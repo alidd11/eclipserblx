@@ -307,7 +307,7 @@ export function ChatMessageThread({
             </DropdownMenu>
             <Button
               type="button"
-              size="icon" aria-label="Loading"
+              size="icon" aria-label="Attach file"
               variant="ghost"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploading}

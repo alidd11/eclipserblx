@@ -329,7 +329,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                   <div className="p-3 border-t bg-background">
                     <div className="flex items-center gap-2">
                       <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx,.txt" />
-                      <Button variant="ghost" size="icon" aria-label="Loading" className="h-8 w-8 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                      <Button variant="ghost" size="icon" aria-label="Attach file" className="h-8 w-8 shrink-0" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                         {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setShowSecureInput(true)} title="Submit secure code">

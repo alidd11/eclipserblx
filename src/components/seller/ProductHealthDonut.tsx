@@ -5,10 +5,13 @@ import { RevolutDonutChart } from '@/components/ui/revolut-donut-chart';
 import { CheckCircle } from 'lucide-react';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
+// Semantic status colors — reference the theme tokens so they adapt to light/dark
+// instead of the previous fixed hues (a hardcoded HSL literal only looks right in
+// one theme). See CLAUDE.md design-system rules.
 const COLORS = [
-  'hsl(142, 76%, 36%)',   // approved - green
-  'hsl(45, 93%, 47%)',    // pending - yellow
-  'hsl(0, 84%, 60%)',     // rejected - red
+  'hsl(var(--success))',          // approved
+  'hsl(var(--warning))',          // pending
+  'hsl(var(--destructive))',      // rejected
   'hsl(var(--muted-foreground))', // other
 ];
 

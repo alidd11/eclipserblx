@@ -544,7 +544,7 @@ export default function ChatHistory() {
  <Button
  onClick={sendTicketReply}
  disabled={!replyMessage.trim() || isSending}
- size="icon" aria-label="Loading"
+ size="icon" aria-label="Send message"
  >
  {isSending ? (
  <Loader2 className="h-4 w-4 animate-spin" />

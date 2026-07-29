@@ -168,7 +168,7 @@ export function ThreadPanel({
           <Button
             onClick={handleSend}
             disabled={!reply.trim() || sendThreadReply.isPending}
-            size="icon" aria-label="Loading"
+            size="icon" aria-label="Send reply"
             className="h-10 w-10 flex-shrink-0 rounded-2xl shadow-sm"
           >
             {sendThreadReply.isPending ? (

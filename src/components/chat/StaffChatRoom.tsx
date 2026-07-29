@@ -684,7 +684,7 @@ export function StaffChatRoom({
             <Button
               onClick={handleSend}
               disabled={(!newMessage.trim() && !selectedFile) || isUploading || sendMessageMutation.isPending}
-              size="icon" aria-label="Loading"
+              size="icon" aria-label="Send message"
               className="h-10 w-10 flex-shrink-0 rounded-2xl shadow-sm"
             >
               {isUploading ? (

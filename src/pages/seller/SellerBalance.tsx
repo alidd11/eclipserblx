@@ -132,6 +132,14 @@ export default function SellerBalance() {
 
   const commissionRate = store?.commission_rate || 15;
 
+  // Worked example for the "How your earnings are calculated" panel — derived from
+  // the seller's actual commission rate so the numbers can never contradict the copy.
+  const exampleSale = 10;
+  const exampleStripeFee = exampleSale * 0.015 + 0.2; // ~1.5% + £0.20 per UK card
+  const exampleCommission = (exampleSale - exampleStripeFee) * (commissionRate / 100);
+  const exampleFees = exampleStripeFee + exampleCommission;
+  const exampleNet = exampleSale - exampleFees;
+
   const getPayoutStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
@@ -211,15 +219,15 @@ export default function SellerBalance() {
                 </div>
                 <div className="bg-muted/50 rounded-lg p-3 text-center">
                   <p className="text-xs text-muted-foreground mb-1">Fees deducted</p>
-                  <p className="text-lg font-bold text-red-400">-£1.08</p>
-                  <p className="text-[11px] text-muted-foreground">~£0.35 Stripe + £0.73 commission</p>
+                  <p className="text-lg font-bold text-destructive">-£{exampleFees.toFixed(2)}</p>
+                  <p className="text-[11px] text-muted-foreground">~£{exampleStripeFee.toFixed(2)} Stripe + £{exampleCommission.toFixed(2)} commission</p>
                 </div>
                 <div className="hidden sm:flex items-center justify-center">
-                  <ArrowRight className="h-4 w-4 text-green-500" />
+                  <ArrowRight className="h-4 w-4 text-success" />
                 </div>
-                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-center">
+                <div className="bg-success/10 border border-success/20 rounded-lg p-3 text-center">
                   <p className="text-xs text-muted-foreground mb-1">You receive</p>
-                  <p className="text-lg font-bold text-green-500">≈£8.20</p>
+                  <p className="text-lg font-bold text-success">≈£{exampleNet.toFixed(2)}</p>
                   <p className="text-[11px] text-muted-foreground">Your net earnings</p>
                 </div>
               </div>
