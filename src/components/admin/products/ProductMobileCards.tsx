@@ -70,7 +70,7 @@ export function ProductMobileCards({
  products?.map((product) => (
  <div
  key={product.id}
- className={`bg-muted/30 border-border overflow-hidden transition-colors ${selectedProducts.has(product.id) ? 'ring-2 ring-primary' : ''}`}
+ className={`bg-muted/30 border-border overflow-hidden transition-colors ease-emphasized ${selectedProducts.has(product.id) ? 'ring-2 ring-primary' : ''}`}
  >
  <div className="p-4 p-4">
  <div className="flex items-start gap-3">

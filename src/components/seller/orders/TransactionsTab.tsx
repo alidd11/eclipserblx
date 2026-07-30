@@ -76,7 +76,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
 
  const getStatusBadge = (status: string) => {
  switch (status) {
- case 'completed': return <Badge variant="default" className="bg-green-600">Completed</Badge>;
+ case 'completed': return <Badge variant="default" className="bg-success">Completed</Badge>;
  case 'pending': return <Badge variant="secondary">Pending</Badge>;
  case 'failed': return <Badge variant="destructive">Failed</Badge>;
  default: return <Badge variant="outline">{status}</Badge>;
@@ -85,9 +85,9 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
 
  const getTypeBadge = (type: string) => {
  switch (type) {
- case 'sale': return <Badge variant="outline" className="text-green-600 border-green-600">Sale</Badge>;
- case 'refund': return <Badge variant="outline" className="text-red-600 border-red-600">Refund</Badge>;
- case 'payout': return <Badge variant="outline" className="text-blue-600 border-blue-600">Payout</Badge>;
+ case 'sale': return <Badge variant="outline" className="text-success border-success">Sale</Badge>;
+ case 'refund': return <Badge variant="outline" className="text-destructive border-destructive">Refund</Badge>;
+ case 'payout': return <Badge variant="outline" className="text-primary border-primary">Payout</Badge>;
  default: return <Badge variant="outline">{type}</Badge>;
  }
  };
@@ -178,7 +178,7 @@ export function TransactionsTab({ storeId }: TransactionsTabProps) {
  </TableCell>
  <TableCell>{formatCurrency(tx.amount)}</TableCell>
  <TableCell className="text-muted-foreground">-{formatCurrency(tx.platform_fee || 0)}</TableCell>
- <TableCell className={tx.type === 'sale' ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+ <TableCell className={tx.type === 'sale' ? 'text-success font-medium' : 'text-destructive font-medium'}>
  {tx.type === 'sale' ? '+' : '-'}{formatCurrency(tx.net_amount || tx.amount)}
  </TableCell>
  <TableCell>{getStatusBadge(tx.status ?? 'pending')}</TableCell>

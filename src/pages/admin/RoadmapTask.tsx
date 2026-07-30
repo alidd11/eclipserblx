@@ -13,10 +13,10 @@ import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { usePageMeta } from '@/hooks/usePageMeta';
 
 const STATUS_META: Record<RoadmapStatus, { label: string; pill: string; icon: typeof CheckCircle2 }> = {
-  done:        { label: 'Done',        pill: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',   icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', pill: 'bg-amber-500/15 text-amber-600 border-amber-500/30',         icon: Clock },
+  done:        { label: 'Done',        pill: 'bg-success/15 text-success border-success/30',   icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', pill: 'bg-warning/15 text-warning border-warning/30',         icon: Clock },
   todo:        { label: 'Todo',        pill: 'bg-muted/40 text-muted-foreground border-border/40',         icon: Circle },
-  blocked:     { label: 'Blocked',     pill: 'bg-rose-500/15 text-rose-600 border-rose-500/30',            icon: AlertOctagon },
+  blocked:     { label: 'Blocked',     pill: 'bg-destructive/15 text-destructive border-destructive/30',            icon: AlertOctagon },
 };
 
 export default function PlatformRoadmapTask() {
@@ -102,13 +102,13 @@ export default function PlatformRoadmapTask() {
           </div>
 
           {status === 'in_progress' && (
-            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
+            <div className="rounded-xl border border-warning/30 bg-warning/5 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Completion</p>
-                <p className="text-sm font-bold tabular-nums text-amber-700 dark:text-amber-400">{task.progress ?? 50}%</p>
+                <p className="text-xs font-semibold text-warning dark:text-warning uppercase tracking-wider">Completion</p>
+                <p className="text-sm font-bold tabular-nums text-warning dark:text-warning">{task.progress ?? 50}%</p>
               </div>
-              <div className="h-2 rounded-full bg-amber-500/15 overflow-hidden">
-                <div className="h-full bg-amber-500 transition-all duration-500" style={{ width: `${task.progress ?? 50}%` }} />
+              <div className="h-2 rounded-full bg-warning/15 overflow-hidden">
+                <div className="h-full bg-warning transition-[width] ease-emphasized duration-300" style={{ width: `${task.progress ?? 50}%` }} />
               </div>
               {task.notes && <p className="text-xs text-foreground/70 mt-2.5 leading-relaxed">{task.notes}</p>}
             </div>
@@ -118,7 +118,7 @@ export default function PlatformRoadmapTask() {
         <Section icon={Info} title="How it's verified">
           <p className="text-sm text-foreground/80 leading-relaxed">{explainProbe(task.probe)}</p>
           {!task.probe && (
-            <p className="text-xs text-amber-600 mt-2 bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2">
+            <p className="text-xs text-warning mt-2 bg-warning/10 border border-warning/30 rounded-lg px-3 py-2">
               ⚠️ No probe attached — this task is tracked via its seeded status.
             </p>
           )}
@@ -139,7 +139,7 @@ export default function PlatformRoadmapTask() {
             <ul className="space-y-2">
               {task.acceptance.map((line, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
-                  <CheckCircle2 className={cn('h-4 w-4 shrink-0 mt-0.5', status === 'done' ? 'text-emerald-500' : 'text-muted-foreground/40')} />
+                  <CheckCircle2 className={cn('h-4 w-4 shrink-0 mt-0.5', status === 'done' ? 'text-success' : 'text-muted-foreground/40')} />
                   <span className="text-foreground/85">{line}</span>
                 </li>
               ))}

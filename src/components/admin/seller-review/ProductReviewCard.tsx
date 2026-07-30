@@ -37,7 +37,7 @@ export function getStatusBadge(status: string, product?: Record<string, unknown>
       );
     }
     return (
-      <Badge className="bg-amber-500/20 text-amber-400 gap-1">
+      <Badge className="bg-warning/20 text-warning gap-1">
         <Eye className="h-3 w-3" />
         Ready for Review
       </Badge>
@@ -45,7 +45,7 @@ export function getStatusBadge(status: string, product?: Record<string, unknown>
   }
   switch (status) {
     case "approved":
-      return <Badge className="bg-green-500/20 text-green-400">Approved</Badge>;
+      return <Badge className="bg-success/20 text-success">Approved</Badge>;
     case "rejected":
       return <Badge variant="destructive">Rejected</Badge>;
     default:
@@ -69,7 +69,7 @@ export function renderModerationFlags(flags: any) {
         </div>
       )}
       {hasLuaConcerns && (
-        <div className="flex items-center gap-1 text-xs text-amber-500">
+        <div className="flex items-center gap-1 text-xs text-warning">
           <AlertTriangle className="h-3 w-3" />
           <span>Lua {luaRisk} risk: {flags.lua_concerns.slice(0, 2).join(', ')}</span>
         </div>
@@ -120,18 +120,18 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
           </div>
         )}
         {product.file_review_consented_at && (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground p-2 rounded bg-green-500/5">
-            <Check className="h-3 w-3 text-green-500" />
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground p-2 rounded bg-success/5">
+            <Check className="h-3 w-3 text-success" />
             <span>Seller consented {new Date(product.file_review_consented_at).toLocaleDateString()}</span>
           </div>
         )}
 
         {/* File & Scan Info */}
         <Collapsible>
-          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors text-xs">
+          <CollapsibleTrigger className="flex items-center justify-between w-full p-2 rounded bg-muted/30 hover:bg-muted/50 transition-colors ease-emphasized text-xs">
             <div className="flex items-center gap-1.5">
               {product.asset_file_url ? (
-                <FileCheck className="h-3.5 w-3.5 text-green-500" />
+                <FileCheck className="h-3.5 w-3.5 text-success" />
               ) : (
                 <FileX className="h-3.5 w-3.5 text-destructive" />
               )}
@@ -143,7 +143,7 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
                 </Badge>
               )}
             </div>
-            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground transition-transform ease-emphasized [[data-state=open]>&]:rotate-180" />
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2 space-y-1.5">
             {product.asset_file_url ? (
@@ -166,13 +166,13 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
                     </div>
                   )}
                   {mf.lua_concerns && mf.lua_concerns.length > 0 && (
-                    <div className="flex items-start gap-1 text-[11px] text-amber-500">
+                    <div className="flex items-start gap-1 text-[11px] text-warning">
                       <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                       <span>Lua ({mf.lua_risk_level}): {mf.lua_concerns.join(', ')}</span>
                     </div>
                   )}
                   {mf.has_roblox_files === false && (
-                    <div className="flex items-start gap-1 text-[11px] text-amber-500">
+                    <div className="flex items-start gap-1 text-[11px] text-warning">
                       <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                       <span>No Roblox files detected (.rbxm/.rbxl)</span>
                     </div>
@@ -204,7 +204,7 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
                     </p>
                   )}
                   {!mf.nsfw_flags?.length && !mf.lua_concerns?.length && mf.has_roblox_files !== false && !(mf.file_names_sample || []).some((f: string) => /\.(rtf|exe|bat|cmd|ps1|vbs|dll|msi|scr)$/i.test(f)) && (
-                    <p className="text-[11px] text-green-500">✓ Clean — no issues detected</p>
+                    <p className="text-[11px] text-success">✓ Clean — no issues detected</p>
                   )}
                 </div>
               );
@@ -227,7 +227,7 @@ export function ProductReviewCard({ product, onReview, onReject, onDelete, onApp
                 <Button
                   size="sm"
                   variant="default"
-                  className="bg-green-600 hover:bg-green-700"
+                  className="bg-success hover:bg-success"
                   onClick={() => onApprove(product.id)}
                 >
                   <Check className="h-4 w-4" />

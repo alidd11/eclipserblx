@@ -79,7 +79,7 @@ export const ActiveOffersCard = forwardRef<HTMLDivElement>(function ActiveOffers
           {discountCodes.map((code) => (
             <div
               key={code.id}
-              className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border hover:border-border transition-colors"
+              className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border hover:border-border transition-colors ease-emphasized"
             >
               <div className="flex-shrink-0 p-2 rounded-full bg-muted">
                 <Tag className="h-4 w-4 text-foreground" />

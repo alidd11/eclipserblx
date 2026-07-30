@@ -159,7 +159,7 @@ export default function SellerProductEditor() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-emerald-500" />
+                      <Sparkles className="h-4 w-4 text-success" />
                       Pay What You Want
                     </Label>
                     <p className="text-sm text-muted-foreground">Let buyers choose their own price, including free</p>
@@ -175,7 +175,7 @@ export default function SellerProductEditor() {
                 </div>
 
                 {formData.is_pay_what_you_want && (
-                  <div className="space-y-3 p-4 rounded-lg border border-emerald-500/30 bg-emerald-500/5">
+                  <div className="space-y-3 p-4 rounded-lg border border-success/30 bg-success/5">
                     <div className="space-y-2">
                       <Label htmlFor="min_price">Minimum Price (£)</Label>
                       <Input
@@ -230,7 +230,7 @@ export default function SellerProductEditor() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-amber-500" />
+                      <Calendar className="h-4 w-4 text-warning" />
                       Schedule Release
                     </Label>
                     <p className="text-sm text-muted-foreground">Set a future date and time for this product to go live</p>
@@ -246,8 +246,8 @@ export default function SellerProductEditor() {
                 </div>
 
                 {formData.schedule_enabled && (
-                  <div className="space-y-2 p-4 rounded-lg border border-amber-500/30 bg-amber-500/5">
-                    <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <div className="space-y-2 p-4 rounded-lg border border-warning/30 bg-warning/5">
+                    <Label htmlFor="release_at" className="flex items-center gap-2 text-warning dark:text-warning">
                       <Clock className="h-4 w-4" />
                       Release Date & Time
                     </Label>
@@ -263,7 +263,7 @@ export default function SellerProductEditor() {
                       Your product will be hidden from customers until this date and time. Make sure to set the product as "Active" above.
                     </p>
                     {formData.release_at && new Date(formData.release_at) > new Date() && (
-                      <div className="flex items-center gap-2 mt-2 text-sm text-amber-600 dark:text-amber-400">
+                      <div className="flex items-center gap-2 mt-2 text-sm text-warning dark:text-warning">
                         <Calendar className="h-4 w-4" />
                         <span>Scheduled for: {new Date(formData.release_at).toLocaleString()}</span>
                       </div>
@@ -315,7 +315,7 @@ export default function SellerProductEditor() {
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -330,7 +330,7 @@ export default function SellerProductEditor() {
                 {formData.images.length < MAX_IMAGES ? (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                    className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors ease-emphasized"
                   >
                     {uploading ? (
                       <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-muted-foreground" />
@@ -362,8 +362,8 @@ export default function SellerProductEditor() {
             <div className="p-4">
               <div className="space-y-4">
                 {formData.asset_file_url && (
-                  <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                    <FileCheck className="h-5 w-5 text-green-500" />
+                  <div className="flex items-center gap-3 p-3 bg-success/10 border border-success/30 rounded-lg">
+                    <FileCheck className="h-5 w-5 text-success" />
                     <div className="flex-1">
                       <p className="font-medium">Asset file uploaded</p>
                       <p className="text-xs text-muted-foreground truncate">{formData.asset_file_url}</p>
@@ -376,7 +376,7 @@ export default function SellerProductEditor() {
 
                 <div
                   onClick={() => assetInputRef.current?.click()}
-                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors"
+                  className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer hover:border-primary transition-colors ease-emphasized"
                 >
                   {uploadingAsset ? (
                     <Loader2 className="h-8 w-8 mx-auto mb-2 animate-spin text-muted-foreground" />

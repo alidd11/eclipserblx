@@ -149,8 +149,8 @@ export const ReviewCard = memo(function ReviewCard() {
       >
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+            <div className="w-6 h-6 rounded-lg bg-warning/10 flex items-center justify-center">
+              <Star className="h-3 w-3 text-warning fill-warning" />
             </div>
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Reviews</span>
           </div>
@@ -158,7 +158,7 @@ export const ReviewCard = memo(function ReviewCard() {
             {[...Array(5)].map((_, i) => (
               <Star 
                 key={i} 
-                className={`h-3 w-3 ${i < currentReview.rating ? 'text-amber-500 fill-amber-500' : 'text-muted'}`} 
+                className={`h-3 w-3 ${i < currentReview.rating ? 'text-warning fill-warning' : 'text-muted'}`} 
               />
             ))}
           </div>
@@ -192,7 +192,7 @@ export const ReviewCard = memo(function ReviewCard() {
                 setDirection(i > currentIndex % 5 ? 1 : -1);
                 setCurrentIndex(i);
               }}
-              className={`h-1 rounded-full transition-all duration-300 ${
+              className={`h-1 rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 ${
                 i === currentIndex % 5
                   ? 'bg-primary w-3'
                   : 'bg-muted w-1.5'
@@ -220,14 +220,14 @@ export const ReviewCard = memo(function ReviewCard() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Star className="h-4 w-4 text-amber-500 fill-amber-500" />
+            <div className="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center">
+              <Star className="h-4 w-4 text-warning fill-warning" />
             </div>
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Reviews</span>
           </div>
           <div className="flex items-center gap-0.5">
             {[...Array(5)].map((_, i) => (
-              <Star key={i} className="h-3 w-3 text-amber-500 fill-amber-500" />
+              <Star key={i} className="h-3 w-3 text-warning fill-warning" />
             ))}
           </div>
         </div>
@@ -249,7 +249,7 @@ export const ReviewCard = memo(function ReviewCard() {
                     key={i}
                     className={`h-3.5 w-3.5 ${
                       i < currentReview.rating
-                        ? 'text-amber-500 fill-amber-500'
+                        ? 'text-warning fill-warning'
                         : 'text-muted'
                     }`}
                   />
@@ -285,7 +285,7 @@ export const ReviewCard = memo(function ReviewCard() {
                   setDirection(i > currentIndex % 6 ? 1 : -1);
                   setCurrentIndex(i);
                 }}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
+                className={`h-1.5 rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 ${
                   i === currentIndex % 6
                     ? 'bg-primary w-4'
                     : 'bg-muted w-1.5 hover:bg-muted-foreground/50'
@@ -300,13 +300,13 @@ export const ReviewCard = memo(function ReviewCard() {
           <div className="flex items-center gap-1">
             <button 
               onClick={goPrev}
-              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
+              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors ease-emphasized"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <button 
               onClick={goNext}
-              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
+              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors ease-emphasized"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </button>

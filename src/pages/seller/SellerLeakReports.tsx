@@ -444,7 +444,7 @@ export default function SellerLeakReports() {
               {forensicResults.map((report) => (
                 <div key={report.id} className="rounded-lg border bg-card overflow-hidden">
                   <button
-                    className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/30 transition-colors"
+                    className="w-full p-3 flex items-center justify-between text-left hover:bg-muted/30 transition-colors ease-emphasized"
                     onClick={() => setExpandedReport(expandedReport === report.id ? null : report.id)}
                   >
                     <div className="flex items-center gap-2">
@@ -545,7 +545,7 @@ export default function SellerLeakReports() {
               <label className="text-sm font-medium mb-1.5 block">Upload Files</label>
               <div
                 className={`
-                  relative border-2 border-dashed rounded-lg p-6 text-center transition-all cursor-pointer
+                  relative border-2 border-dashed rounded-lg p-6 text-center transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized cursor-pointer
                   ${isDragOver
                     ? 'border-primary bg-primary/5 scale-[1.01]'
                     : 'border-border hover:border-primary/50 hover:bg-muted/20'
@@ -567,7 +567,7 @@ export default function SellerLeakReports() {
                     e.target.value = '';
                   }}
                 />
-                <Upload className={`h-8 w-8 mx-auto mb-2 transition-colors ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+                <Upload className={`h-8 w-8 mx-auto mb-2 transition-colors ease-emphasized ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
                 <p className="text-sm font-medium">
                   {isDragOver ? 'Drop files here' : 'Drag & drop files or click to browse'}
                 </p>

@@ -76,7 +76,7 @@ export function TopProductsLeaderboard() {
           topProducts.map((product, index) => {
             const imageUrl = (product.images as string[])?.[0];
             return (
-              <div key={product.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+              <div key={product.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors ease-emphasized">
                 <span className="text-sm font-bold text-muted-foreground w-5 text-center">
                   {index + 1}
                 </span>

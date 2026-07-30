@@ -53,7 +53,7 @@ export function StorePreviewCard() {
  <Badge variant="secondary" className="text-[10px] h-5">Verified</Badge>
  )}
  {store.is_active && (
- <Badge variant="outline" className="text-[10px] h-5 text-green-500 border-green-500/30">Active</Badge>
+ <Badge variant="outline" className="text-[10px] h-5 text-success border-success/30">Active</Badge>
  )}
  </div>
  </div>

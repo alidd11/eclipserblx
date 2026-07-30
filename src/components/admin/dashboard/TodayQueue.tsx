@@ -14,7 +14,7 @@ interface QueueRow {
 
 const toneStyles = {
   critical: 'text-destructive',
-  warn: 'text-orange-500',
+  warn: 'text-warning',
   info: 'text-primary',
 };
 
@@ -59,7 +59,7 @@ export function TodayQueue() {
           <li key={row.label}>
             <Link
               to={row.href}
-              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors"
+              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors ease-emphasized"
             >
               <row.icon className={cn('h-4 w-4 shrink-0', toneStyles[row.tone])} />
               <span className="text-sm flex-1 truncate">{row.label}</span>

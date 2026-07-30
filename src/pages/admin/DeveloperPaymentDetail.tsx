@@ -17,10 +17,10 @@ import { useState } from 'react';
 import { formatGBP } from '@/lib/formatters';
  
  const statusConfig = {
- pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500', icon: Clock },
- processing: { label: 'Processing', color: 'bg-blue-500/10 text-blue-500', icon: AlertCircle },
- completed: { label: 'Completed', color: 'bg-green-500/10 text-green-500', icon: CheckCircle },
- failed: { label: 'Failed', color: 'bg-red-500/10 text-red-500', icon: XCircle },
+ pending: { label: 'Pending', color: 'bg-warning/10 text-warning', icon: Clock },
+ processing: { label: 'Processing', color: 'bg-primary/10 text-primary', icon: AlertCircle },
+ completed: { label: 'Completed', color: 'bg-success/10 text-success', icon: CheckCircle },
+ failed: { label: 'Failed', color: 'bg-destructive/10 text-destructive', icon: XCircle },
  cancelled: { label: 'Cancelled', color: 'bg-muted text-muted-foreground', icon: XCircle },
  };
  

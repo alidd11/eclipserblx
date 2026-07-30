@@ -154,7 +154,7 @@ export function BrandingImageUpload({
             type="button"
             variant="destructive"
             size="icon" aria-label="Close"
-            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized"
             onClick={handleRemove}
           >
             <X className="h-4 w-4" />
@@ -168,7 +168,7 @@ export function BrandingImageUpload({
         onClick={() => fileInputRef.current?.click()}
         className={`
           relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
-          transition-colors
+          transition-colors ease-emphasized
           ${isDragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50'}
           ${isUploading ? 'pointer-events-none opacity-50' : ''}
         `}

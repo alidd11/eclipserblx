@@ -50,8 +50,8 @@ export function QuickActionsGrid() {
 
           {links.map((link) => (
             <Link key={link.href} to={link.href}>
-              <div className="flex flex-col items-center gap-1.5 p-3 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-all text-center group cursor-pointer">
-                <link.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              <div className="flex flex-col items-center gap-1.5 p-3 sm:p-3.5 rounded-lg bg-muted/50 hover:bg-accent transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized text-center group cursor-pointer">
+                <link.icon className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors ease-emphasized" />
                 <span className="text-xs font-medium leading-tight">{link.title}</span>
               </div>
             </Link>

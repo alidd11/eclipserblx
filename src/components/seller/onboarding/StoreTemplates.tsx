@@ -55,7 +55,7 @@ export function StoreTemplates({ selected, onSelect }: StoreTemplatesProps) {
               key={template.id}
               onClick={() => onSelect(template)}
               className={cn(
-                'relative rounded-xl border-2 p-4 text-left transition-all',
+                'relative rounded-xl border-2 p-4 text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
                 isSelected
                   ? 'border-primary bg-primary/5 shadow-lg'
                   : 'border-border hover:border-primary/30 bg-card'

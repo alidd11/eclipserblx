@@ -114,11 +114,11 @@ export const ISSUE_CATEGORY_LABELS: Record<string, string> = {
 };
 
 export const ISSUE_CATEGORY_COLORS: Record<string, string> = {
-  order: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  download: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  payment: 'bg-green-500/20 text-green-400 border-green-500/30',
-  product: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  refund: 'bg-red-500/20 text-red-400 border-red-500/30',
-  technical: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+  order: 'bg-primary/20 text-primary border-primary/30',
+  download: 'bg-primary/20 text-primary border-primary/30',
+  payment: 'bg-success/20 text-success border-success/30',
+  product: 'bg-warning/20 text-warning border-warning/30',
+  refund: 'bg-destructive/20 text-destructive border-destructive/30',
+  technical: 'bg-warning/20 text-warning border-warning/30',
   other: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
 };

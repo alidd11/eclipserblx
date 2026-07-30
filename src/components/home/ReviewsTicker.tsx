@@ -149,7 +149,7 @@ export const ReviewsTicker = memo(function ReviewsTicker() {
                   key={i}
                   className={`h-4 w-4 ${
                     i < currentReview.rating
-                      ? 'text-amber-400 fill-amber-400'
+                      ? 'text-warning fill-warning'
                       : 'text-muted-foreground/30'
                   }`}
                 />
@@ -171,7 +171,7 @@ export const ReviewsTicker = memo(function ReviewsTicker() {
           <button
             key={i}
             onClick={() => setCurrentIndex(i)}
-            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+            className={`w-1.5 h-1.5 rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 ${
               i === currentIndex % 10
                 ? 'bg-primary w-3'
                 : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'

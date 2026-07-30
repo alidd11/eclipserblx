@@ -58,10 +58,10 @@ export function AssignedTicketsWidget() {
   if (!assignedTickets?.length) return null;
 
   const statusColors: Record<string, string> = {
-    open: 'bg-yellow-500/20 text-yellow-500',
-    in_progress: 'bg-blue-500/20 text-blue-500',
-    awaiting_customer: 'bg-purple-500/20 text-purple-500',
-    awaiting_seller: 'bg-purple-500/20 text-purple-500',
+    open: 'bg-warning/20 text-warning',
+    in_progress: 'bg-primary/20 text-primary',
+    awaiting_customer: 'bg-primary/20 text-primary',
+    awaiting_seller: 'bg-primary/20 text-primary',
   };
 
   return (
@@ -85,7 +85,7 @@ export function AssignedTicketsWidget() {
             : `/admin/seller-tickets/${ticket.id}`;
           return (
             <Link key={ticket.id} to={href}>
-              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors group">
+              <div className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/50 hover:bg-accent transition-colors ease-emphasized group">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="text-[10px] font-mono text-muted-foreground">{ticket.ticket_number}</span>
@@ -101,7 +101,7 @@ export function AssignedTicketsWidget() {
                   </div>
                   <p className="text-sm font-medium truncate">{ticket.subject}</p>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors ease-emphasized shrink-0" />
               </div>
             </Link>
           );

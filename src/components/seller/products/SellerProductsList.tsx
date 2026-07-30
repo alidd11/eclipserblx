@@ -31,8 +31,8 @@ const getModerationBadge = (status: string | null) => {
   switch (status) {
     case 'approved':
       return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+          <span className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
           Live
         </span>
       );
@@ -46,8 +46,8 @@ const getModerationBadge = (status: string | null) => {
     case 'pending':
     default:
       return (
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-yellow-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-warning">
+          <span className="h-1.5 w-1.5 rounded-full bg-warning" />
           Pending
         </span>
       );

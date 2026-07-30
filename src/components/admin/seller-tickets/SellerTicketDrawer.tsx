@@ -279,22 +279,22 @@ export function SellerTicketDrawer({ ticket, onClose, getStatusBadge, getPriorit
             <DrawerDescription className="sr-only">Ticket details</DrawerDescription>
 
             {viewingAgents.length > 0 && (
-              <div className="flex items-center gap-2 text-xs bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
-                <Users className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
-                <span className="text-yellow-600">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
+              <div className="flex items-center gap-2 text-xs bg-warning/10 border border-warning/30 rounded-lg px-3 py-1.5">
+                <Users className="h-3.5 w-3.5 text-warning shrink-0" />
+                <span className="text-warning">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
               </div>
             )}
 
             {/* Collapsible seller info */}
             <Collapsible>
-              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
+              <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors ease-emphasized w-full">
                 <Avatar className="h-5 w-5">
                   <AvatarImage src={ticket.profiles?.avatar_url || undefined} />
                   <AvatarFallback className="text-[10px] bg-primary/20 text-primary">{ticket.profiles?.display_name?.charAt(0) || 'U'}</AvatarFallback>
                 </Avatar>
                 <span className="font-medium text-foreground">{ticket.profiles?.display_name || 'Unknown'}</span>
                 {ticket.stores && (<><span className="text-muted-foreground">·</span><Store className="h-3.5 w-3.5" /><span>{ticket.stores.name}</span></>)}
-                <ChevronDown className="h-3.5 w-3.5 ml-auto transition-transform [[data-state=open]>&]:rotate-180" />
+                <ChevronDown className="h-3.5 w-3.5 ml-auto transition-transform ease-emphasized [[data-state=open]>&]:rotate-180" />
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
                 <div className="grid grid-cols-2 gap-2 p-3 bg-muted/50 rounded-lg text-sm">
@@ -343,8 +343,8 @@ export function SellerTicketDrawer({ ticket, onClose, getStatusBadge, getPriorit
               </div>
 
               {ticket.resolution_notes && (
-                <div className="border-l-2 border-green-500/50 pl-3">
-                  <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Resolution</p>
+                <div className="border-l-2 border-success/50 pl-3">
+                  <p className="text-xs font-medium text-success dark:text-success mb-1">Resolution</p>
                   <p className="text-sm">{ticket.resolution_notes}</p>
                 </div>
               )}
@@ -361,7 +361,7 @@ export function SellerTicketDrawer({ ticket, onClose, getStatusBadge, getPriorit
                       <div key={msg.id} className={cn('flex gap-2.5', msg.is_admin ? 'flex-row-reverse' : 'flex-row')}>
                         <Avatar className="h-7 w-7 shrink-0 mt-1">
                           {msg.is_admin ? (
-                            <AvatarFallback className="bg-green-500/20 text-green-500 text-xs"><Headphones className="h-3.5 w-3.5" /></AvatarFallback>
+                            <AvatarFallback className="bg-success/20 text-success text-xs"><Headphones className="h-3.5 w-3.5" /></AvatarFallback>
                           ) : (
                             <><AvatarImage src={ticket.profiles?.avatar_url || undefined} /><AvatarFallback className="bg-primary/20 text-primary text-xs"><User className="h-3.5 w-3.5" /></AvatarFallback></>
                           )}
@@ -421,7 +421,7 @@ export function SellerTicketDrawer({ ticket, onClose, getStatusBadge, getPriorit
                     <SelectItem value="awaiting_seller">Awaiting Seller</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" className="text-green-600 h-8" onClick={() => setShowResolveDialog(true)}>
+                <Button variant="outline" size="sm" className="text-success h-8" onClick={() => setShowResolveDialog(true)}>
                   <CheckCircle className="h-4 w-4 mr-1" />Resolve
                 </Button>
               </div>

@@ -34,10 +34,10 @@ const NOTE_TYPES = [
 
 const NOTE_TYPE_COLORS: Record<string, string> = {
   general: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
-  performance: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  feedback: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  warning: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  commendation: 'bg-green-500/20 text-green-400 border-green-500/30',
+  performance: 'bg-primary/20 text-primary border-primary/30',
+  feedback: 'bg-primary/20 text-primary border-primary/30',
+  warning: 'bg-warning/20 text-warning border-warning/30',
+  commendation: 'bg-success/20 text-success border-success/30',
 };
 
 interface StaffNotesSectionProps {

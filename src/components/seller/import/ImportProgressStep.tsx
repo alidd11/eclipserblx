@@ -301,7 +301,7 @@ export function ImportProgressStep({
  <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
  )}
  {item.status === 'success' && (
- <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+ <CheckCircle className="h-4 w-4 text-success shrink-0" />
  )}
  {item.status === 'failed' && (
  <XCircle className="h-4 w-4 text-destructive shrink-0" />

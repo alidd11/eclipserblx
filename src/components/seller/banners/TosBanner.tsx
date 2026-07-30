@@ -11,14 +11,14 @@ export function TosBanner({ isLoading, hasSigned }: TosBannerProps) {
   if (isLoading || hasSigned) return null;
 
   return (
-    <div className="border border-amber-500/50 rounded-xl overflow-hidden">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 px-6 py-4 bg-amber-500/5">
+    <div className="border border-warning/50 rounded-xl overflow-hidden">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 px-6 py-4 bg-warning/5">
         <div className="flex items-center gap-3 flex-1">
-          <div className="p-2 rounded-lg bg-amber-500/10">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
+          <div className="p-2 rounded-lg bg-warning/10">
+            <AlertTriangle className="h-5 w-5 text-warning" />
           </div>
           <div>
-            <p className="font-semibold text-amber-600 dark:text-amber-400">
+            <p className="font-semibold text-warning dark:text-warning">
               Store Inactive - Agreement Required
             </p>
             <p className="text-sm text-muted-foreground">

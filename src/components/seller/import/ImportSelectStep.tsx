@@ -208,7 +208,7 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
             return (
               <div
                 key={product.sourceUrl}
-                className={`group relative flex flex-col gap-2 p-3 rounded-lg border transition-all ${
+                className={`group relative flex flex-col gap-2 p-3 rounded-lg border transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized ${
                   isImported
                     ? 'opacity-50 cursor-not-allowed border-muted'
                     : isSelected
@@ -276,8 +276,8 @@ export function ImportSelectStep({ products, platform, onBack, onImport }: Impor
                   <div className="space-y-2 pt-1 border-t border-border/50">
                     {plainDesc && (
                       <Collapsible open={isExpanded} onOpenChange={() => toggleDescription(product.sourceUrl)}>
-                        <CollapsibleTrigger className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors w-full text-left">
-                          <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                        <CollapsibleTrigger className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors ease-emphasized w-full text-left">
+                          <ChevronDown className={`h-3 w-3 transition-transform ease-emphasized ${isExpanded ? 'rotate-180' : ''}`} />
                           {isExpanded ? 'Hide description' : 'Preview description'}
                         </CollapsibleTrigger>
                         <CollapsibleContent>

@@ -123,9 +123,9 @@ export default function ProductListingGuide() {
             Do's & Don'ts
           </h2>
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="border border-border rounded-xl overflow-hidden border-green-500/30 bg-green-500/5">
+            <div className="border border-border rounded-xl overflow-hidden border-success/30 bg-success/5">
               <div className="px-4 py-3 border-b border-border bg-muted/30">
-                <h3 className="font-semibold text-sm text-green-500 flex items-center gap-2">
+                <h3 className="font-semibold text-sm text-success flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5" /> Do
                 </h3>
               </div>
@@ -133,7 +133,7 @@ export default function ProductListingGuide() {
                 <ul className="space-y-3">
                   {dosAndDonts.dos.map((item, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}

@@ -251,7 +251,7 @@ export default function SellerSettingsAppearance() {
                     <div
                       key={theme.id}
                       onClick={() => setFormData({ ...formData, theme: theme.id })}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized ${
                         formData.theme === theme.id
                           ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-primary/50'
@@ -282,7 +282,7 @@ export default function SellerSettingsAppearance() {
                       key={color.id}
                       type="button"
                       onClick={() => setFormData({ ...formData, accent_color: color.id })}
-                      className={`w-10 h-10 rounded-full border-2 transition-all ${
+                      className={`w-10 h-10 rounded-full border-2 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized ${
                         formData.accent_color === color.id
                           ? 'border-foreground scale-110 ring-2 ring-offset-2 ring-offset-background'
                           : 'border-transparent'
@@ -322,7 +322,7 @@ export default function SellerSettingsAppearance() {
                     <div
                       key={layout.id}
                       onClick={() => setFormData({ ...formData, layout_style: layout.id })}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all text-center ${
+                      className={`p-3 rounded-lg border-2 cursor-pointer transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized text-center ${
                         formData.layout_style === layout.id
                           ? 'border-primary bg-primary/5'
                           : 'border-border hover:border-primary/50'

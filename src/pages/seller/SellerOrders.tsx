@@ -50,10 +50,10 @@ export default function SellerOrders() {
             <span className="font-semibold text-foreground">{stats?.totalSales || 0}</span> sales
           </span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-green-500">{formatCurrency(stats?.totalRevenue || 0)}</span> revenue
+            <span className="font-semibold text-success">{formatCurrency(stats?.totalRevenue || 0)}</span> revenue
           </span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-yellow-500">{formatCurrency(stats?.pendingAmount || 0)}</span> pending
+            <span className="font-semibold text-warning">{formatCurrency(stats?.pendingAmount || 0)}</span> pending
           </span>
         </div>
 

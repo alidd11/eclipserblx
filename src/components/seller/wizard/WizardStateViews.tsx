@@ -9,8 +9,8 @@ export function ApplicationSubmittedView() {
   return (
     <div className="text-center space-y-8 py-8">
       <div className="space-y-4">
-        <div className="mx-auto w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center">
-          <PartyPopper className="h-8 w-8 text-green-500" />
+        <div className="mx-auto w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
+          <PartyPopper className="h-8 w-8 text-success" />
         </div>
         <h1 className="text-2xl font-bold">Application Submitted!</h1>
         <p className="text-muted-foreground max-w-md mx-auto">
@@ -27,13 +27,13 @@ export function ApplicationSubmittedView() {
         ].map((item, i) => (
           <div key={i} className="flex gap-3">
             <div className="flex flex-col items-center">
-              <div className={cn('h-8 w-8 rounded-full flex items-center justify-center', item.done ? 'bg-green-500/10' : 'bg-muted')}>
-                <item.icon className={cn('h-4 w-4', item.done ? 'text-green-500' : 'text-muted-foreground')} />
+              <div className={cn('h-8 w-8 rounded-full flex items-center justify-center', item.done ? 'bg-success/10' : 'bg-muted')}>
+                <item.icon className={cn('h-4 w-4', item.done ? 'text-success' : 'text-muted-foreground')} />
               </div>
               {i < 3 && <div className="w-px h-8 bg-border" />}
             </div>
             <div className="pb-8 text-left">
-              <p className={cn('text-sm font-medium', item.done && 'text-green-600 dark:text-green-400')}>{item.step}</p>
+              <p className={cn('text-sm font-medium', item.done && 'text-success dark:text-success')}>{item.step}</p>
               <p className="text-xs text-muted-foreground">{item.desc}</p>
             </div>
           </div>
@@ -58,8 +58,8 @@ export function ApplicationSubmittedView() {
 export function PendingApplicationView({ application }: { application: { store_name?: string; created_at?: string } }) {
   return (
     <div className="text-center space-y-6 py-8">
-      <div className="mx-auto w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
-        <Clock className="h-8 w-8 text-amber-500" />
+      <div className="mx-auto w-16 h-16 rounded-full bg-warning/10 flex items-center justify-center">
+        <Clock className="h-8 w-8 text-warning" />
       </div>
       <h1 className="text-2xl font-bold">Application Under Review</h1>
       <p className="text-muted-foreground max-w-md mx-auto">
@@ -79,7 +79,7 @@ export function PendingApplicationView({ application }: { application: { store_n
 export function SuccessRedirect() {
   return (
     <div className="text-center space-y-4 py-8">
-      <CheckCircle2 className="h-12 w-12 text-green-500 mx-auto" />
+      <CheckCircle2 className="h-12 w-12 text-success mx-auto" />
       <h1 className="text-2xl font-bold">You're already a seller!</h1>
       <Button asChild>
         <a href="/seller" target="_blank" rel="noopener noreferrer">Go to Seller Dashboard</a>

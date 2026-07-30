@@ -75,7 +75,7 @@ export function PermissionCategory({
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border rounded-xl overflow-hidden">
       <CollapsibleTrigger className="w-full">
         <div className={cn(
-          "flex items-center justify-between p-4 transition-colors",
+          "flex items-center justify-between p-4 transition-colors ease-emphasized",
           "hover:bg-muted/50",
           isOpen && "border-b bg-muted/30"
         )}>
@@ -95,7 +95,7 @@ export function PermissionCategory({
             <Badge 
               variant={allEnabled ? "default" : noneEnabled ? "secondary" : "outline"}
               className={cn(
-                allEnabled && "bg-green-500",
+                allEnabled && "bg-success",
                 noneEnabled && "bg-muted"
               )}
             >
@@ -166,7 +166,7 @@ export function PermissionCategory({
                 <div
                   key={permission.id}
                   className={cn(
-                    "flex items-center justify-between p-3 rounded-lg transition-all",
+                    "flex items-center justify-between p-3 rounded-lg transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
                     isEnabled
                       ? "bg-primary/5 border border-primary/20"
                       : "bg-muted/30 border border-transparent hover:bg-muted/50",

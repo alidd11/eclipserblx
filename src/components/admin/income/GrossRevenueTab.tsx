@@ -139,8 +139,8 @@ export function GrossRevenueTab() {
  className={cn(
  'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full',
  stats.halfTrend >= 0
- ? 'text-emerald-600 bg-emerald-500/10'
- : 'text-red-500 bg-red-500/10'
+ ? 'text-success bg-success/10'
+ : 'text-destructive bg-destructive/10'
  )}
  >
  {stats.halfTrend >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}

@@ -123,7 +123,7 @@ async function checkGuildLicense(guildId) {
  return (
  <div className="border border-border rounded-xl overflow-hidden border-primary/20">
  <div 
- className="px-4 py-3 border-b border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+ className="px-4 py-3 border-b border-border bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors ease-emphasized"
  onClick={() => setIsExpanded(!isExpanded)}
  >
  <div className="flex items-center justify-between">
@@ -310,7 +310,7 @@ async function checkGuildLicense(guildId) {
  'Consider a grace period for expired licenses before disabling features',
  ].map((tip, i) => (
  <div key={i} className="flex items-start gap-2 text-sm">
- <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+ <CheckCircle className="h-4 w-4 text-success mt-0.5 shrink-0" />
  <span>{tip}</span>
  </div>
  ))}
@@ -322,8 +322,8 @@ async function checkGuildLicense(guildId) {
  <AlertDescription className="space-y-3">
  <p className="font-medium">API Response Examples</p>
  <div className="grid gap-2 text-xs font-mono">
- <div className="p-2 rounded bg-green-500/10 border border-green-500/30">
- <span className="text-green-500">Success:</span>
+ <div className="p-2 rounded bg-success/10 border border-success/30">
+ <span className="text-success">Success:</span>
  {` { "success": true, "guild_id": "123...", "activated_at": "2025-02-04T..." }`}
  </div>
  <div className="p-2 rounded bg-destructive/10 border border-destructive/30">

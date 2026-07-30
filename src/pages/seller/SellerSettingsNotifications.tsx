@@ -276,8 +276,8 @@ export default function SellerSettingsNotifications() {
               </div>
 
               {formData.discord_webhook_url && (
-                <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="flex items-center gap-3 p-3 bg-success/10 border border-success/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <div>
                     <p className="text-sm font-medium">Order Webhook Configured</p>
                     <p className="text-xs text-muted-foreground">
@@ -326,8 +326,8 @@ export default function SellerSettingsNotifications() {
               </div>
 
               {formData.review_discord_webhook_url && (
-                <div className="flex items-center gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-amber-500" />
+                <div className="flex items-center gap-3 p-3 bg-warning/10 border border-warning/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-warning" />
                   <div>
                     <p className="text-sm font-medium">Review Webhook Configured</p>
                     <p className="text-xs text-muted-foreground">
@@ -347,8 +347,8 @@ export default function SellerSettingsNotifications() {
             </div>
             <div className="p-4 space-y-4">
               {store?.credentials?.discord_guild_id ? (
-                <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="flex items-center gap-3 p-3 bg-success/10 border border-success/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <div>
                     <p className="text-sm font-medium">Eclipse Portal Bot Connected</p>
                     <p className="text-xs text-muted-foreground">
@@ -357,8 +357,8 @@ export default function SellerSettingsNotifications() {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-blue-500 mt-0.5" />
+                <div className="flex items-start gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-primary mt-0.5" />
                   <div>
                     <p className="text-sm font-medium">Add Eclipse Portal Bot First</p>
                     <p className="text-xs text-muted-foreground">

@@ -110,9 +110,9 @@ export default function IPReports() {
       case "invalid":
         return <Badge variant="secondary">Invalid</Badge>;
       case "resolved":
-        return <Badge className="bg-green-500/20 text-green-400">Resolved</Badge>;
+        return <Badge className="bg-success/20 text-success">Resolved</Badge>;
       case "under_review":
-        return <Badge className="bg-amber-500/20 text-amber-400">Under Review</Badge>;
+        return <Badge className="bg-warning/20 text-warning">Under Review</Badge>;
       default:
         return <Badge variant="outline">Pending</Badge>;
     }
@@ -237,7 +237,7 @@ export default function IPReports() {
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <AlertTriangle className="h-5 w-5 text-warning" />
                 Review IP Violation Report
               </DialogTitle>
             </DialogHeader>
@@ -370,7 +370,7 @@ export default function IPReports() {
                 Confirm Violation
               </Button>
               <Button
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-success hover:bg-success"
                 onClick={() => updateReport.mutate({
                   reportId: selectedReport!.id,
                   status: "resolved",

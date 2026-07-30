@@ -36,35 +36,35 @@ const CHANNELS: ChannelConfig[] = [
  key: 'product_feed_channel_id',
  label: 'Product Feed',
  description: 'Auto-post new product listings when they go live on the marketplace',
- icon: <Package className="h-4 w-4 text-cyan-500" />,
+ icon: <Package className="h-4 w-4 text-primary" />,
  placeholder: 'Channel ID for product feed auto-posts',
  },
  {
  key: 'orders_channel_id',
  label: 'New Orders',
  description: 'Get notified when a customer purchases from your store',
- icon: <ShoppingCart className="h-4 w-4 text-green-500" />,
+ icon: <ShoppingCart className="h-4 w-4 text-success" />,
  placeholder: 'Channel ID for order notifications',
  },
  {
  key: 'sales_channel_id',
  label: 'Sales Log',
  description: 'Detailed sales log with revenue breakdowns',
- icon: <DollarSign className="h-4 w-4 text-emerald-500" />,
+ icon: <DollarSign className="h-4 w-4 text-success" />,
  placeholder: 'Channel ID for sales log',
  },
  {
  key: 'refunds_channel_id',
  label: 'Refunds',
  description: 'Get notified when a refund is processed on your products',
- icon: <RefreshCw className="h-4 w-4 text-amber-500" />,
+ icon: <RefreshCw className="h-4 w-4 text-warning" />,
  placeholder: 'Channel ID for refund notifications',
  },
  {
  key: 'disputes_channel_id',
  label: 'Disputes',
  description: 'Get notified when a customer files a dispute',
- icon: <AlertTriangle className="h-4 w-4 text-red-500" />,
+ icon: <AlertTriangle className="h-4 w-4 text-destructive" />,
  placeholder: 'Channel ID for dispute notifications',
  },
 ];
@@ -118,9 +118,9 @@ export function DiscordNotificationsTab() {
  <div className="space-y-4">
  {/* Info Banner */}
  {!hasBotConnected ? (
- <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-start gap-3">
- <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
- <div className="text-sm text-amber-600 dark:text-amber-400">
+ <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg flex items-start gap-3">
+ <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+ <div className="text-sm text-warning dark:text-warning">
  <p className="font-medium">Bot not connected</p>
  <p className="text-xs mt-0.5">
  You need to add the Eclipse Portal Bot to your server first (Bot tab) to receive notifications.
@@ -163,7 +163,7 @@ export function DiscordNotificationsTab() {
  <div className="flex items-center gap-2">
  <span className="text-sm font-medium">{channel.label}</span>
  {isConfigured ? (
- <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+ <CheckCircle className="h-3.5 w-3.5 text-success" />
  ) : (
  <XCircle className="h-3.5 w-3.5 text-muted-foreground/40" />
  )}

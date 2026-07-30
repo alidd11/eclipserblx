@@ -80,7 +80,7 @@ function ReviewsPreview() {
     <div className="flex flex-col items-center gap-1 py-2">
       <div className="flex gap-0.5">
         {Array.from({ length: 5 }).map((_, i) => (
-          <Star key={i} className={cn("h-3 w-3", i < 4 ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground/30")} />
+          <Star key={i} className={cn("h-3 w-3", i < 4 ? "text-warning fill-warning" : "text-muted-foreground/30")} />
         ))}
       </div>
       <span className="text-[9px] text-muted-foreground">4.0 · 24 reviews</span>
@@ -134,7 +134,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
 
   return (
     <div className={cn(
-      "bg-background border border-border overflow-hidden shadow-sm transition-all duration-300 mx-auto",
+      "bg-background border border-border overflow-hidden shadow-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 mx-auto",
       isMobile
         ? "w-[375px] rounded-[2.5rem] border-[6px] border-foreground/80"
         : "w-full rounded-xl"
@@ -148,8 +148,8 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
         <div className="flex items-center gap-1.5 px-3 py-2 bg-muted/50 border-b border-border">
           <div className="flex gap-1">
             <div className="w-2.5 h-2.5 rounded-full bg-destructive/60" />
-            <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-            <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-warning/60" />
+            <div className="w-2.5 h-2.5 rounded-full bg-success/60" />
           </div>
           <div className="flex-1 mx-2">
             <div className="bg-background rounded-md px-3 py-1 text-[10px] text-muted-foreground text-center truncate border border-border/50">
@@ -170,7 +170,7 @@ export function BuilderPreview({ sections, storeName = 'Your Store', accentColor
             <div
               key={section.id}
               className={cn(
-                "rounded-lg p-2 transition-all border",
+                "rounded-lg p-2 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized border",
                 selectedId === section.id
                   ? "border-primary ring-1 ring-primary/30 bg-primary/5"
                   : "border-transparent"

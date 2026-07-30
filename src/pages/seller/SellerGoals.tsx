@@ -220,7 +220,7 @@ export default function SellerGoals() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           {achieved ? (
-                            <Trophy className="h-5 w-5 text-yellow-400" />
+                            <Trophy className="h-5 w-5 text-warning" />
                           ) : (
                             <TrendingUp className="h-5 w-5 text-primary" />
                           )}

@@ -207,7 +207,7 @@ function SortableMobileCard({
  <p className="text-xs text-muted-foreground">{category.product_count} products</p>
  </div>
  <ChevronDown className={cn(
- "h-4 w-4 text-muted-foreground transition-transform",
+ "h-4 w-4 text-muted-foreground transition-transform ease-emphasized",
  isOpen && "rotate-180"
  )} />
  </button>

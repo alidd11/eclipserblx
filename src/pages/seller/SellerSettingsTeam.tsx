@@ -83,8 +83,8 @@ const ROLE_ICONS: Record<TeamRole, typeof Shield> = {
 };
 
 const ROLE_COLORS: Record<TeamRole, string> = {
-  manager: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-  editor: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  manager: 'bg-primary/20 text-primary border-primary/30',
+  editor: 'bg-primary/20 text-primary border-primary/30',
   viewer: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
 };
 

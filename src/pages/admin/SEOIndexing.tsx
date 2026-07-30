@@ -87,7 +87,7 @@ export default function SEOIndexing() {
  </div>
  <div className="p-4">
  <div className="flex items-center gap-2 text-sm text-muted-foreground">
- <CheckCircle className="h-4 w-4 text-green-500" />
+ <CheckCircle className="h-4 w-4 text-success" />
  Auto-indexing is active
  </div>
  </div>
@@ -101,7 +101,7 @@ export default function SEOIndexing() {
  </div>
  <div className="p-4 space-y-3">
  <div className="flex items-center gap-2">
- <CheckCircle className="h-4 w-4 text-green-500" />
+ <CheckCircle className="h-4 w-4 text-success" />
  <span className="font-medium">{lastResult.totalUrls} URLs submitted</span>
  </div>
 
@@ -110,9 +110,9 @@ export default function SEOIndexing() {
   {batch.submissions?.map((sub, j: number) => (
  <div key={j} className="flex items-center gap-2 text-sm">
  {sub.ok ? (
- <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+ <CheckCircle className="h-3.5 w-3.5 text-success" />
  ) : (
- <AlertCircle className="h-3.5 w-3.5 text-yellow-500" />
+ <AlertCircle className="h-3.5 w-3.5 text-warning" />
  )}
  <span className="text-muted-foreground">
  {endpointLabel(sub.endpoint)}: {sub.status || sub.error}
@@ -125,9 +125,9 @@ export default function SEOIndexing() {
  {lastResult.googlePing && (
  <div className="flex items-center gap-2 text-sm">
  {lastResult.googlePing.ok ? (
- <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+ <CheckCircle className="h-3.5 w-3.5 text-success" />
  ) : (
- <AlertCircle className="h-3.5 w-3.5 text-yellow-500" />
+ <AlertCircle className="h-3.5 w-3.5 text-warning" />
  )}
  <span className="text-muted-foreground">
  Google Sitemap Ping: {lastResult.googlePing.status}

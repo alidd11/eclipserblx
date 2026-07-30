@@ -124,7 +124,7 @@ export default function AdminAuditLogs() {
             return (
               <TableRow key={log.id}>
                 <TableCell>
-                  <Badge variant="outline" className={isAdded ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}>
+                  <Badge variant="outline" className={isAdded ? 'bg-success/10 text-success border-success/30' : 'bg-destructive/10 text-destructive border-destructive/30'}>
                     {isAdded ? <UserPlus className="h-3 w-3 mr-1" /> : <UserMinus className="h-3 w-3 mr-1" />}
                     {isAdded ? 'Added' : 'Removed'}
                   </Badge>
@@ -168,7 +168,7 @@ export default function AdminAuditLogs() {
             return (
               <TableRow key={log.id}>
                 <TableCell>
-                  <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">
+                  <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
                     <Wifi className="h-3 w-3 mr-1" />
                     Blocked
                   </Badge>
@@ -212,7 +212,7 @@ export default function AdminAuditLogs() {
             return (
               <TableRow key={log.id}>
                 <TableCell>
-                  <Badge variant="outline" className={isBanned ? 'bg-red-500/10 text-red-500 border-red-500/30' : 'bg-green-500/10 text-green-500 border-green-500/30'}>
+                  <Badge variant="outline" className={isBanned ? 'bg-destructive/10 text-destructive border-destructive/30' : 'bg-success/10 text-success border-success/30'}>
                     <Ban className="h-3 w-3 mr-1" />
                     {isBanned ? 'Banned' : 'Unbanned'}
                   </Badge>
@@ -250,7 +250,7 @@ export default function AdminAuditLogs() {
             return (
               <TableRow key={log.id}>
                 <TableCell>
-                  <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
+                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
                     <Trash2 className="h-3 w-3 mr-1" />
                     Deleted
                   </Badge>
@@ -284,7 +284,7 @@ export default function AdminAuditLogs() {
           logs.map((log) => (
             <TableRow key={log.id}>
               <TableCell>
-                <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+                <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
                   <Eye className="h-3 w-3 mr-1" />
                   Viewed
                 </Badge>
@@ -305,7 +305,7 @@ export default function AdminAuditLogs() {
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
         <div className="flex items-center justify-between">
-          <Badge variant="outline" className={isAdded ? 'bg-green-500/10 text-green-500 border-green-500/30' : 'bg-red-500/10 text-red-500 border-red-500/30'}>
+          <Badge variant="outline" className={isAdded ? 'bg-success/10 text-success border-success/30' : 'bg-destructive/10 text-destructive border-destructive/30'}>
             {isAdded ? <UserPlus className="h-3 w-3 mr-1" /> : <UserMinus className="h-3 w-3 mr-1" />}
             {isAdded ? 'Added' : 'Removed'}
           </Badge>
@@ -328,7 +328,7 @@ export default function AdminAuditLogs() {
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
         <div className="flex items-center justify-between">
-          <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">
+          <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">
             <Wifi className="h-3 w-3 mr-1" />
             VPN Blocked
           </Badge>
@@ -350,7 +350,7 @@ export default function AdminAuditLogs() {
     const isBanned = log.action === 'ip_banned';
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
-        <Badge variant="outline" className={isBanned ? 'bg-red-500/10 text-red-500 border-red-500/30' : 'bg-green-500/10 text-green-500 border-green-500/30'}>
+        <Badge variant="outline" className={isBanned ? 'bg-destructive/10 text-destructive border-destructive/30' : 'bg-success/10 text-success border-success/30'}>
           <Ban className="h-3 w-3 mr-1" />
           {isBanned ? 'IP Banned' : 'IP Unbanned'}
         </Badge>
@@ -368,7 +368,7 @@ export default function AdminAuditLogs() {
     const details = log.details as { target_email?: string; target_display_name?: string; target_user_id?: string } | null;
     return (
       <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
-        <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
+        <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
           <Trash2 className="h-3 w-3 mr-1" />
           Account Deleted
         </Badge>
@@ -383,7 +383,7 @@ export default function AdminAuditLogs() {
 
   const renderMobileIncomeCard = (log: AuditLog) => (
     <div key={log.id} className="p-4 rounded-lg bg-muted/50 border border-border space-y-2">
-      <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">
+      <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
         <Eye className="h-3 w-3 mr-1" />
         Income Viewed
       </Badge>

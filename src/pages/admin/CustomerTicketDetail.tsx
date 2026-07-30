@@ -61,10 +61,10 @@ interface SupportTicket {
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  open: { label: 'Open', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  awaiting_customer: { label: 'Awaiting Customer', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  open: { label: 'Open', color: 'bg-warning/20 text-warning border-warning/30' },
+  in_progress: { label: 'In Progress', color: 'bg-primary/20 text-primary border-primary/30' },
+  awaiting_customer: { label: 'Awaiting Customer', color: 'bg-primary/20 text-primary border-primary/30' },
+  resolved: { label: 'Resolved', color: 'bg-success/20 text-success border-success/30' },
   closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
 
 const categoryLabels: Record<string, string> = {
@@ -423,9 +423,9 @@ export default function CustomerTicketDetail() {
 
           {/* Agent collision banner */}
           {viewingAgents.length > 0 && (
-            <div className="flex items-center gap-2 text-xs bg-yellow-500/10 border border-yellow-500/30 rounded-lg px-3 py-1.5">
-              <Users className="h-3.5 w-3.5 text-yellow-500 shrink-0" />
-              <span className="text-yellow-600">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
+            <div className="flex items-center gap-2 text-xs bg-warning/10 border border-warning/30 rounded-lg px-3 py-1.5">
+              <Users className="h-3.5 w-3.5 text-warning shrink-0" />
+              <span className="text-warning">{viewingAgents.map(a => a.name).join(', ')} {viewingAgents.length === 1 ? 'is' : 'are'} also viewing this ticket</span>
             </div>
           )}
 
@@ -538,7 +538,7 @@ export default function CustomerTicketDetail() {
                             <div key={msg.id} className={cn('flex gap-3', isStaff ? 'flex-row-reverse' : 'flex-row')}>
                               <Avatar className="h-8 w-8 shrink-0 mt-1">
                                 {isStaff ? (
-                                  <AvatarFallback className="bg-green-500/20 text-green-500">
+                                  <AvatarFallback className="bg-success/20 text-success">
                                     <Headphones className="h-4 w-4" />
                                   </AvatarFallback>
                                 ) : (
@@ -553,7 +553,7 @@ export default function CustomerTicketDetail() {
                               <div className={cn(
                                 'max-w-[80%] rounded-xl px-4 py-2.5',
                                 isInternal
-                                  ? 'bg-yellow-500/10 border border-yellow-500/30 border-dashed'
+                                  ? 'bg-warning/10 border border-warning/30 border-dashed'
                                   : isStaff
                                     ? 'bg-primary text-primary-foreground'
                                     : 'bg-muted'
@@ -568,7 +568,7 @@ export default function CustomerTicketDetail() {
                                   </span>
                                   <span>•</span>
                                   <span>{format(new Date(msg.created_at), 'h:mm a')}</span>
-                                  {isInternal && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-yellow-500/50 text-yellow-600">Note</Badge>}
+                                  {isInternal && <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4 border-warning/50 text-warning">Note</Badge>}
                                 </div>
                                 <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{msg.message}</p>
                                 {msg.attachment_url && (
@@ -609,7 +609,7 @@ export default function CustomerTicketDetail() {
                   placeholder={isInternalNote ? 'Internal note (staff only)...' : 'Type your reply...'}
                   className={cn(
                     'min-h-[44px] max-h-[80px] sm:max-h-[120px] resize-none text-sm',
-                    isInternalNote && 'border-yellow-500/30 bg-yellow-500/5'
+                    isInternalNote && 'border-warning/30 bg-warning/5'
                   )}
                   style={{ fontSize: '16px' }}
                 />

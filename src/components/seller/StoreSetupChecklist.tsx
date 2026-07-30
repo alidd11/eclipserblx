@@ -26,12 +26,12 @@ export function StoreSetupChecklist() {
             key={item.id}
             to={item.completed ? '#' : item.href}
             className={cn(
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group',
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ease-emphasized group',
               item.completed ? 'opacity-60' : 'hover:bg-muted/50 cursor-pointer'
             )}
           >
             {item.completed ? (
-              <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
             ) : (
               <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
             )}
@@ -42,7 +42,7 @@ export function StoreSetupChecklist() {
               <p className="text-xs text-muted-foreground">{item.description}</p>
             </div>
             {!item.completed && (
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
+              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors ease-emphasized" />
             )}
           </Link>
         ))}

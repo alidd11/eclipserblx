@@ -58,7 +58,7 @@ function SortableSectionItem({ section, isSelected, onSelect, onToggleVisibility
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all cursor-pointer select-none",
+        "flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized cursor-pointer select-none",
         isDragging && "opacity-50 z-50 shadow-lg",
         isSelected
           ? "border-primary bg-primary/5 ring-1 ring-primary/20"

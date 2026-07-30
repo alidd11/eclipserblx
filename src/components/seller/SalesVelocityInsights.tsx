@@ -80,8 +80,8 @@ export function SalesVelocityInsights() {
  });
 
  const trendConfig = {
- up: { icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10', label: '+' },
- down: { icon: TrendingDown, color: 'text-red-500', bg: 'bg-red-500/10', label: '-' },
+ up: { icon: TrendingUp, color: 'text-success', bg: 'bg-success/10', label: '+' },
+ down: { icon: TrendingDown, color: 'text-destructive', bg: 'bg-destructive/10', label: '-' },
  flat: { icon: Minus, color: 'text-muted-foreground', bg: 'bg-muted', label: '' },
  };
 
@@ -110,7 +110,7 @@ export function SalesVelocityInsights() {
  return (
  <div
  key={product.productName}
- className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+ className="flex items-center gap-3 p-2.5 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors ease-emphasized"
  >
  <div className="flex-1 min-w-0">
  <p className="text-sm font-medium truncate">{product.productName}</p>

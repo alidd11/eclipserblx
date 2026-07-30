@@ -337,7 +337,7 @@ export default function AdminHelp() {
  <Collapsible open={quickTipsOpen} onOpenChange={setQuickTipsOpen}>
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border">
  <CollapsibleTrigger asChild>
- <div className="px-4 py-3 border-b border-border bg-muted/30 cursor-pointer hover:bg-muted/30 transition-colors rounded-t-lg">
+ <div className="px-4 py-3 border-b border-border bg-muted/30 cursor-pointer hover:bg-muted/30 transition-colors ease-emphasized rounded-t-lg">
  <div className="flex items-center justify-between">
  <h3 className="font-semibold text-sm flex items-center gap-2 text-lg">
  <HelpCircle className="h-5 w-5" />

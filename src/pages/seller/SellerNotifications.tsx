@@ -27,13 +27,13 @@ const NOTIFICATION_ICONS: Record<string, any> = {
   payout_completed: DollarSign };
 
 const NOTIFICATION_COLORS: Record<string, string> = {
-  new_order: 'text-green-500',
-  refund_request: 'text-orange-500',
-  new_follower: 'text-pink-500',
-  product_approved: 'text-green-500',
+  new_order: 'text-success',
+  refund_request: 'text-warning',
+  new_follower: 'text-primary',
+  product_approved: 'text-success',
   product_rejected: 'text-destructive',
-  flash_sale_ended: 'text-yellow-500',
-  payout_completed: 'text-blue-500' };
+  flash_sale_ended: 'text-warning',
+  payout_completed: 'text-primary' };
 
 export default function SellerNotifications() {
   const { user } = useAuth();
@@ -165,7 +165,7 @@ export default function SellerNotifications() {
                   key={n.id}
                   role="button"
                   className={cn(
-                    'transition-all',
+                    'transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
                     isUnread && 'border-primary/30 bg-primary/5'
                   )}
                   onClick={() => handleClick(n)}

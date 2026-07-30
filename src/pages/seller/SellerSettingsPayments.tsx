@@ -289,8 +289,8 @@ export default function SellerSettingsPayments() {
                   </div>
                 </div>
               ) : connectStatus?.canReceivePayments || store?.paymentDetails?.payouts_enabled ? (
-                <div className="flex items-center gap-3 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <CheckCircle className="h-6 w-6 text-green-500" />
+                <div className="flex items-center gap-3 p-4 bg-success/10 border border-success/30 rounded-lg">
+                  <CheckCircle className="h-6 w-6 text-success" />
                   <div className="flex-1">
                      <p className="font-medium">Direct Payouts Active</p>
                      <p className="text-sm text-muted-foreground">
@@ -305,8 +305,8 @@ export default function SellerSettingsPayments() {
                    </Button>
                 </div>
               ) : connectStatus?.hasAccount || store?.paymentDetails?.stripe_account_id ? (
-                <div className="flex items-center gap-3 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                  <AlertCircle className="h-6 w-6 text-yellow-500" />
+                <div className="flex items-center gap-3 p-4 bg-warning/10 border border-warning/30 rounded-lg">
+                  <AlertCircle className="h-6 w-6 text-warning" />
                   <div className="flex-1">
                      <p className="font-medium">Setup Incomplete</p>
                      <p className="text-sm text-muted-foreground">
@@ -354,7 +354,7 @@ export default function SellerSettingsPayments() {
                 onValueChange={(value) => setPayoutMethod(value as 'stripe' | 'paypal' | 'bank_transfer')}
                 className="space-y-3"
               >
-                 <div className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ${!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id ? 'opacity-60' : ''}`}>
+                 <div className={`flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ease-emphasized ${!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id ? 'opacity-60' : ''}`}>
                    <RadioGroupItem value="stripe" id="stripe" className="mt-1" disabled={!connectStatus?.canReceivePayments && !store?.paymentDetails?.stripe_account_id} />
                    <label htmlFor="stripe" className="flex-1 cursor-pointer">
                      <p className="font-medium">Direct Bank Payout (Recommended)</p>
@@ -368,7 +368,7 @@ export default function SellerSettingsPayments() {
                      )}
                    </label>
                  </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ease-emphasized">
                   <RadioGroupItem value="paypal" id="paypal" className="mt-1" />
                   <label htmlFor="paypal" className="flex-1 cursor-pointer">
                     <p className="font-medium">PayPal</p>
@@ -377,7 +377,7 @@ export default function SellerSettingsPayments() {
                     </p>
                   </label>
                 </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <div className="flex items-start gap-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors ease-emphasized">
                   <RadioGroupItem value="bank_transfer" id="bank_transfer" className="mt-1" />
                   <label htmlFor="bank_transfer" className="flex-1 cursor-pointer">
                     <div className="flex items-center gap-2">

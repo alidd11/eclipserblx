@@ -35,9 +35,9 @@ interface Violation {
 type Filter = "all" | "healthy" | "at_risk" | "critical" | "suspended";
 
 const statusConfig = {
-  healthy: { label: "Healthy", color: "text-green-600", icon: ShieldCheck },
-  at_risk: { label: "At Risk", color: "text-amber-600", icon: AlertTriangle },
-  critical: { label: "Critical", color: "text-red-600", icon: XCircle },
+  healthy: { label: "Healthy", color: "text-success", icon: ShieldCheck },
+  at_risk: { label: "At Risk", color: "text-warning", icon: AlertTriangle },
+  critical: { label: "Critical", color: "text-destructive", icon: XCircle },
 };
 
 export default function ComplianceDashboard() {
@@ -159,7 +159,7 @@ export default function ComplianceDashboard() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {(["all", "healthy", "at_risk", "critical", "suspended"] as Filter[]).map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`border rounded-xl p-3 text-left transition-colors ${filter === f ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"}`}>
+            className={`border rounded-xl p-3 text-left transition-colors ease-emphasized ${filter === f ? "border-primary bg-primary/5" : "border-border hover:bg-muted/30"}`}>
             <p className="text-xs text-muted-foreground capitalize">{f.replace("_", " ")}</p>
             <p className="text-lg font-semibold text-foreground">{counts[f]}</p>
           </button>
@@ -179,14 +179,14 @@ export default function ComplianceDashboard() {
           <div className="space-y-2 max-h-60 overflow-y-auto">
             {violations.map(v => (
               <div key={v.id} className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+                <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-foreground truncate">{v.stores?.name || "Unknown"}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded border ${
-                      v.severity === "strike" ? "bg-red-100 text-red-800 border-red-200" :
-                      v.severity === "suspension" ? "bg-red-200 text-red-900 border-red-300" :
-                      "bg-amber-100 text-amber-800 border-amber-200"
+                      v.severity === "strike" ? "bg-destructive text-destructive border-destructive" :
+                      v.severity === "suspension" ? "bg-destructive text-destructive border-destructive" :
+                      "bg-warning text-warning border-warning"
                     }`}>{v.severity}</span>
                     {v.is_auto_detected && <span className="text-[10px] text-muted-foreground">auto</span>}
                   </div>
@@ -223,7 +223,7 @@ export default function ComplianceDashboard() {
                       <div className="flex items-center gap-2">
                         <Store className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="font-medium text-foreground truncate max-w-[200px]">{s.stores?.name || "—"}</span>
-                        {s.stores?.is_active === false && <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-800">suspended</span>}
+                        {s.stores?.is_active === false && <span className="text-[10px] px-1.5 py-0.5 rounded bg-destructive text-destructive">suspended</span>}
                       </div>
                     </td>
                     <td className="p-3 text-center">
@@ -239,7 +239,7 @@ export default function ComplianceDashboard() {
                     <td className="p-3 text-center text-muted-foreground">{s.listing_quality_score}%</td>
                     <td className="p-3 text-center">
                       {s.active_violations > 0 ? (
-                        <span className="text-red-600 font-medium">{s.active_violations}</span>
+                        <span className="text-destructive font-medium">{s.active_violations}</span>
                       ) : (
                         <span className="text-muted-foreground">0</span>
                       )}

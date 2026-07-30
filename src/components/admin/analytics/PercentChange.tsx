@@ -19,7 +19,7 @@ export function PercentChange({ current, previous, label, className }: PercentCh
     <div
       className={cn(
         'flex items-center gap-1 text-xs font-medium',
-        isPositive && 'text-emerald-400',
+        isPositive && 'text-success',
         !isPositive && !isNeutral && 'text-destructive',
         isNeutral && 'text-muted-foreground',
         className,

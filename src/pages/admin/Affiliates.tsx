@@ -201,8 +201,8 @@ export default function AdminAffiliates() {
 
  const getCommissionStatusBadge = (status: string) => {
  const configs: Record<string, { color: string; icon: React.ElementType }> = {
- pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
- paid: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
+ pending: { color: 'bg-warning/10 text-warning border-warning/30', icon: Clock },
+ paid: { color: 'bg-success/10 text-success border-success/30', icon: CheckCircle },
  };
  const config = configs[status] || configs.pending;
  const Icon = config.icon;
@@ -217,9 +217,9 @@ export default function AdminAffiliates() {
 
  const getPayoutStatusBadge = (status: string) => {
  const configs: Record<string, { color: string; icon: React.ElementType }> = {
- pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
- completed: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
- rejected: { color: 'bg-red-500/10 text-red-500 border-red-500/30', icon: AlertCircle },
+ pending: { color: 'bg-warning/10 text-warning border-warning/30', icon: Clock },
+ completed: { color: 'bg-success/10 text-success border-success/30', icon: CheckCircle },
+ rejected: { color: 'bg-destructive/10 text-destructive border-destructive/30', icon: AlertCircle },
  };
  const config = configs[status] || configs.pending;
  const Icon = config.icon;
@@ -334,10 +334,10 @@ export default function AdminAffiliates() {
  <TableCell>
  <Badge variant="outline" className={
  payout.payout_method === 'stripe' 
- ? 'bg-purple-500/10 text-purple-400 border-purple-500/30'
+ ? 'bg-primary/10 text-primary border-primary/30'
  : payout.payout_method === 'bank_transfer'
- ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
- : 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+ ? 'bg-success/10 text-success border-success/30'
+ : 'bg-primary/10 text-primary border-primary/30'
  }>
  {payout.payout_method === 'stripe' ? 'Stripe' : payout.payout_method === 'bank_transfer' ? 'Bank Transfer' : 'PayPal'}
  </Badge>
@@ -474,7 +474,7 @@ export default function AdminAffiliates() {
  <TableCell className="font-mono">
  {formatAmount(commission.order_total)}
  </TableCell>
- <TableCell className="font-mono font-medium text-green-500">
+ <TableCell className="font-mono font-medium text-success">
  +{formatAmount(commission.commission_amount)}
  </TableCell>
  <TableCell>

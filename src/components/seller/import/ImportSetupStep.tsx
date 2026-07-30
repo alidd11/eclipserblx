@@ -91,7 +91,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
  return (
  <div className="space-y-5">
  {/* Ownership Confirmation */}
- <div className={cn("border border-border rounded-xl overflow-hidden border-2 transition-colors", ownershipConfirmed ? 'border-primary/30 bg-primary/5' : 'border-dashed')}>
+ <div className={cn("border border-border rounded-xl overflow-hidden border-2 transition-colors ease-emphasized", ownershipConfirmed ? 'border-primary/30 bg-primary/5' : 'border-dashed')}>
  <div className="p-4 pt-5">
  <div className="flex items-start gap-3">
  <Checkbox
@@ -130,7 +130,7 @@ export function ImportSetupStep({ onProductsFound }: ImportSetupStepProps) {
  key={p.id}
  type="button"
  onClick={() => setStoreUrl(p.baseUrl)}
- className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 hover:bg-muted/60 transition-colors text-left"
+ className="flex items-center gap-2 px-3 py-2 rounded-lg border bg-muted/30 hover:bg-muted/60 transition-colors ease-emphasized text-left"
  >
  <span className="text-sm font-medium">{p.name}</span>
  <Badge variant="outline" className="text-[10px] px-1.5">

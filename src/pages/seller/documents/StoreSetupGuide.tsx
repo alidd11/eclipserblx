@@ -175,11 +175,11 @@ export default function StoreSetupGuide() {
 
         {/* Trusted Seller */}
         <section>
-          <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+          <div className="border border-border rounded-xl overflow-hidden border-warning/30 bg-warning/5">
             <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
-                <div className="p-3 rounded-lg bg-amber-500/10">
-                  <Star className="h-6 w-6 text-amber-500" />
+                <div className="p-3 rounded-lg bg-warning/10">
+                  <Star className="h-6 w-6 text-warning" />
                 </div>
                 <div>
                   <h3 className="font-bold text-lg mb-2">Earn Verified Seller Status</h3>

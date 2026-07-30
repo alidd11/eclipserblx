@@ -428,7 +428,7 @@ export default function SellerStoreTabs() {
                   return (
                     <div 
                       key={product.id}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ease-emphasized ${
                         isAssigned ? 'bg-primary/10 border-primary' : 'hover:bg-muted'
                       }`}
                       onClick={() => {

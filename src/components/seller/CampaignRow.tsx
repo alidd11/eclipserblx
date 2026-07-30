@@ -31,9 +31,9 @@ interface Campaign {
 }
 
 const statusConfig: Record<string, { label: string; className: string }> = {
-  active: { label: 'Active', className: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  in_review: { label: 'In Review', className: 'bg-amber-500/10 text-amber-500 border-amber-500/20' },
-  scheduled: { label: 'Scheduled', className: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
+  active: { label: 'Active', className: 'bg-success/10 text-success border-success/20' },
+  in_review: { label: 'In Review', className: 'bg-warning/10 text-warning border-warning/20' },
+  scheduled: { label: 'Scheduled', className: 'bg-primary/10 text-primary border-primary/20' },
   paused: { label: 'Paused', className: 'bg-muted text-muted-foreground border-border' },
   expired: { label: 'Completed', className: 'bg-muted text-muted-foreground border-border' },
   cancelled: { label: 'Cancelled', className: 'bg-muted text-muted-foreground border-border' },
@@ -120,8 +120,8 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
             <div className="h-1 w-16 bg-muted rounded-full overflow-hidden">
               <div
                 className={cn(
-                  "h-full rounded-full transition-all",
-                  budgetPercent >= 90 ? "bg-destructive" : budgetPercent >= 60 ? "bg-amber-500" : "bg-emerald-500"
+                  "h-full rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
+                  budgetPercent >= 90 ? "bg-destructive" : budgetPercent >= 60 ? "bg-warning" : "bg-success"
                 )}
                 style={{ width: `${budgetPercent}%` }}
               />
@@ -145,7 +145,7 @@ export function CampaignRow({ campaign }: { campaign: Campaign }) {
         </TableCell>
         <TableCell>
           <ChevronDown className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform",
+            "h-4 w-4 text-muted-foreground transition-transform ease-emphasized",
             expanded && "rotate-180"
           )} />
         </TableCell>

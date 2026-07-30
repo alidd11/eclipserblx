@@ -164,7 +164,7 @@ export function UserDialogs(props: UserDialogsProps) {
         <DialogContent className="max-w-[95vw] sm:max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Ban className="h-5 w-5 text-orange-500" />
+              <Ban className="h-5 w-5 text-warning" />
               IP Ban User
             </DialogTitle>
             <DialogDescription>Ban an IP address to prevent access from that address.</DialogDescription>
@@ -204,7 +204,7 @@ export function UserDialogs(props: UserDialogsProps) {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => { setIpBanDialogUser(null); setIpAddress(''); setBanReason(''); }}>Cancel</Button>
-                <Button variant="destructive" disabled={!ipAddress.trim() || !IP_REGEX.test(ipAddress.trim()) || ipBanMutation.isPending} onClick={handleBanClick} className="bg-orange-500 hover:bg-orange-600">
+                <Button variant="destructive" disabled={!ipAddress.trim() || !IP_REGEX.test(ipAddress.trim()) || ipBanMutation.isPending} onClick={handleBanClick} className="bg-warning hover:bg-warning">
                   {ipBanMutation.isPending ? 'Banning...' : 'Ban IP'}
                 </Button>
               </DialogFooter>

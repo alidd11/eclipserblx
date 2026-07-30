@@ -37,11 +37,11 @@ const stepIcons: Record<string, React.ElementType> = {
 };
 
 const stepColors: Record<string, string> = {
-  tos: 'from-amber-500 to-orange-500',
-  'store-setup': 'from-pink-500 to-rose-500',
-  payments: 'from-emerald-500 to-green-500',
-  products: 'from-cyan-500 to-blue-500',
-  extras: 'from-violet-500 to-purple-500',
+  tos: 'from-warning to-warning/50',
+  'store-setup': 'from-primary to-destructive',
+  payments: 'from-success to-success/50',
+  products: 'from-primary to-primary/50',
+  extras: 'from-primary to-primary/50',
 };
 
 export default function SellerSetup() {
@@ -79,7 +79,7 @@ export default function SellerSetup() {
       <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
               <StoreIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -109,9 +109,9 @@ export default function SellerSetup() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-                className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5"
+                className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-success/20 to-success/10"
               >
-                <PartyPopper className="h-12 w-12 text-emerald-500" />
+                <PartyPopper className="h-12 w-12 text-success" />
               </motion.div>
               <h2 className="text-2xl font-bold">You're all set!</h2>
               <p className="text-muted-foreground max-w-md mx-auto">
@@ -129,7 +129,7 @@ export default function SellerSetup() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center space-y-3"
             >
-              <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5">
+              <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10">
                 <Rocket className="h-8 w-8 text-primary" />
               </div>
               <h2 className="text-2xl font-bold">Let's set up your store</h2>
@@ -171,7 +171,7 @@ export default function SellerSetup() {
                   <button
                     onClick={() => setActiveStep(isActive ? null : step.id)}
                     className={cn(
-                      'w-full text-left rounded-xl border transition-all duration-200',
+                      'w-full text-left rounded-xl border transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-200',
                       step.completed
                         ? 'bg-muted/30 border-border'
                         : isActive
@@ -185,9 +185,9 @@ export default function SellerSetup() {
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            className="h-11 w-11 rounded-xl bg-emerald-500/10 flex items-center justify-center"
+                            className="h-11 w-11 rounded-xl bg-success/10 flex items-center justify-center"
                           >
-                            <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                            <CheckCircle2 className="h-6 w-6 text-success" />
                           </motion.div>
                         ) : (
                           <div className={cn(
@@ -198,7 +198,7 @@ export default function SellerSetup() {
                           </div>
                         )}
                         {step.required && !step.completed && (
-                          <Sparkles className="absolute -top-1 -right-1 h-3.5 w-3.5 text-amber-500" />
+                          <Sparkles className="absolute -top-1 -right-1 h-3.5 w-3.5 text-warning" />
                         )}
                       </div>
 
@@ -216,7 +216,7 @@ export default function SellerSetup() {
                             </span>
                           )}
                           {step.required && !step.completed && (
-                            <span className="text-[10px] font-medium text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded-full">
+                            <span className="text-[10px] font-medium text-warning bg-warning/10 px-1.5 py-0.5 rounded-full">
                               Required
                             </span>
                           )}
@@ -230,7 +230,7 @@ export default function SellerSetup() {
                       </div>
 
                       <ChevronRight className={cn(
-                        'h-5 w-5 text-muted-foreground shrink-0 transition-transform',
+                        'h-5 w-5 text-muted-foreground shrink-0 transition-transform ease-emphasized',
                         isActive && 'rotate-90'
                       )} />
                     </div>

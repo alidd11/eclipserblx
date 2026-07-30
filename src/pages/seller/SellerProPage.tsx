@@ -79,7 +79,7 @@ const faqItems = [
 function CellValue({ value, isPro }: { value: string | boolean; isPro?: boolean }) {
   if (typeof value === 'boolean') {
     return value ? (
-      <Check className="h-4 w-4 text-green-500 mx-auto" />
+      <Check className="h-4 w-4 text-success mx-auto" />
     ) : (
       <X className="h-4 w-4 text-muted-foreground/30 mx-auto" />
     );
@@ -144,10 +144,10 @@ export default function SellerProPage() {
       <div className="max-w-4xl mx-auto">
         {/* Success banner */}
         {isSuccess && (
-          <div className="mb-6 rounded-lg bg-green-500/10 border border-green-500/20 p-4 flex items-center gap-3">
-            <Check className="h-5 w-5 text-green-500 shrink-0" />
+          <div className="mb-6 rounded-lg bg-success/10 border border-success/20 p-4 flex items-center gap-3">
+            <Check className="h-5 w-5 text-success shrink-0" />
             <div>
-              <p className="font-semibold text-green-500">Welcome to Eclipse Pro!</p>
+              <p className="font-semibold text-success">Welcome to Eclipse Pro!</p>
               <p className="text-sm text-muted-foreground">Your subscription is now active.</p>
             </div>
           </div>
@@ -195,7 +195,7 @@ export default function SellerProPage() {
               <div className="bg-muted rounded-lg p-1 flex items-center gap-1 w-fit">
                 <button
                   className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-all',
+                    'px-4 py-2 rounded-md text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
                     billingPeriod === 'monthly' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   )}
                   onClick={() => setBillingPeriod('monthly')}
@@ -204,7 +204,7 @@ export default function SellerProPage() {
                 </button>
                 <button
                   className={cn(
-                    'px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2',
+                    'px-4 py-2 rounded-md text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized flex items-center gap-2',
                     billingPeriod === 'annual' ? 'bg-background shadow-sm' : 'text-muted-foreground hover:text-foreground'
                   )}
                   onClick={() => setBillingPeriod('annual')}

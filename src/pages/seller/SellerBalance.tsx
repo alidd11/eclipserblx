@@ -143,7 +143,7 @@ export default function SellerBalance() {
   const getPayoutStatusBadge = (status: string) => {
     switch (status) {
       case 'completed':
-        return <Badge variant="default" className="bg-green-600 gap-1"><CheckCircle className="h-3 w-3" /> Completed</Badge>;
+        return <Badge variant="default" className="bg-success gap-1"><CheckCircle className="h-3 w-3" /> Completed</Badge>;
       case 'pending':
         return <Badge variant="secondary" className="gap-1"><Clock className="h-3 w-3" /> Pending</Badge>;
       case 'processing':
@@ -172,7 +172,7 @@ export default function SellerBalance() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="text-muted-foreground cursor-default">
-                      Withdrawable: <span className="font-semibold text-green-500">{balanceLoading ? '...' : formatCurrency(balance?.available_balance || 0)}</span>
+                      Withdrawable: <span className="font-semibold text-success">{balanceLoading ? '...' : formatCurrency(balance?.available_balance || 0)}</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent><p className="text-xs">Net earnings available for payout right now.</p></TooltipContent>
@@ -180,7 +180,7 @@ export default function SellerBalance() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="text-muted-foreground cursor-default">
-                      Clearing: <span className="font-semibold text-yellow-500">{balanceLoading ? '...' : formatCurrency(balance?.pending_balance || 0)}</span>
+                      Clearing: <span className="font-semibold text-warning">{balanceLoading ? '...' : formatCurrency(balance?.pending_balance || 0)}</span>
                     </span>
                   </TooltipTrigger>
                   <TooltipContent><p className="text-xs">Earnings being processed (7–14 days).</p></TooltipContent>
@@ -198,10 +198,10 @@ export default function SellerBalance() {
           )}
 
           {/* How Your Earnings Work - Breakdown Card */}
-          <div className="mb-6 border border-blue-500/30 bg-blue-500/5 rounded-xl overflow-hidden">
-            <div className="px-4 py-3 border-b border-blue-500/20 bg-blue-500/5">
+          <div className="mb-6 border border-primary/30 bg-primary/5 rounded-xl overflow-hidden">
+            <div className="px-4 py-3 border-b border-primary/20 bg-primary/5">
               <h3 className="font-semibold text-sm flex items-center gap-2">
-                <Info className="h-4 w-4 text-blue-500" />
+                <Info className="h-4 w-4 text-primary" />
                 How Your Earnings Are Calculated
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">Here's what happens when a customer buys your product</p>
@@ -260,8 +260,8 @@ export default function SellerBalance() {
             </div>
             <div className="p-4">
               {!hasPayoutMethod ? (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-yellow-500 mt-0.5" />
+                <div className="bg-warning/10 border border-warning/30 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-warning mt-0.5" />
                   <div>
                     <p className="font-medium">Payouts Not Enabled</p>
                     <p className="text-sm text-muted-foreground">

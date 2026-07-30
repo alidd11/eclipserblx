@@ -265,10 +265,10 @@ export default function SellerMessages() {
         </div>
 
         {/* Privacy Notice */}
-        <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-500/10 border border-blue-500/20">
-          <AlertCircle className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/10 border border-primary/20">
+          <AlertCircle className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-medium text-blue-500">Privacy Notice</p>
+            <p className="font-medium text-primary">Privacy Notice</p>
             <p className="text-muted-foreground mt-1">
               For customer privacy, you can only see the customer's ID, display name, and username. 
               No email addresses or other personal information is shared.
@@ -408,7 +408,7 @@ export default function SellerMessages() {
                         setSelectedConversation(conv.id);
                         setSearchParams({ conversation: conv.id });
                       }}
-                      className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors"
+                      className="w-full flex items-center gap-3 p-4 text-left hover:bg-muted/50 transition-colors ease-emphasized"
                     >
                       <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center">
                         <User className="h-6 w-6 text-muted-foreground" />

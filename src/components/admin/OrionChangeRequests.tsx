@@ -26,18 +26,18 @@ type ChangeRequest = {
 };
 
 const RISK_TONE: Record<string, string> = {
-  low: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
-  medium: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-  high: 'bg-orange-500/10 text-orange-600 border-orange-500/30',
-  critical: 'bg-rose-500/10 text-rose-600 border-rose-500/30',
+  low: 'bg-success/10 text-success border-success/30',
+  medium: 'bg-warning/10 text-warning border-warning/30',
+  high: 'bg-warning/10 text-warning border-warning/30',
+  critical: 'bg-destructive/10 text-destructive border-destructive/30',
 };
 
 const STATUS_TONE: Record<string, string> = {
-  pending_review: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
-  approved: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
-  applied: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30',
+  pending_review: 'bg-primary/10 text-primary border-primary/30',
+  approved: 'bg-success/10 text-success border-success/30',
+  applied: 'bg-success/10 text-success border-success/30',
   rejected: 'bg-muted text-muted-foreground border-border',
-  failed: 'bg-rose-500/10 text-rose-600 border-rose-500/30',
+  failed: 'bg-destructive/10 text-destructive border-destructive/30',
   withdrawn: 'bg-muted text-muted-foreground border-border',
 };
 
@@ -93,7 +93,7 @@ export function OrionChangeRequests() {
         <div className="flex gap-1.5 rounded-xl bg-muted/40 p-1">
           {(['pending_review','all'] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`text-[13px] px-3 py-1.5 rounded-lg font-medium transition-colors ${filter === f ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
+              className={`text-[13px] px-3 py-1.5 rounded-lg font-medium transition-colors ease-emphasized ${filter === f ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>
               {f === 'pending_review' ? 'Pending' : 'All'}
             </button>
           ))}
@@ -151,7 +151,7 @@ export function OrionChangeRequests() {
               ) : null}
 
               {r.status === 'failed' && r.apply_error && (
-                <div className="flex items-start gap-2 rounded-lg border border-rose-500/30 bg-rose-500/5 p-3 text-[13px] text-rose-600">
+                <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-[13px] text-destructive">
                   <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
                   <div><div className="font-medium">Auto-apply failed</div><div>{r.apply_error}</div></div>
                 </div>
@@ -170,7 +170,7 @@ export function OrionChangeRequests() {
                     <Button
                       size="sm" disabled={busy === r.id}
                       onClick={() => decide(r.id, 'approve')}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      className="bg-success hover:bg-success text-white">
                       {busy === r.id ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />}
                       Approve
                     </Button>

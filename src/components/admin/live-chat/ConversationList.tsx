@@ -38,7 +38,7 @@ export function ConversationList({
                 key={conv.id}
                 onClick={() => conv.status !== 'closed' ? onSelect(conv) : undefined}
                 className={cn(
-                  'w-full p-3 lg:p-4 text-left hover:bg-muted/50 transition-colors touch-manipulation',
+                  'w-full p-3 lg:p-4 text-left hover:bg-muted/50 transition-colors ease-emphasized touch-manipulation',
                   selectedConversation?.id === conv.id && 'bg-muted'
                 )}
               >
@@ -62,7 +62,7 @@ export function ConversationList({
                   </Badge>
                 )}
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Circle className={cn('h-2 w-2 fill-current', conv.status !== 'closed' ? 'text-green-500' : 'text-muted-foreground')} />
+                  <Circle className={cn('h-2 w-2 fill-current', conv.status !== 'closed' ? 'text-success' : 'text-muted-foreground')} />
                   <span>{formatRelative(conv.updated_at)}</span>
                 </div>
               </button>

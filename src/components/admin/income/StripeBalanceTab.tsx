@@ -60,7 +60,7 @@ export function StripeBalanceTab() {
  {/* Header */}
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <Badge variant="default" className="bg-green-600">Live Data</Badge>
+ <Badge variant="default" className="bg-success">Live Data</Badge>
  <span className="text-sm text-muted-foreground">Real-time data from payment processor</span>
  </div>
  <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isLoading} className="gap-2">
@@ -138,12 +138,12 @@ export function StripeBalanceTab() {
  {(data?.refunds ?? 0) > 0 && (
  <div className="flex justify-between">
  <span className="text-muted-foreground">Refunds ({data?.refundCount})</span>
- <span className="font-medium text-orange-500">{"-" + formatGBP((data?.refunds ?? 0))}</span>
+ <span className="font-medium text-warning">{"-" + formatGBP((data?.refunds ?? 0))}</span>
  </div>
  )}
  <div className="flex justify-between border-t pt-2">
  <span className="font-medium">Net</span>
- <span className="font-bold text-green-600">{formatGBP((data?.net ?? 0))}</span>
+ <span className="font-bold text-success">{formatGBP((data?.net ?? 0))}</span>
  </div>
  </>
  )}
@@ -189,7 +189,7 @@ export function StripeBalanceTab() {
  </div>
  <div className="flex justify-between gap-4 border-t pt-1">
  <span className="font-medium">Net:</span>
- <span className="text-green-600 font-medium">{formatGBP((Number(data.net) || 0))}</span>
+ <span className="text-success font-medium">{formatGBP((Number(data.net) || 0))}</span>
  </div>
  <div className="flex justify-between gap-4 text-xs text-muted-foreground">
  <span>Transactions:</span>
@@ -205,10 +205,10 @@ export function StripeBalanceTab() {
  </div>
 
  {/* Info */}
- <div className="border border-border rounded-xl overflow-hidden bg-blue-500/5 border-blue-500/20">
+ <div className="border border-border rounded-xl overflow-hidden bg-primary/5 border-primary/20">
  <div className="p-4 pt-6">
  <div className="flex items-start gap-3">
- <CheckCircle2 className="h-5 w-5 text-blue-500 mt-0.5" />
+ <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
  <div>
  <p className="font-medium">Accurate Fee Tracking</p>
  <p className="text-sm text-muted-foreground">

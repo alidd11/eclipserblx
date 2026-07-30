@@ -112,7 +112,7 @@ export function ChatMessageActions({
               key={emoji}
               onClick={() => handleReactionClick(emoji)}
               className={cn(
-                'flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs transition-colors',
+                'flex items-center gap-1 px-1.5 py-0.5 rounded-full text-xs transition-colors ease-emphasized',
                 hasOwn
                   ? 'bg-primary/20 text-primary'
                   : 'bg-muted hover:bg-muted/80'
@@ -137,7 +137,7 @@ export function ChatMessageActions({
               variant="ghost"
               size="icon" aria-label="More options"
               className={cn(
-                'h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity touch-manipulation',
+                'h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized touch-manipulation',
                 !hasReactions && 'absolute top-0',
                 !hasReactions && (isOwn ? 'right-0' : 'left-0')
               )}
@@ -213,7 +213,7 @@ export function ChatMessageActions({
                       key={emoji}
                       onClick={() => handleReactionClick(emoji)}
                       className={cn(
-                        'p-2 rounded-md text-lg hover:bg-accent transition-colors',
+                        'p-2 rounded-md text-lg hover:bg-accent transition-colors ease-emphasized',
                         hasReacted && 'bg-primary/20'
                       )}
                     >

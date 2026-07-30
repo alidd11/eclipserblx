@@ -235,8 +235,8 @@ export default function SellerProducts() {
           {!productsLoading && (
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground"><span className="font-semibold text-foreground">{totalCount}</span> total</span>
-              <span className="text-muted-foreground"><span className="font-semibold text-green-500">{products.filter((p) => p.moderation_status === 'approved' && p.is_active).length}</span> live</span>
-              <span className="text-muted-foreground"><span className="font-semibold text-yellow-500">{products.filter((p) => p.moderation_status === 'pending').length}</span> pending</span>
+              <span className="text-muted-foreground"><span className="font-semibold text-success">{products.filter((p) => p.moderation_status === 'approved' && p.is_active).length}</span> live</span>
+              <span className="text-muted-foreground"><span className="font-semibold text-warning">{products.filter((p) => p.moderation_status === 'pending').length}</span> pending</span>
               <span className="text-muted-foreground"><span className="font-semibold text-muted-foreground">{products.filter((p) => !p.is_active).length}</span> inactive</span>
             </div>
           )}

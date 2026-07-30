@@ -97,7 +97,7 @@ export function EarningsCalculator({ commissionRate = 15 }: EarningsCalculatorPr
  <div className="flex justify-between border-t-2 border-primary pt-3">
  <span className="font-semibold">Your earnings</span>
  <div className="text-right">
- <span className="text-xl font-bold text-green-600">
+ <span className="text-xl font-bold text-success">
  {formatCurrency(breakdown.sellerEarnings)}
  </span>
  <p className="text-xs text-muted-foreground">

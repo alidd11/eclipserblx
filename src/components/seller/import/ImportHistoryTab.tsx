@@ -64,10 +64,10 @@ export function ImportHistoryTab() {
  {history.map((item) => (
  <div
  key={item.id}
- className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors"
+ className="flex items-center gap-3 p-3 rounded-lg border hover:bg-muted/30 transition-colors ease-emphasized"
  >
  {item.status === 'completed' ? (
- <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+ <CheckCircle className="h-4 w-4 text-success shrink-0" />
  ) : item.status === 'failed' ? (
  <XCircle className="h-4 w-4 text-destructive shrink-0" />
  ) : (

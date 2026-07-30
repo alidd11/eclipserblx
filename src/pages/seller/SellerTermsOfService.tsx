@@ -111,7 +111,7 @@ export default function SellerTermsOfService() {
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-bold">Seller Terms of Service</h1>
               {hasSigned && (
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+                <Badge variant="outline" className="bg-success/10 text-success border-success/20 gap-1">
                   <CheckCircle2 className="h-3 w-3" />
                   Signed
                 </Badge>
@@ -125,14 +125,14 @@ export default function SellerTermsOfService() {
 
         {/* Signed Info */}
         {hasSigned && agreement && (
-          <div className="border border-border rounded-xl overflow-hidden border-green-500/30 bg-green-500/5">
+          <div className="border border-border rounded-xl overflow-hidden border-success/30 bg-success/5">
             <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
-                <div className="p-2 rounded-lg bg-green-500/10">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                <div className="p-2 rounded-lg bg-success/10">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-green-500">Agreement Signed</h3>
+                  <h3 className="font-semibold text-success">Agreement Signed</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     This agreement was signed on {new Date(agreement.signed_at).toLocaleDateString('en-GB', {
                       day: 'numeric',
@@ -321,7 +321,7 @@ export default function SellerTermsOfService() {
               {/* Account Suspension */}
               <section>
                 <h2 className="font-display text-2xl font-bold mb-4">
-                  <AlertTriangle className="h-6 w-6 text-amber-500" />
+                  <AlertTriangle className="h-6 w-6 text-warning" />
                   Account Suspension & Termination
                 </h2>
                 <p className="text-muted-foreground">
@@ -430,14 +430,14 @@ export default function SellerTermsOfService() {
 
         {/* Non-Owner Message */}
         {!hasSigned && !isOwner && (
-          <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+          <div className="border border-border rounded-xl overflow-hidden border-warning/30 bg-warning/5">
             <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <div className="p-2 rounded-lg bg-warning/10">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-amber-500">Owner Signature Required</h3>
+                  <h3 className="font-semibold text-warning">Owner Signature Required</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     Only the store owner can sign this agreement. Please contact the store owner to 
                     complete this requirement.

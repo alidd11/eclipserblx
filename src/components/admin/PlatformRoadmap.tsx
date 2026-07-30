@@ -10,10 +10,10 @@ import { formatDistanceToNow } from 'date-fns';
 type FilterKey = 'all' | RoadmapStatus;
 
 const STATUS_META: Record<RoadmapStatus, { label: string; pill: string; icon: typeof CheckCircle2 }> = {
-  done:        { label: 'Done',        pill: 'bg-emerald-500/15 text-emerald-600 border-emerald-500/30',   icon: CheckCircle2 },
-  in_progress: { label: 'In Progress', pill: 'bg-amber-500/15 text-amber-600 border-amber-500/30',         icon: Clock },
+  done:        { label: 'Done',        pill: 'bg-success/15 text-success border-success/30',   icon: CheckCircle2 },
+  in_progress: { label: 'In Progress', pill: 'bg-warning/15 text-warning border-warning/30',         icon: Clock },
   todo:        { label: 'Todo',        pill: 'bg-muted/40 text-muted-foreground border-border/40',         icon: Circle },
-  blocked:     { label: 'Blocked',     pill: 'bg-rose-500/15 text-rose-600 border-rose-500/30',            icon: AlertOctagon },
+  blocked:     { label: 'Blocked',     pill: 'bg-destructive/15 text-destructive border-destructive/30',            icon: AlertOctagon },
 };
 
 export function PlatformRoadmap() {
@@ -48,7 +48,7 @@ export function PlatformRoadmap() {
         </div>
 
         <div className="h-2 rounded-full bg-muted/40 overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-primary to-emerald-500 transition-all duration-700" style={{ width: `${totals.weightedPct}%` }} />
+          <div className="h-full bg-gradient-to-r from-primary to-success transition-[width] ease-emphasized duration-300" style={{ width: `${totals.weightedPct}%` }} />
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -57,7 +57,7 @@ export function PlatformRoadmap() {
             const value = s === 'done' ? totals.done : s === 'in_progress' ? totals.inProgress : s === 'todo' ? totals.todo : totals.blocked;
             return (
               <button key={s} onClick={() => setFilter(prev => prev === s ? 'all' : s)} className={cn(
-                'flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition-all',
+                'flex items-center gap-2 px-3 py-2 rounded-xl border text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
                 filter === s ? STATUS_META[s].pill : 'border-border/40 bg-muted/15 hover:bg-muted/30'
               )}>
                 <Icon className="h-4 w-4 shrink-0" />
@@ -73,7 +73,7 @@ export function PlatformRoadmap() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-5">
         <aside className="rounded-2xl border border-border/40 bg-card/50 p-3 space-y-1 h-fit lg:sticky lg:top-20">
-          <button onClick={() => setActivePhase('all')} className={cn('w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all',
+          <button onClick={() => setActivePhase('all')} className={cn('w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
               activePhase === 'all' ? 'bg-primary/10 text-primary font-semibold' : 'hover:bg-muted/40 text-foreground/70')}>
             <span>All phases</span>
             <span className="text-xs tabular-nums opacity-60">{totals.done}/{totals.total}</span>
@@ -83,11 +83,11 @@ export function PlatformRoadmap() {
             const fullyDone = p.doneCount === p.totalCount;
             const active = activePhase === p.key;
             return (
-              <button key={p.key} onClick={() => setActivePhase(p.key)} className={cn('w-full flex items-start gap-2 px-3 py-2.5 rounded-xl text-left transition-all',
+              <button key={p.key} onClick={() => setActivePhase(p.key)} className={cn('w-full flex items-start gap-2 px-3 py-2.5 rounded-xl text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
                   active ? 'bg-primary/10' : 'hover:bg-muted/40')}>
                 <div className={cn('h-6 w-6 rounded-full border-2 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5',
-                  fullyDone ? 'bg-emerald-500/20 border-emerald-500 text-emerald-600' :
-                  p.weightedPct > 0 ? 'bg-amber-500/20 border-amber-500 text-amber-600' : 'bg-muted border-border/60 text-muted-foreground')}>
+                  fullyDone ? 'bg-success/20 border-success text-success' :
+                  p.weightedPct > 0 ? 'bg-warning/20 border-warning text-warning' : 'bg-muted border-border/60 text-muted-foreground')}>
                   {idx + 1}
                 </div>
                 <div className="min-w-0 flex-1">
@@ -97,7 +97,7 @@ export function PlatformRoadmap() {
                   <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{p.subtitle}</p>
                   <div className="mt-1.5 flex items-center gap-1.5">
                     <div className="flex-1 h-1 rounded-full bg-muted/40 overflow-hidden">
-                      <div className="h-full bg-emerald-500/70" style={{ width: `${p.weightedPct}%` }} />
+                      <div className="h-full bg-success/70" style={{ width: `${p.weightedPct}%` }} />
                     </div>
                     <span className="text-[10px] tabular-nums text-muted-foreground font-medium">{p.weightedPct}%</span>
                   </div>
@@ -127,7 +127,7 @@ export function PlatformRoadmap() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="tabular-nums text-xs">{phase.doneCount}/{phase.totalCount}</Badge>
-                  <Badge variant="outline" className="tabular-nums text-[10px] bg-emerald-500/5 border-emerald-500/30 text-emerald-700 dark:text-emerald-400">{phase.weightedPct}%</Badge>
+                  <Badge variant="outline" className="tabular-nums text-[10px] bg-success/5 border-success/30 text-success dark:text-success">{phase.weightedPct}%</Badge>
                 </div>
               </header>
               <ul className="divide-y divide-border/20">
@@ -150,11 +150,11 @@ function TaskRow({ task }: { task: ResolvedTask }) {
   return (
     <li>
       <Link to={`/admin/roadmap/${encodeURIComponent(task.key)}`}
-        className="w-full text-left px-5 py-3 hover:bg-muted/20 transition-colors flex items-start gap-3 group">
+        className="w-full text-left px-5 py-3 hover:bg-muted/20 transition-colors ease-emphasized flex items-start gap-3 group">
         <Icon className={cn('h-5 w-5 shrink-0 mt-0.5',
-          task.status === 'done' ? 'text-emerald-500' :
-          task.status === 'in_progress' ? 'text-amber-500' :
-          task.status === 'blocked' ? 'text-rose-500' : 'text-muted-foreground/40')} />
+          task.status === 'done' ? 'text-success' :
+          task.status === 'in_progress' ? 'text-warning' :
+          task.status === 'blocked' ? 'text-destructive' : 'text-muted-foreground/40')} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <p className={cn('text-sm font-semibold leading-tight', task.status === 'done' && 'text-muted-foreground line-through decoration-1')}>
@@ -172,10 +172,10 @@ function TaskRow({ task }: { task: ResolvedTask }) {
           <p className="text-xs text-muted-foreground mt-0.5 leading-snug">{task.description}</p>
           {task.status === 'in_progress' && (
             <div className="mt-2 flex items-center gap-2">
-              <div className="flex-1 h-1.5 rounded-full bg-amber-500/15 overflow-hidden max-w-[200px]">
-                <div className="h-full bg-amber-500 transition-all" style={{ width: `${task.progress ?? 50}%` }} />
+              <div className="flex-1 h-1.5 rounded-full bg-warning/15 overflow-hidden max-w-[200px]">
+                <div className="h-full bg-warning transition-[width] ease-emphasized" style={{ width: `${task.progress ?? 50}%` }} />
               </div>
-              <span className="text-[10px] tabular-nums font-semibold text-amber-600">{task.progress ?? 50}%</span>
+              <span className="text-[10px] tabular-nums font-semibold text-warning">{task.progress ?? 50}%</span>
             </div>
           )}
           {task.note && <p className="text-xs italic text-muted-foreground/80 mt-1">— {task.note}</p>}
@@ -183,7 +183,7 @@ function TaskRow({ task }: { task: ResolvedTask }) {
             <p className="text-[10px] text-muted-foreground/50 mt-1">Verified {formatDistanceToNow(new Date(task.updatedAt), { addSuffix: true })}</p>
           )}
         </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors mt-1" />
+        <ChevronRight className="h-4 w-4 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors ease-emphasized mt-1" />
       </Link>
     </li>
   );

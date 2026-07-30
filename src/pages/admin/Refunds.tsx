@@ -195,7 +195,7 @@ export default function AdminRefunds() {
       case "refunded":
         return <Badge variant="destructive">Full Refund</Badge>;
       case "partially_refunded":
-        return <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Partial Refund</Badge>;
+        return <Badge className="bg-warning/20 text-warning border-warning/30">Partial Refund</Badge>;
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
@@ -204,14 +204,14 @@ export default function AdminRefunds() {
   const getReversalStatus = (reversedAt: string | null) => {
     if (reversedAt) {
       return (
-        <div className="flex items-center gap-1 text-green-400">
+        <div className="flex items-center gap-1 text-success">
           <CheckCircle2 className="h-4 w-4" />
           <span>Reversed</span>
         </div>
       );
     }
     return (
-      <div className="flex items-center gap-1 text-amber-400">
+      <div className="flex items-center gap-1 text-warning">
         <AlertCircle className="h-4 w-4" />
         <span>Not reversed</span>
       </div>

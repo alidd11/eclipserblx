@@ -71,11 +71,11 @@ export function RevenueSummaryStats() {
   const { formatPrice: fmt } = useCurrency();
 
   const items = [
-    { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
-    { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true, color: 'from-blue-500/20 to-blue-500/5', iconColor: 'text-blue-500' },
-    { label: 'Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart, showOrderChange: true, color: 'from-orange-500/20 to-orange-500/5', iconColor: 'text-orange-500' },
-    { label: 'Avg. Order', value: fmt(stats?.avgOrderValue || 0), icon: BarChart3, color: 'from-purple-500/20 to-purple-500/5', iconColor: 'text-purple-500' },
-    { label: 'Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true, color: 'from-green-500/20 to-green-500/5', iconColor: 'text-green-500' },
+    { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, color: 'from-primary/20 to-primary/10', iconColor: 'text-primary' },
+    { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true, color: 'from-primary/20 to-primary/10', iconColor: 'text-primary' },
+    { label: 'Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart, showOrderChange: true, color: 'from-warning/20 to-warning/10', iconColor: 'text-warning' },
+    { label: 'Avg. Order', value: fmt(stats?.avgOrderValue || 0), icon: BarChart3, color: 'from-primary/20 to-primary/10', iconColor: 'text-primary' },
+    { label: 'Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true, color: 'from-success/20 to-success/10', iconColor: 'text-success' },
   ];
 
   if (isLoading) {
@@ -98,7 +98,7 @@ export function RevenueSummaryStats() {
         <div
           key={item.label}
           className={cn(
-            'group relative rounded-xl border border-border/50 bg-card p-4 transition-all duration-200',
+            'group relative rounded-xl border border-border/50 bg-card p-4 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-200',
             'hover:border-border hover:shadow-sm',
             'overflow-hidden'
           )}
@@ -111,7 +111,7 @@ export function RevenueSummaryStats() {
               <item.icon className={cn('h-4 w-4', item.iconColor)} />
             </div>
             <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider mb-1">{item.label}</p>
-            <p className={cn('text-lg sm:text-xl font-bold tracking-tight', item.highlight && 'text-green-500')}>
+            <p className={cn('text-lg sm:text-xl font-bold tracking-tight', item.highlight && 'text-success')}>
               {item.value}
             </p>
             {item.showChange && stats && (

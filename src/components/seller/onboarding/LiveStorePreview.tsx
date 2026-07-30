@@ -22,7 +22,7 @@ export function LiveStorePreview({ storeName, logoUrl, bannerUrl, accentColor }:
           <button
             onClick={() => setIsMobile(false)}
             className={cn(
-              'p-1 rounded transition-colors',
+              'p-1 rounded transition-colors ease-emphasized',
               !isMobile ? 'bg-background shadow-sm' : 'text-muted-foreground'
             )}
           >
@@ -31,7 +31,7 @@ export function LiveStorePreview({ storeName, logoUrl, bannerUrl, accentColor }:
           <button
             onClick={() => setIsMobile(true)}
             className={cn(
-              'p-1 rounded transition-colors',
+              'p-1 rounded transition-colors ease-emphasized',
               isMobile ? 'bg-background shadow-sm' : 'text-muted-foreground'
             )}
           >
@@ -44,7 +44,7 @@ export function LiveStorePreview({ storeName, logoUrl, bannerUrl, accentColor }:
       <motion.div
         layout
         className={cn(
-          'mx-auto transition-all',
+          'mx-auto transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized',
           isMobile ? 'max-w-[200px] py-3' : 'w-full'
         )}
       >

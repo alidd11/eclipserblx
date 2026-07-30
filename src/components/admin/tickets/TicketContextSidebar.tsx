@@ -43,10 +43,10 @@ interface AssignedProfile {
 }
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  open: { label: 'Open', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
-  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
-  awaiting_customer: { label: 'Awaiting Customer', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
-  resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  open: { label: 'Open', color: 'bg-warning/20 text-warning border-warning/30' },
+  in_progress: { label: 'In Progress', color: 'bg-primary/20 text-primary border-primary/30' },
+  awaiting_customer: { label: 'Awaiting Customer', color: 'bg-primary/20 text-primary border-primary/30' },
+  resolved: { label: 'Resolved', color: 'bg-success/20 text-success border-success/30' },
   closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' },
 };
 
@@ -150,7 +150,7 @@ export function TicketContextSidebar({
                   <Badge variant="secondary" className="text-[10px] px-1.5 h-4">{customerOrders.length}</Badge>
                 )}
               </h3>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform ease-emphasized [[data-state=open]>&]:rotate-180" />
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -190,7 +190,7 @@ export function TicketContextSidebar({
                   <Badge variant="secondary" className="text-[10px] px-1.5 h-4">{pastTickets.length}</Badge>
                 )}
               </h3>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform ease-emphasized [[data-state=open]>&]:rotate-180" />
             </div>
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -201,7 +201,7 @@ export function TicketContextSidebar({
                 pastTickets.map((pt) => (
                   <div
                     key={pt.id}
-                    className="p-2 rounded-lg bg-muted/50 text-xs cursor-pointer hover:bg-muted transition-colors"
+                    className="p-2 rounded-lg bg-muted/50 text-xs cursor-pointer hover:bg-muted transition-colors ease-emphasized"
                     onClick={() => navigate(`/admin/customer-tickets/${pt.id}`)}
                   >
                     <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export function TicketContextSidebar({
           <div className="h-px bg-border my-1" />
           <div className="flex justify-between">
             <span className="text-muted-foreground">First Response</span>
-            <span className={ticket.first_response_at ? 'text-green-500' : 'text-yellow-500'}>
+            <span className={ticket.first_response_at ? 'text-success' : 'text-warning'}>
               {ticket.first_response_at
                 ? formatDistanceToNow(new Date(ticket.first_response_at), { addSuffix: false })
                 : 'Awaiting'}
@@ -252,7 +252,7 @@ export function TicketContextSidebar({
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Resolution Time</span>
-            <span className={ticket.resolved_at ? 'text-green-500' : 'text-muted-foreground'}>
+            <span className={ticket.resolved_at ? 'text-success' : 'text-muted-foreground'}>
               {ticket.resolved_at
                 ? formatDistanceToNow(new Date(ticket.resolved_at), { addSuffix: false })
                 : '—'}

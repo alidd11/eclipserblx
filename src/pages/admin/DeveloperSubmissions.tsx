@@ -44,10 +44,10 @@ import { formatGBP } from '@/lib/formatters';
  }
  
  const statusConfig = {
-   pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500', icon: Clock },
-   approved: { label: 'Approved', color: 'bg-green-500/10 text-green-500', icon: CheckCircle },
-   rejected: { label: 'Rejected', color: 'bg-red-500/10 text-red-500', icon: XCircle },
-   revision_requested: { label: 'Revision', color: 'bg-orange-500/10 text-orange-500', icon: AlertCircle },
+   pending: { label: 'Pending', color: 'bg-warning/10 text-warning', icon: Clock },
+   approved: { label: 'Approved', color: 'bg-success/10 text-success', icon: CheckCircle },
+   rejected: { label: 'Rejected', color: 'bg-destructive/10 text-destructive', icon: XCircle },
+   revision_requested: { label: 'Revision', color: 'bg-warning/10 text-warning', icon: AlertCircle },
  };
  
  export default function DeveloperSubmissions() {

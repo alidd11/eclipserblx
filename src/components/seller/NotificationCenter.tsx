@@ -10,12 +10,12 @@ import { cn } from '@/lib/utils';
 import { CardLoadingSkeleton, CardEmptyState } from './DashboardPlaceholders';
 
 const TYPE_STYLES: Record<string, string> = {
-  order: 'text-blue-500 bg-blue-500/10',
-  review: 'text-yellow-500 bg-yellow-500/10',
-  payout: 'text-green-500 bg-green-500/10',
+  order: 'text-primary bg-primary/10',
+  review: 'text-warning bg-warning/10',
+  payout: 'text-success bg-success/10',
   refund_request: 'text-destructive bg-destructive/10',
-  moderation: 'text-orange-500 bg-orange-500/10',
-  leak_detected: 'text-red-500 bg-red-500/10' };
+  moderation: 'text-warning bg-warning/10',
+  leak_detected: 'text-destructive bg-destructive/10' };
 
 export function NotificationCenter() {
   const { user } = useAuth();
@@ -68,7 +68,7 @@ export function NotificationCenter() {
                     key={n.id}
                     to={n.action_url || '#'}
                     className={cn(
-                      'flex items-start gap-3 p-3 rounded-lg transition-colors hover:bg-muted/50',
+                      'flex items-start gap-3 p-3 rounded-lg transition-colors ease-emphasized hover:bg-muted/50',
                       !n.read_at && 'bg-primary/5'
                     )}
                   >

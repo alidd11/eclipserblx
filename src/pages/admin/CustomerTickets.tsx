@@ -39,10 +39,10 @@
  }
  
  const statusConfig: Record<string, { label: string; color: string }> = {
- open: { label: 'Open', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
- in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
- awaiting_customer: { label: 'Awaiting Customer', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
- resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+ open: { label: 'Open', color: 'bg-warning/20 text-warning border-warning/30' },
+ in_progress: { label: 'In Progress', color: 'bg-primary/20 text-primary border-primary/30' },
+ awaiting_customer: { label: 'Awaiting Customer', color: 'bg-primary/20 text-primary border-primary/30' },
+ resolved: { label: 'Resolved', color: 'bg-success/20 text-success border-success/30' },
  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
  
  const categoryLabels: Record<string, string> = {
@@ -185,8 +185,8 @@
  <div className="border border-border rounded-xl overflow-hidden">
   <div className="p-4">
  <div className="flex items-center gap-3">
- <div className="h-10 w-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
- <AlertCircle className="h-5 w-5 text-yellow-500" />
+ <div className="h-10 w-10 rounded-lg bg-warning/20 flex items-center justify-center">
+ <AlertCircle className="h-5 w-5 text-warning" />
  </div>
  <div>
  <div className="text-2xl font-bold">{openCount}</div>
@@ -198,8 +198,8 @@
  <div className="border border-border rounded-xl overflow-hidden">
   <div className="p-4">
  <div className="flex items-center gap-3">
- <div className="h-10 w-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
- <Clock className="h-5 w-5 text-blue-500" />
+ <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+ <Clock className="h-5 w-5 text-primary" />
  </div>
  <div>
  <div className="text-2xl font-bold">{inProgressCount}</div>
@@ -211,8 +211,8 @@
  <div className="border border-border rounded-xl overflow-hidden">
  <div className="p-4">
  <div className="flex items-center gap-3">
- <div className="h-10 w-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
- <MessageSquare className="h-5 w-5 text-purple-500" />
+ <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+ <MessageSquare className="h-5 w-5 text-primary" />
  </div>
  <div>
  <div className="text-2xl font-bold">{awaitingCount}</div>
@@ -272,7 +272,7 @@
  return (
  <div
  key={ticket.id}
- className="py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors touch-manipulation"
+ className="py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors ease-emphasized touch-manipulation"
  onClick={() => navigate(`/admin/customer-tickets/${ticket.id}`)}
  >
  <Avatar className="h-8 w-8 shrink-0">

@@ -52,7 +52,7 @@ export function SellerSuccessStories() {
           </p>
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold">{story.name}</span>
-            <span className="text-xs text-emerald-500 font-medium">{story.metric}</span>
+            <span className="text-xs text-success font-medium">{story.metric}</span>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -62,7 +62,7 @@ export function SellerSuccessStories() {
           <button
             key={i}
             onClick={() => setIndex(i)}
-            className={`h-1.5 w-1.5 rounded-full transition-colors ${
+            className={`h-1.5 w-1.5 rounded-full transition-colors ease-emphasized ${
               i === index ? 'bg-primary' : 'bg-muted-foreground/20'
             }`}
           />

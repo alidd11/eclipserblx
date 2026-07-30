@@ -113,7 +113,7 @@ export default function SellerImport() {
                 return (
                   <div key={s} className="flex items-center gap-2">
                     {i > 0 && <ChevronRight className="h-3 w-3 text-muted-foreground/50" />}
-                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                    <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors ease-emphasized ${
                       isCurrent ? 'bg-primary text-primary-foreground'
                       : isPast ? 'bg-primary/10 text-primary'
                       : 'bg-muted text-muted-foreground'

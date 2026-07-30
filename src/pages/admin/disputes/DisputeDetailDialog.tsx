@@ -88,7 +88,7 @@ export function DisputeDetailDialog({
                 return (
                   <Badge variant="outline" className={cn(
                     'gap-1',
-                    isOverdue ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
+                    isOverdue ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-warning/10 text-warning border-warning/20'
                   )}>
                     <Timer className="h-3 w-3" />
                     {isOverdue ? 'Seller 48h window expired' : `${hoursLeft}h remaining for seller response`}
@@ -107,14 +107,14 @@ export function DisputeDetailDialog({
 
             {/* Escrow Status Banner */}
             {dispute.escrow && (
-              <div className={cn('border', dispute.escrow.escrow_frozen ? 'border-sky-500/30 bg-sky-500/5' : 'border-amber-500/20 bg-amber-500/5')}>
+              <div className={cn('border', dispute.escrow.escrow_frozen ? 'border-primary/30 bg-primary/5' : 'border-warning/20 bg-warning/5')}>
                 <div className="p-4 py-3 px-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {dispute.escrow.escrow_frozen ? (
-                        <Snowflake className="h-4 w-4 text-sky-400" />
+                        <Snowflake className="h-4 w-4 text-primary" />
                       ) : (
-                        <Clock className="h-4 w-4 text-amber-500" />
+                        <Clock className="h-4 w-4 text-warning" />
                       )}
                       <div>
                         <p className="text-sm font-medium">
@@ -221,11 +221,11 @@ export function DisputeDetailDialog({
 
             {/* Escalation */}
             {dispute.escalation_reason && (
-              <div className="border-amber-500/20 bg-amber-500/5">
+              <div className="border-warning/20 bg-warning/5">
                 <div className="p-4 py-3 px-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <ShieldAlert className="h-4 w-4 text-amber-500" />
-                    <p className="text-sm font-medium text-amber-600">Escalation Reason</p>
+                    <ShieldAlert className="h-4 w-4 text-warning" />
+                    <p className="text-sm font-medium text-warning">Escalation Reason</p>
                   </div>
                   <p className="text-sm text-muted-foreground">{dispute.escalation_reason}</p>
                   {dispute.escalated_at && (
@@ -263,13 +263,13 @@ export function DisputeDetailDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pending">
-                    <span className="flex items-center gap-2"><Clock className="h-3 w-3 text-yellow-500" /> Pending (Seller)</span>
+                    <span className="flex items-center gap-2"><Clock className="h-3 w-3 text-warning" /> Pending (Seller)</span>
                   </SelectItem>
                   <SelectItem value="escalated">
-                    <span className="flex items-center gap-2"><ShieldAlert className="h-3 w-3 text-amber-500" /> Escalated</span>
+                    <span className="flex items-center gap-2"><ShieldAlert className="h-3 w-3 text-warning" /> Escalated</span>
                   </SelectItem>
                   <SelectItem value="approved">
-                    <span className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-emerald-500" /> Approved (Refund)</span>
+                    <span className="flex items-center gap-2"><CheckCircle className="h-3 w-3 text-success" /> Approved (Refund)</span>
                   </SelectItem>
                   <SelectItem value="denied">
                     <span className="flex items-center gap-2"><XCircle className="h-3 w-3 text-destructive" /> Denied</span>

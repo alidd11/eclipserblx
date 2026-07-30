@@ -131,7 +131,7 @@ function EligibilityChecker() {
           <div key={check.label} className="flex items-center justify-between px-4 py-2.5">
             <div className="flex items-center gap-2">
               {check.passed ? (
-                <CheckCircle className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                <CheckCircle className="h-3.5 w-3.5 text-success shrink-0" />
               ) : (
                 <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
               )}
@@ -316,7 +316,7 @@ export function SellerInfoContent() {
           </p>
           <a 
             href="/become-seller"
-            className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
+            className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized text-sm"
           >
             Start Selling
             <ArrowRight className="h-4 w-4" />
@@ -355,7 +355,7 @@ export function SellerInfoContent() {
             {sellingPoints.map((point) => (
               <div 
                 key={point.title} 
-                className="p-5 rounded-2xl border border-border/40 bg-card/40 hover:border-border/70 transition-colors"
+                className="p-5 rounded-2xl border border-border/40 bg-card/40 hover:border-border/70 transition-colors ease-emphasized"
               >
                 <div className="flex items-start gap-3.5">
                   <div className="p-2 rounded-xl bg-primary/10 shrink-0 mt-0.5">
@@ -417,14 +417,14 @@ export function SellerInfoContent() {
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <a 
               href="/become-seller"
-              className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-all text-sm"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-primary/90 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized text-sm"
             >
               Apply Now
               <ArrowRight className="h-4 w-4" />
             </a>
             <a 
               href="/support/chat" 
-              className="inline-flex items-center justify-center gap-2 px-7 py-3 border border-border text-foreground font-semibold rounded-xl hover:bg-muted/50 transition-colors text-sm"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 border border-border text-foreground font-semibold rounded-xl hover:bg-muted/50 transition-colors ease-emphasized text-sm"
             >
               Ask a Question
             </a>

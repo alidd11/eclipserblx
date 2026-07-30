@@ -148,7 +148,7 @@ export default function AdminGiftCredits() {
  setSelectedUser(user);
  setSearchQuery('');
  }}
- className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
+ className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors ease-emphasized text-left"
  >
  <Avatar className="h-10 w-10">
  <AvatarImage src={user.avatar_url || undefined} />
@@ -251,7 +251,7 @@ export default function AdminGiftCredits() {
  <Badge
  key={quickAmount}
  variant="outline"
- className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+ className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors ease-emphasized"
  onClick={() => setAmount(quickAmount.toString())}
  >
  £{quickAmount}

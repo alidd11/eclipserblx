@@ -137,7 +137,7 @@ export default function CannedResponses() {
             </div>
           ) : (
             responses.map((r) => (
-              <div key={r.id} className="p-4 flex items-start gap-3 hover:bg-muted/20 transition-colors">
+              <div key={r.id} className="p-4 flex items-start gap-3 hover:bg-muted/20 transition-colors ease-emphasized">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-sm text-foreground">{r.title}</span>

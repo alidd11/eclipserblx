@@ -309,7 +309,7 @@ export default function SellerAnalytics() {
                 <span className="font-semibold text-foreground">{processedData.totals.addToCarts}</span> add to carts
               </span>
               <span className="text-muted-foreground">
-                <span className="font-semibold text-green-500">{processedData.totals.purchases}</span> purchases
+                <span className="font-semibold text-success">{processedData.totals.purchases}</span> purchases
               </span>
               <span className="text-muted-foreground">
                 <span className="font-semibold text-primary">{processedData.conversionRate}%</span> conversion
@@ -482,7 +482,7 @@ export default function SellerAnalytics() {
                               </div>
                               <div className="flex-1">
                                 <div 
-                                  className="h-12 rounded-lg flex items-center px-4 transition-all"
+                                  className="h-12 rounded-lg flex items-center px-4 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized"
                                   style={{ 
                                     width: `${widthPercent}%`,
                                     backgroundColor: step.fill,
@@ -496,7 +496,7 @@ export default function SellerAnalytics() {
                               </div>
                               {i > 0 && (
                                 <div className="w-20 text-right shrink-0">
-                                  <span className="text-sm font-semibold text-green-500">
+                                  <span className="text-sm font-semibold text-success">
                                     {step.rate}%
                                   </span>
                                   <p className="text-[10px] text-muted-foreground">
@@ -565,7 +565,7 @@ export default function SellerAnalytics() {
                         {processedData.productPerformance.map((product) => {
                           const info = productsMap?.[product.id];
                           return (
-                            <div key={product.id} className="grid grid-cols-12 gap-2 items-center px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div key={product.id} className="grid grid-cols-12 gap-2 items-center px-2 py-2 rounded-lg hover:bg-muted/50 transition-colors ease-emphasized">
                               <div className="col-span-4 flex items-center gap-2 min-w-0">
                                 {info?.images?.[0] ? (
                                   <img src={info.images[0]} alt="" className="h-8 w-8 rounded object-cover shrink-0" />

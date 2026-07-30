@@ -225,13 +225,13 @@ export default function SellerSupport() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'open':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">Open</Badge>;
+        return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">Open</Badge>;
       case 'in_progress':
-        return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/30">In Progress</Badge>;
+        return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">In Progress</Badge>;
       case 'awaiting_seller':
-        return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">Awaiting Response</Badge>;
+        return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">Awaiting Response</Badge>;
       case 'resolved':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">Resolved</Badge>;
+        return <Badge variant="outline" className="bg-success/10 text-success border-success/30">Resolved</Badge>;
       case 'closed':
         return <Badge variant="secondary">Closed</Badge>;
       default:
@@ -410,10 +410,10 @@ export default function SellerSupport() {
             <span className="font-semibold text-foreground">{openTickets.length}</span> open
           </span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-orange-500">{tickets?.filter(t => t.status === 'awaiting_seller').length || 0}</span> awaiting response
+            <span className="font-semibold text-warning">{tickets?.filter(t => t.status === 'awaiting_seller').length || 0}</span> awaiting response
           </span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-green-500">{closedTickets.length}</span> resolved
+            <span className="font-semibold text-success">{closedTickets.length}</span> resolved
           </span>
         </div>
 
@@ -542,8 +542,8 @@ export default function SellerSupport() {
 
                   {/* Resolution notes */}
                   {selectedTicket.resolution_notes && (
-                    <div className="border-l-2 border-green-500/50 pl-3">
-                      <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-1">Resolution</p>
+                    <div className="border-l-2 border-success/50 pl-3">
+                      <p className="text-xs font-medium text-success dark:text-success mb-1">Resolution</p>
                       <p className="text-sm">{selectedTicket.resolution_notes}</p>
                     </div>
                   )}
@@ -662,7 +662,7 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
   
   return (
     <div 
-      className="py-3 flex items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors" 
+      className="py-3 flex items-start justify-between gap-4 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors ease-emphasized" 
       onClick={onSelect}
     >
       <div className="flex items-start gap-3 min-w-0">
@@ -672,7 +672,7 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
             <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0">{ticket.ticket_number}</Badge>
             {getStatusBadge(ticket.status)}
             {isStale && (
-              <span className="text-[10px] text-orange-500 font-medium">⚡ Priority response incoming</span>
+              <span className="text-[10px] text-warning font-medium">⚡ Priority response incoming</span>
             )}
           </div>
           <h3 className="text-sm font-medium truncate">{ticket.subject}</h3>
@@ -682,7 +682,7 @@ function TicketCard({ ticket, onSelect, getCategoryIcon, getCategoryLabel, getSt
         </div>
       </div>
       {ticket.status === 'awaiting_seller' && (
-        <AlertCircle className="h-4 w-4 text-orange-500 shrink-0 mt-0.5" />
+        <AlertCircle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
       )}
     </div>
   );

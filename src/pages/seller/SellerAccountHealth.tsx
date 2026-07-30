@@ -29,15 +29,15 @@ interface Violation {
 }
 
 const statusConfig = {
-  healthy: { label: "Healthy", color: "text-green-600", bg: "bg-green-500", icon: ShieldCheck },
-  at_risk: { label: "At Risk", color: "text-amber-600", bg: "bg-amber-500", icon: AlertTriangle },
-  critical: { label: "Critical", color: "text-red-600", bg: "bg-red-500", icon: XCircle },
+  healthy: { label: "Healthy", color: "text-success", bg: "bg-success", icon: ShieldCheck },
+  at_risk: { label: "At Risk", color: "text-warning", bg: "bg-warning", icon: AlertTriangle },
+  critical: { label: "Critical", color: "text-destructive", bg: "bg-destructive", icon: XCircle },
 };
 
 const severityBadge = {
-  warning: "bg-amber-100 text-amber-800 border-amber-200",
-  strike: "bg-red-100 text-red-800 border-red-200",
-  suspension: "bg-red-200 text-red-900 border-red-300",
+  warning: "bg-warning text-warning border-warning",
+  strike: "bg-destructive text-destructive border-destructive",
+  suspension: "bg-destructive text-destructive border-destructive",
 };
 
 const violationTypeLabels: Record<string, string> = {
@@ -189,7 +189,7 @@ export default function SellerAccountHealth() {
         {metrics.map(m => (
           <div key={m.label} className="border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
-              <m.icon className={`h-4 w-4 ${m.ok === null ? "text-muted-foreground" : m.ok ? "text-green-600" : "text-red-600"}`} />
+              <m.icon className={`h-4 w-4 ${m.ok === null ? "text-muted-foreground" : m.ok ? "text-success" : "text-destructive"}`} />
               <span className="text-xs text-muted-foreground">{m.label}</span>
             </div>
             <p className="text-lg font-semibold text-foreground">{m.value}</p>
@@ -205,7 +205,7 @@ export default function SellerAccountHealth() {
           <div className="space-y-2">
             {activeViolations.map(v => (
               <div key={v.id} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
-                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium text-foreground">{violationTypeLabels[v.violation_type] || v.violation_type}</span>
@@ -229,7 +229,7 @@ export default function SellerAccountHealth() {
           <div className="space-y-2">
             {resolvedViolations.slice(0, 10).map(v => (
               <div key={v.id} className="flex items-start gap-3 p-3 bg-muted/10 rounded-lg opacity-60">
-                <ShieldCheck className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                <ShieldCheck className="h-4 w-4 text-success mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm text-foreground">{violationTypeLabels[v.violation_type] || v.violation_type}</span>
                   <p className="text-xs text-muted-foreground mt-0.5">{v.resolution_notes || v.description}</p>
@@ -243,7 +243,7 @@ export default function SellerAccountHealth() {
 
       {activeViolations.length === 0 && resolvedViolations.length === 0 && (
         <div className="border border-border rounded-xl p-8 text-center">
-          <ShieldCheck className="h-8 w-8 text-green-600 mx-auto mb-3" />
+          <ShieldCheck className="h-8 w-8 text-success mx-auto mb-3" />
           <p className="text-sm font-medium text-foreground">No violations</p>
           <p className="text-xs text-muted-foreground mt-1">Your store is in good standing</p>
         </div>

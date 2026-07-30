@@ -169,7 +169,7 @@ export default function SellerReviews() {
 
   const renderStars = (rating: number) =>
     Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/30'}`} />
+      <Star key={i} className={`h-4 w-4 ${i < rating ? 'text-warning fill-warning' : 'text-muted-foreground/30'}`} />
     ));
 
   return (
@@ -183,13 +183,13 @@ export default function SellerReviews() {
         {/* Stats Overview */}
         <div className="flex items-center gap-4 text-sm flex-wrap">
           <span className="text-muted-foreground">
-            <span className="font-semibold text-yellow-500">{stats?.average.toFixed(1) || '0.0'}</span> avg rating
+            <span className="font-semibold text-warning">{stats?.average.toFixed(1) || '0.0'}</span> avg rating
           </span>
           <span className="text-muted-foreground">
             <span className="font-semibold text-foreground">{stats?.total || 0}</span> reviews
           </span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-green-500">
+            <span className="font-semibold text-success">
               {stats ? Math.round(((stats.distribution[0].count + stats.distribution[1].count) / Math.max(stats.total, 1)) * 100) : 0}%
             </span> positive
           </span>
@@ -206,7 +206,7 @@ export default function SellerReviews() {
                 <button
                   key={rating}
                   onClick={() => setFilterRating(filterRating === String(rating) ? 'all' : String(rating))}
-                  className={`flex items-center gap-3 w-full p-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 w-full p-2 rounded-lg transition-colors ease-emphasized ${
                     filterRating === String(rating) ? 'bg-primary/10' : 'hover:bg-muted/50'
                   }`}
                 >

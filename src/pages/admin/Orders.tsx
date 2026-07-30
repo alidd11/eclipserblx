@@ -189,9 +189,9 @@ export default function AdminOrders() {
  if (!config) return <Badge variant="outline">{status}</Badge>;
 
  const colorMap: Record<string, string> = {
- success: 'bg-green-500/10 text-green-500 border-green-500/30',
- warning: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
- destructive: 'bg-red-500/10 text-red-500 border-red-500/30',
+ success: 'bg-success/10 text-success border-success/30',
+ warning: 'bg-warning/10 text-warning border-warning/30',
+ destructive: 'bg-destructive/10 text-destructive border-destructive/30',
  primary: 'bg-primary/10 text-primary border-primary/30',
  muted: 'bg-muted text-muted-foreground',
  };
@@ -244,7 +244,7 @@ export default function AdminOrders() {
  ) : (
  <div className="border border-border rounded-xl overflow-hidden divide-y divide-border">
  {orders?.map((order) => (
- <button key={order.id} className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left" onClick={() => setSelectedOrder(order)}>
+ <button key={order.id} className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors ease-emphasized text-left" onClick={() => setSelectedOrder(order)}>
  <div className="min-w-0">
  <div className="flex items-center gap-2 mb-0.5">
  <span className="font-mono text-xs">{order.id.slice(0, 8).toUpperCase()}</span>

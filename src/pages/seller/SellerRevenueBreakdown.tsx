@@ -78,7 +78,7 @@ export default function SellerRevenueBreakdown() {
   const totalRevenue = transactions.reduce((sum: number, t) => sum + Number(t.net_amount || 0), 0);
   const avgOrderValue = transactions.length > 0 ? totalRevenue / transactions.length : 0;
 
-  const COLORS = ['hsl(var(--primary))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+  const COLORS = [CHART_COLORS.purple, CHART_COLORS.blue, CHART_COLORS.gold, CHART_COLORS.pink, CHART_COLORS.indigo];
 
   return (
     <SellerLayout><div className="space-y-6">
@@ -138,7 +138,7 @@ export default function SellerRevenueBreakdown() {
             <RevolutBarChart
               data={byProduct}
               xKey="name"
-              series={[{ dataKey: 'revenue', color: 'hsl(200 80% 45%)', name: 'Revenue', radius: [0, 6, 6, 0] }]}
+              series={[{ dataKey: 'revenue', color: CHART_COLORS.blue, name: 'Revenue', radius: [0, 6, 6, 0] }]}
               height={256}
               layout="vertical"
               yFormatter={(v) => `£${v}`}

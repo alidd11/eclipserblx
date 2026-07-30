@@ -26,7 +26,7 @@ describe('AdminStatCard', () => {
  it('applies value color class', () => {
  render(<AdminStatCard label="Active" value={5} valueColor="green" />);
  const valueEl = screen.getByText('5');
- expect(valueEl.className).toContain('text-green-500');
+ expect(valueEl.className).toContain('text-success');
  });
 
  it('applies default color when no valueColor specified', () => {

@@ -310,10 +310,10 @@ export default function SellerDiscounts() {
         </div>
 
         {/* Info Card */}
-        <div className="mb-6 rounded-xl border border-blue-500/20 bg-blue-500/5 flex items-start gap-3 p-4">
-          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+        <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 flex items-start gap-3 p-4">
+          <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-medium text-blue-500">Discount Limits</p>
+            <p className="font-medium text-primary">Discount Limits</p>
             <p className="text-muted-foreground">
               To maintain platform health, seller discount codes are limited to a maximum of 50% off. 
               Customers can apply your codes at checkout for products from your store.

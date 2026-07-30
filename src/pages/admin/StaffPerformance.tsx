@@ -102,7 +102,7 @@ export default function AdminStaffPerformance() {
                   </tr>
                 ) : (
                   staff.map((m) => (
-                    <tr key={m.user_id} className="hover:bg-muted/20 transition-colors">
+                    <tr key={m.user_id} className="hover:bg-muted/20 transition-colors ease-emphasized">
                       <td className="p-3">
                         <div>
                           <p className="font-medium text-foreground">{m.display_name || 'Unknown'}</p>
@@ -117,7 +117,7 @@ export default function AdminStaffPerformance() {
                       </td>
                       <td className="p-3 text-center tabular-nums">
                         {m.avg_csat > 0 ? (
-                          <span className={m.avg_csat >= 4 ? 'text-green-500' : m.avg_csat >= 3 ? 'text-yellow-500' : 'text-destructive'}>
+                          <span className={m.avg_csat >= 4 ? 'text-success' : m.avg_csat >= 3 ? 'text-warning' : 'text-destructive'}>
                             {m.avg_csat.toFixed(1)} ★
                           </span>
                         ) : (
