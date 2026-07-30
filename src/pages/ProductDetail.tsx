@@ -347,9 +347,9 @@ export default function ProductDetail() {
 								<div
 									key={i}
 									className={cn(
-										"h-1.5 rounded-full transition-all duration-200",
-										selectedImage === i 
-											? "bg-primary w-4" 
+										"h-1.5 rounded-full transition-[width,background-color] duration-200 ease-emphasized",
+										selectedImage === i
+											? "bg-primary w-4"
 											: "bg-background/40 w-1.5"
 									)}
 								/>
@@ -384,7 +384,7 @@ export default function ProductDetail() {
  aria-label={`View image ${i + 1} of ${images.length}`}
  aria-current={selectedImage === i}
  className={cn(
- "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all",
+ "flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-[border-color,opacity,box-shadow] duration-200 ease-emphasized",
  selectedImage === i ? "border-primary ring-1 ring-primary/30" : "border-border/40 opacity-50 hover:opacity-90"
  )}
  >
