@@ -23,7 +23,7 @@ export const MarketplaceBrowseToggle = forwardRef<HTMLDivElement, MarketplaceBro
           key={m}
           onClick={() => onChange(m)}
           className={cn(
-            'flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-all duration-150 border-b-2 -mb-px relative',
+            'flex items-center gap-2 px-4 py-3 text-xs font-bold uppercase tracking-wider transition-[color,border-color,background-color] duration-150 ease-emphasized border-b-2 -mb-px relative',
             mode === m
               ? 'border-primary text-foreground'
               : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'

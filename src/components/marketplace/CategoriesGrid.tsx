@@ -192,7 +192,7 @@ export function CategoriesGrid() {
             <Link
               key={category.id}
               to={`/products?category=${category.slug}`}
-              className={`group relative flex flex-col overflow-hidden rounded-[0.375rem] border bg-card transition-all ${
+              className={`group relative flex flex-col overflow-hidden rounded-[0.375rem] border bg-card transition-[opacity,border-color] duration-200 ease-emphasized ${
                 isEmpty
                   ? 'border-border/50 opacity-70 hover:opacity-100 hover:border-border'
                   : 'border-border hover:border-primary/30'

@@ -106,7 +106,7 @@ export function TopSellersCard() {
                     #{index + 1} Top Seller
                   </span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-[color,transform] duration-200 ease-emphasized flex-shrink-0" />
               </Link>
             );
           })

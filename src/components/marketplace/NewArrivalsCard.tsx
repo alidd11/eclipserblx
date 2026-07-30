@@ -129,7 +129,7 @@ export function NewArrivalsCard() {
                 <span className="font-semibold text-sm text-primary">
                   {formatPrice(Number(product.price))}
                 </span>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-[color,transform] duration-200 ease-emphasized" />
               </div>
             </Link>
           ))

@@ -191,7 +191,7 @@ export const TopStoresSection = forwardRef<HTMLDivElement>(function TopStoresSec
               <Users className="h-3 w-3" />
               {store!.follower_count.toLocaleString()}
             </span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-[color,transform] duration-200 ease-emphasized" />
           </div>
         </div>
       </Link>

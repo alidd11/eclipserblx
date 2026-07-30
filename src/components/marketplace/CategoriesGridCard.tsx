@@ -76,7 +76,7 @@ export function CategoriesGridCard() {
               <Link
                 key={category.id}
                 to={`/products?category=${category.slug}&source=marketplace`}
-                className="group flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-transparent hover:border-primary/20 transition-all"
+                className="group flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg bg-muted/30 hover:bg-muted/60 border border-transparent hover:border-primary/20 transition-[background-color,border-color] duration-200 ease-emphasized"
               >
                 {(() => {
                   const IconComp = categoryIconMap[category.slug] || PackageIcon;
