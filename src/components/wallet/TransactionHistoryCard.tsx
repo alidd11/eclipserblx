@@ -27,8 +27,8 @@ function getTransactionIcon(type: CreditTransaction['type']) {
 
 function getTransactionColor(type: CreditTransaction['type']) {
   switch (type) {
-    case 'purchase': case 'gift': case 'subscription_bonus': case 'refund': return 'text-green-500';
-    case 'spend': return 'text-red-500';
+    case 'purchase': case 'gift': case 'subscription_bonus': case 'refund': return 'text-success';
+    case 'spend': return 'text-destructive';
     default: return 'text-muted-foreground';
   }
 }
@@ -74,7 +74,7 @@ export function TransactionHistoryCard({ transactions, isLoading }: TransactionH
                 >
                   <div className={cn(
                     "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                    tx.type === 'spend' ? "bg-red-500/10" : "bg-green-500/10"
+                    tx.type === 'spend' ? "bg-destructive/10" : "bg-success/10"
                   )}>
                     <span className={getTransactionColor(tx.type)}>
                       {getTransactionIcon(tx.type)}

@@ -50,8 +50,8 @@ export function ChatMessageList({ messages, isEscalated, isAiResponding, isAgent
           </div>
         )}
         {isEscalated && (
-          <div className="flex items-center justify-center gap-2 py-2 px-3 bg-green-500/10 rounded-lg border border-green-500/20">
-            <User className="h-3.5 w-3.5 text-green-600" />
+          <div className="flex items-center justify-center gap-2 py-2 px-3 bg-success/10 rounded-lg border border-success/20">
+            <User className="h-3.5 w-3.5 text-success" />
             <span className="text-xs text-muted-foreground">Connected to human support</span>
           </div>
         )}

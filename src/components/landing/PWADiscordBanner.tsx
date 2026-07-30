@@ -49,7 +49,7 @@ export function PWADiscordBanner() {
           <div className="flex items-center gap-3">
             {/* Online indicator */}
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <span className="inline-flex rounded-full h-2 w-2 bg-green-500" />
+              <span className="inline-flex rounded-full h-2 w-2 bg-success" />
               <span className="font-medium">
                 {isLoading ? '...' : onlineCount !== null ? `${formatCount(onlineCount)} Online` : 'Online'}
               </span>

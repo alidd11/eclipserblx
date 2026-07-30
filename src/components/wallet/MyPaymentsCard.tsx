@@ -26,8 +26,8 @@ import { formatGBP } from '@/lib/formatters';
  const statusConfig = {
    pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500', icon: Clock },
    processing: { label: 'Processing', color: 'bg-blue-500/10 text-blue-500', icon: AlertCircle },
-   completed: { label: 'Completed', color: 'bg-green-500/10 text-green-500', icon: CheckCircle },
-   failed: { label: 'Failed', color: 'bg-red-500/10 text-red-500', icon: XCircle },
+   completed: { label: 'Completed', color: 'bg-success/10 text-success', icon: CheckCircle },
+   failed: { label: 'Failed', color: 'bg-destructive/10 text-destructive', icon: XCircle },
    cancelled: { label: 'Cancelled', color: 'bg-muted text-muted-foreground', icon: XCircle },
  };
  
@@ -81,11 +81,11 @@ import { formatGBP } from '@/lib/formatters';
                    >
                      <div className={cn(
                        "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
-                       payment.status === 'completed' ? "bg-green-500/10" : "bg-yellow-500/10"
+                       payment.status === 'completed' ? "bg-success/10" : "bg-yellow-500/10"
                      )}>
                        <StatusIcon className={cn(
                          "h-4 w-4",
-                         payment.status === 'completed' ? "text-green-500" : "text-yellow-500"
+                         payment.status === 'completed' ? "text-success" : "text-yellow-500"
                        )} />
                      </div>
                      
@@ -109,7 +109,7 @@ import { formatGBP } from '@/lib/formatters';
                      
                      <div className={cn(
                        "font-semibold shrink-0",
-                       payment.status === 'completed' ? "text-green-500" : "text-foreground"
+                       payment.status === 'completed' ? "text-success" : "text-foreground"
                      )}>
                        {formatGBP(payment.amount)}
                      </div>

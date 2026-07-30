@@ -197,7 +197,7 @@ function UserIdsCollapsible({ userId, customerId }: { userId: string; customerId
               onClick={() => copyToClipboard(item.value, item.key)}
               className="shrink-0 h-7 w-7 rounded-md bg-background hover:bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
             >
-              {copiedStates[item.key] ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+              {copiedStates[item.key] ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
           </div>
         ))}
@@ -537,7 +537,7 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                           {checkingUsername ? (
                             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                           ) : usernameAvailable === true ? (
-                            <Check className="h-4 w-4 text-green-500" />
+                            <Check className="h-4 w-4 text-success" />
                           ) : usernameAvailable === false ? (
                             <X className="h-4 w-4 text-destructive" />
                           ) : null}
@@ -591,9 +591,9 @@ const Account = forwardRef<HTMLDivElement>(function Account(_, ref) {
                   </div>
                 )}
                 {sellerStore?.id && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30">
-                    <Store className="h-3 w-3 text-emerald-500" />
-                    <span className="text-[10px] font-semibold text-emerald-500">Seller</span>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-success/15 border border-success/30">
+                    <Store className="h-3 w-3 text-success" />
+                    <span className="text-[10px] font-semibold text-success">Seller</span>
                   </div>
                 )}
               </div>

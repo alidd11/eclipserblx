@@ -155,11 +155,11 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
             <Input id="displayName" type="text" placeholder="Choose a username" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="bg-input pr-10" required />
             {displayName.trim().length >= 6 && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {checkingUsername ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : usernameAvailable === true ? <Check className="h-4 w-4 text-emerald-500" /> : usernameAvailable === false ? <X className="h-4 w-4 text-destructive" /> : null}
+                {checkingUsername ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" /> : usernameAvailable === true ? <Check className="h-4 w-4 text-success" /> : usernameAvailable === false ? <X className="h-4 w-4 text-destructive" /> : null}
               </div>
             )}
           </div>
-          {usernameAvailable === true && displayName.trim().length >= 6 && <p className="text-sm text-emerald-500">{t('auth.usernameAvailable')}</p>}
+          {usernameAvailable === true && displayName.trim().length >= 6 && <p className="text-sm text-success">{t('auth.usernameAvailable')}</p>}
           {usernameAvailable === false && displayName.trim().length >= 6 && <p className="text-sm text-destructive">{t('auth.usernameTaken')}</p>}
           {errors.displayName && <p className="text-sm text-destructive">{errors.displayName}</p>}
         </div>
@@ -201,7 +201,7 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
             <Input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="bg-input pr-20" required />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {confirmPassword.length > 0 && password.length > 0 && (
-                confirmPassword === password ? <Check className="h-4 w-4 text-emerald-500" /> : <X className="h-4 w-4 text-destructive" />
+                confirmPassword === password ? <Check className="h-4 w-4 text-success" /> : <X className="h-4 w-4 text-destructive" />
               )}
               <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-muted-foreground hover:text-foreground transition-colors" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
                 <AnimatePresence mode="wait" initial={false}>
@@ -213,7 +213,7 @@ export function LoginSignupForm({ mode, email, setEmail, onForgotPassword, onVer
             </div>
           </div>
           {confirmPassword.length > 0 && password.length > 0 && (
-            confirmPassword === password ? <p className="text-sm text-emerald-500">Passwords match</p> : <p className="text-sm text-destructive">Passwords do not match</p>
+            confirmPassword === password ? <p className="text-sm text-success">Passwords match</p> : <p className="text-sm text-destructive">Passwords do not match</p>
           )}
           {errors.confirmPassword && <p className="text-sm text-destructive">{errors.confirmPassword}</p>}
         </div>

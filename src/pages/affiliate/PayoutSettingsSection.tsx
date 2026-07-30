@@ -57,7 +57,7 @@ export function PayoutSettingsSection({
               {connectStatusLoading ? (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Checking status...</div>
               ) : canUseStripe ? (
-                <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30"><CheckCircle className="h-3 w-3 mr-1" />Connected</Badge>
+                <Badge variant="outline" className="bg-success/10 text-success border-success/30"><CheckCircle className="h-3 w-3 mr-1" />Connected</Badge>
               ) : (
                 <Button variant="outline" size="sm" onClick={handleConnectStripe} disabled={isConnectingStripe || connectStripeMutation.isPending}>
                   {isConnectingStripe || connectStripeMutation.isPending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <ExternalLink className="h-4 w-4 mr-2" />}
@@ -97,7 +97,7 @@ export function PayoutSettingsSection({
             <RadioGroupItem value="bank_transfer" id="payout-bank" className="mt-1" />
             <div className="flex-1 space-y-2">
               <Label htmlFor="payout-bank" className="font-medium cursor-pointer flex items-center gap-2">
-                <Building2 className="h-4 w-4 text-emerald-500" />Bank Transfer
+                <Building2 className="h-4 w-4 text-success" />Bank Transfer
               </Label>
               <p className="text-sm text-muted-foreground">Direct bank transfer processed by our team</p>
               {payoutSettings.preferred_method === 'bank_transfer' && (

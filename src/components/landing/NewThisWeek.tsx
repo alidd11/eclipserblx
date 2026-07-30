@@ -60,11 +60,11 @@ export function NewThisWeek() {
       <ScrollReveal direction="up" distance={16} duration={0.35}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-emerald-500/10">
-              <Sparkles className="h-4 w-4 text-emerald-500" />
+            <div className="p-1.5 rounded-lg bg-success/10">
+              <Sparkles className="h-4 w-4 text-success" />
             </div>
             <h2 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight uppercase">New This Week</h2>
-            <span className="text-[10px] uppercase tracking-wider text-emerald-500/80 font-semibold bg-emerald-500/10 px-1.5 py-0.5 rounded">
+            <span className="text-[10px] uppercase tracking-wider text-success/80 font-semibold bg-success/10 px-1.5 py-0.5 rounded">
               Fresh
             </span>
           </div>

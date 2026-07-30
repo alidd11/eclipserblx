@@ -124,7 +124,7 @@ export function SecureCodeInput({
                 onChange={handleCodeChange}
                 className={cn(
                   "font-mono text-center tracking-wider text-lg pr-10",
-                  result?.verified && "border-green-500 bg-green-500/10",
+                  result?.verified && "border-success bg-success/10",
                   result && !result.verified && "border-destructive bg-destructive/10"
                 )}
                 disabled={isVerifying || result?.verified}
@@ -143,14 +143,14 @@ export function SecureCodeInput({
             <div className={cn(
               "flex items-center gap-3 p-3 rounded-lg",
               result.verified 
-                ? "bg-green-500/10 border border-green-500/30" 
+                ? "bg-success/10 border border-success/30" 
                 : "bg-destructive/10 border border-destructive/30"
             )}>
               {result.verified ? (
                 <>
-                  <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
                   <div>
-                    <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                    <p className="text-sm font-medium text-success dark:text-success">
                       Code Verified Successfully
                     </p>
                     {result.product_name && (

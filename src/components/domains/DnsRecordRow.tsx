@@ -30,7 +30,7 @@ export function DnsRecordRow({ type, name, value, note, proxied }: DnsRecordRowP
       <code className="text-xs font-mono text-foreground truncate">{name}</code>
       <code className="text-xs font-mono text-muted-foreground truncate">{value}</code>
       <Button variant="ghost" size="icon" aria-label="Copy value" className="h-7 w-7 shrink-0" onClick={copy}>
-        {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+        {copied ? <CheckCircle2 className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
       </Button>
       {note && (
         <p className="col-span-4 text-[10px] text-muted-foreground pl-[72px] -mt-1">{note}{proxied === false && ' — DNS-only (grey cloud)'}</p>

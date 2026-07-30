@@ -47,7 +47,7 @@ export const WishlistButton = forwardRef<HTMLButtonElement, WishlistButtonProps>
           "p-2 rounded-full transition-all duration-200",
           "",
           isInWishlist 
-            ? "bg-red-500/20 text-red-500" 
+            ? "bg-destructive/20 text-destructive" 
             : "bg-background/80 hover:bg-background text-muted-foreground hover:text-foreground",
           "backdrop-blur-sm",
           className
@@ -73,7 +73,7 @@ export const WishlistButton = forwardRef<HTMLButtonElement, WishlistButtonProps>
       size={size}
       className={cn(
         "gap-2",
-        isInWishlist && "text-red-500",
+        isInWishlist && "text-destructive",
         className
       )}
     >

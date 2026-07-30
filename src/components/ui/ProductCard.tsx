@@ -255,7 +255,7 @@ export const ProductCard = memo(forwardRef<HTMLAnchorElement, ProductCardProps>(
 
             <div className="text-right shrink-0">
               {isPayWhatYouWant ? (
-                <span className="block text-emerald-400 text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
+                <span className="block text-success text-sm md:text-base font-semibold whitespace-nowrap leading-none tracking-tight">
                   {minPrice === 0 ? 'Free+' : formatPrice(minPrice || 0)}
                 </span>
               ) : (

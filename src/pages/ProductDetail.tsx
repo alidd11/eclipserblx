@@ -434,8 +434,8 @@ export default function ProductDetail() {
  {isPWYW ? (
  <div className="space-y-4">
  <div className="flex items-center gap-2">
- <Heart className="h-5 w-5 text-emerald-500" />
- <span className="text-sm font-medium text-emerald-500">{t('productDetail.payWhatYouWant')}</span>
+ <Heart className="h-5 w-5 text-success" />
+ <span className="text-sm font-medium text-success">{t('productDetail.payWhatYouWant')}</span>
  </div>
  {pwywSuggestedPrice > 0 && (
  <p className="text-sm text-muted-foreground">

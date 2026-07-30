@@ -27,7 +27,7 @@ interface DisputeStatusDialogProps {
 const statusConfig: Record<string, { label: string; color: string; icon: React.ElementType }> = {
   pending: { label: 'Pending', color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20', icon: Clock },
   denied: { label: 'Denied by Seller', color: 'bg-destructive/10 text-destructive border-destructive/20', icon: X },
-  approved: { label: 'Approved', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20', icon: Check },
+  approved: { label: 'Approved', color: 'bg-success/10 text-success border-success/20', icon: Check },
   escalated: { label: 'Escalated to Eclipse', color: 'bg-amber-500/10 text-amber-600 border-amber-500/20', icon: ShieldAlert },
   resolved: { label: 'Resolved', color: 'bg-primary/10 text-primary border-primary/20', icon: Shield } };
 

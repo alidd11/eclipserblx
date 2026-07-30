@@ -88,9 +88,9 @@ export const Header = memo(forwardRef<HTMLElement, HeaderProps>(function Header(
 
 
   const statusConfig = {
-    online: { label: t('status.online'), color: 'text-green-500', bg: 'bg-green-500' },
+    online: { label: t('status.online'), color: 'text-success', bg: 'bg-success' },
     degraded: { label: t('status.degraded'), color: 'text-yellow-500', bg: 'bg-yellow-500' },
-    offline: { label: t('status.offline'), color: 'text-red-500', bg: 'bg-red-500' },
+    offline: { label: t('status.offline'), color: 'text-destructive', bg: 'bg-destructive' },
     checking: { label: t('status.checking'), color: 'text-muted-foreground', bg: 'bg-muted-foreground' },
   };
 

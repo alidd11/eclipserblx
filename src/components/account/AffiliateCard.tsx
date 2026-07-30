@@ -231,9 +231,9 @@ export function AffiliateCard() {
     )}
 
     {canUseStripe && (
-     <div className="flex items-center gap-2 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-      <CheckCircle className="h-4 w-4 text-green-500" />
-      <span className="text-sm text-green-400">Stripe Connected - Instant payouts enabled</span>
+     <div className="flex items-center gap-2 p-3 bg-success/10 border border-success/20 rounded-lg">
+      <CheckCircle className="h-4 w-4 text-success" />
+      <span className="text-sm text-success">Stripe Connected - Instant payouts enabled</span>
      </div>
     )}
 
@@ -344,7 +344,7 @@ export function AffiliateCard() {
          </div>
          <Badge variant="outline" className={
           commission.status === 'paid' 
-           ? 'bg-green-500/10 text-green-500 border-green-500/30'
+           ? 'bg-success/10 text-success border-success/30'
            : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
          }>
           {commission.status}
@@ -380,10 +380,10 @@ export function AffiliateCard() {
          </div>
          <Badge variant="outline" className={
           payout.status === 'completed' 
-           ? 'bg-green-500/10 text-green-500 border-green-500/30'
+           ? 'bg-success/10 text-success border-success/30'
            : payout.status === 'pending'
            ? 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30'
-           : 'bg-red-500/10 text-red-500 border-red-500/30'
+           : 'bg-destructive/10 text-destructive border-destructive/30'
          }>
           {payout.status}
          </Badge>

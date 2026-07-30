@@ -21,7 +21,7 @@
  open: { label: 'Open', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
  in_progress: { label: 'In Progress', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
  awaiting_customer: { label: 'Awaiting Reply', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
- resolved: { label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+ resolved: { label: 'Resolved', color: 'bg-success/20 text-success border-success/30' },
  closed: { label: 'Closed', color: 'bg-muted text-muted-foreground border-border' } };
  
  const categoryLabels: Record<string, string> = {

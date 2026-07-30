@@ -190,8 +190,8 @@ export default function AuthRobloxCallback() {
           </>
         ) : (
           <>
-            <div className="h-16 w-16 mx-auto rounded-full bg-red-500/10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 text-red-500 animate-spin" />
+            <div className="h-16 w-16 mx-auto rounded-full bg-destructive/10 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-destructive animate-spin" />
             </div>
             <h1 className="text-xl font-semibold text-foreground">{t('authCallback.signingInRoblox')}</h1>
             <p className="text-muted-foreground">{t('authCallback.pleaseWait')}</p>

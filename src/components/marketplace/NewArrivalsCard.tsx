@@ -56,7 +56,7 @@ export function NewArrivalsCard() {
     <div className="border border-border rounded-xl overflow-hidden">
       <div className="px-6 py-4 bg-muted/30 border-b border-border">
         <h3 className="text-sm font-semibold flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-emerald-500" />
+          <Sparkles className="h-4 w-4 text-success" />
           New Arrivals
         </h3>
       </div>
@@ -98,7 +98,7 @@ export function NewArrivalsCard() {
                   );
                 })()}
                 <Badge 
-                  className="absolute -top-1 -right-1 text-[8px] px-1 py-0 bg-emerald-500 hover:bg-emerald-500"
+                  className="absolute -top-1 -right-1 text-[8px] px-1 py-0 bg-success hover:bg-success"
                 >
                   NEW
                 </Badge>

@@ -269,7 +269,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
           <div className="flex items-center justify-between p-2 border-b bg-muted/50 shrink-0">
             {isMinimized ? (
               <div className="flex items-center gap-2 w-full cursor-pointer">
-                <div className={cn('h-2 w-2 rounded-full animate-pulse', openingStatus.isOpen ? 'bg-green-500' : 'bg-yellow-500')} />
+                <div className={cn('h-2 w-2 rounded-full animate-pulse', openingStatus.isOpen ? 'bg-success' : 'bg-yellow-500')} />
                 <span className="font-medium text-xs">Live Support</span>
                 <span className="text-[10px] text-muted-foreground">{openingStatus.isOpen ? 'Open' : 'Closed'}</span>
                 <Maximize2 className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
@@ -277,7 +277,7 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
             ) : (
               <>
                 <div className="flex items-center gap-2">
-                  <div className={cn('h-2 w-2 rounded-full animate-pulse', openingStatus.isOpen ? 'bg-green-500' : 'bg-yellow-500')} />
+                  <div className={cn('h-2 w-2 rounded-full animate-pulse', openingStatus.isOpen ? 'bg-success' : 'bg-yellow-500')} />
                   <span className="font-medium text-xs">Live Support</span>
                   <span className="text-[10px] text-muted-foreground">{openingStatus.isOpen ? 'Open' : 'Closed'}</span>
                 </div>
@@ -309,8 +309,8 @@ export const ChatSidePanel = forwardRef<HTMLDivElement>(function ChatSidePanel(_
                 />
               ) : isChatClosed ? (
                 <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
-                  <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-4">
+                    <CheckCircle className="h-6 w-6 text-success" />
                   </div>
                   <h3 className="font-semibold text-lg mb-2">Chat Ended</h3>
                   <p className="text-sm text-muted-foreground mb-4">Thanks for chatting with us!</p>

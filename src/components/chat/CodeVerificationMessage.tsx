@@ -32,7 +32,7 @@ export function CodeVerificationMessage({
     <div className={cn(
       "rounded-lg border p-3 space-y-2",
       verified 
-        ? "bg-green-500/10 border-green-500/30" 
+        ? "bg-success/10 border-success/30" 
         : "bg-destructive/10 border-destructive/30",
       className
     )}>
@@ -56,7 +56,7 @@ export function CodeVerificationMessage({
           className={cn(
             "gap-1",
             verified 
-              ? "bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30" 
+              ? "bg-success/20 text-success dark:text-success border-success/30" 
               : "bg-destructive/20 text-destructive border-destructive/30"
           )}
         >
@@ -93,7 +93,7 @@ export function CodeVerificationMessage({
 
       {/* Customer view - success message */}
       {!isStaffView && verified && (
-        <p className="text-xs text-green-600 dark:text-green-400">
+        <p className="text-xs text-success dark:text-success">
           Your code has been verified. Support can now confirm your ownership.
         </p>
       )}

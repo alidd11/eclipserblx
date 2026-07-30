@@ -140,7 +140,7 @@ export function MyMessagesCard() {
     const statusConfig: Record<string, { label: string; className: string }> = {
       new: { label: 'Awaiting Response', className: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
       pending: { label: 'Pending', className: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
-      responded: { label: 'Responded', className: 'bg-green-500/10 text-green-500 border-green-500/30' },
+      responded: { label: 'Responded', className: 'bg-success/10 text-success border-success/30' },
     };
     const config = statusConfig[status] || statusConfig.new;
     return (

@@ -45,10 +45,10 @@ export function PasswordStrengthMeter({ password, className }: PasswordStrengthM
     
     if (score >= 5) {
       strength = 'strong';
-      color = 'bg-green-500';
+      color = 'bg-success';
     } else if (score >= 4) {
       strength = 'good';
-      color = 'bg-emerald-500';
+      color = 'bg-success';
     } else if (score >= 3) {
       strength = 'fair';
       color = 'bg-yellow-500';
@@ -76,8 +76,8 @@ export function PasswordStrengthMeter({ password, className }: PasswordStrengthM
           <span className="text-muted-foreground">Password strength</span>
           <span className={cn(
             'font-medium capitalize',
-            analysis.strength === 'strong' && 'text-green-500',
-            analysis.strength === 'good' && 'text-emerald-500',
+            analysis.strength === 'strong' && 'text-success',
+            analysis.strength === 'good' && 'text-success',
             analysis.strength === 'fair' && 'text-yellow-500',
             analysis.strength === 'weak' && 'text-destructive',
           )}>
@@ -101,7 +101,7 @@ export function PasswordStrengthMeter({ password, className }: PasswordStrengthM
               key={req.label}
               className={cn(
                 'flex items-center gap-2 text-xs transition-colors',
-                passed ? 'text-green-500' : 'text-muted-foreground'
+                passed ? 'text-success' : 'text-muted-foreground'
               )}
             >
               {passed ? (

@@ -37,7 +37,7 @@ export function DomainStatusTimeline({ status, sslStatus }: DomainStatusTimeline
           <div key={step.key} className="flex items-center flex-1 last:flex-initial">
             <div className="flex flex-col items-center gap-1">
               {completed ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : current ? (
                 isFailedStep ? (
                   <Circle className="h-5 w-5 text-destructive" />
@@ -49,7 +49,7 @@ export function DomainStatusTimeline({ status, sslStatus }: DomainStatusTimeline
               )}
               <span className={cn(
                 'text-[10px] font-medium whitespace-nowrap',
-                completed ? 'text-emerald-600 dark:text-emerald-400' :
+                completed ? 'text-success dark:text-success' :
                 current ? (isFailedStep ? 'text-destructive' : 'text-primary') :
                 'text-muted-foreground/50'
               )}>
@@ -59,7 +59,7 @@ export function DomainStatusTimeline({ status, sslStatus }: DomainStatusTimeline
             {i < STEPS.length - 1 && (
               <div className={cn(
                 'h-px flex-1 mx-1.5 mt-[-14px]',
-                completed ? 'bg-emerald-500' : 'bg-border'
+                completed ? 'bg-success' : 'bg-border'
               )} />
             )}
           </div>

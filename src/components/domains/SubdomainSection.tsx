@@ -12,7 +12,7 @@ interface SubdomainSectionProps {
 
 function StatusDot({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    active: 'bg-emerald-500',
+    active: 'bg-success',
     pending: 'bg-amber-500',
     verifying: 'bg-blue-500',
     failed: 'bg-destructive',
@@ -27,7 +27,7 @@ export function SubdomainSection({ subdomain, storeSlug, onClaim, onRemove, isCl
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-primary" />
           <h3 className="font-semibold text-sm">Free Subdomain</h3>
-          <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+          <Badge variant="outline" className="text-[10px] bg-success/10 text-success border-success/20">
             Included
           </Badge>
         </div>

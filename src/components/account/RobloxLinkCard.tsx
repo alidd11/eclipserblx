@@ -243,7 +243,7 @@ export function RobloxLinkCard({ userId, robloxUserId, robloxUsername, accountsL
  </Avatar>
  <div>
  <div className="flex items-center gap-1.5">
- <Check className="h-4 w-4 text-green-500" />
+ <Check className="h-4 w-4 text-success" />
  <p className="font-medium text-sm">{verifiedData.displayName}</p>
  </div>
  <p className="text-xs text-muted-foreground">

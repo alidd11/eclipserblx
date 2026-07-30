@@ -13,12 +13,12 @@ import { format } from '@/lib/dateUtils';
 import { OrderTimeline } from '@/components/purchases/OrderTimeline';
 
 const statusColors: Record<string, { bg: string; text: string; dot: string }> = {
-  paid: { bg: 'bg-green-500/10', text: 'text-green-500', dot: 'bg-green-500' },
-  completed: { bg: 'bg-green-500/10', text: 'text-green-500', dot: 'bg-green-500' },
+  paid: { bg: 'bg-success/10', text: 'text-success', dot: 'bg-success' },
+  completed: { bg: 'bg-success/10', text: 'text-success', dot: 'bg-success' },
   pending: { bg: 'bg-yellow-500/10', text: 'text-yellow-500', dot: 'bg-yellow-500' },
-  refunded: { bg: 'bg-red-500/10', text: 'text-red-500', dot: 'bg-red-500' },
+  refunded: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
   partially_refunded: { bg: 'bg-orange-500/10', text: 'text-orange-500', dot: 'bg-orange-500' },
-  failed: { bg: 'bg-red-500/10', text: 'text-red-500', dot: 'bg-red-500' },
+  failed: { bg: 'bg-destructive/10', text: 'text-destructive', dot: 'bg-destructive' },
 };
 
 const formatPaymentMethod = (method: string | null): string => {
@@ -54,7 +54,7 @@ const getDisputeBadge = (status: string) => {
     case 'pending': return <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 gap-1 text-xs"><Clock className="h-3 w-3" />Dispute Pending</Badge>;
     case 'denied': return <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 gap-1 text-xs"><X className="h-3 w-3" />Dispute Denied</Badge>;
     case 'escalated': return <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20 gap-1 text-xs"><ShieldAlert className="h-3 w-3" />Escalated</Badge>;
-    case 'approved': return <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1 text-xs"><Check className="h-3 w-3" />Refund Approved</Badge>;
+    case 'approved': return <Badge variant="outline" className="bg-success/10 text-success border-success/20 gap-1 text-xs"><Check className="h-3 w-3" />Refund Approved</Badge>;
     case 'resolved': return <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 gap-1 text-xs"><Shield className="h-3 w-3" />Resolved</Badge>;
     default: return null;
   }

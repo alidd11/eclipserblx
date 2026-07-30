@@ -26,7 +26,7 @@ function ApplicationTimeline({ application }: { application: { created_at?: stri
           <div key={step.key} className="flex items-center gap-1.5">
             <div className={cn(
               'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-medium',
-              i < currentStepIndex && 'bg-green-500/10 text-green-500',
+              i < currentStepIndex && 'bg-success/10 text-success',
               i === currentStepIndex && 'bg-primary/10 text-primary ring-2 ring-primary/30',
               i > currentStepIndex && 'bg-muted text-muted-foreground'
             )}>

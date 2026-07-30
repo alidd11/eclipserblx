@@ -137,7 +137,7 @@ export function ProductsTab({
                   <div>
                     <p className="font-medium truncate">{item.product_name}</p>
                     <div className="flex items-center gap-2 mt-1 flex-wrap">
-                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30 text-xs">
+                      <Badge variant="outline" className="bg-success/10 text-success border-success/30 text-xs">
                         <CheckCircle className="h-3 w-3 mr-1" />Purchased
                       </Badge>
                       {isBot && (

@@ -57,7 +57,7 @@ export function GuestSupportForm() {
   if (isSubmitted) {
     return (
       <div className="text-center py-6 space-y-3">
-        <CheckCircle className="h-10 w-10 text-green-500 mx-auto" />
+        <CheckCircle className="h-10 w-10 text-success mx-auto" />
         <p className="font-medium">Ticket submitted successfully</p>
         <p className="text-sm text-muted-foreground">We'll respond to your email as soon as possible.</p>
         <Button variant="outline" size="sm" onClick={() => { setIsSubmitted(false); setEmail(''); setSubject(''); setMessage(''); setCategory(''); }}>

@@ -52,7 +52,7 @@ export function TicketCSATPrompt({ ticketId, ticketType = 'customer' }: TicketCS
   if (existingRating) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground py-3 px-4 bg-muted/30 rounded-lg">
-        <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+        <CheckCircle className="h-4 w-4 text-success shrink-0" />
         <span>You rated this ticket {existingRating.rating}/5</span>
         <div className="flex gap-0.5 ml-1">
           {[1, 2, 3, 4, 5].map(s => (
@@ -66,7 +66,7 @@ export function TicketCSATPrompt({ ticketId, ticketType = 'customer' }: TicketCS
   if (submitRating.isSuccess) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground py-3 px-4 bg-muted/30 rounded-lg">
-        <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+        <CheckCircle className="h-4 w-4 text-success shrink-0" />
         Thank you for your feedback!
       </div>
     );
