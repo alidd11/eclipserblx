@@ -71,11 +71,11 @@ export function RevenueSummaryStats() {
   const { formatPrice: fmt } = useCurrency();
 
   const items = [
-    { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
-    { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
-    { label: 'Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart, showOrderChange: true, color: 'from-warning/20 to-warning/5', iconColor: 'text-warning' },
-    { label: 'Avg. Order', value: fmt(stats?.avgOrderValue || 0), icon: BarChart3, color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
-    { label: 'Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true, color: 'from-success/20 to-success/5', iconColor: 'text-success' },
+    { label: "Today's Revenue", value: fmt(stats?.todayRevenue || 0), icon: DollarSign, color: 'from-primary/20 to-primary/10', iconColor: 'text-primary' },
+    { label: 'This Month', value: fmt(stats?.thisMonthRevenue || 0), icon: TrendingUp, showChange: true, color: 'from-primary/20 to-primary/10', iconColor: 'text-primary' },
+    { label: 'Orders', value: stats?.thisMonthOrders || 0, icon: ShoppingCart, showOrderChange: true, color: 'from-warning/20 to-warning/10', iconColor: 'text-warning' },
+    { label: 'Avg. Order', value: fmt(stats?.avgOrderValue || 0), icon: BarChart3, color: 'from-primary/20 to-primary/10', iconColor: 'text-primary' },
+    { label: 'Balance', value: fmt(stats?.availableBalance || 0), icon: Wallet, highlight: true, color: 'from-success/20 to-success/10', iconColor: 'text-success' },
   ];
 
   if (isLoading) {

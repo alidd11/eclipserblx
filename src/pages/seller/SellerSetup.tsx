@@ -37,11 +37,11 @@ const stepIcons: Record<string, React.ElementType> = {
 };
 
 const stepColors: Record<string, string> = {
-  tos: 'from-warning to-warning',
+  tos: 'from-warning to-warning/50',
   'store-setup': 'from-primary to-destructive',
-  payments: 'from-success to-success',
-  products: 'from-primary to-primary',
-  extras: 'from-primary to-primary',
+  payments: 'from-success to-success/50',
+  products: 'from-primary to-primary/50',
+  extras: 'from-primary to-primary/50',
 };
 
 export default function SellerSetup() {
@@ -79,7 +79,7 @@ export default function SellerSetup() {
       <div className="border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="container max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-primary/20 to-primary/10">
               <StoreIcon className="h-5 w-5 text-primary" />
             </div>
             <div>
@@ -109,7 +109,7 @@ export default function SellerSetup() {
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: 'spring', stiffness: 200, delay: 0.2 }}
-                className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-success/20 to-success/5"
+                className="inline-flex p-4 rounded-2xl bg-gradient-to-br from-success/20 to-success/10"
               >
                 <PartyPopper className="h-12 w-12 text-success" />
               </motion.div>
@@ -129,7 +129,7 @@ export default function SellerSetup() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center space-y-3"
             >
-              <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5">
+              <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/10">
                 <Rocket className="h-8 w-8 text-primary" />
               </div>
               <h2 className="text-2xl font-bold">Let's set up your store</h2>

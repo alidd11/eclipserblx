@@ -126,7 +126,7 @@ export default function Affiliate() {
 
      {/* Stripe Connect Banner */}
      {d.needsStripeOnboarding && d.payoutSettings.preferred_method === 'stripe' && (
-      <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+      <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-r from-primary/5 to-primary/2 border-primary/20">
        <div className="p-4 py-6"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
          <div className="h-12 w-12 rounded-lg bg-primary/20 flex items-center justify-center shrink-0"><LinkIcon className="h-6 w-6 text-primary" /></div>

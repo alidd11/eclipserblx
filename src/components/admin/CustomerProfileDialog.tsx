@@ -335,9 +335,9 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
               {affiliateStatus ? (
                 <div className={`p-4 rounded-lg border ${
                   affiliateStatus.status === 'approved' 
-                    ? 'bg-gradient-to-r from-success/10 to-success/10 border-success/20'
+                    ? 'bg-gradient-to-r from-success/10 to-success/5 border-success/20'
                     : affiliateStatus.status === 'pending'
-                    ? 'bg-gradient-to-r from-warning/10 to-warning/10 border-warning/20'
+                    ? 'bg-gradient-to-r from-warning/10 to-warning/5 border-warning/20'
                     : 'bg-muted/50 border-border'
                 }`}>
                   <div className="flex items-center justify-between">
@@ -384,7 +384,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
               {sellerStore ? (
                 <div className={`p-4 rounded-lg border ${
                   sellerStore.is_active 
-                    ? 'bg-gradient-to-r from-primary/10 to-primary/10 border-primary/20'
+                    ? 'bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20'
                     : 'bg-muted/50 border-border'
                 }`}>
                   <div className="flex items-center justify-between">

@@ -8,28 +8,28 @@ const categories = [
     slug: 'vehicle-liveries',
     description: 'Professional police, ambulance, and emergency vehicle wraps',
     icon: Car,
-    gradient: 'from-primary to-primary',
+    gradient: 'from-primary to-primary/50',
   },
   {
     name: 'Scripts & Systems',
     slug: 'scripts-systems',
     description: 'Powerful MDT, CAD, and roleplay management systems',
     icon: Code,
-    gradient: 'from-primary to-primary',
+    gradient: 'from-accent to-primary/40',
   },
   {
     name: '3D Models',
     slug: '3d-models',
     description: 'High-quality props, buildings, and environment assets',
     icon: Box,
-    gradient: 'from-warning to-warning',
+    gradient: 'from-warning to-warning/50',
   },
   {
     name: 'UI Kits',
     slug: 'ui-kits',
     description: 'Sleek interfaces for HUDs, menus, and dashboards',
     icon: Layout,
-    gradient: 'from-success to-success',
+    gradient: 'from-success to-success/50',
   },
 ];
 

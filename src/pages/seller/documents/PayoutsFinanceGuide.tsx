@@ -86,7 +86,7 @@ export default function PayoutsFinanceGuide() {
             </div>
             <div className="border border-border rounded-xl overflow-hidden border-primary/50 bg-primary/5">
               <div className="p-4 pt-6 text-center">
-                <Badge className="mb-3 bg-gradient-to-r from-warning to-warning">Pro+ Seller</Badge>
+                <Badge className="mb-3 bg-gradient-to-r from-warning to-warning/50">Pro+ Seller</Badge>
                 <p className="text-4xl font-bold text-primary">90%</p>
                 <p className="text-sm text-muted-foreground mt-2">of net earnings (10% commission)</p>
               </div>
