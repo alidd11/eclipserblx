@@ -29,13 +29,13 @@ const publicDocuments: PublicDocument[] = [
 const getCategoryColor = (category: string) => {
   switch (category.toLowerCase()) {
     case "recruitment":
-      return "bg-purple-500/10 text-purple-500 border-purple-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "marketing":
-      return "bg-blue-500/10 text-blue-500 border-blue-500/20";
+      return "bg-primary/10 text-primary border-primary/20";
     case "legal":
-      return "bg-amber-500/10 text-amber-500 border-amber-500/20";
+      return "bg-warning/10 text-warning border-warning/20";
     case "announcement":
-      return "bg-green-500/10 text-green-500 border-green-500/20";
+      return "bg-success/10 text-success border-success/20";
     default:
       return "bg-muted text-muted-foreground";
   }
@@ -56,7 +56,7 @@ export default function PublicDocuments() {
         {/* Documents Grid */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {publicDocuments.map((doc) => (
-            <div key={doc.id} className="group hover:border-primary/50 transition-colors">
+            <div key={doc.id} className="group hover:border-primary/50 transition-colors ease-emphasized">
               <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                 <div className="flex items-start justify-between gap-4">
                   <div className="p-2 rounded-lg bg-primary/10 shrink-0">

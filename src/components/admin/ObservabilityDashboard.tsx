@@ -136,7 +136,7 @@ export function ObservabilityDashboard() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">{h.probe_name}</CardTitle>
                 {h.last_run_success
-                  ? <CheckCircle2 className="h-5 w-5 text-emerald-500" />
+                  ? <CheckCircle2 className="h-5 w-5 text-success" />
                   : <XCircle className="h-5 w-5 text-destructive" />}
               </div>
             </CardHeader>
@@ -213,7 +213,7 @@ export function ObservabilityDashboard() {
                       <td className="py-2 pr-3"><code className="text-xs">{r.probe_name}</code></td>
                       <td className="py-2 pr-3">
                         {r.success
-                          ? <Badge variant="outline" className="text-emerald-600 border-emerald-500/30">pass</Badge>
+                          ? <Badge variant="outline" className="text-success border-success/30">pass</Badge>
                           : <Badge variant="destructive">fail</Badge>}
                       </td>
                       <td className="py-2 pr-3 font-mono text-xs">{r.total_latency_ms}ms</td>

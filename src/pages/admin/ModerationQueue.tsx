@@ -178,14 +178,14 @@ export default function ModerationQueue() {
  submissions: allItems.filter(i => i.type === 'submission').length };
 
  const typeConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
- product: { icon: Package, color: 'text-blue-500', label: 'Product' },
- store: { icon: Store, color: 'text-emerald-500', label: 'Store App' },
- review: { icon: Star, color: 'text-amber-500', label: 'Review' },
- submission: { icon: Upload, color: 'text-purple-500', label: 'Submission' } };
+ product: { icon: Package, color: 'text-primary', label: 'Product' },
+ store: { icon: Store, color: 'text-success', label: 'Store App' },
+ review: { icon: Star, color: 'text-warning', label: 'Review' },
+ submission: { icon: Upload, color: 'text-primary', label: 'Submission' } };
 
  const severityBadge = (severity: string) => {
  if (severity === 'critical') return <Badge variant="destructive" className="text-xs">Flagged</Badge>;
- if (severity === 'warning') return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/30 text-xs">Pending</Badge>;
+ if (severity === 'warning') return <Badge className="bg-warning/10 text-warning border-warning/30 text-xs">Pending</Badge>;
  return <Badge variant="secondary" className="text-xs">Info</Badge>;
  };
 
@@ -210,16 +210,16 @@ export default function ModerationQueue() {
  {/* Inline Stats */}
  <div className="flex items-center gap-4 text-sm flex-wrap">
  <span className="text-muted-foreground">
- <span className="font-semibold text-blue-500">{counts.products}</span> products
+ <span className="font-semibold text-primary">{counts.products}</span> products
  </span>
  <span className="text-muted-foreground">
- <span className="font-semibold text-emerald-500">{counts.stores}</span> store apps
+ <span className="font-semibold text-success">{counts.stores}</span> store apps
  </span>
  <span className="text-muted-foreground">
- <span className="font-semibold text-amber-500">{counts.reviews}</span> reviews
+ <span className="font-semibold text-warning">{counts.reviews}</span> reviews
  </span>
  <span className="text-muted-foreground">
- <span className="font-semibold text-purple-500">{counts.submissions}</span> submissions
+ <span className="font-semibold text-primary">{counts.submissions}</span> submissions
  </span>
  </div>
 
@@ -280,7 +280,7 @@ export default function ModerationQueue() {
  const Icon = config.icon;
  return (
  <Link key={`${item.type}-${item.id}`} to={item.href} className="block group">
- <div className="border border-border rounded-xl transition-colors hover:bg-muted/50 p-4">
+ <div className="border border-border rounded-xl transition-colors ease-emphasized hover:bg-muted/50 p-4">
  <div className="flex items-start gap-3">
  <div className={`p-2 rounded-lg bg-muted shrink-0 ${config.color}`}>
  <Icon className="h-5 w-5" />
@@ -297,7 +297,7 @@ export default function ModerationQueue() {
  {formatRelative(item.createdAt)}
  </div>
  </div>
- <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-1" />
+ <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized shrink-0 mt-1" />
  </div>
  </div>
  </Link>

@@ -160,8 +160,8 @@ export default function SellerFlashSales() {
           </Button>
         </div>
 
-        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-3 mb-6">
-          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex items-start gap-3 mb-6">
+          <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground">
             Flash sales apply automatic discounts to your products during the sale period. 
             Maximum discount is 50%. Sales are visible on your store page with a countdown timer.
@@ -181,7 +181,7 @@ export default function SellerFlashSales() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold">{sale.name}</span>
-                        {isActive(sale) && <Badge className="bg-green-600">Live</Badge>}
+                        {isActive(sale) && <Badge className="bg-success">Live</Badge>}
                         {isUpcoming(sale) && <Badge variant="secondary">Upcoming</Badge>}
                         {isExpired(sale) && <Badge variant="outline">Expired</Badge>}
                       </div>

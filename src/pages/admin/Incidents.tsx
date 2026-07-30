@@ -35,16 +35,16 @@ interface IncidentUpdate {
 }
 
 const statusOptions = [
- { value: 'investigating', label: 'Investigating', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
- { value: 'identified', label: 'Identified', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
- { value: 'monitoring', label: 'Monitoring', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
- { value: 'resolved', label: 'Resolved', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+ { value: 'investigating', label: 'Investigating', color: 'bg-warning/20 text-warning border-warning/30' },
+ { value: 'identified', label: 'Identified', color: 'bg-warning/20 text-warning border-warning/30' },
+ { value: 'monitoring', label: 'Monitoring', color: 'bg-primary/20 text-primary border-primary/30' },
+ { value: 'resolved', label: 'Resolved', color: 'bg-success/20 text-success border-success/30' },
 ];
 
 const severityOptions = [
- { value: 'minor', label: 'Minor', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
- { value: 'major', label: 'Major', color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
- { value: 'critical', label: 'Critical', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+ { value: 'minor', label: 'Minor', color: 'bg-primary/20 text-primary border-primary/30' },
+ { value: 'major', label: 'Major', color: 'bg-warning/20 text-warning border-warning/30' },
+ { value: 'critical', label: 'Critical', color: 'bg-destructive/20 text-destructive border-destructive/30' },
 ];
 
 const serviceOptions = ['Website', 'API', 'Database', 'Authentication', 'Payments', 'File Storage'];
@@ -408,7 +408,7 @@ export default function AdminIncidents() {
  <div className="space-y-3">
  {filteredIncidents?.length === 0 ? (
  <div className="border border-border rounded-xl p-12 text-center">
- <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-4" />
+ <CheckCircle className="h-12 w-12 mx-auto text-success mb-4" />
  <p className="text-lg font-medium">No incidents found</p>
  <p className="text-muted-foreground">All systems are operating normally</p>
  </div>
@@ -419,10 +419,10 @@ export default function AdminIncidents() {
  <div className="flex-1 space-y-2">
  <div className="flex items-center gap-2 flex-wrap">
  {incident.status !== 'resolved' && (
- <AlertTriangle className="h-4 w-4 text-yellow-500 shrink-0" />
+ <AlertTriangle className="h-4 w-4 text-warning shrink-0" />
  )}
  {incident.status === 'resolved' && (
- <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />
+ <CheckCircle className="h-4 w-4 text-success shrink-0" />
  )}
  <h3 className="font-semibold">{incident.title}</h3>
  {getStatusBadge(incident.status)}

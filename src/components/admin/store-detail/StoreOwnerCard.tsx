@@ -82,7 +82,7 @@ export function StoreOwnerCard({ store, ownerProfile, onUnlockAccounts, onLockAc
               </span>
               {ownerProfile?.roblox_username ? (
                 <span className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30">
+                  <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/30">
                     {ownerProfile.roblox_username}
                   </Badge>
                   {ownerProfile.roblox_user_id && (
@@ -114,7 +114,7 @@ export function StoreOwnerCard({ store, ownerProfile, onUnlockAccounts, onLockAc
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-yellow-500 border-yellow-500/30">Unlocked</Badge>
+                  <Badge variant="outline" className="text-warning border-warning/30">Unlocked</Badge>
                   <Button variant="outline" size="sm" onClick={onLockAccounts} disabled={isLocking}>
                     <Lock className="h-3 w-3 mr-1" />
                     Lock

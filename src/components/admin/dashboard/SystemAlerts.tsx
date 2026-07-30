@@ -85,19 +85,19 @@ export function SystemAlerts() {
 
   const severityStyles = {
     critical: 'border-destructive/30 bg-destructive/5 hover:bg-destructive/10',
-    warning: 'border-orange-500/30 bg-orange-500/5 hover:bg-orange-500/10',
+    warning: 'border-warning/30 bg-warning/5 hover:bg-warning/10',
     info: 'border-primary/20 bg-primary/5 hover:bg-primary/10',
   };
 
   const severityBadge = {
     critical: 'bg-destructive text-destructive-foreground',
-    warning: 'bg-orange-500 text-foreground',
+    warning: 'bg-warning text-foreground',
     info: 'bg-primary/20 text-primary',
   };
 
   const severityIconColor = {
     critical: 'text-destructive',
-    warning: 'text-orange-500',
+    warning: 'text-warning',
     info: 'text-primary',
   };
 
@@ -108,7 +108,7 @@ export function SystemAlerts() {
     return (
       <div className="border border-border rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
+          <CheckCircle2 className="h-4 w-4 text-success" />
           <h3 className="font-semibold text-sm">System Status</h3>
         </div>
         <div className="p-4">
@@ -121,7 +121,7 @@ export function SystemAlerts() {
   return (
     <div className="border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30 flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4 text-orange-500" />
+        <AlertTriangle className="h-4 w-4 text-warning" />
         <h3 className="font-semibold text-sm">Needs Attention</h3>
         <Badge variant="secondary" className="ml-auto text-xs">
           {alerts.length} {alerts.length === 1 ? 'item' : 'items'}
@@ -132,7 +132,7 @@ export function SystemAlerts() {
           {alerts.map((alert) => (
             <Link key={alert.id} to={alert.href}>
               <div className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
+                'flex items-center gap-3 p-3 rounded-lg border transition-colors ease-emphasized cursor-pointer',
                 severityStyles[alert.severity]
               )}>
                 <div className="relative">

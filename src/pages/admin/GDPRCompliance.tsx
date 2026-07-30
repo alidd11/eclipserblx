@@ -574,8 +574,8 @@ export default function GDPRCompliance() {
  Tax filing. This is documented in the Seller Terms of Service.
  </p>
  </div>
- <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
- <h4 className="font-semibold mb-1 text-amber-500 flex items-center gap-2">
+ <div className="p-4 rounded-lg bg-warning/10 border border-warning/30">
+ <h4 className="font-semibold mb-1 text-warning flex items-center gap-2">
  <AlertTriangle className="h-4 w-4" />
  Deemed Supplier Warning
  </h4>

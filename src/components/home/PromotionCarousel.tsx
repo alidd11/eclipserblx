@@ -21,10 +21,10 @@ export function PromotionCarousel() {
       description: t('landing.affiliateDesc'),
       link: '/affiliate',
       icon: Users,
-      accent: 'from-violet-500/15 to-purple-500/5',
-      iconBg: 'bg-violet-500/10',
-      iconColor: 'text-violet-400',
-      dotColor: 'bg-violet-400',
+      accent: 'from-primary/15 to-primary/5',
+      iconBg: 'bg-primary/10',
+      iconColor: 'text-primary',
+      dotColor: 'bg-primary',
     },
     {
       id: 'seller',
@@ -32,10 +32,10 @@ export function PromotionCarousel() {
       description: t('landing.sellerDesc'),
       link: '/account',
       icon: Store,
-      accent: 'from-emerald-500/15 to-teal-500/5',
-      iconBg: 'bg-emerald-500/10',
-      iconColor: 'text-emerald-400',
-      dotColor: 'bg-emerald-400',
+      accent: 'from-success/15 to-success/5',
+      iconBg: 'bg-success/10',
+      iconColor: 'text-success',
+      dotColor: 'bg-success',
     },
     {
       id: 'credits',
@@ -43,10 +43,10 @@ export function PromotionCarousel() {
       description: 'Pay with credits to skip transaction fees and check out instantly.',
       link: '/credits',
       icon: Coins,
-      accent: 'from-amber-500/15 to-yellow-500/5',
-      iconBg: 'bg-amber-500/10',
-      iconColor: 'text-amber-400',
-      dotColor: 'bg-amber-400',
+      accent: 'from-warning/15 to-warning/5',
+      iconBg: 'bg-warning/10',
+      iconColor: 'text-warning',
+      dotColor: 'bg-warning',
     },
   ];
 
@@ -90,10 +90,10 @@ export function PromotionCarousel() {
     return (
       <Link
         to={promo.link}
-        className={`group flex items-center justify-between gap-4 px-5 py-5 transition-all duration-300 bg-gradient-to-r ${promo.accent}`}
+        className={`group flex items-center justify-between gap-4 px-5 py-5 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 bg-gradient-to-r ${promo.accent}`}
       >
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className={`w-10 h-10 rounded-xl ${promo.iconBg} flex items-center justify-center shrink-0 transition-transform duration-300`}>
+          <div className={`w-10 h-10 rounded-xl ${promo.iconBg} flex items-center justify-center shrink-0 transition-transform ease-emphasized duration-300`}>
             <Icon className={`h-4.5 w-4.5 ${promo.iconColor}`} />
           </div>
           <div className="min-w-0">

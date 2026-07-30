@@ -81,16 +81,16 @@ const ICON_OPTIONS = [
 ];
 
 const COLOR_OPTIONS = [
-  { value: 'bg-red-500', label: 'Red' },
-  { value: 'bg-blue-500', label: 'Blue' },
-  { value: 'bg-green-500', label: 'Green' },
-  { value: 'bg-purple-500', label: 'Purple' },
-  { value: 'bg-amber-500', label: 'Amber' },
-  { value: 'bg-cyan-500', label: 'Cyan' },
-  { value: 'bg-pink-500', label: 'Pink' },
-  { value: 'bg-indigo-500', label: 'Indigo' },
-  { value: 'bg-orange-500', label: 'Orange' },
-  { value: 'bg-teal-500', label: 'Teal' },
+  { value: 'bg-destructive', label: 'Red' },
+  { value: 'bg-primary', label: 'Blue' },
+  { value: 'bg-success', label: 'Green' },
+  { value: 'bg-primary', label: 'Purple' },
+  { value: 'bg-warning', label: 'Amber' },
+  { value: 'bg-primary', label: 'Cyan' },
+  { value: 'bg-primary', label: 'Pink' },
+  { value: 'bg-primary', label: 'Indigo' },
+  { value: 'bg-warning', label: 'Orange' },
+  { value: 'bg-success', label: 'Teal' },
 ];
 
 export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHierarchy = 0, userEmail }: CreateRoleDialogProps) {
@@ -308,7 +308,7 @@ export function CreateRoleDialog({ open, onOpenChange, editRole, currentUserHier
                 }))}
                 placeholder="e.g. content_moderator"
               />
-              <p className="text-xs text-amber-600 dark:text-amber-400">
+              <p className="text-xs text-warning dark:text-warning">
                 ⚠️ Changing this will automatically migrate all users with this role
               </p>
             </div>

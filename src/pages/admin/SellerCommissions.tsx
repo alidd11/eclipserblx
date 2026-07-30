@@ -148,7 +148,7 @@ export default function SellerCommissions() {
  <SelectItem value="all">All ({stores?.length ?? 0})</SelectItem>
  <SelectItem value="active">
  <span className="flex items-center gap-2">
- <Eye className="h-4 w-4 text-green-500" />
+ <Eye className="h-4 w-4 text-success" />
  Active ({activeCount})
  </span>
  </SelectItem>
@@ -175,7 +175,7 @@ export default function SellerCommissions() {
  onClick={() => navigate(`/admin/seller-commissions/${store.id}`)}
  className={cn(
  "flex items-center justify-between p-4 rounded-lg border bg-card cursor-pointer",
- "transition-all duration-150",
+ "transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150",
  "hover:bg-muted/50 hover:border-primary/30",
  !store.is_active && "opacity-60"
  )}

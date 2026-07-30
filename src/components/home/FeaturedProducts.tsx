@@ -141,7 +141,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
               onTouchEnd={handleTouchEnd}
             >
               <div 
-                className="transition-transform duration-500 ease-out"
+                className="transition-transform duration-300 ease-out"
                 key={currentIndex}
               >
                 {currentProduct && (
@@ -193,7 +193,7 @@ export const FeaturedProducts = memo(function FeaturedProducts() {
                     key={idx}
                     onClick={() => setCurrentIndex(idx)}
                     className={cn(
-                      "w-2 h-2 rounded-full transition-all duration-300",
+                      "w-2 h-2 rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300",
                       idx === currentIndex 
                         ? "bg-primary w-6" 
                         : "bg-muted-foreground/30 hover:bg-muted-foreground/50"

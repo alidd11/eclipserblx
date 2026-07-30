@@ -77,15 +77,15 @@ export function StoreControlsCard({ store, paymentDetails, isAdminManaged, userE
             </div>
             <Badge
               variant={store.is_verified ? "default" : "secondary"}
-              className={store.is_verified ? "bg-green-600 text-foreground border-0" : ""}
+              className={store.is_verified ? "bg-success text-foreground border-0" : ""}
             >
               {store.is_verified ? "Verified" : "Not Verified"}
             </Badge>
           </div>
 
           <Collapsible>
-            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full">
-              <ChevronDown className="h-4 w-4 transition-transform duration-200 [&[data-state=open]]:rotate-180" />
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors ease-emphasized w-full">
+              <ChevronDown className="h-4 w-4 transition-transform ease-emphasized duration-200 [&[data-state=open]]:rotate-180" />
               Stripe Connect Details
               {paymentDetails?.stripe_account_id && (
                 <a
@@ -129,12 +129,12 @@ export function StoreControlsCard({ store, paymentDetails, isAdminManaged, userE
                   <div className="space-y-2">
                     <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Onboarding Steps</p>
                     <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                       <span>Account Created</span>
                     </div>
                     <div className="flex items-center gap-2">
                       {paymentDetails.details_submitted ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                       ) : (
                         <XCircle className="h-4 w-4 text-destructive shrink-0" />
                       )}
@@ -142,7 +142,7 @@ export function StoreControlsCard({ store, paymentDetails, isAdminManaged, userE
                     </div>
                     <div className="flex items-center gap-2">
                       {paymentDetails.payouts_enabled ? (
-                        <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                       ) : (
                         <XCircle className="h-4 w-4 text-destructive shrink-0" />
                       )}
@@ -168,7 +168,7 @@ export function StoreControlsCard({ store, paymentDetails, isAdminManaged, userE
             <div className="pt-2">
               <Button
                 variant="outline"
-                className="w-full gap-2 border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+                className="w-full gap-2 border-warning/50 text-warning hover:bg-warning/10"
                 onClick={() => {
                   setActionPassword('');
                   setPasswordError(false);
@@ -237,7 +237,7 @@ export function StoreControlsCard({ store, paymentDetails, isAdminManaged, userE
             <AlertDialogCancel onClick={() => setActionPassword('')}>Cancel</AlertDialogCancel>
             <Button
               variant="outline"
-              className="border-amber-500/50 text-amber-600 hover:bg-amber-500/10"
+              className="border-warning/50 text-warning hover:bg-warning/10"
               onClick={() => handlePasswordAction(() => onToggleActive(false))}
             >
               Deactivate Store

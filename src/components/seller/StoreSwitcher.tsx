@@ -25,8 +25,8 @@ const roleLabels: Record<string, string> = {
 
 const roleBadgeVariants: Record<string, string> = {
   owner: 'bg-primary/10 text-primary border-primary/20',
-  manager: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-  editor: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+  manager: 'bg-primary/10 text-primary border-primary/20',
+  editor: 'bg-warning/10 text-warning border-warning/20',
   viewer: 'bg-muted text-muted-foreground border-border',
 };
 
@@ -71,7 +71,7 @@ export function StoreSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-muted/60 transition-all focus:outline-none group">
+        <button className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-muted/60 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized focus:outline-none group">
           <Avatar className="h-6 w-6 shrink-0 rounded-md">
             <AvatarImage src={currentStore?.logo_url || undefined} alt="" />
             <AvatarFallback className="rounded-md bg-primary/10 text-primary text-[10px] font-bold">
@@ -79,7 +79,7 @@ export function StoreSwitcher() {
             </AvatarFallback>
           </Avatar>
           <span className="truncate flex-1 text-left">{currentStore?.name || 'Select Store'}</span>
-          <ArrowLeftRight className="h-3 w-3 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <ArrowLeftRight className="h-3 w-3 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors ease-emphasized" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64" sideOffset={4}>

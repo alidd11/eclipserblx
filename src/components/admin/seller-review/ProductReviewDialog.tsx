@@ -49,7 +49,7 @@ export function ProductReviewDialog({
                 {selectedProduct.images.map((imageUrl: string, index: number) => (
                   <div key={index} className="relative group aspect-square rounded-lg overflow-hidden bg-muted border border-border">
                     <img src={imageUrl} alt={`Product image ${index + 1}`} className="w-full h-full object-cover" />
-                    <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized flex items-center justify-center">
                       <Button
                         size="sm"
                         variant="destructive"
@@ -104,8 +104,8 @@ export function ProductReviewDialog({
           </div>
 
           {selectedProduct?.moderation_flags && (
-            <div className="p-3 border border-amber-500/30 bg-amber-500/10 rounded-lg space-y-2">
-              <span className="text-sm font-medium flex items-center gap-2 text-amber-600">
+            <div className="p-3 border border-warning/30 bg-warning/10 rounded-lg space-y-2">
+              <span className="text-sm font-medium flex items-center gap-2 text-warning">
                 <AlertTriangle className="h-4 w-4" />
                 Security Scan Flags
               </span>
@@ -121,7 +121,7 @@ export function ProductReviewDialog({
               )}
               {selectedProduct.moderation_flags.lua_concerns?.length > 0 && (
                 <div className="text-sm">
-                  <span className="text-amber-600 font-medium">
+                  <span className="text-warning font-medium">
                     Lua Analysis ({selectedProduct.moderation_flags.lua_risk_level} risk):
                   </span>
                   <ul className="list-disc list-inside ml-2 text-muted-foreground">
@@ -180,7 +180,7 @@ export function ProductReviewDialog({
             <Button variant="destructive" onClick={() => onReject(selectedProduct.id, moderationNotes)}>
               Reject
             </Button>
-            <Button className="bg-green-600 hover:bg-green-700" onClick={() => onApprove(selectedProduct.id, moderationNotes)}>
+            <Button className="bg-success hover:bg-success" onClick={() => onApprove(selectedProduct.id, moderationNotes)}>
               Approve
             </Button>
           </DialogFooter>

@@ -248,14 +248,14 @@ export default function IntegrationsGuide() {
         </section>
 
         {/* Security Note */}
-        <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+        <div className="border border-border rounded-xl overflow-hidden border-warning/30 bg-warning/5">
           <div className="p-4 pt-6">
             <div className="flex items-start gap-4">
-              <div className="p-2 rounded-lg bg-amber-500/10">
-                <Shield className="h-5 w-5 text-amber-500" />
+              <div className="p-2 rounded-lg bg-warning/10">
+                <Shield className="h-5 w-5 text-warning" />
               </div>
               <div>
-                <h3 className="font-semibold text-amber-500">Security Reminder</h3>
+                <h3 className="font-semibold text-warning">Security Reminder</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   Never share your Discord webhook URLs, bot tokens, or API keys publicly. These credentials
                   are stored securely in your seller dashboard and are only accessible by you and the platform.

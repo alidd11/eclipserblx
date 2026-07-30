@@ -114,7 +114,7 @@ export default function SellerPromotions() {
               key={r}
               onClick={() => setDateRange(r)}
               className={cn(
-                "px-3 py-1 rounded-full text-xs font-medium transition-all",
+                "px-3 py-1 rounded-full text-xs font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
                 dateRange === r
                   ? "bg-primary text-primary-foreground"
                   : "bg-muted text-muted-foreground hover:text-foreground"
@@ -128,9 +128,9 @@ export default function SellerPromotions() {
         {/* Metric cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: 'Amount Spent', value: `£${totalSpent.toFixed(0)}`, icon: Coins, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-            { label: 'Impressions', value: totalImpressions.toLocaleString(), icon: Eye, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-            { label: 'Clicks', value: totalClicks.toLocaleString(), icon: MousePointerClick, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { label: 'Amount Spent', value: `£${totalSpent.toFixed(0)}`, icon: Coins, color: 'text-warning', bg: 'bg-warning/10' },
+            { label: 'Impressions', value: totalImpressions.toLocaleString(), icon: Eye, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'Clicks', value: totalClicks.toLocaleString(), icon: MousePointerClick, color: 'text-success', bg: 'bg-success/10' },
             { label: 'CTR', value: `${avgCtr}%`, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
           ].map(m => (
             <div key={m.label}>
@@ -211,8 +211,8 @@ export default function SellerPromotions() {
             <div className="border border-border rounded-xl overflow-hidden">
               <div className="p-4 p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-lg bg-amber-500/10">
-                    <Coins className="h-5 w-5 text-amber-500" />
+                  <div className="p-2.5 rounded-lg bg-warning/10">
+                    <Coins className="h-5 w-5 text-warning" />
                   </div>
                   <div>
                     <p className="text-lg font-bold">{formatGBP(balance)}</p>

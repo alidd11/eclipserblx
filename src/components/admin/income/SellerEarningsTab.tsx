@@ -178,11 +178,11 @@ export function SellerEarningsTab() {
  const isLoading = txLoading || balLoading;
 
  const statusColors: Record<string, string> = {
- pending: 'bg-yellow-500/10 text-yellow-600',
- processing: 'bg-blue-500/10 text-blue-600',
- awaiting_funds: 'bg-orange-500/10 text-orange-600',
- completed: 'bg-green-500/10 text-green-600',
- rejected: 'bg-red-500/10 text-red-600',
+ pending: 'bg-warning/10 text-warning',
+ processing: 'bg-primary/10 text-primary',
+ awaiting_funds: 'bg-warning/10 text-warning',
+ completed: 'bg-success/10 text-success',
+ rejected: 'bg-destructive/10 text-destructive',
  };
 
  if (txError) {
@@ -262,7 +262,7 @@ export function SellerEarningsTab() {
  <TableCell className="font-medium">{p.label}</TableCell>
  <TableCell className="text-right">{formatGBP(p.gross)}</TableCell>
  <TableCell className="text-right text-primary">{formatGBP(p.commission)}</TableCell>
- <TableCell className="text-right text-green-600">{formatGBP(p.sellerEarnings)}</TableCell>
+ <TableCell className="text-right text-success">{formatGBP(p.sellerEarnings)}</TableCell>
  </TableRow>
  ))}
  </TableBody>
@@ -359,7 +359,7 @@ export function SellerEarningsTab() {
  <TableCell className="font-medium">{store.name}</TableCell>
  <TableCell className="text-right">{formatGBP(store.gross)}</TableCell>
  <TableCell className="text-right text-primary">{formatGBP(store.commission)}</TableCell>
- <TableCell className="text-right text-green-600">{formatGBP(store.net)}</TableCell>
+ <TableCell className="text-right text-success">{formatGBP(store.net)}</TableCell>
  </TableRow>
  ))}
  </TableBody>

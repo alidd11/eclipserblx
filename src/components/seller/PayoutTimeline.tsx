@@ -28,11 +28,11 @@ export function PayoutTimeline() {
  staleTime: 5 * 60 * 1000 });
 
  const statusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
- completed: { icon: CheckCircle, color: 'text-green-500', label: 'Completed' },
- pending: { icon: Clock, color: 'text-yellow-500', label: 'Pending' },
- processing: { icon: ArrowRight, color: 'text-blue-500', label: 'Processing' },
- failed: { icon: Wallet, color: 'text-red-500', label: 'Failed' },
- awaiting_funds: { icon: Clock, color: 'text-orange-500', label: 'Awaiting Funds' } };
+ completed: { icon: CheckCircle, color: 'text-success', label: 'Completed' },
+ pending: { icon: Clock, color: 'text-warning', label: 'Pending' },
+ processing: { icon: ArrowRight, color: 'text-primary', label: 'Processing' },
+ failed: { icon: Wallet, color: 'text-destructive', label: 'Failed' },
+ awaiting_funds: { icon: Clock, color: 'text-warning', label: 'Awaiting Funds' } };
 
  return (
  <div className="border border-border rounded-xl overflow-hidden">

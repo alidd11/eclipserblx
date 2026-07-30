@@ -41,12 +41,12 @@ export function StepAccounts({ hasDiscord, hasRoblox, discordUsername, robloxUse
       </p>
 
       <div className={cn(
-        'flex items-center justify-between p-4 rounded-lg border transition-colors',
-        hasDiscord ? 'border-green-500/30 bg-green-500/5' : 'border-border'
+        'flex items-center justify-between p-4 rounded-lg border transition-colors ease-emphasized',
+        hasDiscord ? 'border-success/30 bg-success/5' : 'border-border'
       )}>
         <div className="flex items-center gap-3">
           {hasDiscord ? (
-            <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
           ) : (
             <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
           )}
@@ -66,12 +66,12 @@ export function StepAccounts({ hasDiscord, hasRoblox, discordUsername, robloxUse
       </div>
 
       <div className={cn(
-        'flex items-center justify-between p-4 rounded-lg border transition-colors',
-        hasRoblox ? 'border-green-500/30 bg-green-500/5' : 'border-border'
+        'flex items-center justify-between p-4 rounded-lg border transition-colors ease-emphasized',
+        hasRoblox ? 'border-success/30 bg-success/5' : 'border-border'
       )}>
         <div className="flex items-center gap-3">
           {hasRoblox ? (
-            <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
+            <CheckCircle2 className="h-5 w-5 text-success shrink-0" />
           ) : (
             <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
           )}
@@ -91,8 +91,8 @@ export function StepAccounts({ hasDiscord, hasRoblox, discordUsername, robloxUse
       </div>
 
       {hasDiscord && hasRoblox && (
-        <Alert className="bg-green-500/10 border-green-500/30">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
+        <Alert className="bg-success/10 border-success/30">
+          <CheckCircle2 className="h-4 w-4 text-success" />
           <AlertDescription className="text-sm">
             Both accounts linked! You're ready to continue.
           </AlertDescription>

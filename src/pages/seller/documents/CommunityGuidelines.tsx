@@ -68,17 +68,17 @@ const enforcementLevels = [
   {
     level: "Warning",
     description: "First-time minor violations receive a formal warning with guidance on the correct approach.",
-    color: "bg-amber-500/10 text-amber-500 border-amber-500/30",
+    color: "bg-warning/10 text-warning border-warning/30",
   },
   {
     level: "Product Removal",
     description: "Violating products are removed from the marketplace. You may resubmit after fixing the issues.",
-    color: "bg-orange-500/10 text-orange-500 border-orange-500/30",
+    color: "bg-warning/10 text-warning border-warning/30",
   },
   {
     level: "Temporary Suspension",
     description: "Repeated violations result in a temporary store suspension (7-30 days).",
-    color: "bg-red-500/10 text-red-500 border-red-500/30",
+    color: "bg-destructive/10 text-destructive border-destructive/30",
   },
   {
     level: "Permanent Ban",

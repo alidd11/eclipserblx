@@ -39,9 +39,9 @@ interface UnifiedTransaction {
 }
 
 const sourceConfig: Record<Exclude<IncomeSource, 'all'>, { label: string; icon: typeof ShoppingCart; color: string; chartColor: string; badgeVariant: string }> = {
-  orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-emerald-500', chartColor: CHART_COLORS.green2, badgeVariant: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-purple-500', chartColor: CHART_COLORS.purple, badgeVariant: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
-  commission: { label: 'Commission', icon: Percent, color: 'text-orange-500', chartColor: CHART_COLORS.orange, badgeVariant: 'bg-orange-500/10 text-orange-500 border-orange-500/20' },
+  orders: { label: 'Product Sales', icon: ShoppingCart, color: 'text-success', chartColor: CHART_COLORS.green2, badgeVariant: 'bg-success/10 text-success border-success/20' },
+  credits: { label: 'Credit Purchases', icon: CreditCard, color: 'text-primary', chartColor: CHART_COLORS.purple, badgeVariant: 'bg-primary/10 text-primary border-primary/20' },
+  commission: { label: 'Commission', icon: Percent, color: 'text-warning', chartColor: CHART_COLORS.orange, badgeVariant: 'bg-warning/10 text-warning border-warning/20' },
 };
 
 const sourceKeys = Object.keys(sourceConfig) as Exclude<IncomeSource, 'all'>[];
@@ -364,7 +364,7 @@ export default function AdminIncomeSources() {
               <div 
                 key={key} 
                 className={cn(
-                  "bg-card border-border cursor-pointer transition-all hover:border-primary/30 overflow-hidden",
+                  "bg-card border-border cursor-pointer transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized hover:border-primary/30 overflow-hidden",
                   sourceFilter === key && "border-primary ring-1 ring-primary/20"
                 )}
                 onClick={() => setSourceFilter(sourceFilter === key ? 'all' : key)}
@@ -378,7 +378,7 @@ export default function AdminIncomeSources() {
                       <span className="text-xs font-medium text-muted-foreground">{config.label}</span>
                     </div>
                     {change !== 0 && periodFilter !== 'all' && !isLoading && (
-                      <span className={cn("text-[10px] flex items-center gap-0.5 font-medium", change > 0 ? "text-emerald-500" : "text-red-500")}>
+                      <span className={cn("text-[10px] flex items-center gap-0.5 font-medium", change > 0 ? "text-success" : "text-destructive")}>
                         {change > 0 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
                         {Math.abs(change).toFixed(0)}%
                       </span>
@@ -559,9 +559,9 @@ export default function AdminIncomeSources() {
                                     className={cn(
                                       "text-[10px]",
                                       txn.status === 'active' || txn.status === 'paid' || txn.status === 'completed' || txn.status === 'fulfilled'
-                                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                        ? "bg-success/10 text-success border-success/20"
                                         : txn.status === 'cancelled' || txn.status === 'expired'
-                                        ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                        ? "bg-destructive/10 text-destructive border-destructive/20"
                                         : "bg-muted text-muted-foreground"
                                     )}
                                   >
@@ -617,9 +617,9 @@ export default function AdminIncomeSources() {
                                 className={cn(
                                   "text-[10px]",
                                   txn.status === 'active' || txn.status === 'paid' || txn.status === 'completed' || txn.status === 'fulfilled'
-                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                    ? "bg-success/10 text-success border-success/20"
                                     : txn.status === 'cancelled' || txn.status === 'expired'
-                                    ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                    ? "bg-destructive/10 text-destructive border-destructive/20"
                                     : "bg-muted text-muted-foreground"
                                 )}
                               >

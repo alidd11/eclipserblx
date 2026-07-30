@@ -34,10 +34,10 @@ interface Announcement {
 }
 
 const TYPES = [
-  { id: 'general', name: 'General', color: 'bg-blue-500/10 text-blue-500' },
-  { id: 'sale', name: 'Sale', color: 'bg-green-500/10 text-green-500' },
-  { id: 'new_product', name: 'New Product', color: 'bg-purple-500/10 text-purple-500' },
-  { id: 'update', name: 'Update', color: 'bg-amber-500/10 text-amber-500' },
+  { id: 'general', name: 'General', color: 'bg-primary/10 text-primary' },
+  { id: 'sale', name: 'Sale', color: 'bg-success/10 text-success' },
+  { id: 'new_product', name: 'New Product', color: 'bg-primary/10 text-primary' },
+  { id: 'update', name: 'Update', color: 'bg-warning/10 text-warning' },
 ];
 
 export default function SellerAnnouncements() {
@@ -177,9 +177,9 @@ export default function SellerAnnouncements() {
           </Button>
         </div>
 
-        <div className="border border-border rounded-xl overflow-hidden mb-6 bg-blue-500/5 border-blue-500/20">
+        <div className="border border-border rounded-xl overflow-hidden mb-6 bg-primary/5 border-primary/20">
           <div className="p-4 flex items-start gap-3 py-4">
-            <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
             <p className="text-sm text-muted-foreground">
               Announcements appear on your store page. Pinned announcements stay at the top. 
               Followers with notifications enabled will be alerted about new announcements.

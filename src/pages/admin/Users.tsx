@@ -57,7 +57,7 @@ export default function AdminUsers() {
             <button
               key={tab.value}
               onClick={() => { setActiveView(tab.value as any); setCurrentPage(1); }}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors touch-manipulation ${
+              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ease-emphasized touch-manipulation ${
                 activeView === tab.value ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -124,7 +124,7 @@ export default function AdminUsers() {
                             <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                               {isPrimaryAdmin && <Button variant="ghost" size="sm" onClick={() => setViewProfileUser(profile)} className="text-muted-foreground hover:text-primary" title="View Profile"><Eye className="h-4 w-4" /></Button>}
                               <Button variant="ghost" size="sm" onClick={() => setSelectedUser(profile)}><Shield className="h-4 w-4 mr-2" />Roles</Button>
-                              {isAdmin && <Button variant="ghost" size="sm" onClick={() => setIpBanDialogUser(profile)} className="text-orange-500 hover:text-orange-600 hover:bg-orange-500/10"><Ban className="h-4 w-4" /></Button>}
+                              {isAdmin && <Button variant="ghost" size="sm" onClick={() => setIpBanDialogUser(profile)} className="text-warning hover:text-warning hover:bg-warning/10"><Ban className="h-4 w-4" /></Button>}
                               {canDeleteUser(profile) && <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmUser(profile)} className="text-destructive hover:text-destructive hover:bg-destructive/10"><Trash2 className="h-4 w-4" /></Button>}
                             </div>
                           </TableCell>
@@ -176,7 +176,7 @@ export default function AdminUsers() {
                       <div className="flex items-center gap-2 pt-3 border-t border-border" onClick={(e) => e.stopPropagation()}>
                         {isPrimaryAdmin && <Button variant="outline" size="icon" aria-label="View" className="h-9 w-9" onClick={() => setViewProfileUser(profile)} title="View Profile"><Eye className="h-4 w-4" /></Button>}
                         <Button variant="outline" size="icon" aria-label="Security" className="h-9 w-9" onClick={() => setSelectedUser(profile)} title="Manage Roles"><Shield className="h-4 w-4" /></Button>
-                        {isAdmin && <Button variant="outline" size="icon" aria-label="Ban" className="h-9 w-9 text-orange-500 border-orange-500/50 hover:bg-orange-500/10" onClick={() => setIpBanDialogUser(profile)} title="IP Ban"><Ban className="h-4 w-4" /></Button>}
+                        {isAdmin && <Button variant="outline" size="icon" aria-label="Ban" className="h-9 w-9 text-warning border-warning/50 hover:bg-warning/10" onClick={() => setIpBanDialogUser(profile)} title="IP Ban"><Ban className="h-4 w-4" /></Button>}
                         {canDeleteUser(profile) && <Button variant="outline" size="icon" aria-label="Delete" className="h-9 w-9 text-destructive border-destructive/50 hover:bg-destructive/10" onClick={() => setDeleteConfirmUser(profile)} title="Delete Account"><Trash2 className="h-4 w-4" /></Button>}
                       </div>
                     </div>

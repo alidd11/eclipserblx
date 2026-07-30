@@ -171,12 +171,12 @@ export default function SellerTaxSummary() {
         </div>
 
         {/* Disclaimer */}
-        <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 bg-amber-500/5">
+        <div className="border border-border rounded-xl overflow-hidden border-warning/30 bg-warning/5">
           <div className="p-4 pt-4 pb-4">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-amber-500">Tax Responsibility Notice</p>
+                <p className="text-sm font-medium text-warning">Tax Responsibility Notice</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   As a seller on {SITE_NAME}, you are independently responsible for reporting your earnings 
                   to HMRC and paying any applicable income tax, National Insurance, or VAT. This summary is 

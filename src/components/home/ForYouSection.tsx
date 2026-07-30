@@ -64,7 +64,7 @@ export function ForYouSection() {
           <Link
             key={product.id}
             to={`/products/${product.product_number}`}
-            className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors"
+            className="group block rounded-lg border border-border bg-card overflow-hidden hover:border-primary/40 transition-colors ease-emphasized"
           >
             <div className="aspect-square bg-muted overflow-hidden">
               {(() => {

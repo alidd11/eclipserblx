@@ -41,9 +41,9 @@ interface PayoutRequest {
 }
 
 const statusConfig = {
-  pending: { label: "Pending", color: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20", icon: Clock },
-  completed: { label: "Completed", color: "bg-green-500/10 text-green-500 border-green-500/20", icon: CheckCircle },
-  rejected: { label: "Rejected", color: "bg-red-500/10 text-red-500 border-red-500/20", icon: XCircle },
+  pending: { label: "Pending", color: "bg-warning/10 text-warning border-warning/20", icon: Clock },
+  completed: { label: "Completed", color: "bg-success/10 text-success border-success/20", icon: CheckCircle },
+  rejected: { label: "Rejected", color: "bg-destructive/10 text-destructive border-destructive/20", icon: XCircle },
 };
 
 const safeFormatDate = (value: string | null | undefined, pattern: string) => {

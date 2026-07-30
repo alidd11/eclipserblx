@@ -192,7 +192,7 @@ export default function Disputes() {
                 <span className="font-semibold text-foreground">{stats.total}</span> total
               </span>
               <span className="text-muted-foreground">
-                <span className="font-semibold text-yellow-500">{stats.pending}</span> pending
+                <span className="font-semibold text-warning">{stats.pending}</span> pending
               </span>
               {stats.overdue > 0 && (
                 <span className="text-muted-foreground">
@@ -200,14 +200,14 @@ export default function Disputes() {
                 </span>
               )}
               <span className="text-muted-foreground">
-                <span className="font-semibold text-amber-500">{stats.escalated}</span> escalated
+                <span className="font-semibold text-warning">{stats.escalated}</span> escalated
               </span>
               <span className="text-muted-foreground">
-                <span className="font-semibold text-green-500">{stats.resolved}</span> resolved
+                <span className="font-semibold text-success">{stats.resolved}</span> resolved
               </span>
               {stats.frozen > 0 && (
                 <span className="text-muted-foreground">
-                  <span className="font-semibold text-sky-400">{stats.frozen}</span> frozen
+                  <span className="font-semibold text-primary">{stats.frozen}</span> frozen
                 </span>
               )}
             </div>
@@ -283,7 +283,7 @@ export default function Disputes() {
                           <TableRow 
                             key={d.id}
                             className={cn(
-                              "cursor-pointer hover:bg-muted/50 transition-colors",
+                              "cursor-pointer hover:bg-muted/50 transition-colors ease-emphasized",
                               isOverdue && "bg-destructive/[0.03]"
                             )}
                             onClick={() => {

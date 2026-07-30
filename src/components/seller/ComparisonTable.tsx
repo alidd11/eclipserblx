@@ -119,7 +119,7 @@ const getCellStyle = (value: string | boolean, isEclipse: boolean) => {
 const renderValue = (value: string | boolean) => {
   if (typeof value === "boolean") {
     return value ? (
-      <Check className="h-5 w-5 text-green-500 mx-auto" />
+      <Check className="h-5 w-5 text-success mx-auto" />
     ) : (
       <X className="h-5 w-5 text-destructive mx-auto" />
     );
@@ -130,7 +130,7 @@ const renderValue = (value: string | boolean) => {
 const renderValueInline = (value: string | boolean) => {
   if (typeof value === "boolean") {
     return value ? (
-      <Check className="h-4 w-4 text-green-500 inline" />
+      <Check className="h-4 w-4 text-success inline" />
     ) : (
       <X className="h-4 w-4 text-destructive inline" />
     );

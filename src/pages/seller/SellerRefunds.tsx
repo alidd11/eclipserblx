@@ -101,10 +101,10 @@ export default function SellerRefunds() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending': return <Badge variant="secondary"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
-      case 'approved': return <Badge className="bg-green-600"><Check className="h-3 w-3 mr-1" />Approved</Badge>;
+      case 'approved': return <Badge className="bg-success"><Check className="h-3 w-3 mr-1" />Approved</Badge>;
       case 'denied': return <Badge variant="destructive"><X className="h-3 w-3 mr-1" />Denied</Badge>;
-      case 'escalated': return <Badge className="bg-amber-600"><ShieldAlert className="h-3 w-3 mr-1" />Escalated</Badge>;
-      case 'resolved': return <Badge className="bg-blue-600"><Check className="h-3 w-3 mr-1" />Resolved</Badge>;
+      case 'escalated': return <Badge className="bg-warning"><ShieldAlert className="h-3 w-3 mr-1" />Escalated</Badge>;
+      case 'resolved': return <Badge className="bg-primary"><Check className="h-3 w-3 mr-1" />Resolved</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -128,7 +128,7 @@ export default function SellerRefunds() {
             <span className="font-semibold text-foreground">{refundRequests?.length || 0}</span> total
           </span>
           <span className="text-muted-foreground">
-            <span className="font-semibold text-yellow-500">{pendingCount}</span> pending
+            <span className="font-semibold text-warning">{pendingCount}</span> pending
           </span>
           {escalatedCount > 0 && (
             <span className="text-muted-foreground">
@@ -138,7 +138,7 @@ export default function SellerRefunds() {
         </div>
 
         {escalatedCount > 0 && (
-          <div className="flex items-start gap-2 text-sm text-amber-500 mb-4">
+          <div className="flex items-start gap-2 text-sm text-warning mb-4">
             <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
             <p>{escalatedCount} request(s) escalated to Eclipse for review.</p>
           </div>
@@ -171,7 +171,7 @@ export default function SellerRefunds() {
             {filtered.map((r) => (
               <button
                 key={r.id}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors text-left"
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors ease-emphasized text-left"
                 onClick={() => setSelectedRequest(r)}
               >
                 <div className="flex-1 min-w-0">
@@ -278,8 +278,8 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
       )}
 
       {request.escalation_reason && (
-        <div className="border-l-2 border-amber-500 pl-3">
-          <p className="text-sm font-medium text-amber-500">Escalation Reason</p>
+        <div className="border-l-2 border-warning pl-3">
+          <p className="text-sm font-medium text-warning">Escalation Reason</p>
           <p className="text-sm text-muted-foreground">{request.escalation_reason}</p>
         </div>
       )}
@@ -325,7 +325,7 @@ function SellerDisputeDetail({ request, response, setResponse, respondMutation, 
 
           <div className="flex gap-2">
             <Button 
-              className="flex-1 bg-green-600 hover:bg-green-700"
+              className="flex-1 bg-success hover:bg-success"
               onClick={() => respondMutation.mutate({ id: request.id, status: 'approved', customerId: request.customer_id })}
               disabled={respondMutation.isPending}
             >

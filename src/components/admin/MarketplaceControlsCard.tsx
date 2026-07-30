@@ -87,7 +87,7 @@ export function MarketplaceControlsCard() {
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-3">
  {isMarketplacePublic ? (
- <Globe className="h-5 w-5 text-green-500" />
+ <Globe className="h-5 w-5 text-success" />
  ) : (
  <EyeOff className="h-5 w-5 text-muted-foreground" />
  )}
@@ -95,7 +95,7 @@ export function MarketplaceControlsCard() {
  <div className="flex items-center gap-2">
  <Label>Marketplace Public Release</Label>
  {isMarketplacePublic ? (
- <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+ <Badge className="bg-success/20 text-success border-success/30 text-xs">
  Live
  </Badge>
  ) : (

@@ -29,7 +29,7 @@ export function SectionHeader({ icon, title, count, viewAllHref, viewAllLabel = 
       {viewAllHref && (
         <Link
           to={viewAllHref}
-          className="shrink-0 flex items-center gap-0.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors"
+          className="shrink-0 flex items-center gap-0.5 text-xs font-medium text-muted-foreground hover:text-primary transition-colors ease-emphasized"
         >
           {viewAllLabel}
           <ChevronRight className="h-3.5 w-3.5" />

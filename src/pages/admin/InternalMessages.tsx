@@ -194,7 +194,7 @@ export default function InternalMessages() {
                   key={ch.id}
                   onClick={() => switchChannel(ch.id)}
                   className={cn(
-                    'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors text-left',
+                    'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ease-emphasized text-left',
                     isActive
                       ? 'bg-primary/10 text-primary font-medium'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -219,7 +219,7 @@ export default function InternalMessages() {
         {/* ── Mobile channel selector ── */}
         <div className="md:hidden shrink-0 border-b border-border bg-card px-3 py-2">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium w-full px-3 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors">
+            <DropdownMenuTrigger className="flex items-center gap-2 text-sm font-medium w-full px-3 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors ease-emphasized">
               <active.icon className="h-4 w-4 shrink-0" />
               <span className="flex-1 text-left truncate">{active.label}</span>
               {(() => {

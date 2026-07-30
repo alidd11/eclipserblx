@@ -80,15 +80,15 @@ export function FileReviewConsentBanner() {
  <>
  <div className="space-y-3">
  {flaggedProducts.map((product) => (
- <div key={product.id} className="border-amber-500/50 bg-amber-500/5">
+ <div key={product.id} className="border-warning/50 bg-warning/5">
  <div className="p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 py-4">
  <div className="flex items-center gap-3 flex-1">
- <div className="p-2 rounded-lg bg-amber-500/10">
- <ShieldAlert className="h-5 w-5 text-amber-500" />
+ <div className="p-2 rounded-lg bg-warning/10">
+ <ShieldAlert className="h-5 w-5 text-warning" />
  </div>
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2 flex-wrap">
- <p className="font-semibold text-amber-600 dark:text-amber-400">
+ <p className="font-semibold text-warning dark:text-warning">
  File Review Required
  </p>
  <Badge variant="secondary" className="text-xs gap-1">
@@ -132,7 +132,7 @@ export function FileReviewConsentBanner() {
  <AlertDialogContent>
  <AlertDialogHeader>
  <AlertDialogTitle className="flex items-center gap-2">
- <ShieldAlert className="h-5 w-5 text-amber-500" />
+ <ShieldAlert className="h-5 w-5 text-warning" />
  Consent to File Review
  </AlertDialogTitle>
  <AlertDialogDescription className="space-y-3 text-left">

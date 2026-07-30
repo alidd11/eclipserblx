@@ -46,7 +46,7 @@ export function SortableMediaItem({ id, url, index, onRemove }: SortableMediaIte
       <div
         {...attributes}
         {...listeners}
-        className="absolute top-0 left-0 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity bg-foreground/40 rounded-br"
+        className="absolute top-0 left-0 p-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized bg-foreground/40 rounded-br"
       >
         <GripVertical className="h-3 w-3 text-foreground" />
       </div>
@@ -55,7 +55,7 @@ export function SortableMediaItem({ id, url, index, onRemove }: SortableMediaIte
       <button
         type="button"
         onClick={() => onRemove(index)}
-        className="absolute top-0 right-0 p-1 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-bl"
+        className="absolute top-0 right-0 p-1 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized rounded-bl"
       >
         <X className="h-3 w-3 text-foreground" />
       </button>

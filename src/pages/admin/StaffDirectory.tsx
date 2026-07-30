@@ -282,7 +282,7 @@ export default function StaffDirectory() {
  ) : (
  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
  {filteredStaff.map(member => (
- <div key={member.user_id} className="border border-border rounded-xl hover:border-primary/50 transition-colors">
+ <div key={member.user_id} className="border border-border rounded-xl hover:border-primary/50 transition-colors ease-emphasized">
  <div className="p-4">
  <Link to={`/admin/staff/${member.user_id}`}>
  <div className="flex items-start gap-3">
@@ -295,7 +295,7 @@ export default function StaffDirectory() {
   </Avatar>
   <span className={cn(
     'absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-card',
-    isOnline(member.last_seen) ? 'bg-green-500' : 'bg-muted-foreground/40'
+    isOnline(member.last_seen) ? 'bg-success' : 'bg-muted-foreground/40'
   )} />
   </div>
  <div className="flex-1 min-w-0">
@@ -334,7 +334,7 @@ export default function StaffDirectory() {
  })}
  </div>
  </div>
- <ChevronRight className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+ <ChevronRight className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors ease-emphasized" />
  </div>
  </Link>
  {/* Activity Button - Only show for non-admin staff */}

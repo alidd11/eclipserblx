@@ -331,7 +331,7 @@ export function SellerProductFormDialog({
                     <button
                       type="button"
                       onClick={() => removeImage(idx)}
-                      className="absolute -top-2 -right-2 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute -top-2 -right-2 h-5 w-5 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity ease-emphasized"
                     >
                       <X className="h-3 w-3" />
                     </button>
@@ -357,7 +357,7 @@ export function SellerProductFormDialog({
 
             {form.asset_file_url ? (
               <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
-                <FileCheck className="h-5 w-5 text-green-500" />
+                <FileCheck className="h-5 w-5 text-success" />
                 <span className="flex-1 text-sm truncate">{form.asset_file_url.split('/').pop()}</span>
                 <Badge variant="secondary" className="text-xs">Main</Badge>
                 <Button type="button" variant="ghost" size="icon" aria-label="Close" onClick={removeAssetFile} className="h-8 w-8">
@@ -372,7 +372,7 @@ export function SellerProductFormDialog({
 
             {form.additional_asset_files.map((file, index) => (
               <div key={index} className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/50">
-                <FileCheck className="h-5 w-5 text-green-500" />
+                <FileCheck className="h-5 w-5 text-success" />
                 <span className="flex-1 text-sm truncate">{file.split('/').pop()}</span>
                 <Badge variant="outline" className="text-xs">Extra</Badge>
                 <Button type="button" variant="ghost" size="icon" aria-label="Close" onClick={() => removeAdditionalFile(index)} className="h-8 w-8">
@@ -408,7 +408,7 @@ export function SellerProductFormDialog({
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-amber-500" />
+                  <Calendar className="h-4 w-4 text-warning" />
                   Schedule Release
                 </Label>
                 <p className="text-xs text-muted-foreground">Set a future date for this product to go live</p>
@@ -420,7 +420,7 @@ export function SellerProductFormDialog({
             </div>
             {form.schedule_enabled && (
               <div className="space-y-2 pt-2">
-                <Label htmlFor="release_at" className="flex items-center gap-2 text-amber-500">
+                <Label htmlFor="release_at" className="flex items-center gap-2 text-warning">
                   <Clock className="h-4 w-4" />
                   Release Date & Time
                 </Label>

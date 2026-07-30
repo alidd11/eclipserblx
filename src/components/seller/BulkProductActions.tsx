@@ -106,7 +106,7 @@ export function BulkProductActions({
 
   return (
     <>
-      <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+      <div className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ease-emphasized ${
         selectedIds.length > 0 ? 'bg-primary/5 border-primary/20' : 'bg-muted/50'
       }`}>
         <Checkbox

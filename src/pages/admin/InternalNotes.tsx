@@ -19,9 +19,9 @@ import { format } from '@/lib/dateUtils';
 const CATEGORIES = ['general', 'note', 'proof', 'evidence'];
 const CATEGORY_COLORS: Record<string, string> = {
   general: 'bg-muted text-muted-foreground',
-  note: 'bg-blue-500/10 text-blue-500',
-  proof: 'bg-green-500/10 text-green-500',
-  evidence: 'bg-orange-500/10 text-orange-500',
+  note: 'bg-primary/10 text-primary',
+  proof: 'bg-success/10 text-success',
+  evidence: 'bg-warning/10 text-warning',
 };
 
 const db = supabase as any;

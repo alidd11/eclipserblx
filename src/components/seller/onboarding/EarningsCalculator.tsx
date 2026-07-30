@@ -14,8 +14,8 @@ export function EarningsCalculator() {
   return (
     <div className="rounded-xl border border-border bg-card p-5 space-y-5">
       <div className="flex items-center gap-2">
-        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-          <TrendingUp className="h-4 w-4 text-emerald-500" />
+        <div className="h-8 w-8 rounded-lg bg-success/10 flex items-center justify-center">
+          <TrendingUp className="h-4 w-4 text-success" />
         </div>
         <div>
           <h4 className="text-sm font-semibold">Earnings Estimate</h4>
@@ -60,12 +60,12 @@ export function EarningsCalculator() {
         key={`${salesPerMonth}-${avgPrice}`}
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-lg bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 border border-emerald-500/20 p-4 text-center"
+        className="rounded-lg bg-gradient-to-br from-success/10 to-success/5 border border-success/20 p-4 text-center"
       >
         <p className="text-xs text-muted-foreground mb-1">Your estimated monthly earnings</p>
         <div className="flex items-center justify-center gap-1">
-          <PoundSterling className="h-5 w-5 text-emerald-500" />
-          <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+          <PoundSterling className="h-5 w-5 text-success" />
+          <span className="text-3xl font-bold text-success dark:text-success">
             {netEarnings.toFixed(2)}
           </span>
         </div>

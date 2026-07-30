@@ -184,7 +184,7 @@ export function ScheduledAnnouncementCard() {
  </div>
  <div className="p-4 space-y-4">
  {!hasBotConnected && !hasWebhook && (
- <div className="p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-sm text-yellow-600 dark:text-yellow-400">
+ <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg text-sm text-warning dark:text-warning">
  Add the Eclipse Portal Bot above or configure a Discord webhook in Settings → Notifications to enable announcements.
  </div>
  )}
@@ -199,7 +199,7 @@ export function ScheduledAnnouncementCard() {
  <button
  key={template.type}
  onClick={() => applyTemplate(template)}
- className="flex items-center gap-2 p-2.5 rounded-md border border-border/50 bg-card hover:bg-muted/60 transition-colors text-left"
+ className="flex items-center gap-2 p-2.5 rounded-md border border-border/50 bg-card hover:bg-muted/60 transition-colors ease-emphasized text-left"
  >
  <span className="text-base">{tConfig.emoji}</span>
  <div className="min-w-0">

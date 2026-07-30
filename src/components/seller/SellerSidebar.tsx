@@ -185,7 +185,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     const content = (
       <>
         <item.icon className={cn(
-          "h-4 w-4 shrink-0 transition-colors",
+          "h-4 w-4 shrink-0 transition-colors ease-emphasized",
           isActive ? "stroke-[2.25]" : "stroke-[1.75] text-muted-foreground group-hover:text-foreground"
         )} />
         {!isCollapsed && (
@@ -203,7 +203,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
     );
 
     const linkClass = cn(
-      "group rounded-md text-[13px] font-medium select-none transition-all duration-150 relative",
+      "group rounded-md text-[13px] font-medium select-none transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150 relative",
       "",
       isCollapsed
         ? "flex items-center justify-center p-2"
@@ -251,7 +251,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
               <button
                 className={cn(
                   "w-full flex items-center justify-center p-2.5 rounded-md select-none",
-                  "transition-all duration-150",
+                  "transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150",
                   "focus:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
@@ -273,7 +273,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                     to={item.href}
                     onClick={handleNavClick}
                     className={({ isActive }) => cn(
-                      "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
+                      "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors ease-emphasized",
                       isActive ? "bg-muted/60 text-foreground border-l-2 border-primary pl-[calc(0.75rem-2px)]" : "hover:bg-muted"
                     )}
                   >
@@ -298,7 +298,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
           <button
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold uppercase tracking-wider select-none",
-              "transition-all duration-150",
+              "transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150",
               "focus:outline-none",
               hasActiveItem
                 ? "text-foreground"
@@ -308,7 +308,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown
               className={cn(
-                "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
+                "h-3.5 w-3.5 shrink-0 transition-transform ease-emphasized duration-200",
                 isOpen ? "rotate-0" : "-rotate-90"
               )} 
             />
@@ -323,7 +323,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
 
   return (
     <aside className={cn(
-      "flex flex-col transition-all duration-300 shrink-0 overflow-x-hidden",
+      "flex flex-col transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 shrink-0 overflow-x-hidden",
       "bg-card text-foreground",
       isMobileDrawer 
         ? "h-full w-full border-0" 
@@ -457,7 +457,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
                 <Link
                   to={storeUrl}
                   onClick={handleNavClick}
-                  className="flex items-center justify-center p-2.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-all"
+                  className="flex items-center justify-center p-2.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </Link>
@@ -468,7 +468,7 @@ export function SellerSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer 
             <Link
               to={storeUrl}
               onClick={handleNavClick}
-              className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[13px] font-medium text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-all"
+              className="flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[13px] font-medium text-foreground/80 hover:text-foreground hover:bg-muted/60 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized"
             >
               <ExternalLink className="h-4 w-4" />
               <span>View Store</span>

@@ -150,7 +150,7 @@ export function DiscountCodesTab() {
                   <div className="flex items-center gap-2">
                     <code className="bg-muted px-2 py-1 rounded text-sm font-mono">{d.code}</code>
                     <Button variant="ghost" size="icon" aria-label="Confirm" className="h-6 w-6" onClick={() => copyCode(d.code)}>
-                      {copiedCode === d.code ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                      {copiedCode === d.code ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
                     </Button>
                   </div>
                 </TableCell>
@@ -179,7 +179,7 @@ export function DiscountCodesTab() {
               <div className="flex items-center gap-2">
                 <code className="bg-muted px-2 py-1 rounded text-sm font-mono font-medium">{d.code}</code>
                 <Button variant="ghost" size="icon" aria-label="Confirm" className="h-7 w-7" onClick={() => copyCode(d.code)}>
-                  {copiedCode === d.code ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedCode === d.code ? <Check className="h-3.5 w-3.5 text-success" /> : <Copy className="h-3.5 w-3.5" />}
                 </Button>
               </div>
               {getStatusBadge(d)}

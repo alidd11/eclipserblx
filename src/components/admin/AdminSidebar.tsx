@@ -299,12 +299,12 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
     const NotificationDot = () => {
       if (hasMention) {
         return (
-          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-card animate-pulse" />
+          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-card animate-pulse" />
         );
       }
       if (hasUnread) {
         return (
-          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-yellow-500 ring-2 ring-card" />
+          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-warning ring-2 ring-card" />
         );
       }
       return null;
@@ -314,7 +314,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
       <>
         <div className="relative shrink-0">
           <item.icon className={cn(
-            "h-4 w-4 transition-colors",
+            "h-4 w-4 transition-colors ease-emphasized",
             isActive ? "stroke-[2.25] text-primary" : "stroke-[1.75] text-muted-foreground group-hover:text-foreground"
           )} />
           <NotificationDot />
@@ -327,7 +327,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
     const linkClassName = cn(
       "group rounded-md text-[13px] font-medium select-none",
-      "transition-all duration-150",
+      "transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150",
       isCollapsed
         ? "flex items-center justify-center p-2.5"
         : "flex flex-row flex-nowrap items-center gap-2.5 px-2.5 py-[7px]",
@@ -397,7 +397,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
               <button
                 className={cn(
                   "w-full flex items-center justify-center p-2.5 rounded-md select-none",
-                  "transition-all duration-150",
+                  "transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150",
                   "focus:outline-none",
                   hasActiveItem
                     ? "bg-primary/10 text-primary"
@@ -420,7 +420,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
                     end={item.href === '/admin'}
                     onClick={handleNavClick}
                     className={({ isActive }) => cn(
-                      "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors",
+                      "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors ease-emphasized",
                       isActive ? "border-l-2 border-primary bg-muted/60 text-foreground" : "hover:bg-muted"
                     )}
                   >
@@ -446,7 +446,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <button
             className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-[7px] rounded-md text-[11px] font-semibold uppercase tracking-wide select-none",
-              "transition-all duration-150",
+              "transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150",
               "focus:outline-none",
               hasActiveItem
                 ? "text-foreground"
@@ -456,7 +456,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
             <span className="flex-1 text-left truncate">{group.title}</span>
             <ChevronDown 
               className={cn(
-                "h-3 w-3 shrink-0 transition-transform duration-200",
+                "h-3 w-3 shrink-0 transition-transform ease-emphasized duration-200",
                 isOpen ? "rotate-0" : "-rotate-90"
               )} 
             />
@@ -471,7 +471,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
 
   return (
     <aside className={cn(
-      "flex flex-col transition-all duration-300 shrink-0",
+      "flex flex-col transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300 shrink-0",
       "bg-card text-foreground",
       isMobileDrawer 
         ? "h-full w-full border-0" 
@@ -541,7 +541,7 @@ export function AdminSidebar({ collapsed, onToggle, onNavigate, isMobileDrawer =
           <Button
             variant="ghost"
             size="sm"
-            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted/60 rounded-md px-2.5 py-[7px] mt-2 transition-all duration-150"
+            className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-muted/60 rounded-md px-2.5 py-[7px] mt-2 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-150"
             onClick={() => {
               hapticTap();
               setShowSignOutDialog(true);

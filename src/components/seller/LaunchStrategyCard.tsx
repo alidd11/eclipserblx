@@ -81,11 +81,11 @@ export function LaunchStrategyCard({
   };
 
   return (
-    <div className="border border-border rounded-xl overflow-hidden border-amber-500/30">
+    <div className="border border-border rounded-xl overflow-hidden border-warning/30">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/20">
-            <Crown className="h-5 w-5 text-amber-500" />
+          <div className="p-2 rounded-lg bg-warning/20">
+            <Crown className="h-5 w-5 text-warning" />
           </div>
           <div>
             <h3 className="font-semibold text-sm">Launch Strategy</h3>
@@ -108,7 +108,7 @@ export function LaunchStrategyCard({
         </div>
 
         {enabled && (
-          <div className="space-y-4 pt-3 border-t border-amber-500/20">
+          <div className="space-y-4 pt-3 border-t border-warning/20">
             {/* Strategy Picker */}
             <div className="grid grid-cols-2 gap-2">
               {strategies.map((s) => {
@@ -119,14 +119,14 @@ export function LaunchStrategyCard({
                     key={s.value}
                     type="button"
                     onClick={() => onStrategyChange(s.value)}
-                    className={`flex flex-col items-start gap-1.5 p-3 rounded-lg border text-left transition-all ${
+                    className={`flex flex-col items-start gap-1.5 p-3 rounded-lg border text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized ${
                       isActive
-                        ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500/30'
+                        ? 'border-warning bg-warning/10 ring-1 ring-warning/30'
                         : 'border-border bg-muted/30 hover:border-muted-foreground/30'
                     }`}
                   >
                     <div className="flex items-center gap-2">
-                      <Icon className={`h-4 w-4 ${isActive ? 'text-amber-500' : 'text-muted-foreground'}`} />
+                      <Icon className={`h-4 w-4 ${isActive ? 'text-warning' : 'text-muted-foreground'}`} />
                       <span className={`text-xs font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {s.label}
                       </span>
@@ -140,9 +140,9 @@ export function LaunchStrategyCard({
             {/* Strategy-specific config */}
             {strategy === 'timed' && (
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
                   <div className="flex items-start gap-2">
-                    <Info className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                    <Info className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                     <p className="text-xs text-muted-foreground">
                       The default early access window is <strong>{defaultHours || 24} hours</strong>.
                       Customise below if needed.
@@ -172,9 +172,9 @@ export function LaunchStrategyCard({
             )}
 
             {strategy === 'followers' && (
-              <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+              <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
                 <div className="flex items-start gap-2">
-                  <Heart className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                  <Heart className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                   <p className="text-xs text-muted-foreground">
                     Only customers who follow your store will see and be able to purchase this product during the early access window. Others will see a countdown.
                   </p>
@@ -184,9 +184,9 @@ export function LaunchStrategyCard({
 
             {strategy === 'repeat_buyers' && (
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
                   <div className="flex items-start gap-2">
-                    <Users className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                    <Users className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                     <p className="text-xs text-muted-foreground">
                       Reward loyal customers by giving them early access based on their purchase history with your store.
                     </p>
@@ -216,9 +216,9 @@ export function LaunchStrategyCard({
 
             {strategy === 'private_link' && (
               <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
                   <div className="flex items-start gap-2">
-                    <Link2 className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                    <Link2 className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                     <p className="text-xs text-muted-foreground">
                       Share a private link with specific customers, influencers, or communities. Only people with this link can access the product early.
                     </p>
@@ -239,7 +239,7 @@ export function LaunchStrategyCard({
                         className="text-xs font-mono bg-muted/50"
                       />
                       <Button type="button" variant="outline" size="icon" onClick={handleCopy} className="shrink-0">
-                        {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+                        {copied ? <Check className="h-4 w-4 text-success" /> : <Copy className="h-4 w-4" />}
                       </Button>
                     </div>
                     <Button

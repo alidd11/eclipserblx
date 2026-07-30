@@ -15,32 +15,32 @@ const SOURCE_CONFIG: Record<string, { icon: React.ReactNode; label: string; colo
   ClearlyDev: {
     icon: <Globe className="h-3 w-3" />,
     label: 'ClearlyDev',
-    color: 'text-blue-400',
+    color: 'text-primary',
   },
   BuiltByBit: {
     icon: <Globe className="h-3 w-3" />,
     label: 'BuiltByBit',
-    color: 'text-orange-400',
+    color: 'text-warning',
   },
   Discord: {
     icon: <MessageCircle className="h-3 w-3" />,
     label: 'Discord',
-    color: 'text-indigo-400',
+    color: 'text-primary',
   },
   'Twitter/X': {
     icon: <Globe className="h-3 w-3" />,
     label: 'Twitter/X',
-    color: 'text-sky-400',
+    color: 'text-primary',
   },
   Trustpilot: {
     icon: <Star className="h-3 w-3" />,
     label: 'Trustpilot',
-    color: 'text-emerald-400',
+    color: 'text-success',
   },
   'Google Reviews': {
     icon: <Star className="h-3 w-3" />,
     label: 'Google Reviews',
-    color: 'text-yellow-400',
+    color: 'text-warning',
   },
 };
 
@@ -163,7 +163,7 @@ export function ReviewsShowcase() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                 >
-                  <div className="relative rounded-lg border border-border bg-card p-6 hover:border-border transition-colors duration-300">
+                  <div className="relative rounded-lg border border-border bg-card p-6 hover:border-border transition-colors ease-emphasized duration-300">
                     <Quote className="absolute top-4 right-4 h-6 w-6 text-muted-foreground/15" />
                     
                     <div className="flex items-center gap-0.5 mb-3">
@@ -172,7 +172,7 @@ export function ReviewsShowcase() {
                           key={i}
                           className={`h-4 w-4 ${
                             i < review.rating
-                              ? 'text-amber-500 fill-amber-500'
+                              ? 'text-warning fill-warning'
                               : 'text-muted-foreground/30'
                           }`}
                         />
@@ -195,7 +195,7 @@ export function ReviewsShowcase() {
                             : review.profiles?.display_name || 'Anonymous'}
                         </p>
                         {review.is_verified_purchase && (
-                          <span className="inline-flex items-center gap-1 text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-xs bg-success/10 text-success dark:text-success border border-success/30 px-1.5 py-0.5 rounded-full">
                             <BadgeCheck className="h-3 w-3" />
                             Verified
                           </span>

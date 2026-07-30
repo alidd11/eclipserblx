@@ -86,7 +86,7 @@ export default function PayoutsFinanceGuide() {
             </div>
             <div className="border border-border rounded-xl overflow-hidden border-primary/50 bg-primary/5">
               <div className="p-4 pt-6 text-center">
-                <Badge className="mb-3 bg-gradient-to-r from-amber-500 to-yellow-500">Pro+ Seller</Badge>
+                <Badge className="mb-3 bg-gradient-to-r from-warning to-warning">Pro+ Seller</Badge>
                 <p className="text-4xl font-bold text-primary">90%</p>
                 <p className="text-sm text-muted-foreground mt-2">of net earnings (10% commission)</p>
               </div>
@@ -106,7 +106,7 @@ export default function PayoutsFinanceGuide() {
                 {earningsBreakdown.map((item, i) => (
                   <div key={i} className={`flex justify-between items-center py-3 ${
                     item.type === "highlight" ? "bg-primary/10 rounded-lg px-3 -mx-3" :
-                    item.type === "earning" ? "bg-green-500/10 rounded-lg px-3 -mx-3" : ""
+                    item.type === "earning" ? "bg-success/10 rounded-lg px-3 -mx-3" : ""
                   }`}>
                     <span className={`text-sm ${item.type === "highlight" || item.type === "earning" ? "font-semibold" : "text-muted-foreground"}`}>
                       {item.label}
@@ -114,7 +114,7 @@ export default function PayoutsFinanceGuide() {
                     <span className={`font-mono font-semibold ${
                       item.type === "fee" ? "text-destructive" :
                       item.type === "highlight" ? "text-primary" :
-                      item.type === "earning" ? "text-green-500" : ""
+                      item.type === "earning" ? "text-success" : ""
                     }`}>
                       {item.value}
                     </span>
@@ -155,7 +155,7 @@ export default function PayoutsFinanceGuide() {
                       <ul className="space-y-1">
                         {method.pros.map((pro, j) => (
                           <li key={j} className="flex items-center gap-2 text-sm">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-success shrink-0" />
                             {pro}
                           </li>
                         ))}

@@ -118,8 +118,8 @@ export default function AdminReferrals() {
 
  const getStatusBadge = (status: string) => {
  const configs: Record<string, { color: string; icon: React.ElementType }> = {
- pending: { color: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30', icon: Clock },
- completed: { color: 'bg-green-500/10 text-green-500 border-green-500/30', icon: CheckCircle },
+ pending: { color: 'bg-warning/10 text-warning border-warning/30', icon: Clock },
+ completed: { color: 'bg-success/10 text-success border-success/30', icon: CheckCircle },
  };
  const config = configs[status] || configs.pending;
  const Icon = config.icon;
@@ -160,8 +160,8 @@ export default function AdminReferrals() {
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
  <div className="p-4 p-3 md:pt-6 md:p-6">
  <div className="flex items-center gap-2 md:gap-3">
- <div className="p-1.5 md:p-2 rounded-lg bg-green-500/10">
- <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500" />
+ <div className="p-1.5 md:p-2 rounded-lg bg-success/10">
+ <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-success" />
  </div>
  <div>
  <p className="text-lg md:text-2xl font-bold">{stats?.completed || 0}</p>
@@ -174,8 +174,8 @@ export default function AdminReferrals() {
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
  <div className="p-4 p-3 md:pt-6 md:p-6">
  <div className="flex items-center gap-2 md:gap-3">
- <div className="p-1.5 md:p-2 rounded-lg bg-yellow-500/10">
- <Clock className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
+ <div className="p-1.5 md:p-2 rounded-lg bg-warning/10">
+ <Clock className="h-4 w-4 md:h-5 md:w-5 text-warning" />
  </div>
  <div>
  <p className="text-lg md:text-2xl font-bold">{stats?.pending || 0}</p>
@@ -188,8 +188,8 @@ export default function AdminReferrals() {
  <div className="border border-border rounded-xl overflow-hidden bg-card border-border min-w-[160px] flex-shrink-0 md:min-w-0">
  <div className="p-4 p-3 md:pt-6 md:p-6">
  <div className="flex items-center gap-2 md:gap-3">
- <div className="p-1.5 md:p-2 rounded-lg bg-blue-500/10">
- <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-blue-500" />
+ <div className="p-1.5 md:p-2 rounded-lg bg-primary/10">
+ <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-primary" />
  </div>
  <div>
  <p className="text-lg md:text-2xl font-bold">{stats?.conversionRate || 0}%</p>

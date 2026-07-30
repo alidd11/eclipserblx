@@ -49,8 +49,8 @@ function MetricCard({
  className={cn(
  'flex items-center gap-0.5 text-xs font-medium px-1.5 py-0.5 rounded-full',
  trend.value >= 0
- ? 'text-emerald-600 bg-emerald-500/10'
- : 'text-red-500 bg-red-500/10'
+ ? 'text-success bg-success/10'
+ : 'text-destructive bg-destructive/10'
  )}
  >
  {trend.value >= 0 ? (
@@ -304,7 +304,7 @@ export function FinancialOverview() {
  value={`${formatGBP((metrics.stripeAvailable))}`}
  subtitle="Ready to withdraw"
  icon={Wallet}
- accentClass="text-emerald-500"
+ accentClass="text-success"
  isLoading={isLoading}
  />
  <MetricCard
@@ -321,7 +321,7 @@ export function FinancialOverview() {
  value={`${formatGBP(metrics.mrr)}`}
  subtitle={`${metrics.activeSubs} Pro sellers`}
  icon={PiggyBank}
- accentClass="text-amber-500"
+ accentClass="text-warning"
  isLoading={isLoading}
  />
  <MetricCard
@@ -329,7 +329,7 @@ export function FinancialOverview() {
  value={`${formatGBP(metrics.thisMonthCommission)}`}
  subtitle={`${formatGBP(metrics.totalCommission)} all time`}
  icon={Percent}
- accentClass="text-blue-500"
+ accentClass="text-primary"
  isLoading={isLoading}
  />
  <MetricCard
@@ -337,7 +337,7 @@ export function FinancialOverview() {
  value={`${formatGBP(metrics.avgOrderValue)}`}
  subtitle={`${metrics.orderCount} orders total`}
  icon={Target}
- accentClass="text-cyan-500"
+ accentClass="text-primary"
  isLoading={isLoading}
  />
  <MetricCard
@@ -345,7 +345,7 @@ export function FinancialOverview() {
  value={`${metrics.profitMargin.toFixed(1)}%`}
  subtitle={`${formatGBP(metrics.stripeFees30d)} fees, ${formatGBP(metrics.stripeRefunds30d)} refunds`}
  icon={DollarSign}
- accentClass={metrics.profitMargin >= 70 ? 'text-emerald-500' : metrics.profitMargin >= 50 ? 'text-amber-500' : 'text-red-500'}
+ accentClass={metrics.profitMargin >= 70 ? 'text-success' : metrics.profitMargin >= 50 ? 'text-warning' : 'text-destructive'}
  isLoading={isLoading}
  />
  </div>
@@ -364,8 +364,8 @@ export function FinancialOverview() {
  className={cn(
  'flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full',
  metrics.revenueTrend >= 0
- ? 'text-emerald-600 bg-emerald-500/10'
- : 'text-red-500 bg-red-500/10'
+ ? 'text-success bg-success/10'
+ : 'text-destructive bg-destructive/10'
  )}
  >
  {metrics.revenueTrend >= 0 ? (

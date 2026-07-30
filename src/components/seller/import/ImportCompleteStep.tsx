@@ -31,17 +31,17 @@ export function ImportCompleteStep({ results, onReset, onRetryFailed }: ImportCo
  animate={{ scale: 1, opacity: 1 }}
  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
  >
- <div className={cn("border border-border rounded-xl overflow-hidden", successCount > 0 ? 'border-green-500/30' : 'border-destructive/30')}>
+ <div className={cn("border border-border rounded-xl overflow-hidden", successCount > 0 ? 'border-success/30' : 'border-destructive/30')}>
  <div className="p-4 pt-6">
  <div className="flex items-center gap-4">
  {successCount > 0 ? (
  <motion.div
- className="p-3 rounded-full bg-green-500/10"
+ className="p-3 rounded-full bg-success/10"
  initial={{ scale: 0 }}
  animate={{ scale: 1 }}
  transition={{ delay: 0.2, type: 'spring', stiffness: 400 }}
  >
- <CheckCircle className="h-8 w-8 text-green-500" />
+ <CheckCircle className="h-8 w-8 text-success" />
  </motion.div>
  ) : cancelledCount > 0 ? (
  <div className="p-3 rounded-full bg-muted">
@@ -81,7 +81,7 @@ export function ImportCompleteStep({ results, onReset, onRetryFailed }: ImportCo
  </div>
  <div className="ml-auto flex items-center gap-2">
  {successCount > 0 && (
- <Badge variant="secondary" className="text-[10px] gap-1 bg-green-500/10 text-green-600 border-green-500/20">
+ <Badge variant="secondary" className="text-[10px] gap-1 bg-success/10 text-success border-success/20">
  <CheckCircle className="h-2.5 w-2.5" /> {successCount}
  </Badge>
  )}
@@ -118,7 +118,7 @@ export function ImportCompleteStep({ results, onReset, onRetryFailed }: ImportCo
  transition={{ delay: i * 0.05 }}
  className="flex items-center gap-3 py-2"
  >
- {result.status === 'success' && <CheckCircle className="h-4 w-4 text-green-500 shrink-0" />}
+ {result.status === 'success' && <CheckCircle className="h-4 w-4 text-success shrink-0" />}
  {result.status === 'failed' && <XCircle className="h-4 w-4 text-destructive shrink-0" />}
  {result.status === 'cancelled' && <Square className="h-4 w-4 text-muted-foreground shrink-0" />}
  {result.status === 'pending' && <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />}

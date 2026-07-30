@@ -27,7 +27,7 @@ export function StepDiscord({ formValues, setFormValues, onBlur, discordValidati
             onChange={(e) => setFormValues({ discordServerInvite: e.target.value })}
             onBlur={onBlur}
             className={cn(
-              verificationResults.discord_server?.valid && 'border-green-500',
+              verificationResults.discord_server?.valid && 'border-success',
               verificationResults.discord_server?.error && 'border-destructive'
             )}
           />
@@ -35,16 +35,16 @@ export function StepDiscord({ formValues, setFormValues, onBlur, discordValidati
             <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
           )}
           {!discordValidating && verificationResults.discord_server?.valid && (
-            <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+            <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-success" />
           )}
         </div>
         <p className="text-xs text-muted-foreground">Must be a permanent invite (no expiration).</p>
       </div>
 
       {verificationResults.discord_server?.valid && verificationResults.discord_server?.guild_name && (
-        <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg space-y-1">
+        <div className="p-4 bg-success/10 border border-success/30 rounded-lg space-y-1">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-success" />
             <span className="font-medium text-sm">{verificationResults.discord_server.guild_name}</span>
           </div>
           {verificationResults.discord_server.member_count && (

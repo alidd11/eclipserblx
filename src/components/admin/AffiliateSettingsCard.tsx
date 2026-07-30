@@ -106,7 +106,7 @@ export function AffiliateSettingsCard() {
  <div className="p-4 space-y-6">
  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
  <div className="flex items-center gap-3">
- <Power className={`h-5 w-5 ${isEnabled ? 'text-green-500' : 'text-muted-foreground'}`} />
+ <Power className={`h-5 w-5 ${isEnabled ? 'text-success' : 'text-muted-foreground'}`} />
  <div>
  <Label htmlFor="program_enabled" className="text-base font-medium">
  Program Status

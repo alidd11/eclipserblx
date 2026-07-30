@@ -276,23 +276,23 @@ export default function AdminReviews() {
  <div className="flex items-center gap-2 min-w-0">
  <span className="font-medium text-sm truncate">{getReviewerName(review)}</span>
  {review.is_external && (
- <Badge variant="outline" className="text-blue-400 border-blue-500/30 text-xs flex-shrink-0">
+ <Badge variant="outline" className="text-primary border-primary/30 text-xs flex-shrink-0">
  <Globe className="h-3 w-3 mr-1" />
  {review.external_source}
  </Badge>
  )}
  </div>
  {review.is_featured ? (
- <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 flex-shrink-0">Featured</Badge>
+ <Badge className="bg-warning/20 text-warning border-warning/30 flex-shrink-0">Featured</Badge>
  ) : review.is_approved ? (
- <Badge variant="outline" className="text-emerald-400 border-emerald-500/30 flex-shrink-0">Approved</Badge>
+ <Badge variant="outline" className="text-success border-success/30 flex-shrink-0">Approved</Badge>
  ) : (
- <Badge variant="outline" className="text-yellow-400 border-yellow-500/30 flex-shrink-0">Pending</Badge>
+ <Badge variant="outline" className="text-warning border-warning/30 flex-shrink-0">Pending</Badge>
  )}
  </div>
  <div className="flex items-center gap-1">
  {[...Array(5)].map((_, i) => (
- <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
+ <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-warning fill-warning' : 'text-muted-foreground'}`} />
  ))}
  {review.products?.name && (
  <span className="text-xs text-muted-foreground ml-2">{review.products.name}</span>
@@ -305,12 +305,12 @@ export default function AdminReviews() {
  <div className="flex items-center gap-1">
  {!review.is_approved && (
  <Button size="sm" variant="ghost" onClick={() => handleApprove(review.id, true)} className="h-9 w-9 p-0 touch-manipulation">
- <Check className="h-4 w-4 text-emerald-400" />
+ <Check className="h-4 w-4 text-success" />
  </Button>
  )}
  {review.is_approved && !review.is_featured && (
  <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, true)} className="h-9 w-9 p-0 touch-manipulation">
- <Sparkles className="h-4 w-4 text-amber-400" />
+ <Sparkles className="h-4 w-4 text-warning" />
  </Button>
  )}
  {review.is_featured && (
@@ -333,7 +333,7 @@ export default function AdminReviews() {
  <div className="flex items-center gap-2">
  <span className="font-medium">{getReviewerName(review)}</span>
  {review.is_external && (
- <Badge variant="outline" className="text-blue-400 border-blue-500/30 text-xs">
+ <Badge variant="outline" className="text-primary border-primary/30 text-xs">
  <Globe className="h-3 w-3 mr-1" />
  {review.external_source}
  </Badge>
@@ -344,7 +344,7 @@ export default function AdminReviews() {
  <TableCell>
  <div className="flex items-center gap-1">
  {[...Array(5)].map((_, i) => (
- <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`} />
+ <Star key={i} className={`h-3 w-3 ${i < review.rating ? 'text-warning fill-warning' : 'text-muted-foreground'}`} />
  ))}
  </div>
  </TableCell>
@@ -354,11 +354,11 @@ export default function AdminReviews() {
  </TableCell>
  <TableCell>
  {review.is_featured ? (
- <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">Featured</Badge>
+ <Badge className="bg-warning/20 text-warning border-warning/30">Featured</Badge>
  ) : review.is_approved ? (
- <Badge variant="outline" className="text-emerald-400 border-emerald-500/30">Approved</Badge>
+ <Badge variant="outline" className="text-success border-success/30">Approved</Badge>
  ) : (
- <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">Pending</Badge>
+ <Badge variant="outline" className="text-warning border-warning/30">Pending</Badge>
  )}
  </TableCell>
  <TableCell className="text-sm text-muted-foreground">{format(new Date(review.created_at), 'MMM d, yyyy')}</TableCell>
@@ -366,12 +366,12 @@ export default function AdminReviews() {
  <div className="flex items-center justify-end gap-1">
  {!review.is_approved && (
  <Button size="sm" variant="ghost" onClick={() => handleApprove(review.id, true)} title="Approve">
- <Check className="h-4 w-4 text-emerald-400" />
+ <Check className="h-4 w-4 text-success" />
  </Button>
  )}
  {review.is_approved && !review.is_featured && (
  <Button size="sm" variant="ghost" onClick={() => handleFeature(review.id, true)} title="Feature on homepage">
- <Sparkles className="h-4 w-4 text-amber-400" />
+ <Sparkles className="h-4 w-4 text-warning" />
  </Button>
  )}
  {review.is_featured && (
@@ -549,10 +549,10 @@ export default function AdminReviews() {
  className="p-1 touch-manipulation"
  >
  <Star 
- className={`h-6 w-6 transition-colors ${
+ className={`h-6 w-6 transition-colors ease-emphasized ${
  star <= externalForm.rating 
- ? 'text-amber-400 fill-amber-400' 
- : 'text-muted-foreground hover:text-amber-400/50'
+ ? 'text-warning fill-warning' 
+ : 'text-muted-foreground hover:text-warning/50'
  }`} 
  />
  </button>

@@ -335,9 +335,9 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
               {affiliateStatus ? (
                 <div className={`p-4 rounded-lg border ${
                   affiliateStatus.status === 'approved' 
-                    ? 'bg-gradient-to-r from-emerald-500/10 to-green-500/10 border-emerald-500/20'
+                    ? 'bg-gradient-to-r from-success/10 to-success/10 border-success/20'
                     : affiliateStatus.status === 'pending'
-                    ? 'bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border-yellow-500/20'
+                    ? 'bg-gradient-to-r from-warning/10 to-warning/10 border-warning/20'
                     : 'bg-muted/50 border-border'
                 }`}>
                   <div className="flex items-center justify-between">
@@ -347,8 +347,8 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                           affiliateStatus.status === 'approved' ? 'default' :
                           affiliateStatus.status === 'pending' ? 'secondary' : 'outline'
                         } className={
-                          affiliateStatus.status === 'approved' ? 'bg-emerald-500' :
-                          affiliateStatus.status === 'pending' ? 'bg-yellow-500' : ''
+                          affiliateStatus.status === 'approved' ? 'bg-success' :
+                          affiliateStatus.status === 'pending' ? 'bg-warning' : ''
                         }>
                           {affiliateStatus.status.charAt(0).toUpperCase() + affiliateStatus.status.slice(1)}
                         </Badge>
@@ -361,8 +361,8 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                       </p>
                     </div>
                     <Users className={`h-6 w-6 ${
-                      affiliateStatus.status === 'approved' ? 'text-emerald-500' :
-                      affiliateStatus.status === 'pending' ? 'text-yellow-500' : 'text-muted-foreground'
+                      affiliateStatus.status === 'approved' ? 'text-success' :
+                      affiliateStatus.status === 'pending' ? 'text-warning' : 'text-muted-foreground'
                     }`} />
                   </div>
                 </div>
@@ -384,7 +384,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
               {sellerStore ? (
                 <div className={`p-4 rounded-lg border ${
                   sellerStore.is_active 
-                    ? 'bg-gradient-to-r from-purple-500/10 to-indigo-500/10 border-purple-500/20'
+                    ? 'bg-gradient-to-r from-primary/10 to-primary/10 border-primary/20'
                     : 'bg-muted/50 border-border'
                 }`}>
                   <div className="flex items-center justify-between">
@@ -395,7 +395,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                           <Badge variant="secondary" className="text-xs">Verified</Badge>
                         )}
                         {!sellerStore.is_active && (
-                          <Badge variant="outline" className="text-red-500 border-red-500/30 text-xs">Inactive</Badge>
+                          <Badge variant="outline" className="text-destructive border-destructive/30 text-xs">Inactive</Badge>
                         )}
                       </div>
                       <p className="text-xs font-mono text-muted-foreground mt-1">{sellerStore.store_id}</p>
@@ -403,7 +403,7 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                         Since {format(new Date(sellerStore.created_at!), 'MMM d, yyyy')}
                       </p>
                     </div>
-                    <Store className={`h-6 w-6 ${sellerStore.is_active ? 'text-purple-500' : 'text-muted-foreground'}`} />
+                    <Store className={`h-6 w-6 ${sellerStore.is_active ? 'text-primary' : 'text-muted-foreground'}`} />
                   </div>
                 </div>
               ) : (
@@ -427,17 +427,17 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                   <p className="text-xs text-muted-foreground">Orders</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 text-center">
-                  <p className="text-2xl font-bold text-emerald-500">${totalSpent.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-success">${totalSpent.toFixed(2)}</p>
                   <p className="text-xs text-muted-foreground">Total Spent</p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 text-center">
-                  <p className="text-2xl font-bold text-rose-500">{wishlistLoading ? '-' : wishlistCount}</p>
+                  <p className="text-2xl font-bold text-destructive">{wishlistLoading ? '-' : wishlistCount}</p>
                   <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                     <Heart className="h-3 w-3" /> Wishlist
                   </p>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 text-center">
-                  <p className="text-2xl font-bold text-blue-500">{chatLoading ? '-' : chatCount}</p>
+                  <p className="text-2xl font-bold text-primary">{chatLoading ? '-' : chatCount}</p>
                   <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
                     <MessageSquare className="h-3 w-3" /> Support Chats
                   </p>
@@ -518,9 +518,9 @@ export function CustomerProfileDialog({ open, onOpenChange, profile }: CustomerP
                             variant="outline"
                             className={
                               order.status === 'paid' || order.status === 'completed'
-                                ? 'text-emerald-500 border-emerald-500/30'
+                                ? 'text-success border-success/30'
                                 : order.status === 'refunded'
-                                ? 'text-red-500 border-red-500/30'
+                                ? 'text-destructive border-destructive/30'
                                 : 'text-muted-foreground'
                             }
                           >

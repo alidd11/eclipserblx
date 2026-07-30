@@ -107,7 +107,7 @@ export function DashboardKPIs() {
       {kpis.map((kpi) => (
         <div
           key={kpi.label}
-          className="border border-border rounded-xl p-3 sm:p-4 flex flex-col gap-1.5 bg-card/40 hover:bg-card/70 transition-colors"
+          className="border border-border rounded-xl p-3 sm:p-4 flex flex-col gap-1.5 bg-card/40 hover:bg-card/70 transition-colors ease-emphasized"
         >
           <div className="flex items-center gap-2 min-w-0">
             <kpi.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

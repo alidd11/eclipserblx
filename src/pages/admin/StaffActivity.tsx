@@ -35,12 +35,12 @@ const ACTIVITY_ICONS: Record<string, any> = {
  ticket_completed: Ticket };
 
 const ACTIVITY_COLORS: Record<string, string> = {
- login: 'bg-green-500/20 text-green-400 border-green-500/30',
+ login: 'bg-success/20 text-success border-success/30',
  logout: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
- chat_claimed: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
- chat_completed: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
- ticket_claimed: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
- ticket_completed: 'bg-teal-500/20 text-teal-400 border-teal-500/30' };
+ chat_claimed: 'bg-primary/20 text-primary border-primary/30',
+ chat_completed: 'bg-primary/20 text-primary border-primary/30',
+ ticket_claimed: 'bg-warning/20 text-warning border-warning/30',
+ ticket_completed: 'bg-success/20 text-success border-success/30' };
 
 const ACTIVITY_LABELS: Record<string, string> = {
  login: 'Logged In',

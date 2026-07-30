@@ -86,10 +86,10 @@ export default function SellerTickets() {
 
   const getStatusBadge = (status: string) => {
     const configs: Record<string, { label: string; className: string }> = {
-      open: { label: 'Open', className: 'bg-blue-500/10 text-blue-500 border-blue-500/30' },
-      in_progress: { label: 'In Progress', className: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/30' },
-      awaiting_seller: { label: 'Awaiting Seller', className: 'bg-orange-500/10 text-orange-500 border-orange-500/30' },
-      resolved: { label: 'Resolved', className: 'bg-green-500/10 text-green-500 border-green-500/30' },
+      open: { label: 'Open', className: 'bg-primary/10 text-primary border-primary/30' },
+      in_progress: { label: 'In Progress', className: 'bg-warning/10 text-warning border-warning/30' },
+      awaiting_seller: { label: 'Awaiting Seller', className: 'bg-warning/10 text-warning border-warning/30' },
+      resolved: { label: 'Resolved', className: 'bg-success/10 text-success border-success/30' },
       closed: { label: 'Closed', className: '' } };
     const c = configs[status];
     if (!c) return null;
@@ -98,7 +98,7 @@ export default function SellerTickets() {
 
   const getPriorityBadge = (priority: string) => {
     if (priority === 'urgent') return <Badge variant="destructive">Urgent</Badge>;
-    if (priority === 'high') return <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/30">High</Badge>;
+    if (priority === 'high') return <Badge variant="outline" className="bg-warning/10 text-warning border-warning/30">High</Badge>;
     return null;
   };
 
@@ -131,8 +131,8 @@ export default function SellerTickets() {
         <div className="flex items-center gap-4 text-sm flex-wrap">
           {escalatedCount > 0 && <span className="text-destructive font-semibold">{escalatedCount} escalated</span>}
           <span className="text-muted-foreground"><span className="font-semibold text-foreground">{openCount}</span> open</span>
-          <span className="text-muted-foreground"><span className="font-semibold text-yellow-500">{inProgressCount}</span> in progress</span>
-          <span className="text-muted-foreground"><span className="font-semibold text-orange-500">{awaitingCount}</span> awaiting seller</span>
+          <span className="text-muted-foreground"><span className="font-semibold text-warning">{inProgressCount}</span> in progress</span>
+          <span className="text-muted-foreground"><span className="font-semibold text-warning">{awaitingCount}</span> awaiting seller</span>
           <span className="text-muted-foreground"><span className="font-semibold text-muted-foreground">{tickets?.length || 0}</span> total</span>
         </div>
 
@@ -163,12 +163,12 @@ export default function SellerTickets() {
               const slaHours = ticket.last_staff_response_at
                 ? (Date.now() - new Date(ticket.last_staff_response_at).getTime()) / (1000 * 60 * 60)
                 : (Date.now() - new Date(ticket.created_at).getTime()) / (1000 * 60 * 60);
-              const slaColor = slaHours < 4 ? 'text-green-500' : slaHours < 12 ? 'text-yellow-500' : slaHours < 24 ? 'text-orange-500' : 'text-destructive';
+              const slaColor = slaHours < 4 ? 'text-success' : slaHours < 12 ? 'text-warning' : slaHours < 24 ? 'text-warning' : 'text-destructive';
 
               return (
                 <div
                   key={ticket.id}
-                  className={cn('py-3 flex items-start gap-3 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors', ticket.escalated_at && 'bg-destructive/5')}
+                  className={cn('py-3 flex items-start gap-3 cursor-pointer hover:bg-muted/30 -mx-1 px-1 rounded-md transition-colors ease-emphasized', ticket.escalated_at && 'bg-destructive/5')}
                   onClick={() => setSelectedTicket(ticket)}
                 >
                   <Avatar className="h-8 w-8 shrink-0 mt-0.5">

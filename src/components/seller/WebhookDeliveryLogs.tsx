@@ -44,7 +44,7 @@ export function WebhookDeliveryLogs({ webhookId }: WebhookDeliveryLogsProps) {
     <div className="border-t border-border">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-2 text-xs text-muted-foreground hover:bg-muted/20 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2 text-xs text-muted-foreground hover:bg-muted/20 transition-colors ease-emphasized"
       >
         <span>Delivery History</span>
         {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}

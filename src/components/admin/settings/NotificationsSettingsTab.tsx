@@ -135,11 +135,11 @@ export function NotificationsSettingsTab() {
  const getPermissionBadge = () => {
  switch (permission) {
  case 'granted':
- return <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Enabled</Badge>;
+ return <Badge className="bg-success/20 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Enabled</Badge>;
  case 'denied':
- return <Badge className="bg-red-500/20 text-red-400 border-red-500/30"><XCircle className="h-3 w-3 mr-1" /> Denied</Badge>;
+ return <Badge className="bg-destructive/20 text-destructive border-destructive/30"><XCircle className="h-3 w-3 mr-1" /> Denied</Badge>;
  default:
- return <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30"><AlertCircle className="h-3 w-3 mr-1" /> Not Set</Badge>;
+ return <Badge className="bg-warning/20 text-warning border-warning/30"><AlertCircle className="h-3 w-3 mr-1" /> Not Set</Badge>;
  }
  };
 
@@ -163,9 +163,9 @@ export function NotificationsSettingsTab() {
  </p>
  </div>
  {notifSupported ? (
- <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Supported</Badge>
+ <Badge className="bg-success/20 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Supported</Badge>
  ) : (
- <Badge className="bg-red-500/20 text-red-400 border-red-500/30"><XCircle className="h-3 w-3 mr-1" /> Not Supported</Badge>
+ <Badge className="bg-destructive/20 text-destructive border-destructive/30"><XCircle className="h-3 w-3 mr-1" /> Not Supported</Badge>
  )}
  </div>
 
@@ -234,9 +234,9 @@ export function NotificationsSettingsTab() {
  </p>
  </div>
  {pushSupported ? (
- <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Supported</Badge>
+ <Badge className="bg-success/20 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Supported</Badge>
  ) : (
- <Badge className="bg-red-500/20 text-red-400 border-red-500/30"><XCircle className="h-3 w-3 mr-1" /> Not Supported</Badge>
+ <Badge className="bg-destructive/20 text-destructive border-destructive/30"><XCircle className="h-3 w-3 mr-1" /> Not Supported</Badge>
  )}
  </div>
 
@@ -250,7 +250,7 @@ export function NotificationsSettingsTab() {
  {pushLoading ? (
  <Loader2 className="h-4 w-4 animate-spin" />
  ) : isPushSubscribed ? (
- <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Active</Badge>
+ <Badge className="bg-success/20 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Active</Badge>
  ) : (
  <Badge className="bg-muted text-muted-foreground"><AlertCircle className="h-3 w-3 mr-1" /> Inactive</Badge>
  )}
@@ -273,8 +273,8 @@ export function NotificationsSettingsTab() {
  )}
 
  {isiOSDevice && !isPWAMode && pushSupported && (
- <div className="text-sm bg-yellow-500/10 border border-yellow-500/30 p-3 rounded-lg space-y-2">
- <p className="font-medium text-yellow-400">iOS Setup Required</p>
+ <div className="text-sm bg-warning/10 border border-warning/30 p-3 rounded-lg space-y-2">
+ <p className="font-medium text-warning">iOS Setup Required</p>
  <p className="text-muted-foreground">To receive push notifications on iOS, install this app first:</p>
  <ol className="list-decimal list-inside text-muted-foreground space-y-1">
  <li>Tap the <strong>Share</strong> button in Safari</li>
@@ -314,7 +314,7 @@ export function NotificationsSettingsTab() {
 
  {generatedVapidKeys && (
  <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
- <p className="text-sm font-medium text-green-400">✓ Keys Generated Successfully!</p>
+ <p className="text-sm font-medium text-success">✓ Keys Generated Successfully!</p>
  <p className="text-xs text-muted-foreground">Update these secrets in your backend settings:</p>
  {[
  { label: 'VAPID_PUBLIC_KEY & VITE_VAPID_PUBLIC_KEY:', value: generatedVapidKeys.publicKey },
@@ -330,7 +330,7 @@ export function NotificationsSettingsTab() {
  </div>
  </div>
  ))}
- <div className="text-xs text-yellow-400 bg-yellow-500/10 p-2 rounded">
+ <div className="text-xs text-warning bg-warning/10 p-2 rounded">
  <strong>Important:</strong> After updating secrets, all users must re-subscribe to push notifications.
  </div>
  </div>

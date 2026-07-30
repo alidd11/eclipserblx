@@ -55,7 +55,7 @@ export default function SellerFinanceHub() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="text-muted-foreground cursor-default">
-                  Ready to withdraw: <span className="font-semibold text-green-500">{balanceLoading ? '...' : fmt(balance?.available_balance || 0)}</span>
+                  Ready to withdraw: <span className="font-semibold text-success">{balanceLoading ? '...' : fmt(balance?.available_balance || 0)}</span>
                 </span>
               </TooltipTrigger>
               <TooltipContent><p className="text-xs">Net earnings available for payout right now.</p></TooltipContent>
@@ -63,7 +63,7 @@ export default function SellerFinanceHub() {
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="text-muted-foreground cursor-default">
-                  Clearing: <span className="font-semibold text-yellow-500">{balanceLoading ? '...' : fmt(balance?.pending_balance || 0)}</span>
+                  Clearing: <span className="font-semibold text-warning">{balanceLoading ? '...' : fmt(balance?.pending_balance || 0)}</span>
                 </span>
               </TooltipTrigger>
               <TooltipContent><p className="text-xs">Recent sales still being processed (7–14 days).</p></TooltipContent>

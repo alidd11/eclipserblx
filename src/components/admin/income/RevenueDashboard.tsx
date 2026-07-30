@@ -47,7 +47,7 @@ function Section({ title, icon: Icon, children, defaultOpen = false }: {
  <Icon className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-semibold text-foreground">{title}</span>
  <ChevronDown className={cn(
- 'h-3.5 w-3.5 text-muted-foreground transition-transform ml-auto',
+ 'h-3.5 w-3.5 text-muted-foreground transition-transform ease-emphasized ml-auto',
  !open && '-rotate-90'
  )} />
  </button>
@@ -72,7 +72,7 @@ function KPICard({ label, value, subtitle, trend, isLoading }: {
  {trend && (
  <span className={cn(
  'inline-flex items-center gap-0.5 text-[11px] font-medium',
- trend.value >= 0 ? 'text-emerald-500' : 'text-red-500'
+ trend.value >= 0 ? 'text-success' : 'text-destructive'
  )}>
  {trend.value >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
  {Math.abs(trend.value).toFixed(0)}%
@@ -285,7 +285,7 @@ export function RevenueDashboard() {
  key={p.key}
  onClick={() => setPeriod(p.key as any)}
  className={cn(
- 'px-3 py-1 rounded-full text-xs font-medium transition-colors',
+ 'px-3 py-1 rounded-full text-xs font-medium transition-colors ease-emphasized',
  period === p.key
  ? 'bg-primary text-primary-foreground'
  : 'bg-muted text-muted-foreground hover:text-foreground'
@@ -336,7 +336,7 @@ export function RevenueDashboard() {
  <div className="flex items-center gap-2 mb-4">
  <Wallet className="h-4 w-4 text-muted-foreground" />
  <span className="text-sm font-semibold">Stripe Balance</span>
- <Badge variant="default" className="bg-emerald-600 ml-auto text-[10px]">Live</Badge>
+ <Badge variant="default" className="bg-success ml-auto text-[10px]">Live</Badge>
  </div>
  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
  <KPICard label="Available" value={`${formatGBP(metrics.stripeAvailable)}`} subtitle="Ready to pay out" isLoading={stripeLoading} />
@@ -370,7 +370,7 @@ export function RevenueDashboard() {
  {!isLoading && (
  <span className={cn(
  'text-xs font-medium flex items-center gap-0.5',
- metrics.grossTrend >= 0 ? 'text-emerald-500' : 'text-red-500'
+ metrics.grossTrend >= 0 ? 'text-success' : 'text-destructive'
  )}>
  {metrics.grossTrend >= 0 ? <ArrowUpRight className="h-3 w-3" /> : <ArrowDownRight className="h-3 w-3" />}
  {Math.abs(metrics.grossTrend).toFixed(0)}% vs previous {selectedPeriod.days}d
@@ -436,7 +436,7 @@ export function RevenueDashboard() {
  </div>
  <div className="flex justify-between gap-3 border-t pt-1">
  <span className="font-medium">Net</span>
- <span className="text-emerald-500 font-medium">{formatGBP((Number(d.net) || 0))}</span>
+ <span className="text-success font-medium">{formatGBP((Number(d.net) || 0))}</span>
  </div>
  </div>
  </div>

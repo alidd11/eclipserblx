@@ -93,11 +93,11 @@ const staticDocuments: StaticDocument[] = [
 
 const DEFAULT_CATEGORIES = [
   { value: "general", label: "General", color: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
-  { value: "legal", label: "Legal", color: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  { value: "policy", label: "Policy", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  { value: "guide", label: "Guide", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  { value: "announcement", label: "Announcement", color: "bg-green-500/20 text-green-400 border-green-500/30" },
-  { value: "training", label: "Training", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
+  { value: "legal", label: "Legal", color: "bg-warning/20 text-warning border-warning/30" },
+  { value: "policy", label: "Policy", color: "bg-primary/20 text-primary border-primary/30" },
+  { value: "guide", label: "Guide", color: "bg-primary/20 text-primary border-primary/30" },
+  { value: "announcement", label: "Announcement", color: "bg-success/20 text-success border-success/30" },
+  { value: "training", label: "Training", color: "bg-warning/20 text-warning border-warning/30" },
 ];
 
 const getCategoryColor = (category: string) => {
@@ -262,14 +262,14 @@ export default function SellerDocuments() {
 
         {/* Action Required Banner */}
         {!agreementLoading && !hasSigned && (
-          <div className="border border-border rounded-xl overflow-hidden border-amber-500/50 bg-amber-500/5">
+          <div className="border border-border rounded-xl overflow-hidden border-warning/50 bg-warning/5">
             <div className="p-4 pt-6">
               <div className="flex items-start gap-4">
-                <div className="p-2 rounded-lg bg-amber-500/10">
-                  <Scale className="h-5 w-5 text-amber-500" />
+                <div className="p-2 rounded-lg bg-warning/10">
+                  <Scale className="h-5 w-5 text-warning" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-amber-500">Action Required</h3>
+                  <h3 className="font-semibold text-warning">Action Required</h3>
                   <p className="text-sm text-muted-foreground mt-1">
                     Please review and sign the Seller Terms of Service agreement to ensure your store
                     remains in good standing on the Eclipse marketplace.
@@ -293,7 +293,7 @@ export default function SellerDocuments() {
               const needsSignature = doc.requiresSignature && !isSigned;
 
               return (
-                <div key={doc.id} className="group hover:border-primary/50 transition-colors">
+                <div key={doc.id} className="group hover:border-primary/50 transition-colors ease-emphasized">
                   <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                     <div className="flex items-start justify-between gap-4">
                       <div className="p-2 rounded-lg bg-primary/10 shrink-0">
@@ -302,12 +302,12 @@ export default function SellerDocuments() {
                       <div className="flex items-center gap-2">
                         {doc.requiresSignature && (
                           isSigned ? (
-                            <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+                            <Badge variant="outline" className="bg-success/10 text-success border-success/20 gap-1">
                               <CheckCircle2 className="h-3 w-3" />
                               Signed
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1">
+                            <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 gap-1">
                               <Clock className="h-3 w-3" />
                               Pending
                             </Badge>
@@ -368,7 +368,7 @@ export default function SellerDocuments() {
                 return (
                   <div 
                     key={doc.id} 
-                    className={`group hover:border-primary/50 transition-colors ${isUnread ? "border-primary/30 bg-primary/5" : ""}`}
+                    className={`group hover:border-primary/50 transition-colors ease-emphasized ${isUnread ? "border-primary/30 bg-primary/5" : ""}`}
                     onClick={() => isUnread && markReadMutation.mutate(doc.id)}
                   >
                     <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">

@@ -170,7 +170,7 @@ export default function ChangelogManager() {
                     </TableCell>
                     <TableCell>
                       {entry.published_at ? (
-                        <Badge className="bg-green-500/10 text-green-500 border-green-500/20">Published</Badge>
+                        <Badge className="bg-success/10 text-success border-success/20">Published</Badge>
                       ) : (
                         <Badge variant="outline">Draft</Badge>
                       )}

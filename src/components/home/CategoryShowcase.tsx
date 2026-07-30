@@ -8,28 +8,28 @@ const categories = [
     slug: 'vehicle-liveries',
     description: 'Professional police, ambulance, and emergency vehicle wraps',
     icon: Car,
-    gradient: 'from-blue-500 to-cyan-400',
+    gradient: 'from-primary to-primary',
   },
   {
     name: 'Scripts & Systems',
     slug: 'scripts-systems',
     description: 'Powerful MDT, CAD, and roleplay management systems',
     icon: Code,
-    gradient: 'from-purple-500 to-pink-400',
+    gradient: 'from-primary to-primary',
   },
   {
     name: '3D Models',
     slug: '3d-models',
     description: 'High-quality props, buildings, and environment assets',
     icon: Box,
-    gradient: 'from-orange-500 to-yellow-400',
+    gradient: 'from-warning to-warning',
   },
   {
     name: 'UI Kits',
     slug: 'ui-kits',
     description: 'Sleek interfaces for HUDs, menus, and dashboards',
     icon: Layout,
-    gradient: 'from-green-500 to-emerald-400',
+    gradient: 'from-success to-success',
   },
 ];
 
@@ -53,7 +53,7 @@ export function CategoryShowcase() {
               to={`/products?category=${category.slug}`}
               className="group"
             >
-              <div className="border border-border rounded-xl p-6 h-full flex flex-col hover:border-primary/30 transition-all">
+              <div className="border border-border rounded-xl p-6 h-full flex flex-col hover:border-primary/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized">
                 <div className={cn(
                   "w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-gradient-to-br",
                   category.gradient
@@ -61,7 +61,7 @@ export function CategoryShowcase() {
                   <category.icon className="h-6 w-6 text-foreground" />
                 </div>
                 
-                <h3 className="font-display text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                <h3 className="font-display text-lg font-semibold mb-2 group-hover:text-primary transition-colors ease-emphasized">
                   {category.name}
                 </h3>
                 
@@ -71,7 +71,7 @@ export function CategoryShowcase() {
                 
                 <div className="mt-4 flex items-center text-sm text-primary font-medium">
                   Browse Category
-                  <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-1 h-4 w-4 transition-transform ease-emphasized group-hover:translate-x-1" />
                 </div>
               </div>
             </Link>

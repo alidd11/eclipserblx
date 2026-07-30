@@ -68,9 +68,9 @@ export function SecuritySettingsTab() {
  {biometricSupported === null ? (
  <Loader2 className="h-4 w-4 animate-spin" />
  ) : biometricSupported ? (
- <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Available</Badge>
+ <Badge className="bg-success/20 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Available</Badge>
  ) : (
- <Badge className="bg-red-500/20 text-red-400 border-red-500/30"><XCircle className="h-3 w-3 mr-1" /> Not Available</Badge>
+ <Badge className="bg-destructive/20 text-destructive border-destructive/30"><XCircle className="h-3 w-3 mr-1" /> Not Available</Badge>
  )}
  </div>
 
@@ -82,7 +82,7 @@ export function SecuritySettingsTab() {
  </p>
  </div>
  {isEnrolled ? (
- <Badge className="bg-green-500/20 text-green-400 border-green-500/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Enrolled</Badge>
+ <Badge className="bg-success/20 text-success border-success/30"><CheckCircle2 className="h-3 w-3 mr-1" /> Enrolled</Badge>
  ) : (
  <Badge className="bg-muted text-muted-foreground"><AlertCircle className="h-3 w-3 mr-1" /> Not Enrolled</Badge>
  )}

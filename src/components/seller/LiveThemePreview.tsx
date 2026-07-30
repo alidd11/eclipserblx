@@ -124,7 +124,7 @@ export function LiveThemePreview({
  Product {i}
  </p>
  <div className="flex items-center gap-1">
- <Star className="h-2.5 w-2.5 fill-yellow-500 text-yellow-500" />
+ <Star className="h-2.5 w-2.5 fill-warning text-warning" />
  <span className="text-[9px] text-muted-foreground" style={{ fontFamily: bodyFont }}>4.8</span>
  </div>
  <p className="text-[10px] font-bold" style={{ color: accentColor }}>

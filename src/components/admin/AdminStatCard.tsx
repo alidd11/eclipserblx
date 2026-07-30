@@ -13,10 +13,10 @@ interface AdminStatCardProps {
 
 const colorClasses: Record<string, string> = {
  default: 'text-foreground',
- green: 'text-green-500',
- blue: 'text-blue-500',
- yellow: 'text-yellow-500',
- orange: 'text-orange-500',
+ green: 'text-success',
+ blue: 'text-primary',
+ yellow: 'text-warning',
+ orange: 'text-warning',
  destructive: 'text-destructive',
  primary: 'text-primary',
 };

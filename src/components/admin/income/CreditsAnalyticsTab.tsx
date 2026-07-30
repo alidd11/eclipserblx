@@ -146,11 +146,11 @@ export function CreditsAnalyticsTab() {
 
  const getTypeColor = (type: string) => {
  switch (type) {
- case 'purchase': return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
- case 'spend': return 'bg-red-500/10 text-red-500 border-red-500/20';
- case 'gift': return 'bg-purple-500/10 text-purple-500 border-purple-500/20';
- case 'subscription_bonus': return 'bg-green-500/10 text-green-500 border-green-500/20';
- case 'refund': return 'bg-orange-500/10 text-orange-500 border-orange-500/20';
+ case 'purchase': return 'bg-primary/10 text-primary border-primary/20';
+ case 'spend': return 'bg-destructive/10 text-destructive border-destructive/20';
+ case 'gift': return 'bg-primary/10 text-primary border-primary/20';
+ case 'subscription_bonus': return 'bg-success/10 text-success border-success/20';
+ case 'refund': return 'bg-warning/10 text-warning border-warning/20';
  default: return 'bg-muted text-muted-foreground';
  }
  };
@@ -175,7 +175,7 @@ export function CreditsAnalyticsTab() {
  {/* Header */}
  <div className="flex items-center justify-between">
  <div className="flex items-center gap-2">
- <Badge variant="default" className="bg-emerald-600">Credits System</Badge>
+ <Badge variant="default" className="bg-success">Credits System</Badge>
  <span className="text-sm text-muted-foreground">Store credit analytics and transactions</span>
  </div>
  <Button 
@@ -192,16 +192,16 @@ export function CreditsAnalyticsTab() {
 
  {/* Summary Cards */}
  <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
- <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
+ <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-success/10 to-success/5 border-success/20">
  <div className="p-4 pt-6">
  <div className="flex items-center gap-2 mb-2">
- <Coins className="h-4 w-4 text-emerald-500" />
+ <Coins className="h-4 w-4 text-success" />
  <span className="text-sm font-medium text-muted-foreground">Total Active Balance</span>
  </div>
  {isLoading ? (
  <Skeleton className="h-9 w-24" />
  ) : (
- <p className="text-3xl font-bold text-emerald-500">
+ <p className="text-3xl font-bold text-success">
  {formatGBP((balancesSummary?.totalActiveBalance ?? 0))}
  </p>
  )}
@@ -209,16 +209,16 @@ export function CreditsAnalyticsTab() {
  </div>
  </div>
 
- <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-blue-500/10 to-blue-600/5 border-blue-500/20">
+ <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
  <div className="p-4 pt-6">
  <div className="flex items-center gap-2 mb-2">
- <TrendingUp className="h-4 w-4 text-blue-500" />
+ <TrendingUp className="h-4 w-4 text-primary" />
  <span className="text-sm font-medium text-muted-foreground">Total Purchased</span>
  </div>
  {isLoading ? (
  <Skeleton className="h-9 w-24" />
  ) : (
- <p className="text-3xl font-bold text-blue-500">
+ <p className="text-3xl font-bold text-primary">
  {formatGBP((balancesSummary?.totalPurchased ?? 0))}
  </p>
  )}
@@ -226,32 +226,32 @@ export function CreditsAnalyticsTab() {
  </div>
  </div>
 
- <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-purple-500/10 to-purple-600/5 border-purple-500/20">
+ <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
  <div className="p-4 pt-6">
  <div className="flex items-center gap-2 mb-2">
- <Gift className="h-4 w-4 text-purple-500" />
+ <Gift className="h-4 w-4 text-primary" />
  <span className="text-sm font-medium text-muted-foreground">Total Gifted</span>
  </div>
  {isLoading ? (
  <Skeleton className="h-9 w-24" />
  ) : (
- <p className="text-3xl font-bold text-purple-500">
+ <p className="text-3xl font-bold text-primary">
  {formatGBP((balancesSummary?.totalGifted ?? 0))}
  </p>
  )}
  </div>
  </div>
 
- <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
+ <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-destructive/10 to-destructive/5 border-destructive/20">
  <div className="p-4 pt-6">
  <div className="flex items-center gap-2 mb-2">
- <ShoppingCart className="h-4 w-4 text-red-500" />
+ <ShoppingCart className="h-4 w-4 text-destructive" />
  <span className="text-sm font-medium text-muted-foreground">Total Spent</span>
  </div>
  {isLoading ? (
  <Skeleton className="h-9 w-24" />
  ) : (
- <p className="text-3xl font-bold text-red-500">
+ <p className="text-3xl font-bold text-destructive">
  {formatGBP((balancesSummary?.totalSpent ?? 0))}
  </p>
  )}
@@ -259,16 +259,16 @@ export function CreditsAnalyticsTab() {
  </div>
  </div>
 
- <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-amber-500/10 to-amber-600/5 border-amber-500/20">
+ <div className="border border-border rounded-xl overflow-hidden bg-gradient-to-br from-warning/10 to-warning/5 border-warning/20">
  <div className="p-4 pt-6">
  <div className="flex items-center gap-2 mb-2">
- <Users className="h-4 w-4 text-amber-500" />
+ <Users className="h-4 w-4 text-warning" />
  <span className="text-sm font-medium text-muted-foreground">Users with Balance</span>
  </div>
  {isLoading ? (
  <Skeleton className="h-9 w-16" />
  ) : (
- <p className="text-3xl font-bold text-amber-500">
+ <p className="text-3xl font-bold text-warning">
  {balancesSummary?.usersWithBalance ?? 0}
  </p>
  )}
@@ -300,21 +300,21 @@ export function CreditsAnalyticsTab() {
  <>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Purchased</span>
- <span className="font-medium text-blue-500">
+ <span className="font-medium text-primary">
  {"+" + formatGBP((data?.purchaseAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.purchaseCount ?? 0})</span>
  </span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Gifted/Bonus</span>
- <span className="font-medium text-purple-500">
+ <span className="font-medium text-primary">
  {"+" + formatGBP((data?.giftAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.giftCount ?? 0})</span>
  </span>
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Spent</span>
- <span className="font-medium text-red-500">
+ <span className="font-medium text-destructive">
  {"-" + formatGBP((data?.spendAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.spendCount ?? 0})</span>
  </span>
@@ -322,7 +322,7 @@ export function CreditsAnalyticsTab() {
  {(data?.refundCount ?? 0) > 0 && (
  <div className="flex justify-between">
  <span className="text-muted-foreground">Refunds</span>
- <span className="font-medium text-orange-500">
+ <span className="font-medium text-warning">
  {"+" + formatGBP((data?.refundAmount ?? 0))}
  <span className="text-xs text-muted-foreground ml-1">({data?.refundCount})</span>
  </span>
@@ -411,7 +411,7 @@ export function CreditsAnalyticsTab() {
  {getTypeLabel(tx.type)}
  </Badge>
  </TableCell>
- <TableCell className={tx.type === 'spend' ? 'text-red-500' : 'text-green-500'}>
+ <TableCell className={tx.type === 'spend' ? 'text-destructive' : 'text-success'}>
  {tx.type === 'spend' ? '-' : '+'}{formatGBP(Math.abs(Number(tx.amount)))}
  </TableCell>
  <TableCell className="text-muted-foreground max-w-[200px] truncate">

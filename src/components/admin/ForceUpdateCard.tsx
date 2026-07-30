@@ -149,7 +149,7 @@ export function ForceUpdateCard() {
  <div className="flex items-center gap-2">
  <span className="text-sm">Force Update:</span>
  {appVersion?.force_update ? (
- <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+ <Badge className="bg-warning/20 text-warning border-warning/30">
  <AlertTriangle className="h-3 w-3 mr-1" />
  Active
  </Badge>
@@ -221,7 +221,7 @@ export function ForceUpdateCard() {
  </div>
 
  {/* Info */}
- <div className="p-3 rounded-md bg-blue-500/10 border border-blue-500/20 text-sm text-blue-600 dark:text-blue-400">
+ <div className="p-3 rounded-md bg-primary/10 border border-primary/20 text-sm text-primary dark:text-primary">
  <p className="font-medium mb-1">How it works:</p>
  <ul className="list-disc list-inside space-y-1 text-xs">
  <li>PWAs check for updates every 30 seconds via realtime subscription</li>

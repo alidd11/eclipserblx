@@ -71,8 +71,8 @@ export function StepConfirm({ formValues, setFormValues, verificationResults, se
        verificationResults.identity_consistency.similarity_score >= 80 &&
        verificationResults.discord_server?.valid &&
        verificationResults.email_verified && (
-        <Alert className="bg-green-500/10 border-green-500/30">
-          <Sparkles className="h-4 w-4 text-green-500" />
+        <Alert className="bg-success/10 border-success/30">
+          <Sparkles className="h-4 w-4 text-success" />
           <AlertDescription className="text-sm">
             <strong>Instant approval eligible!</strong> Your identity match qualifies you for automatic approval.
           </AlertDescription>
@@ -84,21 +84,21 @@ export function StepConfirm({ formValues, setFormValues, verificationResults, se
         {checks.map((check) => (
           <div key={check.label} className="flex items-center gap-2 text-sm">
             {check.passed ? (
-              <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+              <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
             ) : check.passed === false ? (
               <XCircle className="h-4 w-4 text-destructive shrink-0" />
             ) : (
               <div className="h-4 w-4 rounded-full border-2 border-muted shrink-0" />
             )}
             <check.icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-            <span className={check.passed ? 'text-green-600 dark:text-green-400' : ''}>{check.label}</span>
+            <span className={check.passed ? 'text-success dark:text-success' : ''}>{check.label}</span>
           </div>
         ))}
       </div>
 
       {verificationResults.roblox_group && !verificationResults.roblox_group.in_group && (
-        <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm text-muted-foreground flex items-start gap-2">
-          <Users className="h-4 w-4 text-blue-500 shrink-0 mt-0.5" />
+        <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg text-sm text-muted-foreground flex items-start gap-2">
+          <Users className="h-4 w-4 text-primary shrink-0 mt-0.5" />
           <span><strong className="text-foreground">Tip:</strong> Joining our Roblox group can boost your store's visibility and credibility, but it's not required.</span>
         </div>
       )}

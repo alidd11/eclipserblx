@@ -178,7 +178,7 @@ export default function SellerProductsAll() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-500/20 text-green-400">Approved</Badge>;
+        return <Badge className="bg-success/20 text-success">Approved</Badge>;
       case "rejected":
         return <Badge variant="destructive">Rejected</Badge>;
       case "pending":
@@ -285,7 +285,7 @@ export default function SellerProductsAll() {
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {/* File status indicator */}
                           {product.asset_file_url ? (
-                            <FileCheck className="h-3 w-3 text-green-500 shrink-0" />
+                            <FileCheck className="h-3 w-3 text-success shrink-0" />
                           ) : (
                             <FileX className="h-3 w-3 text-destructive shrink-0" />
                           )}
@@ -357,8 +357,8 @@ export default function SellerProductsAll() {
                   {/* Expandable file/scan info */}
                   {(product.moderation_flags || product.asset_file_url) && (
                     <Collapsible>
-                      <CollapsibleTrigger className="flex items-center gap-2 w-full px-4 py-1.5 border-t border-border/50 text-xs text-muted-foreground hover:bg-muted/30 transition-colors">
-                        <ChevronDown className="h-3 w-3 transition-transform [[data-state=open]>&]:rotate-180" />
+                      <CollapsibleTrigger className="flex items-center gap-2 w-full px-4 py-1.5 border-t border-border/50 text-xs text-muted-foreground hover:bg-muted/30 transition-colors ease-emphasized">
+                        <ChevronDown className="h-3 w-3 transition-transform ease-emphasized [[data-state=open]>&]:rotate-180" />
                         <span>File & Scan Details</span>
                       </CollapsibleTrigger>
                       <CollapsibleContent className="px-4 pb-3 pt-1 space-y-1.5 text-xs">
@@ -381,7 +381,7 @@ export default function SellerProductsAll() {
                                 </div>
                               )}
                               {mf.lua_concerns && mf.lua_concerns.length > 0 && (
-                                <div className="flex items-start gap-1 text-amber-500">
+                                <div className="flex items-start gap-1 text-warning">
                                   <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
                                   <span>Lua ({mf.lua_risk_level}): {mf.lua_concerns.join(', ')}</span>
                                 </div>
@@ -397,7 +397,7 @@ export default function SellerProductsAll() {
                                 </div>
                               )}
                               {!mf.nsfw_flags?.length && !mf.lua_concerns?.length && (
-                                <p className="text-green-500">✓ Clean — no issues detected</p>
+                                <p className="text-success">✓ Clean — no issues detected</p>
                               )}
                             </>
                           );

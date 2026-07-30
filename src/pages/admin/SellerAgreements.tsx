@@ -115,36 +115,36 @@ export default function SellerAgreements() {
  <h3 className="font-semibold text-sm text-3xl">{stores?.length || 0}</h3>
  </div>
  </div>
- <div className="border border-border rounded-xl overflow-hidden border-green-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
+ <div className="border border-border rounded-xl overflow-hidden border-success/30 min-w-[160px] flex-shrink-0 md:min-w-0">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
- <CheckCircle2 className="h-4 w-4 text-green-500" />
+ <CheckCircle2 className="h-4 w-4 text-success" />
  Signed Agreements
  </p>
- <h3 className="font-semibold text-sm text-3xl text-green-500">{signedCount}</h3>
+ <h3 className="font-semibold text-sm text-3xl text-success">{signedCount}</h3>
  </div>
  </div>
- <div className="border border-border rounded-xl overflow-hidden border-amber-500/30 min-w-[160px] flex-shrink-0 md:min-w-0">
+ <div className="border border-border rounded-xl overflow-hidden border-warning/30 min-w-[160px] flex-shrink-0 md:min-w-0">
  <div className="px-4 py-3 border-b border-border bg-muted/30 pb-2">
  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-2">
- <Clock className="h-4 w-4 text-amber-500" />
+ <Clock className="h-4 w-4 text-warning" />
  Pending Signatures
  </p>
- <h3 className="font-semibold text-sm text-3xl text-amber-500">{pendingCount}</h3>
+ <h3 className="font-semibold text-sm text-3xl text-warning">{pendingCount}</h3>
  </div>
  </div>
  </div>
 
  {/* Alert for pending */}
  {pendingCount > 0 && (
- <div className="border border-border rounded-xl overflow-hidden border-amber-500/50 bg-amber-500/5">
+ <div className="border border-border rounded-xl overflow-hidden border-warning/50 bg-warning/5">
  <div className="p-4 pt-6">
  <div className="flex items-start gap-4">
- <div className="p-2 rounded-lg bg-amber-500/10">
- <AlertTriangle className="h-5 w-5 text-amber-500" />
+ <div className="p-2 rounded-lg bg-warning/10">
+ <AlertTriangle className="h-5 w-5 text-warning" />
  </div>
  <div>
- <h3 className="font-semibold text-amber-500">Stores Inactive Until Signed</h3>
+ <h3 className="font-semibold text-warning">Stores Inactive Until Signed</h3>
  <p className="text-sm text-muted-foreground mt-1">
  {pendingCount} store{pendingCount !== 1 ? 's are' : ' is'} currently inactive because they 
  have not signed the Seller Terms of Service.
@@ -206,7 +206,7 @@ export default function SellerAgreements() {
  <div className="p-8 text-center text-muted-foreground">
  {activeTab === "pending" ? (
  <>
- <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-green-500" />
+ <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-success" />
  <p>All stores have signed the agreement!</p>
  </>
  ) : (
@@ -252,12 +252,12 @@ export default function SellerAgreements() {
  </TableCell>
  <TableCell>
  {store.agreement_signed_at ? (
- <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20 gap-1">
+ <Badge variant="outline" className="bg-success/10 text-success border-success/20 gap-1">
  <CheckCircle2 className="h-3 w-3" />
  Signed
  </Badge>
  ) : (
- <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1">
+ <Badge variant="outline" className="bg-warning/10 text-warning border-warning/20 gap-1">
  <Clock className="h-3 w-3" />
  Pending
  </Badge>

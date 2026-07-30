@@ -67,9 +67,9 @@ export default function SellerTaxFeeSummary() {
 
   const cards = [
     { label: 'Gross Revenue', value: `${formatGBP(summary.totalGross)}`, icon: DollarSign, color: 'text-primary' },
-    { label: 'Platform Commission', value: `${formatGBP(summary.totalPlatformFee)}`, icon: Percent, color: 'text-orange-500' },
-    { label: 'Payment Processing', value: `${formatGBP(summary.totalStripeFee)}`, icon: Receipt, color: 'text-yellow-500' },
-    { label: 'Net Earnings', value: `${formatGBP(summary.totalNet)}`, icon: TrendingDown, color: 'text-green-500' },
+    { label: 'Platform Commission', value: `${formatGBP(summary.totalPlatformFee)}`, icon: Percent, color: 'text-warning' },
+    { label: 'Payment Processing', value: `${formatGBP(summary.totalStripeFee)}`, icon: Receipt, color: 'text-warning' },
+    { label: 'Net Earnings', value: `${formatGBP(summary.totalNet)}`, icon: TrendingDown, color: 'text-success' },
   ];
 
   return (
@@ -101,7 +101,7 @@ export default function SellerTaxFeeSummary() {
             <div className="text-3xl font-bold text-primary">{effectiveRate}%</div>
           </div>
           <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${Math.min(Number(effectiveRate), 100)}%` }} />
+            <div className="h-full bg-primary rounded-full transition-[width] ease-emphasized" style={{ width: `${Math.min(Number(effectiveRate), 100)}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
             <span>Commission: {formatGBP(summary.totalPlatformFee)}</span>

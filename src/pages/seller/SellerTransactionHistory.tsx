@@ -140,7 +140,7 @@ export default function SellerTransactionHistory() {
                       {t.refunded_at ? (
                         <Badge variant="destructive" className="text-xs">Refunded</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-xs text-green-500 border-green-500/30">Completed</Badge>
+                        <Badge variant="outline" className="text-xs text-success border-success/30">Completed</Badge>
                       )}
                     </TableCell>
                   </TableRow>

@@ -180,8 +180,8 @@ export default function SellerBundles() {
           </Button>
         </div>
 
-        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3 flex items-start gap-3 mb-6">
-          <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 flex items-start gap-3 mb-6">
+          <Info className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
           <p className="text-sm text-muted-foreground">
             Bundles let customers buy multiple products together at a reduced price. 
             Select at least 2 products and set a bundle price below the combined total.
@@ -203,7 +203,7 @@ export default function SellerBundles() {
                         <span className="font-semibold">{bundle.name}</span>
                         {!bundle.is_active && <Badge variant="secondary">Hidden</Badge>}
                         {(bundle.savings_percent ?? 0) > 0 && (
-                          <Badge variant="outline" className="text-green-600 border-green-600">
+                          <Badge variant="outline" className="text-success border-success">
                             <Percent className="h-3 w-3 mr-1" />Save {bundle.savings_percent}%
                           </Badge>
                         )}
@@ -211,7 +211,7 @@ export default function SellerBundles() {
                       <p className="text-sm text-muted-foreground">
                         {bundle.product_ids?.length || 0} products · 
                         <span className="line-through ml-1">{formatGBP(Number(bundle.original_price))}</span>
-                        <span className="text-green-600 font-medium ml-1">{formatGBP(Number(bundle.bundle_price))}</span>
+                        <span className="text-success font-medium ml-1">{formatGBP(Number(bundle.bundle_price))}</span>
                       </p>
                       {bundle.max_purchases && (
                         <p className="text-xs text-muted-foreground">
@@ -293,7 +293,7 @@ export default function SellerBundles() {
               </div>
             </div>
             {form.original_price > 0 && form.bundle_price > 0 && (
-              <p className="text-sm text-green-600 font-medium">
+              <p className="text-sm text-success font-medium">
                 Customers save {Math.round(((form.original_price - form.bundle_price) / form.original_price) * 100)}%
               </p>
             )}

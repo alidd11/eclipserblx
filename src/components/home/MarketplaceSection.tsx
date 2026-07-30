@@ -42,7 +42,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
   
   return (
     <Link to={`/store/${store.slug}`} ref={ref}>
-      <div className="group overflow-hidden h-full border border-border hover:border-primary/40 transition-colors duration-200 rounded-md bg-card">
+      <div className="group overflow-hidden h-full border border-border hover:border-primary/40 transition-colors ease-emphasized duration-200 rounded-md bg-card">
         <div 
           className="h-20 relative overflow-hidden"
           style={{ 
@@ -54,7 +54,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
           <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
           {showTestingBadge && store.is_testing && (
             <div className="absolute top-2 right-2">
-              <Badge className="bg-orange-500/90 text-foreground border-0 text-[10px] gap-1">
+              <Badge className="bg-warning/90 text-foreground border-0 text-[10px] gap-1">
                 <FlaskConical className="h-2.5 w-2.5" />
                 Testing
               </Badge>
@@ -83,7 +83,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
             )}
             
             <div className="flex-1 min-w-0 pt-4">
-              <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+              <h3 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors ease-emphasized">
                 {store.name}
               </h3>
             </div>
@@ -117,7 +117,7 @@ const StoreCard = memo(forwardRef<HTMLAnchorElement, { store: StoreData; showTes
               <Users className="h-3 w-3" />
               {store.follower_count.toLocaleString()} followers
             </span>
-            <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized" />
           </div>
         </div>
       </div>
@@ -150,7 +150,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
 
   return (
     <Link to={`/products/${(product as any).product_number}`} className="group block h-full" onMouseEnter={() => prefetch(String((product as any).product_number))}>
-      <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors duration-200">
+      <div className="overflow-hidden h-full rounded-lg border border-border bg-card hover:border-primary/30 transition-colors ease-emphasized duration-200">
         <div className="aspect-[4/3] relative overflow-hidden bg-muted">
           {(() => {
             const imgUrl = getFirstImageUrl(product.images, 400, 300, 'contain');
@@ -169,8 +169,8 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
             <img src={optimizeImageUrl(product.stores.logo_url, 14)} alt="" width={14} height={14} loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
           )}
           <span className="text-[10px] text-muted-foreground font-medium truncate">{product.stores?.name}</span>
-          {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-          {product.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+          {product.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-primary flex-shrink-0" />}
+          {product.stores?.is_trusted && <Award className="h-3 w-3 text-warning flex-shrink-0" />}
         </div>
         <div className="p-3">
           <div className="flex items-center justify-between mb-1.5">
@@ -182,7 +182,7 @@ const MarketplaceProductCard = memo(function MarketplaceProductCard({ product }:
             ) : <span />}
           </div>
 
-          <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors mb-1">
+          <h3 className="text-sm font-semibold text-foreground line-clamp-1 group-hover:text-primary transition-colors ease-emphasized mb-1">
             {product.name}
           </h3>
           <div className="flex items-center gap-2 flex-wrap">
@@ -369,7 +369,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                     <div className="grid grid-cols-2 gap-3 sm:gap-6">
                       {spotlights.map((spotlight) => (
                         <Link key={spotlight.id} to={`/products/${(spotlight as any).product_number}`} className="group block">
-                          <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors">
+                          <div className="relative rounded-lg overflow-hidden border border-border bg-card hover:border-primary/30 transition-colors ease-emphasized">
                             <div className="aspect-[16/9] relative overflow-hidden bg-muted">
                               {(() => {
                                 const imgUrl = getFirstImageUrl(spotlight.images, 540, 300, 'contain');
@@ -383,7 +383,7 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                               })()}
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                               <div className="absolute bottom-0 inset-x-0 p-2.5 sm:p-4">
-                                <h4 className="text-foreground font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors">{spotlight.name}</h4>
+                                <h4 className="text-foreground font-bold text-xs sm:text-base line-clamp-1 group-hover:text-primary transition-colors ease-emphasized">{spotlight.name}</h4>
                                 <SpotlightPrice product={spotlight} />
                               </div>
                             </div>
@@ -393,8 +393,8 @@ export const MarketplaceSection = forwardRef<HTMLElement>(function MarketplaceSe
                                 <img src={optimizeImageUrl(spotlight.stores.logo_url, 14, 14, 'contain')} alt="" width={14} height={14} loading="lazy" decoding="async" className="h-3.5 w-3.5 rounded-sm object-cover flex-shrink-0" />
                               )}
                               <span className="text-[10px] text-muted-foreground font-medium truncate">{spotlight.stores?.name}</span>
-                              {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-blue-400 flex-shrink-0" />}
-                              {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-amber-400 flex-shrink-0" />}
+                              {spotlight.stores?.is_verified && <ShieldCheck className="h-3 w-3 text-primary flex-shrink-0" />}
+                              {spotlight.stores?.is_trusted && <Award className="h-3 w-3 text-warning flex-shrink-0" />}
                             </div>
                           </div>
                         </Link>

@@ -55,19 +55,19 @@ type FindingRow = {
 };
 
 const KIND_TONE: Record<string, string> = {
-  bug: 'bg-rose-500/10 text-rose-600 border-rose-500/30',
-  risk: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-  improvement: 'bg-blue-500/10 text-blue-600 border-blue-500/30',
+  bug: 'bg-destructive/10 text-destructive border-destructive/30',
+  risk: 'bg-warning/10 text-warning border-warning/30',
+  improvement: 'bg-primary/10 text-primary border-primary/30',
   note: 'bg-muted text-muted-foreground border-border',
 };
 
 function StatusBadge({ status }: { status: string }) {
   const tone =
     status === 'delivered' || status === 'executed' || status === 'ok'
-      ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
+      ? 'bg-success/10 text-success border-success/30'
       : status === 'failed' || status === 'dead_lettered' || status === 'rejected'
-        ? 'bg-rose-500/10 text-rose-600 border-rose-500/30'
-        : 'bg-blue-500/10 text-blue-600 border-blue-500/30';
+        ? 'bg-destructive/10 text-destructive border-destructive/30'
+        : 'bg-primary/10 text-primary border-primary/30';
   return (
     <Badge variant="outline" className={tone}>
       {status.replace(/_/g, ' ')}
@@ -178,7 +178,7 @@ export function OrionActivityPanel() {
                     <span>{formatDistanceToNow(new Date(r.received_at), { addSuffix: true })}</span>
                   </div>
                   {r.error && (
-                    <div className="mt-1 text-[11px] text-rose-600 flex items-start gap-1.5">
+                    <div className="mt-1 text-[11px] text-destructive flex items-start gap-1.5">
                       <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
                       {r.error}
                     </div>
@@ -219,7 +219,7 @@ export function OrionActivityPanel() {
                       <span>{formatDistanceToNow(new Date(r.created_at), { addSuffix: true })}</span>
                     </div>
                     {r.last_error && (
-                      <div className="mt-1 text-[11px] text-rose-600 flex items-start gap-1.5">
+                      <div className="mt-1 text-[11px] text-destructive flex items-start gap-1.5">
                         <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
                         <span className="truncate">{r.last_error}</span>
                       </div>

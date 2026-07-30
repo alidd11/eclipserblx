@@ -344,7 +344,7 @@ export default function Transcripts() {
                       {/* Transcript Header */}
                       <button
                         onClick={() => toggleTranscript(transcript.id)}
-                        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors text-left"
+                        className="w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ease-emphasized text-left"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -369,7 +369,7 @@ export default function Transcripts() {
                               </p>
                             )}
                           </div>
-                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                          <Badge variant="outline" className="bg-success/10 text-success border-success/20">
                             Closed
                           </Badge>
                           {expandedTranscript === transcript.id ? (

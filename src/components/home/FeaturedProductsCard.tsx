@@ -144,7 +144,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
           <p className="text-sm text-muted-foreground">No featured products yet</p>
         </div>
         <div className="mt-3 flex justify-end">
-          <Link to="/products" className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1">
+          <Link to="/products" className="text-xs text-muted-foreground hover:text-primary transition-colors ease-emphasized flex items-center gap-1">
             Browse all <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
@@ -173,14 +173,14 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
           <div className="flex items-center gap-1">
             <button
               onClick={goToPrev}
-              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors ease-emphasized"
               aria-label="Previous featured products"
             >
               <ChevronLeft className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
             <button
               onClick={goToNext}
-              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
+              className="w-6 h-6 rounded-md bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors ease-emphasized"
               aria-label="Next featured products"
             >
               <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
@@ -224,7 +224,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
               role="tab"
               aria-selected={i === pageIndex}
               className={cn(
-                "h-1.5 rounded-full transition-all duration-300",
+                "h-1.5 rounded-full transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-300",
                 i === pageIndex
                   ? "w-4 bg-primary"
                   : "w-1.5 bg-muted-foreground/40 hover:bg-muted-foreground/60"
@@ -235,7 +235,7 @@ export const FeaturedProductsCard = memo(function FeaturedProductsCard() {
         </div>
         <Link 
           to="/featured" 
-          className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
+          className="text-xs text-muted-foreground hover:text-primary transition-colors ease-emphasized flex items-center gap-1"
         >
           View all
           <ArrowRight className="h-3 w-3" />
@@ -262,7 +262,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
     <Link 
       ref={ref}
       to={`/products/${(product as any).product_number}`} 
-      className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-muted-foreground/30 transition-all duration-200"
+      className="group rounded-xl border border-border bg-background/50 overflow-hidden hover:border-muted-foreground/30 transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized duration-200"
     >
       {/* Media */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -287,7 +287,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
         
         {/* HOT Badge */}
         {product.is_featured && (
-          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-amber-500 text-[10px] font-bold text-foreground">
+          <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-warning text-[10px] font-bold text-foreground">
             HOT
           </div>
         )}
@@ -319,7 +319,7 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
               </div>
             )}
             <span 
-              className="truncate hover:text-primary transition-colors cursor-pointer"
+              className="truncate hover:text-primary transition-colors ease-emphasized cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -329,15 +329,15 @@ const ProductGridItem = memo(forwardRef<HTMLAnchorElement, ProductGridItemProps>
               {product.stores.name}
             </span>
             {product.stores.is_verified && (
-              <BadgeCheck className="h-2.5 w-2.5 text-blue-500 flex-shrink-0" />
+              <BadgeCheck className="h-2.5 w-2.5 text-primary flex-shrink-0" />
             )}
             {product.stores.is_trusted && (
-              <Shield className="h-2.5 w-2.5 text-amber-500 flex-shrink-0" />
+              <Shield className="h-2.5 w-2.5 text-warning flex-shrink-0" />
             )}
           </div>
         )}
         
-        <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors mb-2 relative z-10">
+        <h3 className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors ease-emphasized mb-2 relative z-10">
           {product.name}
         </h3>
         

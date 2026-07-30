@@ -93,7 +93,7 @@ export function ChatMessageThread({
     <div
       data-gesture-exempt="true"
       className={cn(
-        "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 min-h-0 relative transition-colors",
+        "border border-border rounded-lg bg-card flex flex-col overflow-hidden flex-1 min-w-0 min-h-0 relative transition-colors ease-emphasized",
         "flex",
         isChatDragOver && "border-primary border-2 bg-primary/5"
       )}
@@ -169,7 +169,7 @@ export function ChatMessageThread({
           <button
             type="button"
             onClick={() => setShowOrderHistory(!showOrderHistory)}
-            className="w-full px-3 lg:px-4 py-2 flex items-center justify-between text-xs text-muted-foreground hover:bg-muted/50 transition-colors"
+            className="w-full px-3 lg:px-4 py-2 flex items-center justify-between text-xs text-muted-foreground hover:bg-muted/50 transition-colors ease-emphasized"
           >
             <div className="flex items-center gap-2">
               <ShoppingBag className="h-3.5 w-3.5" />

@@ -42,13 +42,13 @@ const getStatusBadge = (status: string) => {
  switch (status) {
  case 'paid':
  case 'completed':
- return <Badge variant="default" className="bg-green-600">Completed</Badge>;
+ return <Badge variant="default" className="bg-success">Completed</Badge>;
  case 'pending':
  return <Badge variant="secondary">Pending</Badge>;
  case 'refunded':
  return <Badge variant="destructive">Refunded</Badge>;
  case 'partially_refunded':
- return <Badge variant="outline" className="text-orange-600 border-orange-600">Partial Refund</Badge>;
+ return <Badge variant="outline" className="text-warning border-warning">Partial Refund</Badge>;
  default:
  return <Badge variant="outline">{status}</Badge>;
  }
@@ -298,7 +298,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  {selectedOrder.discount_amount > 0 && (
  <div>
  <p className="text-muted-foreground">Discount</p>
- <p className="text-red-600">-{formatCurrency(selectedOrder.discount_amount)}</p>
+ <p className="text-destructive">-{formatCurrency(selectedOrder.discount_amount)}</p>
  </div>
  )}
  </div>
@@ -333,7 +333,7 @@ export function OrdersTab({ storeId }: OrdersTabProps) {
  {tx.stripe_fee ? ` + Stripe: ${formatCurrency(tx.stripe_fee)}` : ''}
  </p>
  </div>
- <span className="font-medium text-green-600">+{formatCurrency(tx.net_amount || 0)}</span>
+ <span className="font-medium text-success">+{formatCurrency(tx.net_amount || 0)}</span>
  </div>
  ))}
  </div>

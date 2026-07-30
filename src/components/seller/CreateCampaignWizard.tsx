@@ -183,7 +183,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  key={s}
  onClick={() => i < step && setStep(i)}
  className={cn(
- "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all",
+ "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  isActive && "bg-primary text-primary-foreground",
  isDone && "bg-primary/10 text-primary cursor-pointer",
  !isActive && !isDone && "bg-muted text-muted-foreground"
@@ -229,7 +229,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  }
  }}
  className={cn(
- "flex items-center gap-3 p-3 rounded-lg border text-left transition-all",
+ "flex items-center gap-3 p-3 rounded-lg border text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  productId === p.id
  ? "border-primary bg-primary/5"
  : "border-border hover:border-primary/30 hover:bg-muted/50"
@@ -271,7 +271,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  key={g.id}
  onClick={() => setGoal(g.id)}
  className={cn(
- "flex flex-col items-center gap-3 p-5 rounded-xl border text-center transition-all",
+ "flex flex-col items-center gap-3 p-5 rounded-xl border text-center transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  goal === g.id
  ? "border-primary bg-primary/5 shadow-sm"
  : "border-border hover:border-primary/30 hover:bg-muted/50"
@@ -308,7 +308,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  key={d.id}
  onClick={() => toggleDevice(d.id)}
  className={cn(
- "flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-all",
+ "flex items-center gap-2 px-4 py-2.5 rounded-lg border transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  targetDevices.includes(d.id)
  ? "border-primary bg-primary/5 text-foreground"
  : "border-border text-muted-foreground hover:border-primary/30"
@@ -328,7 +328,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  key={c}
  onClick={() => toggleCountry(c)}
  className={cn(
- "px-3 py-1 rounded-full text-xs font-medium border transition-all",
+ "px-3 py-1 rounded-full text-xs font-medium border transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  targetCountries.includes(c)
  ? "border-primary bg-primary/10 text-primary"
  : "border-border text-muted-foreground hover:border-primary/30"
@@ -355,7 +355,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
 
  {/* Credit balance */}
  <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50 border border-border">
- <Coins className="h-4 w-4 text-amber-500" />
+ <Coins className="h-4 w-4 text-warning" />
  <span className="text-sm text-muted-foreground">Credit Balance</span>
  <span className="ml-auto font-bold">{formatGBP(balance)}</span>
  {balance < 5 && (
@@ -372,7 +372,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  <button
  onClick={() => setPricingModel('cpc')}
  className={cn(
- "p-3 rounded-lg border text-left transition-all",
+ "p-3 rounded-lg border text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  pricingModel === 'cpc'
  ? "border-primary bg-primary/5"
  : "border-border hover:border-primary/30"
@@ -389,7 +389,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  <button
  onClick={() => setPricingModel('cpm')}
  className={cn(
- "p-3 rounded-lg border text-left transition-all",
+ "p-3 rounded-lg border text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  pricingModel === 'cpm'
  ? "border-primary bg-primary/5"
  : "border-border hover:border-primary/30"
@@ -465,7 +465,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  key={d}
  onClick={() => setDurationDays(d)}
  className={cn(
- "px-4 py-2 rounded-lg border text-sm font-medium transition-all",
+ "px-4 py-2 rounded-lg border text-sm font-medium transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  durationDays === d
  ? "border-primary bg-primary/5"
  : "border-border hover:border-primary/30"
@@ -487,7 +487,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  key={z.id}
  onClick={() => toggleZone(z.id)}
  className={cn(
- "flex items-start gap-2.5 p-3 rounded-lg border text-left transition-all",
+ "flex items-start gap-2.5 p-3 rounded-lg border text-left transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  placementZones.includes(z.id)
  ? "border-primary bg-primary/5"
  : "border-border hover:border-primary/30"
@@ -550,7 +550,7 @@ export function CreateCampaignWizard({ onClose }: CreateCampaignWizardProps) {
  });
  }}
  className={cn(
- "relative aspect-square rounded-lg border-2 overflow-hidden transition-all",
+ "relative aspect-square rounded-lg border-2 overflow-hidden transition-[color,background-color,border-color,box-shadow,transform,opacity] ease-emphasized",
  selectedImages.includes(img)
  ? "border-primary shadow-md"
  : "border-border hover:border-primary/30"

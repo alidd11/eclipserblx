@@ -291,7 +291,7 @@ export default function SellerCategories() {
                     <div key={parent.id}>
                       {/* Parent row */}
                       <div
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors ${
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-colors ease-emphasized ${
                           allEnabled
                             ? 'bg-primary/5 border-primary/30'
                             : someEnabled
@@ -303,9 +303,9 @@ export default function SellerCategories() {
                           <button
                             type="button"
                             onClick={() => toggleExpanded(parent.id)}
-                            className="h-6 w-6 flex items-center justify-center rounded hover:bg-muted/80 transition-transform"
+                            className="h-6 w-6 flex items-center justify-center rounded hover:bg-muted/80 transition-transform ease-emphasized"
                           >
-                            <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
+                            <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ease-emphasized duration-200 ${isExpanded ? 'rotate-90' : ''}`} />
                           </button>
                         ) : (
                           <div className="h-6 w-6" />
@@ -363,7 +363,7 @@ export default function SellerCategories() {
                                   return (
                                     <div
                                       key={child.id}
-                                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors cursor-pointer ${
+                                      className={`flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors ease-emphasized cursor-pointer ${
                                         childEnabled ? 'bg-primary/5' : 'hover:bg-muted/50'
                                       }`}
                                       onClick={() => toggleCategory.mutate({ categoryId: child.id, isEnabled: !childEnabled })}

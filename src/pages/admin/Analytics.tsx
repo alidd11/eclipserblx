@@ -146,7 +146,7 @@ export default function AdminAnalytics() {
  <span className="text-sm font-bold">{stage.value.toLocaleString()}</span>
  </div>
  <div className="h-2 bg-muted rounded-full overflow-hidden">
- <div className="h-full bg-primary rounded-full transition-all duration-500" style={{ width: `${pct}%`, opacity: 1 - i * 0.2 }} />
+ <div className="h-full bg-primary rounded-full transition-[width] ease-emphasized duration-300" style={{ width: `${pct}%`, opacity: 1 - i * 0.2 }} />
  </div>
  </div>
  );
@@ -310,7 +310,7 @@ export default function AdminAnalytics() {
  <span className="text-xs text-muted-foreground">{item.value}</span>
  </div>
  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
- <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${(item.value / maxVal) * 100}%` }} />
+ <div className="h-full bg-primary rounded-full transition-[width] ease-emphasized" style={{ width: `${(item.value / maxVal) * 100}%` }} />
  </div>
  </div>
  );

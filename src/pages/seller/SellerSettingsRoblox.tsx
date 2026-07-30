@@ -153,8 +153,8 @@ export default function SellerSettingsRoblox() {
               </div>
 
               {formData.roblox_url && (
-                <div className="flex items-center gap-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-red-500" />
+                <div className="flex items-center gap-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-destructive" />
                   <div>
                     <p className="text-sm font-medium">Roblox Link Configured</p>
                     <p className="text-xs text-muted-foreground">
@@ -173,8 +173,8 @@ export default function SellerSettingsRoblox() {
               <p className="text-xs text-muted-foreground mt-0.5">Reward group members with automatic discounts</p>
             </div>
             <div className="p-4 space-y-4">
-              <div className="flex items-start gap-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                <Info className="h-5 w-5 text-blue-500 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                <Info className="h-5 w-5 text-primary mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">How it works</p>
                   <p className="text-xs text-muted-foreground">
@@ -214,14 +214,14 @@ export default function SellerSettingsRoblox() {
                 </div>
 
                 {formData.roblox_group_discount_enabled && (
-                  <div className="space-y-4 pl-4 border-l-2 border-blue-500/30">
+                  <div className="space-y-4 pl-4 border-l-2 border-primary/30">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <Label className="flex items-center gap-2">
                           <Percent className="h-4 w-4" />
                           Discount Amount
                         </Label>
-                        <span className="text-lg font-bold text-blue-500">
+                        <span className="text-lg font-bold text-primary">
                           {formData.roblox_group_discount_percent}%
                         </span>
                       </div>
@@ -254,8 +254,8 @@ export default function SellerSettingsRoblox() {
               </div>
 
               {formData.roblox_group_id && formData.roblox_group_discount_enabled && (
-                <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="flex items-center gap-3 p-3 bg-success/10 border border-success/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <div>
                     <p className="text-sm font-medium">Group Discount Active</p>
                     <p className="text-xs text-muted-foreground">
@@ -288,13 +288,13 @@ export default function SellerSettingsRoblox() {
               </div>
 
               {formData.roblox_premium_discount_enabled && (
-                <div className="space-y-3 pl-4 border-l-2 border-amber-500/30">
+                <div className="space-y-3 pl-4 border-l-2 border-warning/30">
                   <div className="flex items-center justify-between">
                     <Label className="flex items-center gap-2">
                       <Percent className="h-4 w-4" />
                       Discount Amount
                     </Label>
-                    <span className="text-lg font-bold text-amber-500">
+                    <span className="text-lg font-bold text-warning">
                       {formData.roblox_premium_discount_percent}%
                     </span>
                   </div>
@@ -310,8 +310,8 @@ export default function SellerSettingsRoblox() {
               )}
 
               {formData.roblox_premium_discount_enabled && (
-                <div className="flex items-center gap-3 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-amber-500" />
+                <div className="flex items-center gap-3 p-3 bg-warning/10 border border-warning/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-warning" />
                   <div>
                     <p className="text-sm font-medium">Premium Discount Active</p>
                     <p className="text-xs text-muted-foreground">
@@ -330,8 +330,8 @@ export default function SellerSettingsRoblox() {
               <p className="text-xs text-muted-foreground mt-0.5">Reward customers who own a specific gamepass from your game</p>
             </div>
             <div className="p-4 space-y-4">
-              <div className="flex items-start gap-3 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                <Info className="h-5 w-5 text-purple-500 mt-0.5" />
+              <div className="flex items-start gap-3 p-3 bg-primary/10 border border-primary/30 rounded-lg">
+                <Info className="h-5 w-5 text-primary mt-0.5" />
                 <div>
                   <p className="text-sm font-medium">VIP Gamepass Integration</p>
                   <p className="text-xs text-muted-foreground">
@@ -371,13 +371,13 @@ export default function SellerSettingsRoblox() {
                 </div>
 
                 {formData.roblox_gamepass_discount_enabled && (
-                  <div className="space-y-3 pl-4 border-l-2 border-purple-500/30">
+                  <div className="space-y-3 pl-4 border-l-2 border-primary/30">
                     <div className="flex items-center justify-between">
                       <Label className="flex items-center gap-2">
                         <Percent className="h-4 w-4" />
                         Discount Amount
                       </Label>
-                      <span className="text-lg font-bold text-purple-500">
+                      <span className="text-lg font-bold text-primary">
                         {formData.roblox_gamepass_discount_percent}%
                       </span>
                     </div>
@@ -394,8 +394,8 @@ export default function SellerSettingsRoblox() {
               </div>
 
               {formData.roblox_gamepass_id && formData.roblox_gamepass_discount_enabled && (
-                <div className="flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-500" />
+                <div className="flex items-center gap-3 p-3 bg-success/10 border border-success/30 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-success" />
                   <div>
                     <p className="text-sm font-medium">Gamepass Discount Active</p>
                     <p className="text-xs text-muted-foreground">

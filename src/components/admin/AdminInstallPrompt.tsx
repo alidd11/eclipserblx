@@ -85,7 +85,7 @@ export function AdminInstallPrompt() {
         <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 relative">
           <button
             onClick={handleDismiss}
-            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute top-3 right-3 text-muted-foreground hover:text-foreground transition-colors ease-emphasized"
             aria-label="Dismiss"
           >
             <X className="h-4 w-4" />

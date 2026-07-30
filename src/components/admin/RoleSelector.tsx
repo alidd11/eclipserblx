@@ -48,7 +48,7 @@ export function RoleSelector({
         which can leave too little inner height and clip our icon container.
         Override py to prevent clipping.
       */}
-      <SelectTrigger className="w-full h-10 py-1 bg-muted/30 border-border hover:bg-muted/50 transition-colors">
+      <SelectTrigger className="w-full h-10 py-1 bg-muted/30 border-border hover:bg-muted/50 transition-colors ease-emphasized">
         <SelectValue>
           {selectedRoleInfo && (
             <div className="flex items-center gap-2">

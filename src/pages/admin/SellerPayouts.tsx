@@ -202,20 +202,20 @@ export default function SellerPayouts() {
 
  const getStatusBadge = (status: string, payout?: SellerPayout) => {
  const autoTag = payout?.auto_processed ? (
- <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-[10px] ml-1">Auto</Badge>
+ <Badge className="bg-primary/20 text-primary border-primary/30 text-[10px] ml-1">Auto</Badge>
  ) : null;
 
  switch (status) {
  case "completed":
- return <span className="flex items-center gap-1"><Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>{autoTag}</span>;
+ return <span className="flex items-center gap-1"><Badge className="bg-success/20 text-success border-success/30">Completed</Badge>{autoTag}</span>;
  case "rejected":
  return <span className="flex items-center gap-1"><Badge variant="destructive">Rejected</Badge>{autoTag}</span>;
  case "processing":
- return <span className="flex items-center gap-1"><Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Processing</Badge>{autoTag}</span>;
+ return <span className="flex items-center gap-1"><Badge className="bg-primary/20 text-primary border-primary/30">Processing</Badge>{autoTag}</span>;
  case "awaiting_funds":
  return (
  <span className="flex items-center gap-1">
- <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 flex items-center gap-1">
+ <Badge className="bg-warning/20 text-warning border-warning/30 flex items-center gap-1">
  <Clock className="h-3 w-3" />
  Awaiting Funds
  </Badge>
@@ -230,7 +230,7 @@ export default function SellerPayouts() {
  const getPayoutMethodBadge = (payout: SellerPayout) => {
  const method = payout.payout_method || payout.stores?.payout_method;
  if (method === 'bank' || method === 'bank_transfer') {
- return <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">Bank Transfer</Badge>;
+ return <Badge className="bg-primary/20 text-primary border-primary/30">Bank Transfer</Badge>;
  }
  if (method === 'paypal') {
  return <Badge variant="secondary">PayPal</Badge>;
@@ -415,7 +415,7 @@ export default function SellerPayouts() {
  )}
  {payout.status === "awaiting_funds" && (
  <div className="flex flex-col gap-1">
- <span className="text-xs text-amber-400 flex items-center gap-1">
+ <span className="text-xs text-warning flex items-center gap-1">
  <Clock className="h-3 w-3" />
  Stripe → Wise funding in progress
  </span>
@@ -491,7 +491,7 @@ export default function SellerPayouts() {
  )}
  {payout.status === "awaiting_funds" && (
  <div className="text-xs space-y-0.5">
- <span className="text-amber-400 flex items-center gap-1">
+ <span className="text-warning flex items-center gap-1">
  <Clock className="h-3 w-3" />
  Funding in progress · Est: {getEstimatedArrival(payout)}
  </span>
@@ -564,9 +564,9 @@ export default function SellerPayouts() {
  </div>
  <div className="flex justify-between">
  <span className="text-muted-foreground">Transfer via:</span>
- <span className="font-medium text-blue-400">Wise International Transfer</span>
+ <span className="font-medium text-primary">Wise International Transfer</span>
  </div>
- <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded text-xs text-blue-400">
+ <div className="p-2 bg-primary/10 border border-primary/20 rounded text-xs text-primary">
  💡 If Wise balance is insufficient, funds will automatically be pulled from Stripe (1-2 business days).
  </div>
  </>

@@ -22,11 +22,11 @@ import { SITE_NAME } from "@/lib/constants";
 
 const DEFAULT_CATEGORIES = [
   { value: "general", label: "General", color: "bg-gray-500/20 text-gray-400 border-gray-500/30" },
-  { value: "legal", label: "Legal", color: "bg-amber-500/20 text-amber-400 border-amber-500/30" },
-  { value: "policy", label: "Policy", color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
-  { value: "guide", label: "Guide", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
-  { value: "announcement", label: "Announcement", color: "bg-green-500/20 text-green-400 border-green-500/30" },
-  { value: "training", label: "Training", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
+  { value: "legal", label: "Legal", color: "bg-warning/20 text-warning border-warning/30" },
+  { value: "policy", label: "Policy", color: "bg-primary/20 text-primary border-primary/30" },
+  { value: "guide", label: "Guide", color: "bg-primary/20 text-primary border-primary/30" },
+  { value: "announcement", label: "Announcement", color: "bg-success/20 text-success border-success/30" },
+  { value: "training", label: "Training", color: "bg-warning/20 text-warning border-warning/30" },
 ];
 
 const getCategoryColor = (category: string) => {
@@ -476,7 +476,7 @@ export default function AdminSellerDocuments() {
         ) : filteredDocuments.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredDocuments.map((doc) => (
-              <div key={doc.id} className={`group transition-colors ${!doc.is_active ? "opacity-60" : "hover:border-primary/50"}`}>
+              <div key={doc.id} className={`group transition-colors ease-emphasized ${!doc.is_active ? "opacity-60" : "hover:border-primary/50"}`}>
                 <div className="px-4 py-3 border-b border-border bg-muted/30 pb-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">

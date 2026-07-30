@@ -289,7 +289,7 @@ export default function PlatformLedger() {
                       <TableCell className="text-right text-sm">
                         {fmt(Number(t.gross_amount || t.amount || 0))}
                       </TableCell>
-                      <TableCell className="text-right text-sm font-medium text-green-600">
+                      <TableCell className="text-right text-sm font-medium text-success">
                         {fmt(Number(t.platform_fee || 0))}
                       </TableCell>
                       <TableCell className="text-right text-sm text-muted-foreground">
@@ -302,7 +302,7 @@ export default function PlatformLedger() {
                         {t.refunded_at ? (
                           <Badge variant="destructive" className="text-xs">Refunded</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-xs text-green-500 border-green-500/30">
+                          <Badge variant="outline" className="text-xs text-success border-success/30">
                             Completed
                           </Badge>
                         )}
@@ -336,13 +336,13 @@ export default function PlatformLedger() {
 
 function SummaryCard({ label, value, icon, highlight }: { label: string; value: string; icon: React.ReactNode; highlight?: boolean }) {
   return (
-    <div className={cn('min-w-[160px] flex-shrink-0 md:min-w-0', highlight && 'border-green-500/30 bg-green-500/5')}>
+    <div className={cn('min-w-[160px] flex-shrink-0 md:min-w-0', highlight && 'border-success/30 bg-success/5')}>
       <div className="p-4 pt-4 pb-3 px-4">
         <div className="flex items-center gap-2 text-muted-foreground mb-1">
           {icon}
           <span className="text-xs font-medium">{label}</span>
         </div>
-        <p className={cn('text-lg font-bold', highlight && 'text-green-600')}>{value}</p>
+        <p className={cn('text-lg font-bold', highlight && 'text-success')}>{value}</p>
       </div>
     </div>
   );
