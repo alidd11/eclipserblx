@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
+import { MotionConfig } from "framer-motion";
 // React Query Devtools — dev only, lazy-loaded so it never ships to production
 const ReactQueryDevtools = import.meta.env.DEV
   ? lazy(() => import("@tanstack/react-query-devtools").then(m => ({ default: m.ReactQueryDevtools })))
@@ -112,6 +113,7 @@ function App() {
                   <ChatPanelProvider>
                     <StoreDomainProvider>
                       <TooltipProvider>
+                        <MotionConfig reducedMotion="user">
                         <Sonner />
                         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                           <GlobalBackground />
@@ -139,6 +141,7 @@ function App() {
                             <SafeLazyWidget><BackgroundRefreshIndicator /></SafeLazyWidget>
                           </IpBanCheck>
                         </BrowserRouter>
+                        </MotionConfig>
                       </TooltipProvider>
                     </StoreDomainProvider>
                   </ChatPanelProvider>
