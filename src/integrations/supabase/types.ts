@@ -12660,6 +12660,10 @@ export type Database = {
         Returns: undefined
       }
       revert_expired_custom_rates: { Args: never; Returns: undefined }
+      review_seller_payout: {
+        Args: { p_decision: string; p_notes?: string; p_payout_id: string }
+        Returns: boolean
+      }
       review_store_application: {
         Args: {
           p_application_id: string
