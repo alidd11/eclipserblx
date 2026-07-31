@@ -104,10 +104,19 @@ Deno.serve(async (req) => {
     }
 
     // Check if user has permission to process payouts
-    const { data: hasPermission } = await supabase.rpc('has_permission', {
+    // Canonical permission is `process_payouts`; `manage_payouts` kept as legacy fallback.
+    const { data: hasProcessPayouts } = await supabase.rpc('has_permission', {
       _user_id: user.id,
-      _permission_name: 'process_seller_payouts'
+      _permission_name: 'process_payouts'
     });
+    let hasPermission = hasProcessPayouts === true;
+    if (!hasPermission) {
+      const { data: legacy } = await supabase.rpc('has_permission', {
+        _user_id: user.id,
+        _permission_name: 'manage_payouts'
+      });
+      hasPermission = legacy === true;
+    }
 
     if (!hasPermission) {
       return new Response(
@@ -115,6 +124,7 @@ Deno.serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
 
     const body = await req.json().catch(() => ({}));
     const { action, ...params } = body;
@@ -372,286 +382,310 @@ Deno.serve(async (req) => {
       }
 
       case 'process-seller-payout': {
-        const { payoutId, profileId, recipientId, amount, currency, reference } = params;
-        
-        // Validate inputs
-        if (payoutId && !UUID_REGEX.test(payoutId)) throw new Error("Invalid payout ID");
+        const { payoutId, profileId, recipientId, currency, reference } = params;
+
+        // Validate inputs — payoutId is mandatory so the payout can be claimed atomically
+        if (!payoutId || typeof payoutId !== 'string' || !UUID_REGEX.test(payoutId)) {
+          return new Response(
+            JSON.stringify({ error: 'A valid payoutId is required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
         if (profileId && !isValidNumericId(profileId)) throw new Error("Invalid profile ID");
         if (recipientId && !isValidNumericId(recipientId)) throw new Error("Invalid recipient ID");
         if (reference && (typeof reference !== 'string' || reference.length > 200)) throw new Error("Invalid reference");
-        
-        // Get payout details if payoutId provided
-        let payoutData: any = null;
-        let payoutAmount = amount;
-        const payoutCurrency = currency || 'GBP';
-        
-        if (payoutId) {
-          const { data: payout, error: payoutError } = await supabase
+
+        const lockId = crypto.randomUUID();
+
+        // === ATOMIC CLAIM before any Stripe/Wise side effect ===
+        const { data: claimed, error: claimError } = await supabase.rpc('claim_payout_for_processing', {
+          p_payout_id: payoutId,
+          p_lock_id: lockId,
+          p_expected_status: 'pending',
+        });
+
+        if (claimError) {
+          throw new Error(`Failed to claim payout: ${claimError.message}`);
+        }
+        if (!claimed) {
+          logStep('Payout not claimable', { payoutId });
+          return new Response(
+            JSON.stringify({
+              error: 'This payout is already being processed or is no longer pending',
+              code: 'PAYOUT_NOT_CLAIMABLE',
+            }),
+            { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const releaseLock = async (extra: Record<string, unknown> = {}) => {
+          const { error: releaseError } = await supabase
+            .from('seller_payouts')
+            .update({ processing_locked_at: null, processing_lock_id: null, ...extra })
+            .eq('id', payoutId)
+            .eq('processing_lock_id', lockId);
+          if (releaseError) {
+            logStep('Failed to release payout lock', { payoutId, error: releaseError.message });
+          }
+        };
+
+        try {
+          const { data: payoutData, error: payoutError } = await supabase
             .from('seller_payouts')
             .select('*, stores(name, wise_recipient_id)')
             .eq('id', payoutId)
             .single();
-          
-          if (payoutError) {
-            throw new Error(`Failed to fetch payout: ${payoutError.message}`);
+
+          if (payoutError || !payoutData) {
+            throw new Error(`Failed to fetch payout: ${payoutError?.message || 'not found'}`);
           }
-          payoutData = payout;
-          payoutAmount = payout.amount;
-        }
-        
-        // Validate amount
-        if (!isValidAmount(payoutAmount)) {
-          throw new Error(`Payout amount must be between £${MIN_PAYOUT_AMOUNT} and £${MAX_PAYOUT_AMOUNT}`);
-        }
-        if (!isValidCurrency(payoutCurrency)) {
-          throw new Error("Invalid currency");
-        }
-        
-        // Get Wise profile
-        const profile = profileId ? { id: profileId } : await getWiseProfile(wiseApiKey);
-        logStep('Using Wise profile', { profileId: profile.id });
-        
-        // Check current Wise GBP balance
-        const currentBalance = await getWiseGBPBalance(wiseApiKey, profile.id);
-        logStep('Current Wise GBP balance', { balance: currentBalance, required: payoutAmount });
-        
-        // Add 10% buffer for fees and rate fluctuations
-        const requiredAmount = payoutAmount * 1.1;
-        
-        // If insufficient balance, queue for funding from Stripe
-        if (currentBalance < requiredAmount) {
-          logStep('Insufficient Wise balance, initiating Stripe funding');
-          
-          if (!stripeSecretKey) {
-            throw new Error('Stripe API key not configured - cannot auto-fund from Stripe');
+
+          const payoutAmount = payoutData.amount;
+          const payoutCurrency = currency || 'GBP';
+
+          // Validate amount
+          if (!isValidAmount(payoutAmount)) {
+            throw new Error(`Payout amount must be between £${MIN_PAYOUT_AMOUNT} and £${MAX_PAYOUT_AMOUNT}`);
           }
-          
-          const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
-          
-          const fundingAmount = Math.ceil(requiredAmount * 100);
-          
-          try {
-            const stripeBalance = await stripe.balance.retrieve();
-            const gbpAvailable = stripeBalance.available.find((b: any) => b.currency === 'gbp');
-            const availableGBP = gbpAvailable?.amount || 0;
-            
-            logStep('Stripe GBP balance', { available: availableGBP / 100, required: fundingAmount / 100 });
-            
-            if (availableGBP < fundingAmount) {
-              if (payoutId) {
-                await supabase
-                  .from('seller_payouts')
-                  .update({
-                    status: 'awaiting_funds',
-                    funding_status: 'funding_failed',
-                    failure_reason: `Insufficient funds in both Wise (£${currentBalance.toFixed(2)}) and Stripe (£${(availableGBP / 100).toFixed(2)}) for £${payoutAmount.toFixed(2)} payout`,
-                    funding_requested_at: new Date().toISOString(),
-                  })
-                  .eq('id', payoutId);
+          if (!isValidCurrency(payoutCurrency)) {
+            throw new Error("Invalid currency");
+          }
+
+          // Get Wise profile
+          const profile = profileId ? { id: profileId } : await getWiseProfile(wiseApiKey);
+          logStep('Using Wise profile', { profileId: profile.id });
+
+          // Check current Wise GBP balance
+          const currentBalance = await getWiseGBPBalance(wiseApiKey, profile.id);
+          logStep('Current Wise GBP balance', { balance: currentBalance, required: payoutAmount });
+
+          // Add 10% buffer for fees and rate fluctuations
+          const requiredAmount = payoutAmount * 1.1;
+
+          // If insufficient balance, queue for funding from Stripe
+          if (currentBalance < requiredAmount) {
+            logStep('Insufficient Wise balance, initiating Stripe funding');
+
+            if (!stripeSecretKey) {
+              throw new Error('Stripe API key not configured - cannot auto-fund from Stripe');
+            }
+
+            const stripe = new Stripe(stripeSecretKey, { apiVersion: "2023-10-16" });
+
+            const fundingAmount = Math.ceil(requiredAmount * 100);
+
+            try {
+              const stripeBalance = await stripe.balance.retrieve();
+              const gbpAvailable = stripeBalance.available.find((b: any) => b.currency === 'gbp');
+              const availableGBP = gbpAvailable?.amount || 0;
+
+              logStep('Stripe GBP balance', { available: availableGBP / 100, required: fundingAmount / 100 });
+
+              if (availableGBP < fundingAmount) {
+                await releaseLock({
+                  status: 'awaiting_funds',
+                  funding_status: 'funding_failed',
+                  failure_reason: `Insufficient funds in both Wise (£${currentBalance.toFixed(2)}) and Stripe (£${(availableGBP / 100).toFixed(2)}) for £${payoutAmount.toFixed(2)} payout`,
+                  funding_requested_at: new Date().toISOString(),
+                });
+
+                return new Response(
+                  JSON.stringify({
+                    success: false,
+                    awaiting_funds: true,
+                    message: `Insufficient funds in Wise (£${currentBalance.toFixed(2)}) and Stripe (£${(availableGBP / 100).toFixed(2)}). Required: £${payoutAmount.toFixed(2)}`,
+                  }),
+                  { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+                );
               }
-              
+
+              const stripePayout = await stripe.payouts.create(
+                {
+                  amount: fundingAmount,
+                  currency: 'gbp',
+                  description: `Wise funding for seller payout ${payoutId}`,
+                  metadata: {
+                    purpose: 'wise_funding',
+                    linked_payout_id: payoutId,
+                    wise_profile_id: profile.id.toString(),
+                  },
+                },
+                { idempotencyKey: `seller-payout-funding-${payoutId}` },
+              );
+
+              logStep('Stripe payout created', { payoutId: stripePayout.id, amount: fundingAmount / 100 });
+
+              await supabase.from('audit_logs').insert({
+                user_id: user.id,
+                action: 'stripe_funding_initiated',
+                resource: 'wise_payouts',
+                details: { stripePayoutId: stripePayout.id, amount: fundingAmount / 100, linkedPayoutId: payoutId },
+              });
+
+              const { data: fundingRequest } = await supabase
+                .from('wise_funding_requests')
+                .insert({
+                  stripe_payout_id: stripePayout.id,
+                  amount: fundingAmount / 100,
+                  currency: 'GBP',
+                  status: 'pending',
+                  linked_payout_ids: [payoutId],
+                  created_by: user.id,
+                })
+                .select()
+                .single();
+
+              logStep('Funding request created', { id: fundingRequest?.id });
+
+              await releaseLock({
+                status: 'awaiting_funds',
+                funding_status: 'funding_requested',
+                stripe_funding_payout_id: stripePayout.id,
+                funding_requested_at: new Date().toISOString(),
+              });
+
+              return new Response(
+                JSON.stringify({
+                  success: true,
+                  awaiting_funds: true,
+                  message: 'Wise balance low. Stripe payout initiated - funds will arrive in 1-2 business days.',
+                  stripe_payout_id: stripePayout.id,
+                  funding_amount: fundingAmount / 100,
+                  estimated_arrival: '1-2 business days',
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            } catch (stripeError: any) {
+              logStep('Stripe funding error', { error: stripeError.message });
+
+              await releaseLock({
+                status: 'awaiting_funds',
+                funding_status: 'funding_failed',
+                failure_reason: stripeError.message,
+                funding_requested_at: new Date().toISOString(),
+              });
+
               return new Response(
                 JSON.stringify({
                   success: false,
                   awaiting_funds: true,
-                  message: `Insufficient funds in Wise (£${currentBalance.toFixed(2)}) and Stripe (£${(availableGBP / 100).toFixed(2)}). Required: £${payoutAmount.toFixed(2)}`,
+                  message: `Wise balance insufficient (£${currentBalance.toFixed(2)}). Stripe funding failed: ${stripeError.message}`,
+                  error: stripeError.message,
                 }),
                 { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
               );
             }
-            
-            const stripePayout = await stripe.payouts.create({
-              amount: fundingAmount,
-              currency: 'gbp',
-              description: `Wise funding for seller payout ${payoutId || 'manual'}`,
-              metadata: {
-                purpose: 'wise_funding',
-                linked_payout_id: payoutId || 'manual',
-                wise_profile_id: profile.id.toString(),
-              },
-            });
-            
-            logStep('Stripe payout created', { payoutId: stripePayout.id, amount: fundingAmount / 100 });
-            
-            await supabase.from('audit_logs').insert({
-              user_id: user.id,
-              action: 'stripe_funding_initiated',
-              resource: 'wise_payouts',
-              details: { stripePayoutId: stripePayout.id, amount: fundingAmount / 100, linkedPayoutId: payoutId },
-            });
-            
-            const { data: fundingRequest } = await supabase
-              .from('wise_funding_requests')
-              .insert({
-                stripe_payout_id: stripePayout.id,
-                amount: fundingAmount / 100,
-                currency: 'GBP',
-                status: 'pending',
-                linked_payout_ids: payoutId ? [payoutId] : [],
-                created_by: user.id,
-              })
-              .select()
-              .single();
-            
-            logStep('Funding request created', { id: fundingRequest?.id });
-            
-            if (payoutId) {
-              await supabase
-                .from('seller_payouts')
-                .update({
-                  status: 'awaiting_funds',
-                  funding_status: 'funding_requested',
-                  stripe_funding_payout_id: stripePayout.id,
-                  funding_requested_at: new Date().toISOString(),
-                })
-                .eq('id', payoutId);
-            }
-            
-            return new Response(
-              JSON.stringify({
-                success: true,
-                awaiting_funds: true,
-                message: 'Wise balance low. Stripe payout initiated - funds will arrive in 1-2 business days.',
-                stripe_payout_id: stripePayout.id,
-                funding_amount: fundingAmount / 100,
-                estimated_arrival: '1-2 business days',
-              }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          } catch (stripeError: any) {
-            logStep('Stripe funding error', { error: stripeError.message });
-            
-            if (payoutId) {
-              await supabase
-                .from('seller_payouts')
-                .update({
-                  status: 'awaiting_funds',
-                  funding_status: 'funding_failed',
-                  failure_reason: stripeError.message,
-                  funding_requested_at: new Date().toISOString(),
-                })
-                .eq('id', payoutId);
-            }
-            
-            return new Response(
-              JSON.stringify({
-                success: false,
-                awaiting_funds: true,
-                message: `Wise balance insufficient (£${currentBalance.toFixed(2)}). Stripe funding failed: ${stripeError.message}`,
-                error: stripeError.message,
-              }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
           }
-        }
-        
-        // Sufficient balance - proceed with Wise transfer
-        logStep('Sufficient balance, proceeding with Wise transfer');
-        
-        const targetRecipient = recipientId || payoutData?.stores?.wise_recipient_id;
-        
-        if (!targetRecipient) {
-          throw new Error('No Wise recipient configured for this store. Please set up bank details first.');
-        }
-        
-        // 1. Create quote
-        const quoteResponse = await fetch(`${WISE_API_URL}/v3/quotes`, {
-          method: 'POST',
-          headers: wiseHeaders,
-          body: JSON.stringify({
-            sourceCurrency: 'GBP',
-            targetCurrency: payoutCurrency,
-            sourceAmount: payoutAmount,
-            profile: profile.id,
-          }),
-        });
-        
-        if (!quoteResponse.ok) {
-          const error = await quoteResponse.text();
-          throw new Error(`Quote failed: ${error}`);
-        }
-        
-        const quote = await quoteResponse.json();
-        logStep('Quote created for payout', { quoteId: quote.id });
-        
-        // 2. Create transfer
-        const transferResponse = await fetch(`${WISE_API_URL}/v1/transfers`, {
-          method: 'POST',
-          headers: wiseHeaders,
-          body: JSON.stringify({
-            targetAccount: targetRecipient,
-            quoteUuid: quote.id,
-            customerTransactionId: `seller-payout-${payoutId || 'manual'}-${Date.now()}`,
-            details: {
-              reference: reference || `Eclipse Seller Payout #${payoutId || 'manual'}`,
-            },
-          }),
-        });
-        
-        if (!transferResponse.ok) {
-          const error = await transferResponse.text();
-          throw new Error(`Transfer creation failed: ${error}`);
-        }
-        
-        const transfer = await transferResponse.json();
-        logStep('Transfer created for payout', { transferId: transfer.id });
-        
-        // 3. Fund transfer from balance
-        const fundResponse = await fetch(
-          `${WISE_API_URL}/v3/profiles/${encodeURIComponent(profile.id)}/transfers/${encodeURIComponent(transfer.id)}/payments`,
-          {
+
+          // Sufficient balance - proceed with Wise transfer
+          logStep('Sufficient balance, proceeding with Wise transfer');
+
+          const targetRecipient = recipientId || payoutData?.stores?.wise_recipient_id;
+
+          if (!targetRecipient) {
+            throw new Error('No Wise recipient configured for this store. Please set up bank details first.');
+          }
+
+          // 1. Create quote
+          const quoteResponse = await fetch(`${WISE_API_URL}/v3/quotes`, {
             method: 'POST',
             headers: wiseHeaders,
-            body: JSON.stringify({ type: 'BALANCE' }),
+            body: JSON.stringify({
+              sourceCurrency: 'GBP',
+              targetCurrency: payoutCurrency,
+              sourceAmount: payoutAmount,
+              profile: profile.id,
+            }),
+          });
+
+          if (!quoteResponse.ok) {
+            const error = await quoteResponse.text();
+            throw new Error(`Quote failed: ${error}`);
           }
-        );
-        
-        if (!fundResponse.ok) {
-          const error = await fundResponse.text();
-          throw new Error(`Funding failed: ${error}`);
-        }
-        
-        const payment = await fundResponse.json();
-        logStep('Payout funded', { status: payment.status });
-        
-        // 4. Update payout record in database
-        if (payoutId) {
-          const { error: updateError } = await supabase
-            .from('seller_payouts')
-            .update({
-              wise_transfer_id: transfer.id.toString(),
-              wise_quote_id: quote.id,
-              status: 'processing',
-              funding_status: 'funded',
-              processed_at: new Date().toISOString(),
-              processed_by: user.id,
-            })
-            .eq('id', payoutId);
-          
-          if (updateError) {
-            logStep('Failed to update payout record', { error: updateError.message });
+
+          const quote = await quoteResponse.json();
+          logStep('Quote created for payout', { quoteId: quote.id });
+
+          // 2. Create transfer — payout UUID as customerTransactionId keeps retries idempotent
+          const transferResponse = await fetch(`${WISE_API_URL}/v1/transfers`, {
+            method: 'POST',
+            headers: wiseHeaders,
+            body: JSON.stringify({
+              targetAccount: targetRecipient,
+              quoteUuid: quote.id,
+              customerTransactionId: payoutId,
+              details: {
+                reference: reference || `Eclipse Seller Payout #${payoutId}`,
+              },
+            }),
+          });
+
+          if (!transferResponse.ok) {
+            const error = await transferResponse.text();
+            throw new Error(`Transfer creation failed: ${error}`);
           }
+
+          const transfer = await transferResponse.json();
+          logStep('Transfer created for payout', { transferId: transfer.id });
+
+          // 3. Fund transfer from balance
+          const fundResponse = await fetch(
+            `${WISE_API_URL}/v3/profiles/${encodeURIComponent(profile.id)}/transfers/${encodeURIComponent(transfer.id)}/payments`,
+            {
+              method: 'POST',
+              headers: wiseHeaders,
+              body: JSON.stringify({ type: 'BALANCE' }),
+            }
+          );
+
+          if (!fundResponse.ok) {
+            const error = await fundResponse.text();
+            throw new Error(`Funding failed: ${error}`);
+          }
+
+          const payment = await fundResponse.json();
+          logStep('Payout funded', { status: payment.status });
+
+          // 4. Persist through the locked finalization RPC
+          const { data: finalized, error: finalizeError } = await supabase.rpc('finalize_seller_payout', {
+            p_payout_id: payoutId,
+            p_lock_id: lockId,
+            p_provider: 'wise',
+            p_provider_reference: transfer.id.toString(),
+            p_status: 'processing',
+            p_notes: `Wise transfer ${transfer.id} funded from balance. Quote: ${quote.id}`,
+            p_provider_secondary_reference: quote.id ? String(quote.id) : null,
+          });
+
+          if (finalizeError || !finalized) {
+            logStep('Failed to finalize payout record', { error: finalizeError?.message });
+            throw new Error(finalizeError?.message || 'Failed to finalize payout record');
+          }
+
+          // Audit log for completed payout
+          await supabase.from('audit_logs').insert({
+            user_id: user.id,
+            action: 'wise_payout_processed',
+            resource: 'wise_payouts',
+            details: { payoutId, transferId: transfer.id, amount: payoutAmount, currency: payoutCurrency },
+          });
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              awaiting_funds: false,
+              quote,
+              transfer,
+              payment,
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (payoutFlowError) {
+          await releaseLock();
+          throw payoutFlowError;
         }
-        
-        // Audit log for completed payout
-        await supabase.from('audit_logs').insert({
-          user_id: user.id,
-          action: 'wise_payout_processed',
-          resource: 'wise_payouts',
-          details: { payoutId, transferId: transfer.id, amount: payoutAmount, currency: payoutCurrency },
-        });
-        
-        return new Response(
-          JSON.stringify({
-            success: true,
-            awaiting_funds: false,
-            quote,
-            transfer,
-            payment,
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
       }
+
 
       default:
         return new Response(
