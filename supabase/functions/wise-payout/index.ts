@@ -104,10 +104,19 @@ Deno.serve(async (req) => {
     }
 
     // Check if user has permission to process payouts
-    const { data: hasPermission } = await supabase.rpc('has_permission', {
+    // Canonical permission is `process_payouts`; `manage_payouts` kept as legacy fallback.
+    const { data: hasProcessPayouts } = await supabase.rpc('has_permission', {
       _user_id: user.id,
-      _permission_name: 'process_seller_payouts'
+      _permission_name: 'process_payouts'
     });
+    let hasPermission = hasProcessPayouts === true;
+    if (!hasPermission) {
+      const { data: legacy } = await supabase.rpc('has_permission', {
+        _user_id: user.id,
+        _permission_name: 'manage_payouts'
+      });
+      hasPermission = legacy === true;
+    }
 
     if (!hasPermission) {
       return new Response(
@@ -115,6 +124,7 @@ Deno.serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
 
     const body = await req.json().catch(() => ({}));
     const { action, ...params } = body;
